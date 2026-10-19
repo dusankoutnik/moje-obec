@@ -2,7 +2,7 @@
 //
 // Adaptér umí přečíst starý web (WordPress přes REST API; Galileo, vismo, Antee… přes HTML) a vrátit obsah
 // v neutrální podobě. Všechno ostatní — stažení a přeuložení médií, přepis odkazů, sanitizace HTML, zařazení
-// do menu, úřední deska a tabulka přesměrování starých adres — dělá společný Importer (importer.ts).
+// do menu, úřední deska a tabulka přesměrování starých adres — dělá společný Importer (importer.ts, sekce/*.ts).
 // Nový adaptér tak implementuje jen čtení: viz docs/IMPORT.md.
 
 /** stránka starého webu (stálý obsah, strom menu) */

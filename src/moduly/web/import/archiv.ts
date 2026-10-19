@@ -12,7 +12,7 @@
 import { casPraha } from '../../../lib/datum.js';
 import { slugify } from '../../../lib/slug.js';
 import { dekodujEntity, textTagu } from './html-pomoc.js';
-import { klicTitulku } from './importer.js';
+import { klicTitulku } from './pomucky.js';
 import type { ImportClanek, ImportniZdroj, ImportStranka, Stahovac } from './typy.js';
 import { dekodujHtml, waybackUrl, type ZaznamCdx } from './wayback.js';
 

@@ -1,7 +1,7 @@
 // Adaptér WordPress: čte veřejné REST API (/wp-json/wp/v2) — stránky, příspěvky, kategorie; menu z HTML titulky
 // (REST menu bez přihlášení nevydá). Úřední deska = příspěvky ve zvolené kategorii (výchozí slug „uredni-deska“).
 // Pilot pro Vlastibořice; u obcí převažují proprietární CMS (Galileo, vismo…), viz docs/IMPORT.md.
-import { odhadniRozpocet } from './importer.js';
+import { odhadniRozpocet } from './pomucky.js';
 import { dekodujEntity, parsujMenu } from './html-pomoc.js';
 import type {
   ImportClanek,
