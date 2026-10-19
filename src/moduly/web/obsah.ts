@@ -32,6 +32,14 @@ export {
   type PolozkaMenu,
 } from './obsah-pole.js';
 
+export type AkceUlozeni = 'koncept' | 'zverejnit' | 'autosave';
+export interface NavicUlozeni {
+  zdroj?: string;
+  puvodniUrl?: string | null;
+  hlaseniId?: string | null;
+  zverejnenoAt?: Date | null;
+}
+
 export class ObsahSluzba extends ObsahCteni {
   async unikatniSlug(
     typ: TypObsahu,
@@ -135,15 +143,10 @@ export class ObsahSluzba extends ObsahCteni {
     id: string | null,
     typ: TypObsahu,
     pole: PoleObsahu,
-    akce: 'koncept' | 'zverejnit' | 'autosave',
+    akce: AkceUlozeni,
     aktorId: string | null,
     ip?: string | null,
-    navic: {
-      zdroj?: string;
-      puvodniUrl?: string | null;
-      hlaseniId?: string | null;
-      zverejnenoAt?: Date | null;
-    } = {},
+    navic: NavicUlozeni = {},
   ): Promise<string> {
     // už v transakci (import jedné položky) — ta se při chybě vrací celá, opakuje ji volající
     if (this.db.isTransaction) return this.ulozV(this.db, id, typ, pole, akce, aktorId, ip, navic);
@@ -166,91 +169,116 @@ export class ObsahSluzba extends ObsahCteni {
     id: string | null,
     typ: TypObsahu,
     pole: PoleObsahu,
-    akce: 'koncept' | 'zverejnit' | 'autosave',
+    akce: AkceUlozeni,
     aktorId: string | null,
     ip: string | null | undefined,
-    navic: {
-      zdroj?: string;
-      puvodniUrl?: string | null;
-      hlaseniId?: string | null;
-      zverejnenoAt?: Date | null;
-    },
+    navic: NavicUlozeni,
   ): Promise<string> {
     const puvodni =
       id && UUID.test(id)
         ? await db.selectFrom('web_obsah').selectAll().where('id', '=', id).forUpdate().executeTakeFirst()
         : undefined;
     const p = await this.normalizuj(db, typ, pole, puvodni);
-    const ted = new Date();
-    let obsahId: string;
-    if (!puvodni) {
-      const r = await db
-        .insertInto('web_obsah')
-        .values({
-          ...doSloupcu(p),
-          typ,
-          stav: akce === 'zverejnit' ? 'zverejneno' : 'koncept',
-          zverejneno_at: akce === 'zverejnit' ? (navic.zverejnenoAt ?? ted) : null,
-          poradi: typ === 'stranka' || typ === 'odkaz' ? await this.dalsiPoradi(p.nadrazena_id, db) : 0,
-          autor_id: aktorId,
-          upravil_id: aktorId,
-          zdroj: navic.zdroj ?? '',
-          puvodni_url: navic.puvodniUrl ?? null,
-          hlaseni_id: navic.hlaseniId ?? null,
-        })
-        .returning('id')
-        .executeTakeFirstOrThrow();
-      obsahId = r.id;
-    } else {
-      obsahId = puvodni.id;
-      if (puvodni.stav === 'zverejneno' && akce !== 'zverejnit') {
-        // zveřejněný obsah: změny jen do konceptu, web zůstává beze změny
-        await db
-          .updateTable('web_obsah')
-          .set({ koncept: JSON.stringify(p), koncept_at: ted, upravil_id: aktorId })
-          .where('id', '=', obsahId)
-          .execute();
-      } else {
-        const presun = puvodni.nadrazena_id !== p.nadrazena_id && (typ === 'stranka' || typ === 'odkaz');
-        await db
-          .updateTable('web_obsah')
-          .set({
-            ...doSloupcu(p),
-            ...(presun ? { poradi: await this.dalsiPoradi(p.nadrazena_id, db) } : {}),
-            stav: akce === 'zverejnit' ? 'zverejneno' : puvodni.stav,
-            zverejneno_at: akce === 'zverejnit' ? (puvodni.zverejneno_at ?? ted) : puvodni.zverejneno_at,
-            koncept: null,
-            koncept_at: null,
-            upravil_id: aktorId,
-            upraveno_at: ted,
-          })
-          .where('id', '=', obsahId)
-          .execute();
-      }
-    }
-    if (akce !== 'autosave') {
-      await db
-        .insertInto('web_revize')
-        .values({
-          obsah_id: obsahId,
-          data: JSON.stringify(p),
-          duvod: akce === 'zverejnit' ? 'zverejneni' : 'koncept',
-          autor_id: aktorId,
-        })
-        .execute();
-      await sql`DELETE FROM web_revize WHERE obsah_id = ${obsahId} AND id NOT IN (
-        SELECT id FROM web_revize WHERE obsah_id = ${obsahId} ORDER BY vytvoreno_at DESC, id DESC LIMIT ${MAX_REVIZI})`.execute(
-        db,
-      );
-      await zapisAudit(db, {
-        uzivatelId: aktorId,
-        akce: akce === 'zverejnit' ? 'web.zverejneni' : 'web.koncept',
-        detail: { id: obsahId, typ, titulek: p.titulek },
-        ip,
-      });
-    }
+    const obsahId = puvodni
+      ? await this.upravExistujici(db, puvodni, typ, p, akce, aktorId)
+      : await this.vlozNovy(db, typ, p, akce, aktorId, navic);
+    if (akce !== 'autosave') await this.zapisRevizi(db, obsahId, typ, p, akce, aktorId, ip);
     this.zmena();
     return obsahId;
+  }
+
+  private async vlozNovy(
+    db: Db,
+    typ: TypObsahu,
+    p: PoleObsahu,
+    akce: AkceUlozeni,
+    aktorId: string | null,
+    navic: NavicUlozeni,
+  ): Promise<string> {
+    const r = await db
+      .insertInto('web_obsah')
+      .values({
+        ...doSloupcu(p),
+        typ,
+        stav: akce === 'zverejnit' ? 'zverejneno' : 'koncept',
+        zverejneno_at: akce === 'zverejnit' ? (navic.zverejnenoAt ?? new Date()) : null,
+        poradi: typ === 'stranka' || typ === 'odkaz' ? await this.dalsiPoradi(p.nadrazena_id, db) : 0,
+        autor_id: aktorId,
+        upravil_id: aktorId,
+        zdroj: navic.zdroj ?? '',
+        puvodni_url: navic.puvodniUrl ?? null,
+        hlaseni_id: navic.hlaseniId ?? null,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    return r.id;
+  }
+
+  private async upravExistujici(
+    db: Db,
+    puvodni: WebObsah,
+    typ: TypObsahu,
+    p: PoleObsahu,
+    akce: AkceUlozeni,
+    aktorId: string | null,
+  ): Promise<string> {
+    const ted = new Date();
+    if (puvodni.stav === 'zverejneno' && akce !== 'zverejnit') {
+      // zveřejněný obsah: změny jen do konceptu, web zůstává beze změny
+      await db
+        .updateTable('web_obsah')
+        .set({ koncept: JSON.stringify(p), koncept_at: ted, upravil_id: aktorId })
+        .where('id', '=', puvodni.id)
+        .execute();
+      return puvodni.id;
+    }
+    const presun = puvodni.nadrazena_id !== p.nadrazena_id && (typ === 'stranka' || typ === 'odkaz');
+    await db
+      .updateTable('web_obsah')
+      .set({
+        ...doSloupcu(p),
+        ...(presun ? { poradi: await this.dalsiPoradi(p.nadrazena_id, db) } : {}),
+        stav: akce === 'zverejnit' ? 'zverejneno' : puvodni.stav,
+        zverejneno_at: akce === 'zverejnit' ? (puvodni.zverejneno_at ?? ted) : puvodni.zverejneno_at,
+        koncept: null,
+        koncept_at: null,
+        upravil_id: aktorId,
+        upraveno_at: ted,
+      })
+      .where('id', '=', puvodni.id)
+      .execute();
+    return puvodni.id;
+  }
+
+  /** revize (nejvýš MAX_REVIZI na obsah) a audit po ručním uložení nebo zveřejnění */
+  private async zapisRevizi(
+    db: Db,
+    obsahId: string,
+    typ: TypObsahu,
+    p: PoleObsahu,
+    akce: AkceUlozeni,
+    aktorId: string | null,
+    ip: string | null | undefined,
+  ) {
+    await db
+      .insertInto('web_revize')
+      .values({
+        obsah_id: obsahId,
+        data: JSON.stringify(p),
+        duvod: akce === 'zverejnit' ? 'zverejneni' : 'koncept',
+        autor_id: aktorId,
+      })
+      .execute();
+    await sql`DELETE FROM web_revize WHERE obsah_id = ${obsahId} AND id NOT IN (
+      SELECT id FROM web_revize WHERE obsah_id = ${obsahId} ORDER BY vytvoreno_at DESC, id DESC LIMIT ${MAX_REVIZI})`.execute(
+      db,
+    );
+    await zapisAudit(db, {
+      uzivatelId: aktorId,
+      akce: akce === 'zverejnit' ? 'web.zverejneni' : 'web.koncept',
+      detail: { id: obsahId, typ, titulek: p.titulek },
+      ip,
+    });
   }
 
   async zahodKoncept(id: string, aktorId: string) {

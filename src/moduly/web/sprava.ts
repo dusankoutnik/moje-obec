@@ -195,36 +195,33 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
       const url = jeden(b.odkaz_url);
       pole.odkaz_url = jeBezpecnyOdkaz(url) ? url.slice(0, 500) : '';
     }
-    if (typ === 'aktualita') {
-      pole.kategorie_id = Number(jeden(b.kategorie_id)) || null;
-      const d = jeden(b.datum);
-      const cas = /^(\d{1,2}):(\d{2})$/.exec(jeden(b.cas));
-      const kdy = d ? casPraha(d, cas ? Number(cas[1]) : 8, cas ? Number(cas[2]) : 0) : null;
-      pole.datum = (kdy ?? new Date()).toISOString();
-    }
-    if (typ === 'akce') {
-      pole.akce_cely_den = jeden(b.cely_den) === 'ano';
-      pole.akce_misto = jeden(b.misto).slice(0, 200);
-      const cas = (v: unknown, vychozi: [number, number]) => {
-        const m = /^(\d{1,2}):(\d{2})$/.exec(jeden(v));
-        return m ? [Number(m[1]), Number(m[2])] : vychozi;
-      };
-      const [h1, m1] = pole.akce_cely_den ? [0, 0] : cas(b.cas_od, [18, 0]);
-      const zac = jeden(b.datum_od) ? casPraha(jeden(b.datum_od), h1!, m1!) : null;
-      const dDo = jeden(b.datum_do) || (jeden(b.cas_do) ? jeden(b.datum_od) : '');
-      const [h2, m2] = pole.akce_cely_den ? [23, 59] : cas(b.cas_do, [23, 59]);
-      const kon = dDo ? casPraha(dDo, h2!, m2!) : null;
-      pole.datum = zac ? zac.toISOString() : null;
-      pole.akce_konec = kon && zac && kon > zac ? kon.toISOString() : null;
-      if (prisne && !zac) return { pole, chyba: t('web.chyba_akce_datum') };
-    }
+    if (typ === 'aktualita') datumAktuality(pole, b);
+    if (typ === 'akce' && !casyAkce(pole, b) && prisne) return { pole, chyba: t('web.chyba_akce_datum') };
     // úvodní obrázek
     if (jeden(b.odebrat_obrazek) === 'ano') pole.obrazek_id = null;
     const alt = jeden(b.obrazek_alt).slice(0, 300);
-    const nahrany = zapisovat ? souboryZPole(req, 'obrazek')[0] : undefined;
-    if (!zapisovat) {
-      // náhled: nově vybraný obrázek se neukládá (zobrazí se po uložení), popis jen pro zobrazení
-    } else if (nahrany) {
+    const chybaObrazku = await uvodniObrazek(req, pole, b, alt, zapisovat);
+    if (chybaObrazku) return { pole, chyba: chybaObrazku };
+    if (prisne) {
+      const chyba = kontrolaPredZverejnenim(typ, pole, alt);
+      if (chyba) return { pole, chyba };
+    }
+    if (!pole.titulek) pole.titulek = t('web.bez_nazvu');
+    return { pole };
+  }
+
+  /** úvodní obrázek z formuláře: nový uložit, u stávajícího případně změnit popis; vrací text chyby */
+  async function uvodniObrazek(
+    req: FastifyRequest,
+    pole: PoleObsahu,
+    b: Telo,
+    alt: string,
+    zapisovat: boolean,
+  ): Promise<string | null> {
+    // náhled: nově vybraný obrázek se neukládá (zobrazí se po uložení), popis jen pro zobrazení
+    if (!zapisovat) return null;
+    const nahrany = souboryZPole(req, 'obrazek')[0];
+    if (nahrany) {
       const v = await app.soubory.uloz({
         data: await fs.readFile(nahrany.cesta),
         nazev: nahrany.nazev,
@@ -232,21 +229,23 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
         nahralId: req.uzivatel!.id,
         alt,
       });
-      if ('chyba' in v) return { pole, chyba: chybaSouboruText(t, v.chyba) };
-      if (!v.soubor.mime.startsWith('image/')) return { pole, chyba: chybaSouboruText(t, 'typ') };
+      if ('chyba' in v) return chybaSouboruText(t, v.chyba);
+      if (!v.soubor.mime.startsWith('image/')) return chybaSouboruText(t, 'typ');
       pole.obrazek_id = v.soubor.id;
     } else if (pole.obrazek_id && b.obrazek_alt !== undefined) {
       await app.soubory.nastavAlt(pole.obrazek_id, alt);
     }
-    if (prisne) {
-      if (!pole.titulek) return { pole, chyba: t('web.chyba_titulek') };
-      if (typ === 'odkaz' && !pole.odkaz_url) return { pole, chyba: t('web.chyba_odkaz') };
-      if (pole.obrazek_id && !alt) return { pole, chyba: t('web.chyba_obrazek_alt') };
-      const bezAlt = obrazkyBezAlt(pole.obsah_html);
-      if (bezAlt) return { pole, chyba: t('web.chyba_alt', { n: bezAlt }) };
-    }
-    if (!pole.titulek) pole.titulek = t('web.bez_nazvu');
-    return { pole };
+    return null;
+  }
+
+  /** povinné náležitosti před zveřejněním (titulek, cíl odkazu, popisy obrázků); vrací text chyby */
+  function kontrolaPredZverejnenim(typ: TypObsahu, pole: PoleObsahu, alt: string): string | null {
+    if (!pole.titulek) return t('web.chyba_titulek');
+    if (typ === 'odkaz' && !pole.odkaz_url) return t('web.chyba_odkaz');
+    if (pole.obrazek_id && !alt) return t('web.chyba_obrazek_alt');
+    const bezAlt = obrazkyBezAlt(pole.obsah_html);
+    if (bezAlt) return t('web.chyba_alt', { n: bezAlt });
+    return null;
   }
 
   async function ulozZFormulare(
@@ -496,4 +495,31 @@ export function navrhAlt(nazev: string): string {
   )
     return '';
   return z.charAt(0).toUpperCase() + z.slice(1);
+}
+
+/** datum a čas aktuality z formuláře (pražský čas; bez data = teď) */
+function datumAktuality(pole: PoleObsahu, b: Telo) {
+  pole.kategorie_id = Number(jeden(b.kategorie_id)) || null;
+  const d = jeden(b.datum);
+  const cas = /^(\d{1,2}):(\d{2})$/.exec(jeden(b.cas));
+  const kdy = d ? casPraha(d, cas ? Number(cas[1]) : 8, cas ? Number(cas[2]) : 0) : null;
+  pole.datum = (kdy ?? new Date()).toISOString();
+}
+
+/** začátek, konec a místo akce z formuláře; vrací false, když chybí datum začátku */
+function casyAkce(pole: PoleObsahu, b: Telo): boolean {
+  pole.akce_cely_den = jeden(b.cely_den) === 'ano';
+  pole.akce_misto = jeden(b.misto).slice(0, 200);
+  const cas = (v: unknown, vychozi: [number, number]) => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(jeden(v));
+    return m ? [Number(m[1]), Number(m[2])] : vychozi;
+  };
+  const [h1, m1] = pole.akce_cely_den ? [0, 0] : cas(b.cas_od, [18, 0]);
+  const zac = jeden(b.datum_od) ? casPraha(jeden(b.datum_od), h1!, m1!) : null;
+  const dDo = jeden(b.datum_do) || (jeden(b.cas_do) ? jeden(b.datum_od) : '');
+  const [h2, m2] = pole.akce_cely_den ? [23, 59] : cas(b.cas_do, [23, 59]);
+  const kon = dDo ? casPraha(dDo, h2!, m2!) : null;
+  pole.datum = zac ? zac.toISOString() : null;
+  pole.akce_konec = kon && zac && kon > zac ? kon.toISOString() : null;
+  return !!zac;
 }
