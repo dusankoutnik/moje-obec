@@ -33,7 +33,7 @@ import { DeskaSluzba } from '../moduly/deska/sluzba.js';
 import { DotaceSluzba, PresmerovaniSluzba } from '../moduly/web/dalsi.js';
 import { ObsahSluzba } from '../moduly/web/obsah.js';
 import { Importer } from '../moduly/web/import/importer.js';
-import { vytvorStahovac } from '../moduly/web/import/stahovac.js';
+import { cisloVolby, vytvorStahovac } from '../moduly/web/import/stahovac.js';
 import type { ImportDotace, ImportniZdroj } from '../moduly/web/import/typy.js';
 import { WordpressZdroj } from '../moduly/web/import/wordpress.js';
 import { GalileoZdroj } from '../moduly/web/import/galileo.js';
@@ -73,6 +73,30 @@ if (!typ || !url || !/^https?:\/\//.test(url)) {
   process.exit(2);
 }
 
+// číselné a datové volby ověřit hned (nečíselná hodnota by tiše vypnula limit nebo rozestup požadavků)
+const datumVolby = (n: string): Date | undefined => {
+  const h = volba(n);
+  if (h === undefined) return undefined;
+  const d = new Date(h);
+  if (!/^\d{4}-\d\d-\d\d/.test(h) || Number.isNaN(d.getTime())) {
+    console.error(`Volba --${n}: „${h}“ není datum ve tvaru RRRR-MM-DD`);
+    process.exit(2);
+  }
+  return d;
+};
+let rozestupMs: number, limitMb: number, maxStranek: number;
+try {
+  rozestupMs = cisloVolby(volba('rozestup-ms'), 500, 'rozestup-ms');
+  limitMb = cisloVolby(volba('limit-mb'), 1800, 'limit-mb');
+  maxStranek = cisloVolby(volba('max-stranek'), 300, 'max-stranek');
+  if (limitMb <= 0) throw new Error('Volba --limit-mb musí být kladná');
+} catch (e) {
+  console.error((e as Error).message);
+  process.exit(2);
+}
+const aktualityOdVolba = datumVolby('aktuality-od');
+const deskaOd = datumVolby('deska-od');
+
 const env = nactiEnv();
 const db = vytvorDb(env.DATABASE_URL, 2);
 await pockejNaDb(db);
@@ -81,8 +105,8 @@ await migruj(db);
 const kontakt = process.env.IMPORT_KONTAKT ?? 'kontakt neuveden';
 const stahovac = vytvorStahovac({
   userAgent: `MojeObec-import (${kontakt})`,
-  rozestupMs: Number(volba('rozestup-ms') ?? 500),
-  limitBajtu: Number(volba('limit-mb') ?? 1800) * 1024 * 1024,
+  rozestupMs,
+  limitBajtu: limitMb * 1024 * 1024,
   log: (z) => console.log('  ·', z),
 });
 const dotace: ImportDotace[] = volba('dotace') ? JSON.parse(readFileSync(volba('dotace')!, 'utf8')) : [];
@@ -149,8 +173,7 @@ if (typ === 'archiv') {
   console.log(`Archiv ${url}: ${zaznamy.length} snímků stránek`);
 } else if (typ === 'wordpress')
   zdroj = new WordpressZdroj({ zaklad: url, stahovac, dotace, kategorieDesky: volba('kategorie-desky') });
-else if (typ === 'galileo')
-  zdroj = new GalileoZdroj({ zaklad: url, stahovac, maxStranek: Number(volba('max-stranek') ?? 300) });
+else if (typ === 'galileo') zdroj = new GalileoZdroj({ zaklad: url, stahovac, maxStranek });
 else {
   console.error(`Neznámý typ zdroje: ${typ}`);
   process.exit(2);
@@ -158,8 +181,8 @@ else {
 
 const jen = volba('jen')?.split(',');
 const zapnuto = (cast: string) => !jen || jen.includes(cast);
-const aktualityOd = volba('aktuality-od')
-  ? new Date(volba('aktuality-od')!)
+const aktualityOd = aktualityOdVolba
+  ? aktualityOdVolba
   : archiv
     ? new Date('1990-01-01')
     : new Date(Date.now() - 2 * 365 * 86_400_000);
@@ -198,7 +221,7 @@ const importer = new Importer(
   stahovacMedii,
   {
     aktualityOd,
-    deskaOd: volba('deska-od') ? new Date(volba('deska-od')!) : undefined,
+    deskaOd,
     stranky: zapnuto('stranky'),
     aktuality: zapnuto('aktuality'),
     deska: zapnuto('deska'),
