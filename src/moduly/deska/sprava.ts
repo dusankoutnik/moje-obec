@@ -1,6 +1,6 @@
 // Správa úřední desky: vyvěšení dokumentu s přílohami, úpravy, předčasné sejmutí, koš, kategorie,
 // povinně zveřejňované informace. Redaktor vkládá a upravuje; správce/admin vše.
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { promises as fs } from 'node:fs';
 import { zapisAudit } from '../../lib/audit.js';
 import { casPraha, datumPraha, pridejDny } from '../../lib/datum.js';
@@ -62,6 +62,8 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
       dnes: datumPraha(new Date()),
       jeSpravce: maRoli(req.uzivatel, 'spravce'),
       prilohy: [],
+      nahrazeni: [],
+      prilohyUlozene: [],
       ...pomocnici,
       ...data,
     };
@@ -154,9 +156,42 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
     return { duvod };
   }
 
+  // Přílohy nahrané už v prvním kroku (před potvrzením nahrazení) — formulář je vrací jako skrytá pole.
+  // Přijmou se jen soubory, které nahrál tentýž uživatel nedávno; cizí id se tiše ignorují.
+  async function drivePrilohy(req: FastifyRequest, b: Telo) {
+    const ids = vice(b.prilohy_ulozene)
+      .map(String)
+      .filter((x) => /^[0-9a-f-]{36}$/.test(x))
+      .slice(0, 60);
+    if (!ids.length) return [];
+    return app.db
+      .selectFrom('soubory')
+      .selectAll()
+      .where('id', 'in', ids)
+      .where('druh', '=', 'dokument')
+      .where('nahral_id', '=', req.uzivatel!.id)
+      .where('vytvoren_at', '>', new Date(Date.now() - 86_400_000))
+      .execute();
+  }
+
+  /**
+   * Rozpočtový dokument, který by sejmul starší dokumenty: nejdřív ukázat, co se sejme, a chtít potvrzení
+   * (druhý krok formuláře, funguje bez JavaScriptu). Potvrzení platí jen pro stejný seznam dokumentů.
+   */
+  async function potrebujePotvrzeni(id: string | null, data: DataDokumentu, b: Telo) {
+    const sejme = await sluzba.coSeSejme(id, data);
+    if (!sejme.length) return null;
+    const klic = sejme
+      .map((x) => x.id)
+      .sort()
+      .join(',');
+    if (jeden(b.potvrdit_nahrazeni) === 'ano' && jeden(b.nahrazeni_potvrzeno) === klic) return null;
+    return { sejme, klic };
+  }
+
   // přílohy z formuláře → úložiště; vrací id uložených a chyby jednotlivých souborů
   async function ulozPrilohy(req: FastifyRequest): Promise<{ ids: string[]; chyby: string[] }> {
-    const ids: string[] = [];
+    const ids: string[] = (await drivePrilohy(req, req.body as Telo)).map((s) => s.id);
     const chyby: string[] = [];
     for (const s of souboryZPole(req, 'prilohy')) {
       if (s.oriznuto) {
@@ -203,6 +238,28 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
     return v.prijemcu;
   }
 
+  // druhý krok: formulář znovu s vyplněnými hodnotami, seznamem dokumentů, které se sejmou, a potvrzením
+  async function nahled(
+    req: FastifyRequest,
+    reply: FastifyReply,
+    data: Record<string, unknown>,
+    potvrdit: { sejme: { id: string }[]; klic: string },
+    prilohyIds: string[],
+  ) {
+    const ulozene = prilohyIds.length
+      ? await app.db.selectFrom('soubory').selectAll().where('id', 'in', prilohyIds).execute()
+      : [];
+    return reply.view(
+      'deska/sprava/formular',
+      await formular(req, {
+        ...data,
+        nahrazeni: potvrdit.sejme,
+        nahrazeniKlic: potvrdit.klic,
+        prilohyUlozene: ulozene,
+      }),
+    );
+  }
+
   app.post<{ Body: Telo }>('/sprava/deska/novy', { preHandler: redaktor }, async (req, reply) => {
     const b = req.body ?? {};
     const v = await nactiFormular(b);
@@ -216,6 +273,8 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
       return reply
         .code(400)
         .view('deska/sprava/formular', await formular(req, { f: b, chyba: prilohy.chyby.join(' ') }));
+    const potvrdit = await potrebujePotvrzeni(null, v.data, b);
+    if (potvrdit) return nahled(req, reply, { f: b }, potvrdit, prilohy.ids);
     const id = await sluzba.uloz(null, v.data, req.uzivatel!.id, req.ip);
     if (datum.duvod)
       await zapisAudit(app.db, {
@@ -280,6 +339,8 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
             await formular(req, { d, f: b, chyba: datum.chyba, prilohy: d.prilohy }),
           );
       const prilohy = await ulozPrilohy(req);
+      const potvrdit = await potrebujePotvrzeni(d.id, v.data, b);
+      if (potvrdit) return nahled(req, reply, { d, f: b, prilohy: d.prilohy }, potvrdit, prilohy.ids);
       await sluzba.uloz(d.id, v.data, req.uzivatel!.id, req.ip);
       if (datum.duvod)
         await zapisAudit(app.db, {

@@ -74,6 +74,24 @@
     </div>
   </fieldset>
   <% } %>
+  <% if (it.prilohyUlozene.length) { %>
+  <p><%= it.t('deska.prilohy_ulozene') %></p>
+  <ul class="prilohy-sprava">
+    <% it.prilohyUlozene.forEach(function (s) { %><li><%= s.puvodni_nazev %> <span class="poznamka">(<%= it.popisTypu(s.pripona) %>, <%= it.lidskaVelikost(s.velikost) %>)</span><input type="hidden" name="prilohy_ulozene" value="<%= s.id %>"></li><% }) %>
+  </ul>
+  <% } %>
+  <% if (it.nahrazeni.length) { %>
+  <section class="karta varovani" id="nahrazeni" role="alert" aria-labelledby="nahrazeni-h">
+    <h2 id="nahrazeni-h"><%= it.t('deska.nahrazeni_nadpis') %> (<%= it.nahrazeni.length %>)</h2>
+    <p><%= it.t('deska.nahrazeni_text') %></p>
+    <ul>
+      <% it.nahrazeni.forEach(function (x) { %><li><a href="/sprava/deska/<%= x.id %>"><%= x.nazev %></a><%= x.typ_rozpoctu ? ' — ' + it.t('deska.typ_' + x.typ_rozpoctu) : '' %><%= x.rok ? ' ' + x.rok : '' %> <span class="poznamka">(<%= it.t('deska.od') %> <%= it.fmtDatum(x.vyveseno_od, false) %>)</span></li><% }) %>
+    </ul>
+    <p class="napoveda"><%= it.t('deska.nahrazeni_kontrola') %></p>
+    <input type="hidden" name="nahrazeni_potvrzeno" value="<%= it.nahrazeniKlic %>">
+    <label class="zatrzitko"><input type="checkbox" name="potvrdit_nahrazeni" value="ano" required> <%= it.t('deska.nahrazeni_potvrdit') %></label>
+  </section>
+  <% } %>
   <button class="tlacitko velke" type="submit"><%= it.d ? it.t('deska.ulozit_zmeny') : it.t('deska.vyvesit') %></button>
 </form>
 

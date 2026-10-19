@@ -147,6 +147,10 @@ pre.sms {
 .karta h2 {
   margin-top: 0;
 }
+.karta.varovani {
+  border-left: 4px solid var(--chyba);
+  margin: 1em 0;
+}
 .karta h2 a {
   text-decoration: none;
 }

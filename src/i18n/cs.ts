@@ -394,6 +394,13 @@ export const cs = {
     sms_napoveda: 'Když necháte prázdné, pošleme „Na úřední desce: <název> <odkaz>“.',
     vyvesit: 'Vyvěsit',
     ulozit_zmeny: 'Uložit změny',
+    nahrazeni_nadpis: 'Tímto se sejmou starší dokumenty',
+    nahrazeni_text:
+      'Podle pravidel rozpočtové dokumentace nový dokument nahradí tyto dosud vyvěšené dokumenty. K datu jeho vyvěšení se sejmou z desky (zůstanou v archivu; když dokument později opravíte nebo dáte do koše, vrátí se).',
+    nahrazeni_potvrdit: 'Ano, tyto dokumenty se mají sejmout',
+    nahrazeni_kontrola:
+      'Zkontrolujte typ dokumentu a rok — překlep by sejmul i dokumenty, které mají viset dál.',
+    prilohy_ulozene: 'Už nahrané přílohy (připojí se po uložení):',
     zobrazit_na_webu: 'Zobrazit na webu',
     zobrazit_verejne: 'Zobrazit úřední desku na webu',
     vyveseno_ok: 'Hotovo, dokument visí na úřední desce.',

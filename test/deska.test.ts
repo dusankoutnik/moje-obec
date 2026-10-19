@@ -69,7 +69,32 @@ async function vyvesit(
   soubory: Parameters<typeof postSoubory>[3] = [],
 ) {
   const form = await p.get('/sprava/deska/novy');
-  return postSoubory(p, '/sprava/deska/novy', { _csrf: csrfZ(form.text), ...pole }, soubory);
+  const r = await postSoubory(p, '/sprava/deska/novy', { _csrf: csrfZ(form.text), ...pole }, soubory);
+  return potvrdNahrazeni(p, '/sprava/deska/novy', pole, r);
+}
+
+// rozpočtový dokument, který by sejmul starší: potvrdit druhý krok formuláře (jako uživatel)
+async function potvrdNahrazeni(
+  p: Prohlizec,
+  url: string,
+  pole: Record<string, string>,
+  r: Awaited<ReturnType<typeof postSoubory>>,
+) {
+  const m = /name="nahrazeni_potvrzeno" value="([^"]+)"/.exec(r.text);
+  if (!m) return r;
+  const ulozene = [...r.text.matchAll(/name="prilohy_ulozene" value="([^"]+)"/g)].map((x) => x[1]!);
+  return postSoubory(
+    p,
+    url,
+    {
+      _csrf: csrfZ(r.text),
+      ...pole,
+      potvrdit_nahrazeni: 'ano',
+      nahrazeni_potvrzeno: m[1]!,
+      ...(ulozene.length ? { prilohy_ulozene: ulozene } : {}),
+    },
+    [],
+  );
 }
 
 describe('vyvěšení', () => {

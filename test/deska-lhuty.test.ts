@@ -3,7 +3,15 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { datumPraha, pridejDny } from '../src/lib/datum.js';
 import { DeskaSluzba } from '../src/moduly/deska/sluzba.js';
-import { csrfZ, postSoubory, prihlasSRoli, Prohlizec, spustTestApp, type TestApp } from './pomocnici.js';
+import {
+  csrfZ,
+  MALE_PDF,
+  postSoubory,
+  prihlasSRoli,
+  Prohlizec,
+  spustTestApp,
+  type TestApp,
+} from './pomocnici.js';
 
 let t: TestApp;
 let redaktor: Prohlizec;
@@ -27,11 +35,37 @@ async function katId(slug: string) {
 }
 async function vyvesit(p: Prohlizec, pole: Record<string, string>) {
   const form = await p.get('/sprava/deska/novy');
-  return postSoubory(p, '/sprava/deska/novy', { _csrf: csrfZ(form.text), ...pole }, []);
+  const r = await postSoubory(p, '/sprava/deska/novy', { _csrf: csrfZ(form.text), ...pole }, []);
+  return potvrdNahrazeni(p, '/sprava/deska/novy', pole, r);
 }
 async function upravit(p: Prohlizec, id: string, pole: Record<string, string>) {
   const form = await p.get(`/sprava/deska/${id}`);
-  return postSoubory(p, `/sprava/deska/${id}`, { _csrf: csrfZ(form.text), ...pole }, []);
+  const r = await postSoubory(p, `/sprava/deska/${id}`, { _csrf: csrfZ(form.text), ...pole }, []);
+  return potvrdNahrazeni(p, `/sprava/deska/${id}`, pole, r);
+}
+
+// rozpočtový dokument, který by sejmul starší: potvrdit druhý krok formuláře (jako uživatel)
+async function potvrdNahrazeni(
+  p: Prohlizec,
+  url: string,
+  pole: Record<string, string>,
+  r: Awaited<ReturnType<typeof postSoubory>>,
+) {
+  const m = /name="nahrazeni_potvrzeno" value="([^"]+)"/.exec(r.text);
+  if (!m) return r;
+  const ulozene = [...r.text.matchAll(/name="prilohy_ulozene" value="([^"]+)"/g)].map((x) => x[1]!);
+  return postSoubory(
+    p,
+    url,
+    {
+      _csrf: csrfZ(r.text),
+      ...pole,
+      potvrdit_nahrazeni: 'ano',
+      nahrazeni_potvrzeno: m[1]!,
+      ...(ulozene.length ? { prilohy_ulozene: ulozene } : {}),
+    },
+    [],
+  );
 }
 const dokument = (nazev: string) =>
   t.db.selectFrom('ud_dokumenty').selectAll().where('nazev', '=', nazev).executeTakeFirstOrThrow();
@@ -229,5 +263,99 @@ describe('nahrazení rozpočtové dokumentace', () => {
     ).toHaveLength(0);
     await t.db.transaction().execute((trx) => new DeskaSluzba(trx).uloz(null, data, null));
     expect((await dokument(data.nazev)).rok).toBe(2030);
+  });
+});
+
+describe('náhled „co se sejme“', () => {
+  it('uložení, které by sejmulo starší rozpočet, nejdřív ukáže seznam a chce potvrzení; přílohy se neztratí', async () => {
+    const kat = await katId('rozpocet');
+    await vyvesit(spravce, {
+      nazev: 'Střednědobý výhled 2026–2028',
+      kategorie_id: kat,
+      od: pridejDny(dnes(), -5),
+      duvod_data: 'převzato z papírové desky',
+      do_odvolani: 'ano',
+      typ_rozpoctu: 'vyhled',
+      rok: '2026',
+    });
+    const pole = {
+      nazev: 'Střednědobý výhled 2027–2029',
+      kategorie_id: kat,
+      od: dnes(),
+      do_odvolani: 'ano',
+      typ_rozpoctu: 'vyhled',
+      rok: '2027',
+    };
+    const form = await spravce.get('/sprava/deska/novy');
+    const krok1 = await postSoubory(spravce, '/sprava/deska/novy', { _csrf: csrfZ(form.text), ...pole }, [
+      { pole: 'prilohy', nazev: 'vyhled.pdf', data: MALE_PDF, typ: 'application/pdf' },
+    ]);
+    expect(krok1.res.status).toBe(200);
+    expect(krok1.text).toContain('Tímto se sejmou starší dokumenty');
+    expect(krok1.text).toContain('Střednědobý výhled 2026–2028');
+    expect(krok1.text).toContain('vyhled.pdf');
+    // nic se zatím neuložilo a nic nesejmulo
+    expect(
+      await t.db.selectFrom('ud_dokumenty').select('id').where('nazev', '=', pole.nazev).executeTakeFirst(),
+    ).toBeUndefined();
+    expect((await dokument('Střednědobý výhled 2026–2028')).sejmuto_do).toBeNull();
+
+    const klic = /name="nahrazeni_potvrzeno" value="([^"]+)"/.exec(krok1.text)![1]!;
+    const ulozena = /name="prilohy_ulozene" value="([^"]+)"/.exec(krok1.text)![1]!;
+    // bez zaškrtnutí potvrzení: znovu náhled
+    const bez = await postSoubory(
+      spravce,
+      '/sprava/deska/novy',
+      { _csrf: csrfZ(krok1.text), ...pole, nahrazeni_potvrzeno: klic, prilohy_ulozene: ulozena },
+      [],
+    );
+    expect(bez.text).toContain('Tímto se sejmou starší dokumenty');
+
+    // cizí soubor (nahrál ho někdo jiný) se jako příloha nepřipojí
+    const cizi = await t.db
+      .insertInto('soubory')
+      .values({
+        druh: 'dokument',
+        puvodni_nazev: 'cizi.pdf',
+        mime: 'application/pdf',
+        pripona: 'pdf',
+        velikost: 10,
+        sha256: 'x'.repeat(64),
+        nahral_id: null,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    const ok = await postSoubory(
+      spravce,
+      '/sprava/deska/novy',
+      {
+        _csrf: csrfZ(bez.text),
+        ...pole,
+        nahrazeni_potvrzeno: klic,
+        potvrdit_nahrazeni: 'ano',
+        prilohy_ulozene: [ulozena, cizi.id],
+      },
+      [],
+    );
+    expect(ok.url).toMatch(/\/sprava\/deska\/[0-9a-f-]{36}$/);
+    const novy = await dokument(pole.nazev);
+    expect((await dokument('Střednědobý výhled 2026–2028')).nahrazeno_id).toBe(novy.id);
+    const prilohy = await t.db
+      .selectFrom('ud_prilohy')
+      .select('soubor_id')
+      .where('dokument_id', '=', novy.id)
+      .execute();
+    expect(prilohy.map((x) => x.soubor_id)).toEqual([ulozena]);
+
+    // běžné uložení beze změny už nic nového nesejme → žádný druhý krok
+    const f = await spravce.get(`/sprava/deska/${novy.id}`);
+    const znovu = await postSoubory(
+      spravce,
+      `/sprava/deska/${novy.id}`,
+      { _csrf: csrfZ(f.text), ...pole },
+      [],
+    );
+    expect(znovu.text).not.toContain('Tímto se sejmou starší dokumenty');
+    expect(znovu.text).toContain('Změny jsou uložené');
   });
 });

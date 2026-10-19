@@ -280,6 +280,29 @@ export class DeskaSluzba {
       .execute();
   }
 
+  /**
+   * Náhled před uložením: které dosud vyvěšené dokumenty by uložení rozpočtového dokumentu nově sejmulo
+   * (pravidla nahrazení). Dokumenty, které tento dokument už nahradil dřív, se nepočítají — nic nového.
+   */
+  async coSeSejme(id: string | null, data: DataDokumentu) {
+    if (!data.typRozpoctu || !data.rok) return [];
+    const puvodni = id
+      ? await this.db.selectFrom('ud_dokumenty').selectAll().where('id', '=', id).executeTakeFirst()
+      : undefined;
+    if (puvodni?.smazano_at) return [];
+    const od =
+      puvodni && datumPraha(puvodni.vyveseno_od) === data.od ? puvodni.vyveseno_od : zacatekDne(data.od);
+    if (!od) return [];
+    return dotazNahrazovanych(this.db, data.typRozpoctu, data.rok, od, id)
+      .$if(!!id, (q) =>
+        q.where((eb) => eb.or([eb('nahrazeno_id', 'is', null), eb('nahrazeno_id', '!=', id!)])),
+      )
+      .select(['id', 'nazev', 'typ_rozpoctu', 'rok', 'vyveseno_od', 'sejmuto_do'])
+      .orderBy('rok')
+      .orderBy('vyveseno_od')
+      .execute();
+  }
+
   async uloz(
     id: string | null,
     data: DataDokumentu,
