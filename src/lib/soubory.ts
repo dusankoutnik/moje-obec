@@ -2,13 +2,14 @@
 // Zásady (poučení z provozu): typ se pozná z OBSAHU (magic bytes), ne z přípony; náhodné názvy na disku;
 // obrázky se vždy přeuloží (zmenšení, otočení podle EXIF a zahození metadat včetně GPS); SVG se nikdy
 // neservíruje — loga v SVG se převedou na PNG (žádný skript v obrázku).
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream, promises as fs } from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import { fileTypeFromBuffer, fileTypeFromFile } from 'file-type';
 import type { Db } from '../db/index.js';
-import type { DruhSouboru, Soubor } from '../db/types.js';
+import type { Insertable } from 'kysely';
+import type { DruhSouboru, Soubor, SouboryTable } from '../db/types.js';
 
 sharp.concurrency(1); // malý server sdílený s dalšími službami — šetřit paměť
 sharp.cache(false);
@@ -63,6 +64,32 @@ export class SouboroveUloziste {
 
   cesta(id: string, varianta: '' | 'nahled' = ''): string {
     return path.join(this.koren, id.slice(0, 2), varianta ? `${id}-${varianta}` : id);
+  }
+
+  /**
+   * Nejdřív soubor na disk, teprve pak řádek v databázi: řádek bez souboru (404 navždy) tak nevznikne.
+   * Když se nepovede zápis nebo vložení řádku, zapsané soubory se smažou.
+   */
+  private async zapisAZaloz(
+    zapis: (id: string) => Promise<void>,
+    hodnoty: Omit<Insertable<SouboryTable>, 'id'>,
+  ): Promise<Soubor> {
+    const id = randomUUID();
+    await fs.mkdir(path.dirname(this.cesta(id)), { recursive: true });
+    try {
+      await zapis(id);
+      return await this.db
+        .insertInto('soubory')
+        .values({ ...hodnoty, id })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+    } catch (e) {
+      await Promise.all([
+        fs.rm(this.cesta(id), { force: true }),
+        fs.rm(this.cesta(id, 'nahled'), { force: true }),
+      ]);
+      throw e;
+    }
   }
 
   async podleId(id: string): Promise<Soubor | undefined> {
@@ -123,9 +150,12 @@ export class SouboroveUloziste {
     }
 
     const sha256 = createHash('sha256').update(vystup).digest('hex');
-    const soubor = await this.db
-      .insertInto('soubory')
-      .values({
+    const soubor = await this.zapisAZaloz(
+      async (id) => {
+        await fs.writeFile(this.cesta(id), vystup);
+        if (nahled) await fs.writeFile(this.cesta(id, 'nahled'), nahled);
+      },
+      {
         druh: v.druh === 'dokument' && mime.startsWith('image/') ? 'obrazek' : v.druh,
         puvodni_nazev: puvodniNazev.replace(/\.[^.]+$/, '') + '.' + pripona,
         mime,
@@ -137,12 +167,8 @@ export class SouboroveUloziste {
         sha256,
         zdroj_url: v.zdrojUrl ?? null,
         nahral_id: v.nahralId ?? null,
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
-    await fs.mkdir(path.dirname(this.cesta(soubor.id)), { recursive: true });
-    await fs.writeFile(this.cesta(soubor.id), vystup);
-    if (nahled) await fs.writeFile(this.cesta(soubor.id, 'nahled'), nahled);
+      },
+    );
     return { soubor };
   }
 
@@ -168,9 +194,12 @@ export class SouboroveUloziste {
     if (v.data) hash.update(v.data);
     else for await (const kus of createReadStream(v.cesta!)) hash.update(kus as Buffer);
     const puvodniNazev = bezpecnyNazev(v.nazev);
-    const soubor = await this.db
-      .insertInto('soubory')
-      .values({
+    const soubor = await this.zapisAZaloz(
+      async (id) => {
+        if (v.data) await fs.writeFile(this.cesta(id), v.data);
+        else await fs.copyFile(v.cesta!, this.cesta(id));
+      },
+      {
         druh: 'video',
         puvodni_nazev: puvodniNazev.replace(/\.[^.]+$/, '') + '.' + druh.pripona,
         mime: druh.mime,
@@ -182,12 +211,8 @@ export class SouboroveUloziste {
         sha256: hash.digest('hex'),
         zdroj_url: v.zdrojUrl ?? null,
         nahral_id: v.nahralId ?? null,
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
-    await fs.mkdir(path.dirname(this.cesta(soubor.id)), { recursive: true });
-    if (v.data) await fs.writeFile(this.cesta(soubor.id), v.data);
-    else await fs.copyFile(v.cesta!, this.cesta(soubor.id));
+      },
+    );
     return { soubor };
   }
 
@@ -202,25 +227,19 @@ export class SouboroveUloziste {
     const vtt = naWebVtt(v.data.toString('utf8'));
     if (!vtt) return { chyba: 'typ' };
     const data = Buffer.from(vtt, 'utf8');
-    const soubor = await this.db
-      .insertInto('soubory')
-      .values({
-        druh: 'titulky',
-        puvodni_nazev: bezpecnyNazev(v.nazev).replace(/\.[^.]+$/, '') + '.vtt',
-        mime: 'text/vtt',
-        pripona: 'vtt',
-        velikost: data.length,
-        sirka: null,
-        vyska: null,
-        alt: '',
-        sha256: createHash('sha256').update(data).digest('hex'),
-        zdroj_url: v.zdrojUrl ?? null,
-        nahral_id: v.nahralId ?? null,
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
-    await fs.mkdir(path.dirname(this.cesta(soubor.id)), { recursive: true });
-    await fs.writeFile(this.cesta(soubor.id), data);
+    const soubor = await this.zapisAZaloz((id) => fs.writeFile(this.cesta(id), data), {
+      druh: 'titulky',
+      puvodni_nazev: bezpecnyNazev(v.nazev).replace(/\.[^.]+$/, '') + '.vtt',
+      mime: 'text/vtt',
+      pripona: 'vtt',
+      velikost: data.length,
+      sirka: null,
+      vyska: null,
+      alt: '',
+      sha256: createHash('sha256').update(data).digest('hex'),
+      zdroj_url: v.zdrojUrl ?? null,
+      nahral_id: v.nahralId ?? null,
+    });
     return { soubor };
   }
 

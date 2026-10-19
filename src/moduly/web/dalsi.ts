@@ -273,8 +273,16 @@ export interface DataDotace {
   odkaz: string;
 }
 
+type AktivniDotace = Awaited<ReturnType<DotaceSluzba['nactiAktivni']>>;
+
 export class DotaceSluzba {
+  // pás dárců je v patičce každé stránky — keš jako u menu (minuta, zahodí se při změně)
+  private kes = new Map<string, { cas: number; data: AktivniDotace }>();
   constructor(private db: Db) {}
+
+  zmena() {
+    this.kes.clear();
+  }
 
   podleId(id: string) {
     if (!/^[0-9a-f-]{36}$/.test(id)) return Promise.resolve(undefined);
@@ -292,6 +300,7 @@ export class DotaceSluzba {
   }
 
   async uloz(id: string | null, d: DataDotace, aktorId: string | null, puvodniUrl?: string | null) {
+    this.zmena();
     if (id) {
       await this.db
         .updateTable('web_dotace')
@@ -319,6 +328,7 @@ export class DotaceSluzba {
   }
 
   async pridejLoga(id: string, souborIds: string[]) {
+    this.zmena();
     if (!souborIds.length) return;
     const m = await this.db
       .selectFrom('web_dotace_loga')
@@ -334,6 +344,7 @@ export class DotaceSluzba {
   }
 
   async odeberLogo(id: string, souborId: string) {
+    this.zmena();
     await this.db
       .deleteFrom('web_dotace_loga')
       .where('dotace_id', '=', id)
@@ -346,6 +357,7 @@ export class DotaceSluzba {
     z: { od: string; do: string | null; vPaticce: boolean; poradi: number },
     aktorId: string | null,
   ) {
+    this.zmena();
     await this.db
       .updateTable('web_dotace')
       .set({
@@ -363,6 +375,7 @@ export class DotaceSluzba {
   }
 
   async doKose(id: string, smazat: boolean, aktorId: string) {
+    this.zmena();
     await this.db
       .updateTable('web_dotace')
       .set({ smazano_at: smazat ? new Date() : null })
@@ -376,8 +389,18 @@ export class DotaceSluzba {
   }
 
   /** dotace, které se mají právě zobrazovat (hotové, v období od–do), s logy */
-  async aktivni(jenPaticka = false) {
+  async aktivni(jenPaticka = false): Promise<AktivniDotace> {
     const dnes = datumPraha(new Date());
+    const klic = `${dnes}|${jenPaticka}`;
+    const k = this.kes.get(klic);
+    if (k && Date.now() - k.cas < 60_000) return k.data;
+    const data = await this.nactiAktivni(dnes, jenPaticka);
+    this.kes.set(klic, { cas: Date.now(), data });
+    return data;
+  }
+
+  /** bez keše (aktivni() je kešovaná) */
+  async nactiAktivni(dnes: string, jenPaticka: boolean) {
     let q = this.db
       .selectFrom('web_dotace')
       .selectAll()
@@ -494,14 +517,44 @@ export class PresmerovaniSluzba {
     return r?.nova_cesta ?? null;
   }
 
-  async pridej(stara: string, nova: string) {
+  /**
+   * Přidá (nebo změní) přesměrování. Vrací `stejna`, když by vedlo samo na sebe (i jen jinak zapsaná adresa,
+   * např. /a → /a/), a `smycka`, když by se řetězec přesměrování uzavřel do kruhu (/a → /b → /a) nebo byl
+   * delší než MAX_SKOKU — takové se neuloží.
+   */
+  async pridej(stara: string, nova: string): Promise<'ulozeno' | 'stejna' | 'smycka'> {
     const klic = PresmerovaniSluzba.normalizuj(stara);
-    if (!klic || klic === '/' || klic === nova.toLowerCase()) return;
+    const cil = PresmerovaniSluzba.lokalniCil(nova);
+    if (!klic || klic === '/' || (cil !== null && cil.split('?')[0] === klic.split('?')[0])) return 'stejna';
+    // projít řetězec od cíle: kdyby se vrátil na starou adresu, vznikla by smyčka
+    let dalsi = cil;
+    for (let skok = 0; dalsi !== null; skok++) {
+      if (skok >= PresmerovaniSluzba.MAX_SKOKU) return 'smycka';
+      const bezDotazu = dalsi.split('?')[0]!;
+      const r = await this.db
+        .selectFrom('web_presmerovani')
+        .select(['stara_cesta', 'nova_cesta'])
+        .where('stara_cesta', 'in', [dalsi, bezDotazu])
+        .orderBy(sql`length(stara_cesta)`, 'desc')
+        .executeTakeFirst();
+      if (!r || r.stara_cesta === klic) break; // přepisujeme právě tento záznam
+      dalsi = PresmerovaniSluzba.lokalniCil(r.nova_cesta);
+      if (dalsi !== null && dalsi.split('?')[0] === klic.split('?')[0]) return 'smycka';
+    }
     await this.db
       .insertInto('web_presmerovani')
       .values({ stara_cesta: klic, nova_cesta: nova })
       .onConflict((oc) => oc.column('stara_cesta').doUpdateSet({ nova_cesta: nova }))
       .execute();
+    return 'ulozeno';
+  }
+
+  static readonly MAX_SKOKU = 5;
+
+  /** cíl přesměrování jako klíč tabulky, jde-li o adresu na tomto webu (cesta /…); jinak null */
+  static lokalniCil(nova: string): string | null {
+    const n = nova.trim();
+    return /^\/(?![/\\])/.test(n) ? PresmerovaniSluzba.normalizuj(n) : null;
   }
 
   async smaz(stara: string) {

@@ -163,8 +163,4 @@ export class VzhledSluzba {
       .execute();
     this.cache = null;
   }
-
-  zahodKes() {
-    this.cache = null;
-  }
 }

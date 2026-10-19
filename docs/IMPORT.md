@@ -43,6 +43,16 @@ běhu postaví znovu (staré importované odkazy jdou do koše).
   kategorie (min. 15 dní); u rozpočtu se z názvu odhadne druh a rok, takže novější dokument sám sejme starší.
 - **Přesměrování:** každá stará adresa (stránka, článek, dokument, stránka kategorie) → nová, 301. Statistika
   použití je v administraci (Obecní web → Přesměrování).
+- **Odolnost:** vadná položka ze zdroje (neplatné datum, chybějící adresa, chyba při ukládání) se přeskočí a vypíše
+  mezi chybami na konci, zbytek importu doběhne. Článek nebo dokument desky se ukládá v jedné transakci se svými
+  přílohami a přesměrováním — buď celý, nebo vůbec (příští běh ho zkusí znovu).
+- **Stahování:** jen `http(s)`; přesměrování nejvýš 5 skoků; adresy, které vedou do neveřejné sítě (localhost,
+  privátní rozsahy, link-local), se odmítnou i po přesměrování. Úvodní obrázky, plakáty videí a přílohy se stahují jen
+  ze starého webu obce (loga dárců ze souboru `--dotace` smějí být odjinud). Každý soubor má strop 300 MB,
+  stránka 20 MB, požadavek časový limit; číselné volby (`--limit-mb`, `--rozestup-ms`, `--max-stranek`) a data se
+  kontrolují a chybná hodnota import zastaví hned na začátku.
+- **Menu** mění jen to, co založil import, a výchozí položky nové instalace; odkazy a stránky přidané redakcí
+  zůstávají. Celé menu se staví v jedné transakci.
 
 ## Adaptéry
 

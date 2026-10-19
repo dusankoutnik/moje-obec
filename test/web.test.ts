@@ -421,6 +421,7 @@ describe('dotace', () => {
       .set({ zobrazit_do: '2020-01-01', zobrazit_od: '2019-01-01' })
       .where('id', '=', d.id)
       .execute();
+    t.app.web.dotace.zmena(); // přímý zápis do DB mimo službu — keš pásu dárců zahodit ručně
     expect((await verejne().get('/')).text).not.toContain(`/dotace/${d.id}`);
   });
 });

@@ -43,6 +43,9 @@ export const REZERVOVANE = new Set([
   'favicon.ico',
   'sitemap.xml',
   'mapa-stranek',
+  'velikost', // volba velikosti písma návštěvníka (/velikost?v=…)
+  'manifest.webmanifest',
+  'apple-touch-icon.png',
 ]);
 
 /** pole, která redaktor edituje (a která se ukládají do konceptu a revizí) */
@@ -119,6 +122,33 @@ function doSloupcu(p: PoleObsahu) {
   };
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** slug odvozený z titulku (i s příponou -2, -obec), tj. redaktor ho nezadal ručně */
+export function jeOdvozenySlug(slug: string, titulek: string): boolean {
+  const z = slugify(titulek);
+  if (!z) return false;
+  if (slug === z) return true;
+  const zbytek = slug.startsWith(`${z}-`) ? slug.slice(z.length + 1) : null;
+  return zbytek !== null && /^(obec|obec-\d+|\d+)$/.test(zbytek);
+}
+
+/** opakovat při kolizi unikátního indexu (souběžné uložení obsadilo stejnou adresu) */
+function jeKolize(e: unknown): boolean {
+  return (e as { code?: string } | null)?.code === '23505';
+}
+
+type AdresaObsahu = Pick<WebObsah, 'typ' | 'slug' | 'nadrazena_id' | 'odkaz_url'>;
+
+/** veřejná adresa obsahu, když už je známá nadřazená stránka */
+function adresaS(o: AdresaObsahu, rodic?: Pick<WebObsah, 'typ' | 'slug'> | null): string {
+  if (o.typ === 'aktualita') return `/aktuality/${o.slug}`;
+  if (o.typ === 'akce') return `/akce/${o.slug}`;
+  if (o.typ === 'odkaz') return o.odkaz_url || '/';
+  if (o.nadrazena_id && rodic && rodic.typ === 'stranka') return `/${rodic.slug}/${o.slug}`;
+  return `/${o.slug}`;
+}
+
 export interface PolozkaMenu {
   id: string;
   titulek: string;
@@ -140,15 +170,21 @@ export class ObsahSluzba {
   }
 
   /** veřejná adresa obsahu */
-  async url(o: Pick<WebObsah, 'typ' | 'slug' | 'nadrazena_id' | 'odkaz_url'>): Promise<string> {
-    if (o.typ === 'aktualita') return `/aktuality/${o.slug}`;
-    if (o.typ === 'akce') return `/akce/${o.slug}`;
-    if (o.typ === 'odkaz') return o.odkaz_url || '/';
-    if (o.nadrazena_id) {
-      const r = await this.podleId(o.nadrazena_id);
-      if (r && r.typ === 'stranka') return `/${r.slug}/${o.slug}`;
-    }
-    return `/${o.slug}`;
+  async url(o: AdresaObsahu): Promise<string> {
+    const rodic = o.typ === 'stranka' && o.nadrazena_id ? await this.podleId(o.nadrazena_id) : undefined;
+    return adresaS(o, rodic);
+  }
+
+  /** veřejné adresy celého seznamu jedním dotazem na nadřazené stránky (hledání, dlaždice podstránek) */
+  async urlMnoha(polozky: AdresaObsahu[]): Promise<string[]> {
+    const ids = [
+      ...new Set(polozky.filter((o) => o.typ === 'stranka' && o.nadrazena_id).map((o) => o.nadrazena_id!)),
+    ];
+    const rodice = ids.length
+      ? await this.db.selectFrom('web_obsah').select(['id', 'typ', 'slug']).where('id', 'in', ids).execute()
+      : [];
+    const podleId = new Map(rodice.map((r) => [r.id, r]));
+    return polozky.map((o) => adresaS(o, o.nadrazena_id ? podleId.get(o.nadrazena_id) : null));
   }
 
   async unikatniSlug(
@@ -156,12 +192,13 @@ export class ObsahSluzba {
     zaklad: string,
     ignorovat: string | null,
     nejvyssi: boolean,
+    db: Db = this.db,
   ): Promise<string> {
     let slug = slugify(zaklad);
     if (typ === 'stranka' && nejvyssi && REZERVOVANE.has(slug)) slug = `${slug}-obec`;
     for (let i = 1; i < 500; i++) {
       const kandidat = i === 1 ? slug : `${slug}-${i}`;
-      let q = this.db
+      let q = db
         .selectFrom('web_obsah')
         .select('id')
         .where('typ', '=', typ)
@@ -174,8 +211,79 @@ export class ObsahSluzba {
   }
 
   /**
+   * Pole před zápisem do sloupců: adresa unikátní (a u dosud nezveřejněného konceptu znovu odvozená z titulku,
+   * pokud ji redaktor nezadal ručně), nadřazená jen existující stránka nejvyšší úrovně, obrázek a kategorie jen
+   * existující. Stejné pravidlo platí pro uložení z editoru i pro obnovu revize.
+   */
+  private async normalizuj(
+    db: Db,
+    typ: TypObsahu,
+    pole: PoleObsahu,
+    puvodni: WebObsah | undefined,
+  ): Promise<PoleObsahu> {
+    const p: PoleObsahu = { ...pole };
+    if (p.nadrazena_id) {
+      const rodic =
+        (typ === 'stranka' || typ === 'odkaz') && UUID.test(p.nadrazena_id) && p.nadrazena_id !== puvodni?.id
+          ? await db
+              .selectFrom('web_obsah')
+              .select(['typ', 'nadrazena_id'])
+              .where('id', '=', p.nadrazena_id)
+              .where('smazano_at', 'is', null)
+              .executeTakeFirst()
+          : undefined;
+      const maDeti = puvodni
+        ? !!(await db
+            .selectFrom('web_obsah')
+            .select('id')
+            .where('nadrazena_id', '=', puvodni.id)
+            .where('smazano_at', 'is', null)
+            .executeTakeFirst())
+        : false;
+      if (!rodic || rodic.typ !== 'stranka' || rodic.nadrazena_id || maDeti) p.nadrazena_id = null;
+    }
+    if (
+      p.obrazek_id &&
+      !(
+        UUID.test(p.obrazek_id) &&
+        (await db.selectFrom('soubory').select('id').where('id', '=', p.obrazek_id).executeTakeFirst())
+      )
+    )
+      p.obrazek_id = null;
+    if (
+      p.kategorie_id !== null &&
+      !(
+        Number.isSafeInteger(p.kategorie_id) &&
+        (await db
+          .selectFrom('web_kategorie')
+          .select('id')
+          .where('id', '=', p.kategorie_id)
+          .executeTakeFirst())
+      )
+    )
+      p.kategorie_id = null;
+    // koncept, který ještě nikdy nebyl na webu: automatická adresa jde s titulkem (jinak by zůstala
+    // „bez-nazvu“ z prvního automatického uložení prázdného formuláře)
+    const automaticka =
+      !!puvodni &&
+      !puvodni.zverejneno_at &&
+      puvodni.stav !== 'zverejneno' &&
+      (!p.slug || p.slug === puvodni.slug) &&
+      jeOdvozenySlug(puvodni.slug, puvodni.titulek);
+    p.slug = await this.unikatniSlug(
+      typ,
+      automaticka ? p.titulek || p.slug : p.slug || p.titulek,
+      puvodni?.id ?? null,
+      !p.nadrazena_id,
+      db,
+    );
+    return p;
+  }
+
+  /**
    * Uložení z editoru. `akce`: koncept = uložit rozpracované, zverejnit = na web, autosave = tiché uložení bez revize.
-   * Vrací id obsahu.
+   * Vrací id obsahu. Celé v jedné transakci; když souběžné uložení (automatické + ruční) obsadí stejnou adresu,
+   * zkusí se znovu s novou.
    */
   async uloz(
     id: string | null,
@@ -191,23 +299,53 @@ export class ObsahSluzba {
       zverejnenoAt?: Date | null;
     } = {},
   ): Promise<string> {
-    const puvodni = id ? await this.podleId(id) : undefined;
-    const nejvyssi = !pole.nadrazena_id;
-    const p: PoleObsahu = {
-      ...pole,
-      slug: await this.unikatniSlug(typ, pole.slug || pole.titulek, puvodni?.id ?? null, nejvyssi),
-    };
+    // už v transakci (import jedné položky) — ta se při chybě vrací celá, opakuje ji volající
+    if (this.db.isTransaction) return this.ulozV(this.db, id, typ, pole, akce, aktorId, ip, navic);
+    for (let pokus = 1; ; pokus++) {
+      try {
+        const obsahId = await this.db
+          .transaction()
+          .execute((trx) => this.ulozV(trx, id, typ, pole, akce, aktorId, ip, navic));
+        this.zmena();
+        return obsahId;
+      } catch (e) {
+        if (pokus < 3 && jeKolize(e)) continue;
+        throw e;
+      }
+    }
+  }
+
+  private async ulozV(
+    db: Db,
+    id: string | null,
+    typ: TypObsahu,
+    pole: PoleObsahu,
+    akce: 'koncept' | 'zverejnit' | 'autosave',
+    aktorId: string | null,
+    ip: string | null | undefined,
+    navic: {
+      zdroj?: string;
+      puvodniUrl?: string | null;
+      hlaseniId?: string | null;
+      zverejnenoAt?: Date | null;
+    },
+  ): Promise<string> {
+    const puvodni =
+      id && UUID.test(id)
+        ? await db.selectFrom('web_obsah').selectAll().where('id', '=', id).forUpdate().executeTakeFirst()
+        : undefined;
+    const p = await this.normalizuj(db, typ, pole, puvodni);
     const ted = new Date();
     let obsahId: string;
     if (!puvodni) {
-      const r = await this.db
+      const r = await db
         .insertInto('web_obsah')
         .values({
           ...doSloupcu(p),
           typ,
           stav: akce === 'zverejnit' ? 'zverejneno' : 'koncept',
           zverejneno_at: akce === 'zverejnit' ? (navic.zverejnenoAt ?? ted) : null,
-          poradi: typ === 'stranka' || typ === 'odkaz' ? await this.dalsiPoradi(p.nadrazena_id) : 0,
+          poradi: typ === 'stranka' || typ === 'odkaz' ? await this.dalsiPoradi(p.nadrazena_id, db) : 0,
           autor_id: aktorId,
           upravil_id: aktorId,
           zdroj: navic.zdroj ?? '',
@@ -221,18 +359,18 @@ export class ObsahSluzba {
       obsahId = puvodni.id;
       if (puvodni.stav === 'zverejneno' && akce !== 'zverejnit') {
         // zveřejněný obsah: změny jen do konceptu, web zůstává beze změny
-        await this.db
+        await db
           .updateTable('web_obsah')
           .set({ koncept: JSON.stringify(p), koncept_at: ted, upravil_id: aktorId })
           .where('id', '=', obsahId)
           .execute();
       } else {
         const presun = puvodni.nadrazena_id !== p.nadrazena_id && (typ === 'stranka' || typ === 'odkaz');
-        await this.db
+        await db
           .updateTable('web_obsah')
           .set({
             ...doSloupcu(p),
-            ...(presun ? { poradi: await this.dalsiPoradi(p.nadrazena_id) } : {}),
+            ...(presun ? { poradi: await this.dalsiPoradi(p.nadrazena_id, db) } : {}),
             stav: akce === 'zverejnit' ? 'zverejneno' : puvodni.stav,
             zverejneno_at: akce === 'zverejnit' ? (puvodni.zverejneno_at ?? ted) : puvodni.zverejneno_at,
             koncept: null,
@@ -245,7 +383,7 @@ export class ObsahSluzba {
       }
     }
     if (akce !== 'autosave') {
-      await this.db
+      await db
         .insertInto('web_revize')
         .values({
           obsah_id: obsahId,
@@ -256,9 +394,9 @@ export class ObsahSluzba {
         .execute();
       await sql`DELETE FROM web_revize WHERE obsah_id = ${obsahId} AND id NOT IN (
         SELECT id FROM web_revize WHERE obsah_id = ${obsahId} ORDER BY vytvoreno_at DESC, id DESC LIMIT ${MAX_REVIZI})`.execute(
-        this.db,
+        db,
       );
-      await zapisAudit(this.db, {
+      await zapisAudit(db, {
         uzivatelId: aktorId,
         akce: akce === 'zverejnit' ? 'web.zverejneni' : 'web.koncept',
         detail: { id: obsahId, typ, titulek: p.titulek },
@@ -306,7 +444,14 @@ export class ObsahSluzba {
       .executeTakeFirst();
     const o = await this.podleId(obsahId);
     if (!r || !o) return false;
-    const data = { ...poleZRadku(o), ...(r.data as Partial<PoleObsahu>) };
+    // stejná pravidla jako při uložení: adresa mezitím mohla obsadit jiná stránka, nadřazená stránka nebo
+    // obrázek mohly zmizet
+    const data = await this.normalizuj(
+      this.db,
+      o.typ,
+      { ...poleZRadku(o), ...(r.data as Partial<PoleObsahu>) },
+      o,
+    );
     if (o.stav === 'zverejneno') {
       await this.db
         .updateTable('web_obsah')
@@ -314,12 +459,20 @@ export class ObsahSluzba {
         .where('id', '=', obsahId)
         .execute();
     } else {
+      // nezveřejněný (i skrytý) obsah: obnovená verze přímo do sloupců, starý rozpracovaný koncept pryč
       await this.db
         .updateTable('web_obsah')
-        .set({ ...doSloupcu(data), upravil_id: aktorId, upraveno_at: new Date() })
+        .set({
+          ...doSloupcu(data),
+          koncept: null,
+          koncept_at: null,
+          upravil_id: aktorId,
+          upraveno_at: new Date(),
+        })
         .where('id', '=', obsahId)
         .execute();
     }
+    this.zmena();
     await zapisAudit(this.db, {
       uzivatelId: aktorId,
       akce: 'web.obnoveni_revize',
@@ -354,8 +507,8 @@ export class ObsahSluzba {
     this.zmena();
   }
 
-  private async dalsiPoradi(nadrazena: string | null) {
-    let q = this.db
+  private async dalsiPoradi(nadrazena: string | null, db: Db = this.db) {
+    let q = db
       .selectFrom('web_obsah')
       .select((eb) => eb.fn.max('poradi').as('m'))
       .where('typ', 'in', ['stranka', 'odkaz']);
@@ -486,15 +639,18 @@ export class ObsahSluzba {
     return { o, kanonicka: await this.url(o) };
   }
 
+  /** veřejný detail; naplánovaná aktualita (datum v budoucnu) ještě neexistuje */
   async podleSlugu(typ: 'aktualita' | 'akce', slug: string) {
-    return this.db
+    let q = this.db
       .selectFrom('web_obsah')
       .selectAll()
       .where('typ', '=', typ)
       .where('slug', '=', slug)
       .where('stav', '=', 'zverejneno')
-      .where('smazano_at', 'is', null)
-      .executeTakeFirst();
+      .where('smazano_at', 'is', null);
+    if (typ === 'aktualita')
+      q = q.where((eb) => eb.or([eb('datum', 'is', null), eb('datum', '<=', new Date())]));
+    return q.executeTakeFirst();
   }
 
   async podstranky(id: string) {
@@ -624,21 +780,30 @@ export class ObsahSluzba {
   async hledej(q: string, limit = 30) {
     const tsq = tsDotaz(q);
     if (!tsq) return [];
-    return this.db
-      .selectFrom('web_obsah')
-      .select(['id', 'typ', 'titulek', 'slug', 'perex', 'nadrazena_id', 'odkaz_url', 'datum', 'obsah_html'])
-      .where('stav', '=', 'zverejneno')
-      .where('smazano_at', 'is', null)
-      .where('typ', '!=', 'odkaz')
-      .where(
-        odpovida(sql`titulek || ' ' || perex || ' ' || regexp_replace(obsah_html, '<[^>]+>', ' ', 'g')`, tsq),
-      )
-      .orderBy(
-        sql`ts_rank(to_tsvector('simple', f_unaccent(lower(titulek || ' ' || perex || ' ' || regexp_replace(obsah_html, '<[^>]+>', ' ', 'g')))), to_tsquery('simple', ${tsq}))`,
-        'desc',
-      )
-      .orderBy('datum', 'desc')
-      .limit(limit)
-      .execute();
+    return (
+      this.db
+        .selectFrom('web_obsah')
+        .select(['id', 'typ', 'titulek', 'slug', 'perex', 'nadrazena_id', 'odkaz_url', 'datum', 'obsah_html'])
+        .where('stav', '=', 'zverejneno')
+        .where('smazano_at', 'is', null)
+        .where('typ', '!=', 'odkaz')
+        // naplánované aktuality (datum v budoucnu) se nesmí najít dřív, než vyjdou
+        .where((eb) =>
+          eb.or([eb('typ', '!=', 'aktualita'), eb('datum', 'is', null), eb('datum', '<=', new Date())]),
+        )
+        .where(
+          odpovida(
+            sql`titulek || ' ' || perex || ' ' || regexp_replace(obsah_html, '<[^>]+>', ' ', 'g')`,
+            tsq,
+          ),
+        )
+        .orderBy(
+          sql`ts_rank(to_tsvector('simple', f_unaccent(lower(titulek || ' ' || perex || ' ' || regexp_replace(obsah_html, '<[^>]+>', ' ', 'g')))), to_tsquery('simple', ${tsq}))`,
+          'desc',
+        )
+        .orderBy('datum', 'desc')
+        .limit(limit)
+        .execute()
+    );
   }
 }
