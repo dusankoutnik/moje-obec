@@ -24,6 +24,21 @@
   <% } else if (it.u.blokovan_at) { %>
     <p class="flash flash-chyba"><%= it.t('sprava.blokovan') %> (<%= it.fmtDatum(it.u.blokovan_at) %>)</p>
   <% } %>
+  <% if (it.zamky.length) { %>
+  <h2><%= it.t('sprava.zamek_nadpis') %></h2>
+  <ul>
+  <% it.zamky.forEach(function (z) { %>
+    <li><%= it.t(z.klic.startsWith('ucet:') ? 'sprava.zamek_klic_ucet' : 'sprava.zamek_klic_email') %>:
+      <%= it.t('sprava.zamek_chyby', { n: z.chyby }) %>
+      <% if (z.zamcenoDo && z.zamcenoDo > it.ted) { %><br><strong><%= it.t('sprava.zamek_zamceno', { do: it.fmtDatum(z.zamcenoDo) }) %></strong><% } %>
+    </li>
+  <% }) %>
+  </ul>
+  <form method="post" action="/sprava/uzivatele/<%= it.u.id %>" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <button class="tlacitko sekundarni" name="akce" value="odemknout" type="submit"><%= it.t('sprava.zamek_zrusit') %></button>
+  </form>
+  <% } %>
 </section>
 <section class="karta">
   <h2><%= it.t('ucet.role') %></h2>

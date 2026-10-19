@@ -2,7 +2,6 @@
 import { zobrazitDevKod } from '../../lib/sms/presmerovani.js';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { bezDiakritiky, normalizujEmail } from '../../lib/kontakty.js';
-import { overHeslo } from '../../lib/krypto.js';
 import { hlidejLimit } from '../../lib/limit.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { bezpecnyNavrat } from '../../lib/navrat.js';
@@ -167,16 +166,17 @@ export default async function uctyRoutes(app: FastifyInstance, z: Zavislosti) {
     { preHandler: [vyzadujPrihlaseni, hlidejLimit(app.limity.heslo)] },
     async (req, reply) => {
       const u = req.uzivatel!;
-      if (u.heslo_hash && (await overHeslo(String(req.body.heslo ?? ''), u.heslo_hash))) {
-        return overeno(req, reply, 'heslo', dalsiKrok(req.body.dalsi));
-      }
+      const v = await ucty.overHesloUctu(u, String(req.body.heslo ?? ''), req.ip);
+      if (v === 'ok') return overeno(req, reply, 'heslo', dalsiKrok(req.body.dalsi));
       await zapisAudit(app.db, {
         uzivatelId: u.id,
         akce: 'ucet.overeni_selhalo',
         detail: { zpusob: 'heslo' },
         ip: req.ip,
       });
-      return stranaOvereni(req, reply, { chyba: t('overeni.heslo_spatne') });
+      return stranaOvereni(req, reply, {
+        chyba: t(v === 'zamceno' ? 'overeni.heslo_zamceno' : 'overeni.heslo_spatne'),
+      });
     },
   );
 

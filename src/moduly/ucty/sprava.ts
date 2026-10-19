@@ -65,6 +65,8 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
         u,
         role: ROLE,
         historie,
+        zamky: await ucty.zamkyUctu(u),
+        ted: new Date(),
         jeAdmin: maRoli(req.uzivatel, 'admin'),
         samSobe: req.uzivatel!.id === u.id,
         smiBlokovat: smiBlokovat(req.uzivatel!, u),
@@ -86,6 +88,9 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
         }
         await ucty.blokuj(cil.id, req.body.akce === 'blokovat', aktor, req.ip);
         req.session.flash = { typ: 'ok', text: t('app.ulozeno') };
+      } else if (req.body.akce === 'odemknout') {
+        await ucty.odemkni(cil, aktor, req.ip);
+        req.session.flash = { typ: 'ok', text: t('sprava.zamek_zrusen') };
       } else if (req.body.akce === 'role') {
         if (!maRoli(aktor, 'admin')) return reply.code(403).send();
         if (cil.id === aktor.id) req.session.flash = { typ: 'chyba', text: t('sprava.sam_sobe') };

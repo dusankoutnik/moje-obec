@@ -375,7 +375,16 @@ export interface WebPresmerovaniTable {
   vytvoreno_at: TimestampGenerated;
 }
 
+// zámek přihlášení heslem — klíč „email:<adresa>“ nebo „ucet:<id>“
+export interface PrihlaseniZamkyTable {
+  klic: string;
+  chyby: Generated<number>;
+  posledni_chyba_at: TimestampGenerated;
+  zamceno_do: TimestampNullable;
+}
+
 export interface Database {
+  prihlaseni_zamky: PrihlaseniZamkyTable;
   web_kategorie: WebKategorieTable;
   web_obsah: WebObsahTable;
   web_revize: WebRevizeTable;

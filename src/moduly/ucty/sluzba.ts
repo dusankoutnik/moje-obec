@@ -4,6 +4,15 @@ import type { Role, Uzivatel } from '../../db/types.js';
 import { ROLE } from '../../db/types.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { hashujHeslo, overHeslo, overHesloNaprazdno, potrebujeRehash } from '../../lib/krypto.js';
+import {
+  klicEmail,
+  klicUcet,
+  stavZamku,
+  zamcenoDo,
+  zapisChybu,
+  zrusZamek,
+  type StavZamku,
+} from '../../lib/zamky.js';
 
 export { ROLE };
 
@@ -78,6 +87,71 @@ export class UctySluzba {
       return { ...u, heslo_hash: novy };
     }
     return u;
+  }
+
+  /** přihlášení heslem se zámkem po opakovaných chybách; neexistující e-mail se chová stejně jako existující */
+  async prihlasHeslemSeZamkem(
+    email: string,
+    heslo: string,
+    ip?: string | null,
+  ): Promise<{ uzivatel: Uzivatel } | { chyba: 'heslo' | 'zamceno'; zamcenoDo?: Date }> {
+    const klic = klicEmail(email);
+    const zamek = await zamcenoDo(this.db, klic);
+    if (zamek) return { chyba: 'zamceno', zamcenoDo: zamek };
+    const u = await this.prihlasHeslem(email, heslo);
+    if (u) {
+      await zrusZamek(this.db, klic);
+      return { uzivatel: u };
+    }
+    const stav = await zapisChybu(this.db, klic);
+    if (!stav.zamcenoDo) return { chyba: 'heslo' };
+    const ucet = await this.podleEmailu(email);
+    await zapisAudit(this.db, {
+      uzivatelId: ucet?.id ?? null,
+      akce: 'prihlaseni.zamceno',
+      detail: { cil: ucet?.id ?? null, email, chyby: stav.chyby, do: stav.zamcenoDo.toISOString() },
+      ip,
+    });
+    return { chyba: 'zamceno', zamcenoDo: stav.zamcenoDo };
+  }
+
+  /** ověření heslem přihlášeného účtu (před citlivou změnou) — se stejným zámkem jako přihlášení */
+  async overHesloUctu(u: Uzivatel, heslo: string, ip?: string | null): Promise<'ok' | 'heslo' | 'zamceno'> {
+    const klic = klicUcet(u.id);
+    if (await zamcenoDo(this.db, klic)) return 'zamceno';
+    if (u.heslo_hash && (await overHeslo(heslo, u.heslo_hash))) {
+      await zrusZamek(this.db, klic);
+      return 'ok';
+    }
+    const stav = await zapisChybu(this.db, klic);
+    if (!stav.zamcenoDo) return 'heslo';
+    await zapisAudit(this.db, {
+      uzivatelId: u.id,
+      akce: 'prihlaseni.zamceno',
+      detail: { cil: u.id, overeni: true, chyby: stav.chyby, do: stav.zamcenoDo.toISOString() },
+      ip,
+    });
+    return 'zamceno';
+  }
+
+  /** čítače chyb přihlášení heslem pro tento účet (podle id i e-mailu) */
+  zamkyUctu(u: Pick<Uzivatel, 'id' | 'email'>): Promise<StavZamku[]> {
+    return stavZamku(this.db, this.kliceUctu(u));
+  }
+
+  private kliceUctu(u: Pick<Uzivatel, 'id' | 'email'>): string[] {
+    return [klicUcet(u.id), ...(u.email ? [klicEmail(u.email)] : [])];
+  }
+
+  /** správce ruší zámek přihlášení heslem */
+  async odemkni(cil: Pick<Uzivatel, 'id' | 'email'>, aktor: Uzivatel, ip?: string | null) {
+    const n = await zrusZamek(this.db, ...this.kliceUctu(cil));
+    await zapisAudit(this.db, {
+      uzivatelId: aktor.id,
+      akce: 'sprava.odemceni_prihlaseni',
+      detail: { cil: cil.id, zruseno: n },
+      ip,
+    });
   }
 
   async nastavHeslo(id: string, heslo: string, ip?: string | null) {

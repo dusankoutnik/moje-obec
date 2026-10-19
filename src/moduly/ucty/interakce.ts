@@ -180,17 +180,23 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
       const d = await detaily(req, reply);
       if (!d || d.uid !== req.params.uid) return chybaInterakce(reply);
       const email = normalizujEmail(req.body.email);
-      const u = email ? await ucty.prihlasHeslem(email, String(req.body.heslo ?? '')) : null;
-      if (!u) {
-        await zapisAudit(app.db, { akce: 'prihlaseni.selhalo', detail: { email: email ?? '?' }, ip: req.ip });
+      const v = email
+        ? await ucty.prihlasHeslemSeZamkem(email, String(req.body.heslo ?? ''), req.ip)
+        : ({ chyba: 'heslo' } as const);
+      if ('chyba' in v) {
+        await zapisAudit(app.db, {
+          akce: 'prihlaseni.selhalo',
+          detail: { email: email ?? '?', ...(v.chyba === 'zamceno' ? { zamceno: true } : {}) },
+          ip: req.ip,
+        });
         return reply.view('ucty/heslo', {
           titulek: t('prihlaseni.heslem_titulek'),
           uid: d.uid,
-          chyba: t('prihlaseni.heslo_spatne'),
+          chyba: t(v.chyba === 'zamceno' ? 'prihlaseni.heslo_zamceno' : 'prihlaseni.heslo_spatne'),
           email: req.body.email,
         });
       }
-      return poPrihlaseni(req, reply, d.uid, u.id, 'pwd');
+      return poPrihlaseni(req, reply, d.uid, v.uzivatel.id, 'pwd');
     },
   );
 

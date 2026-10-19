@@ -7,6 +7,7 @@ import { vytvorProvider, zajistiKlientaPlatformy, OIDC_PREFIX } from './oidc/pro
 import { vytvorOidcKlienta } from './oidc/klient.js';
 import { uklidOidc } from './oidc/adapter.js';
 import { UctySluzba } from './sluzba.js';
+import { uklidZamku } from '../../lib/zamky.js';
 import interakceRoutes from './interakce.js';
 import uctyRoutes from './routes.js';
 import spravaRoutes from './sprava.js';
@@ -50,12 +51,13 @@ async function uctyModul(app: FastifyInstance) {
   await app.register(uctyRoutes, { klient, ucty });
   await app.register(spravaRoutes, { ucty });
 
-  // úklid: prošlé OIDC záznamy, sezení a OTP kódy — každou hodinu
+  // úklid: prošlé OIDC záznamy, sezení, OTP kódy a čítače zámků přihlášení — každou hodinu
   if (app.env.NODE_ENV !== 'test') {
     const job = new Cron('15 * * * *', async () => {
       await uklidOidc(app.db).catch((e) => app.log.warn({ err: e }, 'úklid oidc'));
       await app.sessionStore.uklid().catch((e) => app.log.warn({ err: e }, 'úklid sezení'));
       await app.otp.uklid().catch((e) => app.log.warn({ err: e }, 'úklid otp'));
+      await uklidZamku(app.db).catch((e) => app.log.warn({ err: e }, 'úklid zámků přihlášení'));
     });
     app.addHook('onClose', async () => job.stop());
   }
