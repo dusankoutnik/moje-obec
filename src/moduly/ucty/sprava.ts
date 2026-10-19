@@ -1,6 +1,7 @@
 // Správa účtů úřadem: seznam, detail s rolemi a blokací, audit log, přehled OIDC klientů.
 import type { FastifyInstance } from 'fastify';
 import { ROLE, type Role, type Uzivatel } from '../../db/types.js';
+import { prehledSms } from '../../lib/provoz.js';
 import { vyzadujRoli } from './opravneni.js';
 import { maRoli, type UctySluzba } from './sluzba.js';
 
@@ -24,6 +25,10 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
       titulek: t('sprava.titulek'),
       pocet,
       jeSpravce: maRoli(u, 'spravce'),
+      // rozpočet SMS a fronta infokanálu — jen správcům (agregáty, bez kontaktů)
+      sms: maRoli(u, 'spravce')
+        ? await prehledSms(app.db, app.env.SMS_DENNI_LIMIT_KODU, app.obec.moduly.infokanal)
+        : null,
       jeRedaktor: maRoli(u, 'redaktor'),
       jeWeb: maRoli(u, 'web'),
       jeDeska: maRoli(u, 'deska'),

@@ -16,6 +16,20 @@
   <% if (it.jeDeska && it.obec.moduly.deska) { %>
   <article class="karta"><h2><a href="/sprava/deska"><%= it.t('deska.titulek') %></a></h2><p><%= it.t('sprava.deska_text') %></p><a class="tlacitko" href="/sprava/deska/novy"><%= it.t('deska.novy') %></a><% if (it.jeSpravce) { %> <a href="/sprava/povinne-informace"><%= it.t('pi.titulek') %></a><% } %></article>
   <% } %>
+  <% if (it.sms) { %>
+  <article class="karta" id="sms-prehled"><h2><%= it.t('sprava.sms_nadpis') %></h2>
+    <p class="cislo"><%= it.sms.limit > 0 ? it.t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) : it.t('sprava.sms_kody_bez_limitu', { n: it.sms.kodu24h }) %></p>
+    <% if (it.sms.limit > 0) { %><meter min="0" max="<%= it.sms.limit %>" high="<%= Math.ceil(it.sms.limit * 0.8) %>" value="<%= Math.min(it.sms.kodu24h, it.sms.limit) %>" aria-label="<%= it.t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) %>"></meter><% } %>
+    <% if (it.sms.vycerpano) { %><p class="flash flash-chyba" role="status"><%= it.t('sprava.sms_vycerpano', { datum: it.fmtDatum(it.sms.vycerpano.at), n: it.sms.vycerpano.pocet }) %></p><% } %>
+    <% if (it.sms.fronta) { %>
+    <p><%= it.t('sprava.sms_fronta', { kanal: it.obec.texty.nazev_infokanalu }) %>:
+      <%= it.t('sprava.sms_ceka') %> <strong><%= it.sms.fronta.ceka %></strong> ·
+      <%= it.t('sprava.sms_odesila') %> <strong><%= it.sms.fronta.odesilaSe %></strong> ·
+      <%= it.t('sprava.sms_odeslano') %> <strong><%= it.sms.fronta.odeslano24h %></strong> ·
+      <%= it.t('sprava.sms_vzdano') %> <strong><%= it.sms.fronta.vzdano24h %></strong></p>
+    <% } %>
+  </article>
+  <% } %>
   <% if (it.jeSpravce) { %>
   <article class="karta"><h2><a href="/sprava/audit"><%= it.t('sprava.audit') %></a></h2><p><%= it.t('sprava.audit_text') %></p></article>
   <% } %>
