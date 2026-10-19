@@ -19,3 +19,5 @@ data/
 
 # Profil konkrétní obce (vzor je obec.example.yml)
 obec.yml
+test-results/
+playwright-report/

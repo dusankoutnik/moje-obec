@@ -7,3 +7,5 @@ LICENSE
 CHANGELOG.md
 public/js/vendor/
 docs/pruzkum/
+test-results/
+playwright-report/

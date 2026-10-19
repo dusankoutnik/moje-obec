@@ -53,6 +53,51 @@ Vitest; `test/pomocnici.ts` postaví aplikaci na volném portu s čistou testova
 
 Nový test potřebuje jen `spustTestApp()` v `beforeAll` a `zavri()` v `afterAll`.
 
+### Pokrytí kódu testy
+
+`npm run test:pokryti` (= `vitest run --coverage`, provider v8) vypíše souhrn a uloží HTML zprávu do `coverage/`
+(mimo git). Prahy jsou ve `vitest.config.ts` (`coverage.thresholds`) a CI pod nimi spadne. Nastavené jsou
+o 3–4 body pod naměřeným stavem, aby nepadaly náhodně (měření 19. 10. 2026: řádky 87,9 %, příkazy 84,0 %,
+funkce 85,7 %, větve 72,3 % → prahy 84 / 80 / 82 / 68).
+
+Jak práh zvedat: po větší dávce testů pusťte `npm run test:pokryti`, podívejte se na souhrn (v CI je i v souhrnu
+běhu) a prahy posuňte zase na „naměřeno minus 3–4 body“, zaokrouhleno dolů. Práh nikdy nesnižujte kvůli
+novému kódu bez testů — dopište testy. Soubory, které testovat nejde (CLI skripty, start serveru), jsou
+vyjmuté v `coverage.exclude`.
+
+### Audit závislostí
+
+CI pouští `npm audit --audit-level=high`: zranitelnost úrovně high nebo critical shodí build. Oprava = aktualizace
+závislosti (`npm install balicek@verze`, u major verze projít changelog a pustit testy). Když oprava neexistuje
+a zranitelnost se nás netýká, zapište to sem i s odkazem na advisory. Aktuálně zůstává jen nízká (low)
+zranitelnost Quillu (GHSA-v3m3-f69x-jf25, XSS v exportu HTML) — výstup editoru se na serveru vždy sanitizuje.
+
+> **npm 10 a „Cannot read properties of null (reading 'edgesOut')“** při instalaci nové verze Vitestu: chyba
+> npm při řešení peer závislostí. Pomůže `npx -y npm@11 install …`; vzniklý `package-lock.json` funguje
+> s `npm ci` i v npm 10 (CI).
+
+### Smoke test v prohlížeči (Playwright)
+
+`e2e/smoke.spec.ts`: redaktor webu se přihlásí SMS kódem (vývojový režim ukazuje kód na stránce), napíše
+aktualitu, počká na automatické uložení konceptu, zveřejní ji a ověří ji na titulce. Konfigurace
+`playwright.config.ts` sama spustí aplikaci (`tsx src/index.ts`, port 3100, místní `.env` se nenačítá) proti
+databázi z `E2E_DATABASE_URL` — **musí to být samostatná databáze s názvem končícím na `_e2e` nebo `_test`**
+(test do ní zakládá účet). V CI běží jako samostatný job jen na push do `main`.
+
+Lokálně (prohlížeč z oficiálního obrazu, verze musí sedět s `@playwright/test` v `package.json`):
+
+```bash
+docker network create pt_e2e
+docker run -d --name pt_e2e_db --network pt_e2e -e POSTGRES_USER=platforma -e POSTGRES_PASSWORD=platforma \
+  -e POSTGRES_DB=platforma_e2e postgres:16-alpine
+docker run --rm --network pt_e2e -v "$PWD":/app -w /app -u "$(id -u):$(id -g)" -e HOME=/tmp \
+  -e E2E_DATABASE_URL=postgres://platforma:platforma@pt_e2e_db:5432/platforma_e2e \
+  mcr.microsoft.com/playwright:v1.64.1-noble npx playwright test
+docker rm -f pt_e2e_db && docker network rm pt_e2e
+```
+
+Při chybě je v `test-results/` záznam (trace) — `npx playwright show-trace <soubor>.zip`.
+
 ## Kontrola v prohlížeči a přístupnost (axe-core)
 
 Testy kontrolují přístupnost jen staticky (alt u obrázků, popisky polí, neescapované atributy). Skutečné vykreslení,
