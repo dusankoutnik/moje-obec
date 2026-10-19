@@ -43,6 +43,14 @@ const EnvSchema = z.object({
   GOSMS_CLIENT_SECRET: z.string().optional(),
   GOSMS_CHANNEL: z.string().optional(),
   SMSMANAGER_APIKEY: z.string().optional(),
+  // podpis webhooku SMS Manageru (default_callback_secret v jejich administraci); prázdné = podpis se neověřuje
+  SMSMANAGER_WEBHOOK_SECRET: z.string().optional(),
+  // tajná část adresy webhooku doručenek; prázdné = odvodí se ze SESSION_SECRET (viz docs/INSTALACE.md)
+  SMS_WEBHOOK_TOKEN: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().min(24).optional()),
   MAIL_PROVIDER: z.enum(['konzole', 'smtp']).default('konzole'),
   MAIL_FROM: z.string().default('Obec <obec@example.cz>'),
   SMTP_HOST: z.string().optional(),
@@ -68,6 +76,14 @@ export function nactiEnv(zdroj: NodeJS.ProcessEnv = process.env): Env {
   // Kód na stránce smí být vidět jen tam, kde se SMS reálně neposílají (konzole) — jinak by se kdokoliv přihlásil za kohokoliv.
   if (env.OTP_DEV_ZOBRAZIT && env.SMS_PROVIDER !== 'konzole') {
     throw new Error('OTP_DEV_ZOBRAZIT=1 je dovoleno jen s SMS_PROVIDER=konzole (testovací instalace).');
+  }
+  // Ostrá instalace bez SMS brány: kódy by nikomu nepřišly a skončily by jen v logu. Výjimkou je výslovně
+  // testovací instalace (OTP_DEV_ZOBRAZIT=1 — kód se ukazuje na stránce).
+  if (env.NODE_ENV === 'production' && env.SMS_PROVIDER === 'konzole' && !env.OTP_DEV_ZOBRAZIT) {
+    throw new Error(
+      'NODE_ENV=production s SMS_PROVIDER=konzole: SMS by se neposílaly. Nastavte SMS bránu (SMS_PROVIDER), ' +
+        'nebo jde-li o testovací instalaci, OTP_DEV_ZOBRAZIT=1.',
+    );
   }
   return env;
 }

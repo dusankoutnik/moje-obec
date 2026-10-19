@@ -108,6 +108,8 @@ export class GoSms implements SmsPoskytovatel {
   }
 
   async zpracujWebhook(telo: unknown): Promise<{ branaId: string; stav: StavDoruceni }[]> {
+    // route webhooku předává JSON jako surový text (kvůli podpisu SMS Manageru)
+    if (typeof telo === 'string') telo = JSON.parse(telo);
     if (!Array.isArray(telo)) return [];
     const vysledek: { branaId: string; stav: StavDoruceni }[] = [];
     for (const u of telo as { event?: string; delivery?: Delivery; links?: { message?: string } }[]) {

@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { csrfZ, devKodZ, prihlasTelefonem, Prohlizec, spustTestApp, type TestApp } from './pomocnici.js';
+import { tajemstviWebhooku } from '../src/moduly/infokanal/index.js';
 
 let t: TestApp;
 beforeAll(async () => {
@@ -214,7 +215,7 @@ describe('hlášení a rozesílka', () => {
       body: '[]',
     });
     expect(spatne.status).toBe(404);
-    const ok = await fetch(`${t.base}/webhook/sms/${'a'.repeat(24)}`, {
+    const ok = await fetch(`${t.base}/webhook/sms/${tajemstviWebhooku(t.app.env)}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: '[]',

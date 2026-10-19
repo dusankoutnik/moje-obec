@@ -33,6 +33,20 @@ chmod 600 .env
 | `SMS_ODESILATEL`                                                | odesílatel (SMSbrána: `sender_id`; SMS Manager: registrovaný textový odesílatel)                                       |
 | `MAIL_PROVIDER=smtp` + `SMTP_*`, `MAIL_FROM`                    | odesílání e-mailů                                                                                                      |
 | `NODE_ENV=production`                                           | v produkci vždy; `OTP_DEV_ZOBRAZIT` musí být `0`                                                                       |
+| `SMS_WEBHOOK_TOKEN`                                             | nepovinné: tajná část adresy webhooku doručenek (`openssl rand -hex 24`); prázdné = odvodí se ze `SESSION_SECRET`      |
+| `SMSMANAGER_WEBHOOK_SECRET`                                     | SMS Manager: `default_callback_secret` z jejich administrace — webhook pak ověřuje podpis `X-Request-Signature`        |
+
+Obraz Dockeru má `NODE_ENV=production` sám; ostrá instalace s `SMS_PROVIDER=konzole` (bez SMS brány) se odmítne spustit — výjimkou je testovací instalace s `OTP_DEV_ZOBRAZIT=1`.
+
+### Webhook doručenek SMS
+
+Adresa, kam brána posílá doručenky, je `https://obec.example.cz/webhook/sms/<tajemství>`. Tajemství je `SMS_WEBHOOK_TOKEN`, a když není nastavené, odvodí se ze `SESSION_SECRET` (HMAC). Zjistíte ho:
+
+```bash
+docker compose exec app node -e "import('./dist/moduly/infokanal/index.js').then(m => console.log(m.tajemstviWebhooku(process.env)))"
+```
+
+**Změna oproti verzím do 2026-10:** dřív byla tajemstvím přímo část `SESSION_SECRET`; po aktualizaci se adresa webhooku změní a je potřeba ji v administraci SMS brány přepsat (jinak se doručenky budou dál stahovat jen pravidelným dotazem à 5 minut). Adresa se změní i při změně `SESSION_SECRET` — proto je pro ostrý provoz lepší nastavit vlastní `SMS_WEBHOOK_TOKEN`.
 
 ### `obec.yml` — profil obce
 

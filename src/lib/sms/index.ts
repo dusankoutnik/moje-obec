@@ -42,7 +42,11 @@ function poskytovatel(nazev: Env['SMS_PROVIDER'], env: Env, log: Logger): SmsPos
         channel: env.GOSMS_CHANNEL ?? '',
       });
     case 'smsmanager':
-      return new SmsManager({ apiKey: env.SMSMANAGER_APIKEY ?? '', odesilatel: env.SMS_ODESILATEL });
+      return new SmsManager({
+        apiKey: env.SMSMANAGER_APIKEY ?? '',
+        odesilatel: env.SMS_ODESILATEL,
+        webhookSecret: env.SMSMANAGER_WEBHOOK_SECRET || undefined,
+      });
     default:
       return new KonzoleSms(log);
   }

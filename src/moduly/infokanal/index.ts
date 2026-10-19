@@ -2,6 +2,8 @@
 import type { FastifyInstance } from 'fastify';
 import { Cron } from 'croner';
 import fp from 'fastify-plugin';
+import type { Env } from '../../config/env.js';
+import { hmac, stejneTajemstvi } from '../../lib/krypto.js';
 import { InfokanalSluzba } from './sluzba.js';
 import { RozesilaciFronta } from './fronta.js';
 import infokanalRoutes from './routes.js';
@@ -38,13 +40,26 @@ async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }
   await app.register(infokanalRoutes, { sluzba });
   await app.register(infokanalSprava, { sluzba, fronta });
 
-  // Doručenky z brány (webhook). URL obsahuje tajemství odvozené ze SESSION_SECRET, protože ne každá brána podepisuje.
-  app.post<{ Params: { tajemstvi: string } }>('/webhook/sms/:tajemstvi', async (req, reply) => {
-    if (req.params.tajemstvi !== app.env.SESSION_SECRET.slice(0, 24)) return reply.code(404).send();
-    if (!app.sms.zpracujWebhook) return reply.send({ ok: true, zmen: 0 });
-    const zmeny = await app.sms.zpracujWebhook(req.body, req.headers);
-    const n = await fronta.zapisDorucenky(zmeny);
-    return reply.send({ ok: true, zmen: n });
+  // Doručenky z brány (webhook). Ne každá brána podepisuje, proto je v URL tajemství (tajemstviWebhooku). Brána,
+  // která podepisuje (SMS Manager), potřebuje k ověření podpisu SUROVÉ tělo — JSON se tu proto čte jako text.
+  const tajemstvi = tajemstviWebhooku(app.env);
+  await app.register(async (sub) => {
+    sub.addContentTypeParser('application/json', { parseAs: 'string' }, (_req, telo, hotovo) => {
+      hotovo(null, telo);
+    });
+    sub.post<{ Params: { tajemstvi: string } }>('/webhook/sms/:tajemstvi', async (req, reply) => {
+      if (!stejneTajemstvi(req.params.tajemstvi, tajemstvi)) return reply.code(404).send();
+      if (!app.sms.zpracujWebhook) return reply.send({ ok: true, zmen: 0 });
+      let zmeny;
+      try {
+        zmeny = await app.sms.zpracujWebhook(req.body, req.headers);
+      } catch (e) {
+        req.log.warn({ err: e }, 'webhook SMS: odmítnuto');
+        return reply.code(400).send({ ok: false });
+      }
+      const n = await fronta.zapisDorucenky(zmeny);
+      return reply.send({ ok: true, zmen: n });
+    });
   });
 
   if (!volby.planovac) fronta.vypniPlanovac();
@@ -60,6 +75,14 @@ async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }
       fronta.zastav();
     });
   }
+}
+
+/**
+ * Tajná část adresy webhooku doručenek: SMS_WEBHOOK_TOKEN, jinak odvozená ze SESSION_SECRET přes HMAC (adresa tak
+ * neprozrazuje nic ze samotného klíče sezení). Adresa webhooku je `<BASE_URL>/webhook/sms/<tajemství>`.
+ */
+export function tajemstviWebhooku(env: Pick<Env, 'SESSION_SECRET' | 'SMS_WEBHOOK_TOKEN'>): string {
+  return env.SMS_WEBHOOK_TOKEN || hmac(env.SESSION_SECRET, 'webhook-sms').slice(0, 40);
 }
 
 export default fp(infokanalModul, { name: 'infokanalModul' });
