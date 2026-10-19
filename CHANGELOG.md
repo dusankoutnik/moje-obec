@@ -12,18 +12,28 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 - Úložiště souborů (kontrola typu podle obsahu, obrázky bez EXIF/GPS, náhledy, SVG loga → PNG), sanitizace HTML, multipart na disk, volume pro data.
 - Kontrola v prohlížeči (`scripts/kontrola-prohlizecem.mjs`): screenshoty a audit axe-core.
 
+### Přidáno (dokončení code review)
+
+- Zámek přihlášení heslem po opakovaných chybách (čítač v DB podle e-mailu, exponenciální odklad, zrušení správcem).
+- Úřední deska: před nahrazením rozpočtových dokumentů náhled „co se sejme“ s potvrzením.
+- Dashboard správy: rozpočet SMS s kódy a stav fronty infokanálu.
+- CI: pokrytí testy s prahy, `npm audit --audit-level=high`, Playwright smoke test (`e2e/`).
+
 ### Přidáno (etapa 1c — vzhled)
 
 - 9 barevných schémat v OKLCH s testem kontrastu, 8 dvojic písem (@fontsource, vč. Ubuntu), přepínač velikosti písma pro návštěvníky, fotky pozadí se střídáním, hero se statistikami, plovoucí menu, náhled a vrácení vzhledu ve správě, favicon a ikony ze znaku obce. Seznam licencí: `docs/LICENCE-TRETICH-STRAN.md`.
 
 ### Změněno
 
+- Vnitřní rozdělení velkých modulů (import, správa webu, obsah webu) bez změny chování.
 - **Bezpečnost účtu:** změna e-mailu a hesla jen po čerstvém ověření (heslo / SMS kód), nový e-mail platí až po potvrzení kódem, po změně upozornění SMS a odhlášení ostatních sezení.
 - Titulní stránka je při zapnutém modulu `web` obecní web; rozcestník služeb je na `/sluzby`.
 - Statické soubory se odkazují s verzí (`?v=`).
 
 ### Opraveno
 
+- Migrace 0008: přečíslování povinných informací je bezpečné zavolat znovu (značka v nastavení).
+- Aktualizace závislostí se známými zranitelnostmi: @fastify/static 10, nodemailer 10, vitest 4.
 - Podle externího code review (import, obsah webu, soubory): stahovač importu čte tělo proudem s limitem
   (Content-Length i počítadlo, i po rozbalení gzip), má časové limity, sleduje přesměrování ručně a odmítá neveřejné
   adresy po překladu DNS; média jen ze starého webu obce; vadná položka importu už neshodí celý import a článek či

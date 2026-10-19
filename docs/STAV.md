@@ -1,5 +1,27 @@
 # Stav projektu — etapa 1 (18. 10. 2026)
 
+## Dokončení code review (19. 10. 2026)
+
+Zbylé body externího code review (předchozí opravy jsou v CHANGELOG.md):
+
+- **Zámek přihlášení heslem** (S5): čítač chyb v DB (migrace 0010, `prihlaseni_zamky`) podle e-mailu — neexistující
+  adresa se chová stejně jako existující. Po 5 chybách 15 min, každá další chyba po vypršení zámek zdvojnásobí
+  (max. 24 h), úspěch čítač nuluje, po 24 h klidu se zapomene. Ověření heslem před citlivou změnou má vlastní čítač
+  podle účtu. Přihlášení SMS kódem zámek neblokuje. Audit `prihlaseni.zamceno`; správce vidí zámek v detailu účtu
+  a zruší ho (`sprava.odemceni_prihlaseni`).
+- **Úřední deska — náhled „co se sejme“:** rozpočtový dokument, který by sejmul dosud vyvěšené dokumenty, se nejdřív
+  vrátí do formuláře se seznamem a zaškrtávacím potvrzením (bez JS). Přílohy z prvního kroku se neztratí.
+- **Dashboard správy:** SMS s kódy za 24 h vůči `SMS_DENNI_LIMIT_KODU`, upozornění na vyčerpaný rozpočet a stav
+  fronty infokanálu (čeká / odesílá se / odesláno a vzdáno za 24 h) — jen správce/admin, jen počty.
+- **Refaktor bez změny chování:** `import/importer.ts` → `pomucky.ts`, `kontext.ts`, `media.ts`, `prepis-html.ts`,
+  `sekce/*.ts`; `web/sprava-dalsi.ts` → `web/sprava-dalsi/*.ts`; `web/obsah.ts` → `obsah-pole.ts`, `obsah-cteni.ts`,
+  `obsah.ts` (zápis); kratší `prepisHtml`, `ObsahSluzba.uloz`, `ctiFormular`.
+- **CI:** pokrytí testy s prahy (řádky 84, příkazy 80, funkce 82, větve 68 %; naměřeno 87,9 / 84,0 / 85,7 / 72,3 %),
+  `npm audit --audit-level=high` (aktualizace @fastify/static 10, nodemailer 10, vitest 4), Playwright smoke test
+  (`e2e/`, samostatný job jen na push do main). Postupy v `docs/VYVOJ.md`.
+- Migrace 0008: `premapujPiBody` je díky značce v `nastaveni` bezpečné zavolat znovu.
+- Testy: 264 (Vitest) + 1 e2e.
+
 ## Opravy podle auditu souladu (19. 10. 2026)
 
 - **Povinné informace** přesně podle přílohy č. 1 vyhl. 515/2020 Sb. (ověřeno na zakonyprolidi.cz): názvy a pořadí bodů, bod 2 se zřizovatelem a nadřízeným orgánem (`obec.nadrizeny_organ`), 4.1 „Sídlo“, 4.6 podatelna s nosiči dat, 7 plátce DPH (`obec.platce_dph`; neuvedeno = chybí), opravné prostředky v bodech 9 a 10 (§ 5 odst. 1 písm. c), 11.1 kde a kdy k nahlédnutí, 11.2 Sbírka právních předpisů (`obec.sbirka_pp`, jinak `sbirkapp.gov.cz/vydavatel/<DS>`; Vlastibořice `de2bjp2` ověřeno), 12.2 rozhodnutí o úhradách. Migrace 0008 přečíslovala texty úřadu 4.5–4.8.
