@@ -344,6 +344,7 @@ export default async function webSpravaDalsi(app: FastifyInstance, s: WebSluzby)
         const a = b[`alt_${l.id}`];
         if (a !== undefined) await app.soubory.nastavAlt(l.id, jeden(a).slice(0, 300));
       }
+      s.dotace.zmena(); // popisy log jsou v keši pásu dárců
       if (jeden(b.odebrat)) await s.dotace.odeberLogo(d.id, jeden(b.odebrat));
       const { ids, chyby } = await ulozObrazky(
         req,
@@ -626,9 +627,10 @@ export default async function webSpravaDalsi(app: FastifyInstance, s: WebSluzby)
     if (jeden(b.akce) === 'smazat') await s.presmerovani.smaz(jeden(b.stara));
     else {
       const nova = jeden(b.nova);
-      if (jeden(b.stara) && /^(\/(?!\/)|https?:\/\/)/.test(nova))
-        await s.presmerovani.pridej(jeden(b.stara), nova);
-      else req.session.flash = { typ: 'chyba', text: t('web.chyba_presmerovani') };
+      if (jeden(b.stara) && /^(\/(?!\/)|https?:\/\/)/.test(nova)) {
+        const r = await s.presmerovani.pridej(jeden(b.stara), nova);
+        if (r !== 'ulozeno') req.session.flash = { typ: 'chyba', text: t(`web.chyba_presmerovani_${r}`) };
+      } else req.session.flash = { typ: 'chyba', text: t('web.chyba_presmerovani') };
     }
     await zapisAudit(app.db, {
       uzivatelId: req.uzivatel!.id,

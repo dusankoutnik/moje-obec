@@ -155,7 +155,7 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
 
   app.get<{ Params: { slug: string } }>('/aktuality/:slug', async (req, reply) => {
     const o = await s.obsah.podleSlugu('aktualita', req.params.slug);
-    if (!o || (o.datum && o.datum > new Date())) return reply.callNotFound();
+    if (!o) return reply.callNotFound(); // naplánované (budoucí) odfiltruje už služba
     return detail(reply, o, { zpet: { url: '/aktuality', text: t('web.aktuality') } });
   });
 
@@ -213,11 +213,13 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       .trim();
     const vysledky: { typ: string; titulek: string; url: string; text: string; datum?: Date | null }[] = [];
     if (q) {
-      for (const o of await s.obsah.hledej(q))
+      const nalezene = await s.obsah.hledej(q);
+      const adresy = await s.obsah.urlMnoha(nalezene);
+      for (const [i, o] of nalezene.entries())
         vysledky.push({
           typ: t(`web.typ_${o.typ}`),
           titulek: o.titulek,
-          url: await s.obsah.url(o),
+          url: adresy[i]!,
           text: o.perex || zkrat(textZHtml(o.obsah_html), 220),
           datum: o.typ === 'stranka' ? null : o.datum,
         });
@@ -266,10 +268,14 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
         const rodic = nalez.o.nadrazena_id ? await s.obsah.podleId(nalez.o.nadrazena_id) : undefined;
         const sourozenci = rodic ? await s.obsah.podstranky(rodic.id) : [];
         // odkaz, na který už text stránky sám odkazuje (např. karty služeb), se v dlaždicích neopakuje
-        const urlPod = (
-          await Promise.all(podstranky.map(async (p) => ({ ...p, url: await s.obsah.url(p) })))
-        ).filter((p) => p.typ !== 'odkaz' || !nalez.o.obsah_html.includes(`href="${p.url}"`));
-        const urlSour = await Promise.all(sourozenci.map(async (p) => ({ ...p, url: await s.obsah.url(p) })));
+        const [adresyPod, adresySour] = await Promise.all([
+          s.obsah.urlMnoha(podstranky),
+          s.obsah.urlMnoha(sourozenci),
+        ]);
+        const urlPod = podstranky
+          .map((p, i) => ({ ...p, url: adresyPod[i]! }))
+          .filter((p) => p.typ !== 'odkaz' || !nalez.o.obsah_html.includes(`href="${p.url}"`));
+        const urlSour = sourozenci.map((p, i) => ({ ...p, url: adresySour[i]! }));
         await detail(reply, nalez.o, { podstranky: urlPod, rodic, sourozenci: urlSour, jeStranka: true });
         return true;
       }
