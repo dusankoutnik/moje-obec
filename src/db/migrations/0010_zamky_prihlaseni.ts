@@ -1,6 +1,9 @@
 // Zámek přihlášení heslem po opakovaných chybách (code review S5): čítač v DB podle klíče
 // („email:<adresa>“ pro přihlášení, „ucet:<id>“ pro ověření heslem před citlivou změnou).
 // Klíčuje se e-mailem, ne existencí účtu — neexistující adresa se zamyká stejně (žádná enumerace).
+//
+// Navíc značka „body povinných informací už přečíslované“ (pi_body_515) pro instalace, které migraci 0008 prošly
+// dřív, než ji zapisovala — premapujPiBody je díky ní bezpečné zavolat znovu.
 import { sql, type Kysely } from 'kysely';
 
 export async function up(db: Kysely<unknown>): Promise<void> {
@@ -12,6 +15,8 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       zamceno_do timestamptz
     );
     CREATE INDEX prihlaseni_zamky_posledni_idx ON prihlaseni_zamky (posledni_chyba_at);
+    INSERT INTO nastaveni (klic, hodnota) VALUES ('pi_body_515', '{"poznamka": "migrace 0008 proběhla"}'::jsonb)
+      ON CONFLICT (klic) DO NOTHING;
   `.execute(db);
 }
 

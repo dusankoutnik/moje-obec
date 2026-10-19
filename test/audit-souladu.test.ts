@@ -141,6 +141,8 @@ afterAll(async () => t.zavri());
 describe('s aplikací', () => {
   it('přečíslování textů úřadu u bodů 4.5–4.8 nic neztratí', async () => {
     await t.db.deleteFrom('pi_body').execute();
+    // čistá DB prošla migracemi → značka už je; test simuluje instalaci ze staré struktury
+    await t.db.deleteFrom('nastaveni').where('klic', '=', 'pi_body_515').execute();
     await t.db
       .insertInto('pi_body')
       .values([
@@ -163,6 +165,15 @@ describe('s aplikací', () => {
       '4.5': '<p>Web</p>',
       '4.7': '<p>Podatelna</p><p>Další adresy</p>',
     });
+    // druhé volání nic nezmění (adresa webu v 4.5 se nesmí vzít za fax)
+    await premapujPiBody(t.db as never);
+    const r2 = Object.fromEntries(
+      (await t.db.selectFrom('pi_body').select(['klic', 'obsah_html']).execute()).map((x) => [
+        x.klic,
+        x.obsah_html,
+      ]),
+    );
+    expect(r2).toEqual(r);
     await t.db.deleteFrom('pi_body').execute();
   });
 

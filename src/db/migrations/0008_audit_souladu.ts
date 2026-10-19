@@ -7,8 +7,25 @@
 // - index příloh podle souboru (kontrola, zda soubor patří k neveřejnému dokumentu).
 import { sql, type Kysely } from 'kysely';
 
-/** přečíslování textů úřadu u bodů 4.5–4.8 (struktura 442/2006 → 515/2020); bezpečné opakovat */
+/** značka v nastavení: texty bodů 4.5–4.8 už jsou přečíslované podle vyhl. 515/2020 */
+export const ZNACKA_PI_515 = 'pi_body_515';
+
+/**
+ * Přečíslování textů úřadu u bodů 4.5–4.8 (struktura 442/2006 → 515/2020).
+ *
+ * Samotné přečíslování idempotentní NENÍ: po prvním běhu je v klíči 4.5 adresa webu (dřív 4.6) a druhý běh by ji
+ * vzal za fax a připojil k telefonům. Proto se provede jen jednou — po něm se zapíše značka do `nastaveni`
+ * a další volání nic nedělají. Instalace, které migraci 0008 prošly dřív, než značka existovala, ji dostanou
+ * v migraci 0010.
+ *
+ * Spojení dvou textů je prosté zřetězení HTML: obsah bodů je sanitizované HTML z editoru (bloky <p>, <ul>…),
+ * takže se připojený text ukáže jako další odstavec. Výsledek už proběhlé migrace se tím nemění.
+ */
 export async function premapujPiBody(db: Kysely<unknown>): Promise<void> {
+  await sql`SELECT pg_advisory_xact_lock(hashtext(${ZNACKA_PI_515}))`.execute(db);
+  const hotovo = await sql<{ n: number }>`
+    SELECT count(*)::int AS n FROM nastaveni WHERE klic = ${ZNACKA_PI_515}`.execute(db);
+  if (hotovo.rows[0]!.n > 0) return;
   await sql`
     -- 4.5 fax → připojit k 4.4 Telefonní čísla
     INSERT INTO pi_body (klic, obsah_html, upraveno_at, upravil_id)
@@ -23,6 +40,9 @@ export async function premapujPiBody(db: Kysely<unknown>): Promise<void> {
       ON CONFLICT (klic) DO UPDATE SET obsah_html = pi_body.obsah_html || EXCLUDED.obsah_html;
     DELETE FROM pi_body WHERE klic = '4.8';
   `.execute(db);
+  await sql`
+    INSERT INTO nastaveni (klic, hodnota) VALUES (${ZNACKA_PI_515}, ${JSON.stringify({ at: new Date().toISOString() })}::jsonb)
+      ON CONFLICT (klic) DO NOTHING`.execute(db);
 }
 
 export async function up(db: Kysely<unknown>): Promise<void> {
