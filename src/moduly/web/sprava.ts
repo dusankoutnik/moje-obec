@@ -167,13 +167,17 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
     },
   );
 
-  /** přečte formulář editoru; obrázek z formuláře uloží. Vrací pole nebo chybu (s poli pro znovuvykreslení). */
+  /**
+   * Přečte formulář editoru; obrázek z formuláře uloží (jen když `zapisovat` — náhled nic neukládá ani
+   * nepřepisuje popis obrázku). Vrací pole nebo chybu (s poli pro znovuvykreslení).
+   */
   async function ctiFormular(
     req: FastifyRequest,
     typ: TypObsahu,
     o: WebObsah | null,
     b: Telo,
     prisne: boolean,
+    zapisovat = true,
   ): Promise<{ pole: PoleObsahu; chyba?: string }> {
     const zaklad = o ? poleProEditor(o) : PRAZDNA_POLE;
     const pole: PoleObsahu = { ...zaklad };
@@ -217,8 +221,10 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
     // úvodní obrázek
     if (jeden(b.odebrat_obrazek) === 'ano') pole.obrazek_id = null;
     const alt = jeden(b.obrazek_alt).slice(0, 300);
-    const nahrany = souboryZPole(req, 'obrazek')[0];
-    if (nahrany) {
+    const nahrany = zapisovat ? souboryZPole(req, 'obrazek')[0] : undefined;
+    if (!zapisovat) {
+      // náhled: nově vybraný obrázek se neukládá (zobrazí se po uložení), popis jen pro zobrazení
+    } else if (nahrany) {
       const v = await app.soubory.uloz({
         data: await fs.readFile(nahrany.cesta),
         nazev: nahrany.nazev,
@@ -328,8 +334,13 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
       o,
       { ...b, odebrat_obrazek: jeden(b.odebrat_obrazek) },
       false,
+      false,
     );
-    const obrazek = pole.obrazek_id ? await app.soubory.podleId(pole.obrazek_id) : undefined;
+    const ulozeny = pole.obrazek_id ? await app.soubory.podleId(pole.obrazek_id) : undefined;
+    const obrazek =
+      ulozeny && b.obrazek_alt !== undefined
+        ? { ...ulozeny, alt: jeden(b.obrazek_alt).slice(0, 300) }
+        : ulozeny;
     const nahled = {
       ...(o ?? {}),
       ...pole,

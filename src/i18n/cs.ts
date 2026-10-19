@@ -562,6 +562,9 @@ export const cs = {
     pridat: 'Přidat',
     odebrat: 'Odebrat',
     chyba_presmerovani: 'Vyplňte starou adresu a novou adresu začínající lomítkem (/…) nebo https://.',
+    chyba_presmerovani_stejna: 'Přesměrování by vedlo samo na sebe — neuloženo.',
+    chyba_presmerovani_smycka:
+      'Přesměrování by vytvořilo smyčku (adresy by se přesměrovávaly v kruhu) nebo příliš dlouhý řetězec — neuloženo.',
     rozpracovane: 'Rozpracované',
     neuverejnene_zmeny: 'neuveřejněné změny',
     stav_koncept: 'koncept (není na webu)',

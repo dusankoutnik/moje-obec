@@ -36,10 +36,14 @@ export async function upozorniNaKonecDotaci(app: FastifyInstance) {
       .join('\n'),
     odkaz: `${app.env.BASE_URL}/sprava/web/dotace`,
   });
+  let odeslano = 0;
   for (const s of spravci)
     await app.mail
       .posli({ komu: s.email!, predmet: app.t('web.dotace_mail_predmet'), text })
+      .then(() => odeslano++)
       .catch((e) => app.log.warn({ err: e }, 'mail dotace'));
+  // „upozorněno“ jen když aspoň jeden e-mail opravdu odešel — jinak to cron zkusí zítra znovu
+  if (!odeslano) return 0;
   await app.web.dotace.oznacUpozorneno(koncici.map((d) => d.id));
   return koncici.length;
 }

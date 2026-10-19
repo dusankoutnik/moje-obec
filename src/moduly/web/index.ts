@@ -98,7 +98,7 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
   await app.register(webSpravaVidea, s);
 
   if (volby.planovac) {
-    const job = new Cron('0 8 * * *', async () => {
+    const job = new Cron('0 8 * * *', { timezone: 'Europe/Prague' }, async () => {
       await upozorniNaKonecDotaci(app).catch((e) => app.log.warn({ err: e }, 'dotace upozornění'));
     });
     app.addHook('onClose', async () => job.stop());

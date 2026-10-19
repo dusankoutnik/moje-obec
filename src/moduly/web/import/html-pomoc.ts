@@ -23,15 +23,19 @@ const POJMENOVANE: Record<string, string> = {
   laquo: '«',
 };
 
+// číselná entita mimo rozsah Unicode (&#99999999;) by vyhodila RangeError — necháme ji jako text
+const znak = (kod: number, cele: string) => (kod <= 0x10ffff ? String.fromCodePoint(kod) : cele);
+
 export function dekodujEntity(s: string): string {
   return s
-    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number(n)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, n: string) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&#(\d{1,8});/g, (cele, n: string) => znak(Number(n), cele))
+    .replace(/&#x([0-9a-f]{1,7});/gi, (cele, n: string) => znak(parseInt(n, 16), cele))
     .replace(/&([a-z]+);/gi, (cele, n: string) => POJMENOVANE[n.toLowerCase()] ?? cele);
 }
 
 export function textTagu(html: string): string {
-  return dekodujEntity(html.replace(/<[^>]+>/g, ' '))
+  // [^<>] místo [^>]: neuzavřené „<“ se neprohledává až do konce textu znovu a znovu (lineární čas)
+  return dekodujEntity(html.replace(/<[^<>]+>/g, ' '))
     .replace(/\s+/g, ' ')
     .trim();
 }
