@@ -292,7 +292,8 @@ export class Importer {
         () => znacka,
       );
     }
-    return { html: cisty.replace(/<p>\s*<\/p>/g, ''), prilohy: [...new Set(prilohy)] };
+    // značky videí se dosazují až po sanitizaci → výsledek ještě jednou projde sanitizací
+    return { html: sanitizuj(cisty.replace(/<p>\s*<\/p>/g, '')), prilohy: [...new Set(prilohy)] };
   }
 
   /**
@@ -334,6 +335,7 @@ export class Importer {
     } catch {
       return '';
     }
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
     if (!this.jeNas(u)) return odkaz(u.href, v.nazev || `Video: ${titulek}`);
     const soubor = await this.soubor(u.href, 'video');
     if (!soubor) return odkaz(u.href, v.nazev || `Video: ${titulek}`);

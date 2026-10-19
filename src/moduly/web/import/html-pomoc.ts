@@ -110,10 +110,12 @@ function atr(tag: string, nazev: string): string | null {
  */
 export function najdiVidea(html: string, zaklad?: string): { html: string; videa: ImportVideo[] } {
   const videa: ImportVideo[] = [];
+  // jen http(s) — javascript:, data: apod. se nikdy nestanou videem ani odkazem
   const abs = (u: string | null) => {
     if (!u) return undefined;
     try {
-      return new URL(u, zaklad).href;
+      const x = new URL(u, zaklad);
+      return x.protocol === 'http:' || x.protocol === 'https:' ? x.href : undefined;
     } catch {
       return undefined;
     }
@@ -126,7 +128,7 @@ export function najdiVidea(html: string, zaklad?: string): { html: string; videa
     return `<p>${ZNACKA_VIDEA(videa.length - 1)}</p>`;
   };
   const zOdkazu = (url: string | undefined, nazev?: string): ImportVideo | null => {
-    if (!url) return null;
+    if (!url || !/^https?:\/\//i.test(url)) return null;
     const p = parsujOdkazVidea(url);
     if (p) return { zdroj: p.zdroj, id: p.id, nazev: nazev || undefined };
     if (/\.(mp4|m4v|webm)(\?|#|$)/i.test(url))
