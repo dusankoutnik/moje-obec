@@ -35,6 +35,9 @@ chmod 600 .env
 | `NODE_ENV=production`                                           | v produkci vždy; `OTP_DEV_ZOBRAZIT` musí být `0`                                                                       |
 | `SMS_WEBHOOK_TOKEN`                                             | nepovinné: tajná část adresy webhooku doručenek (`openssl rand -hex 24`); prázdné = odvodí se ze `SESSION_SECRET`      |
 | `SMSMANAGER_WEBHOOK_SECRET`                                     | SMS Manager: `default_callback_secret` z jejich administrace — webhook pak ověřuje podpis `X-Request-Signature`        |
+| `SMS_POVOLENE_PREDVOLBY`                                        | na jaká čísla smí jít SMS s kódem, výchozí `+420,+421` (ochrana před zneužitím na drahá zahraniční čísla)              |
+| `SMS_DENNI_LIMIT_KODU`                                          | nejvýš kolik SMS s kódy za 24 h pro celou instalaci (výchozí 300); při vyčerpání přijde správcům e-mail                |
+| `OTP_COOLDOWN_S`                                                | minimální odstup dvou kódů na stejné číslo v sekundách (výchozí 60)                                                    |
 
 Obraz Dockeru má `NODE_ENV=production` sám; ostrá instalace s `SMS_PROVIDER=konzole` (bez SMS brány) se odmítne spustit — výjimkou je testovací instalace s `OTP_DEV_ZOBRAZIT=1`.
 
@@ -74,24 +77,60 @@ Založí účet s rolí `admin` na dané číslo a čtyři ukázkové odběratel
 
 Použijte `docker-compose.dev-server.yml` jako vzor: služba `platforma` bez veřejného portu na sdílené síti s proxy, proxy posílá `X-Forwarded-Proto: https` (aplikace má `trustProxy`). `INTERNAL_BASE_URL=http://127.0.0.1:3000` zajistí, že si aplikace pro OIDC token endpoint nevolá přes proxy.
 
+`TRUST_PROXY_HOPS` musí odpovídat počtu proxy před aplikací (Caddy nebo jedna vlastní proxy = `1`, výchozí). Kdyby aplikace byla dostupná **přímo bez proxy**, nastavte `0` — jinak by si klient mohl hlavičkou `X-Forwarded-For` vymyslet adresu a obejít limity pokusů. Port aplikace nikdy nevystavujte do internetu vedle proxy.
+
 ## 5. Zálohy
 
-Databáze je jediný stav (soubory se zatím neukládají). Denní záloha cronem:
+Stav instalace je na **třech místech** a zálohovat je třeba všechna:
+
+1. **databáze** (účty, hlášení, úřední deska, obsah webu) — volume `db_data`, zálohovat přes `pg_dump`, ne kopírováním souborů;
+2. **nahrané soubory obce** (přílohy úřední desky, fotky, loga, videa) — volume `app_data` (v kontejneru `/app/data`);
+3. **konfigurace** `.env` a `obec.yml` (bez `.env` nejde obnovit přihlášení — cookie tajemství) a volume `caddy_data` (certifikáty a účet Let's Encrypt; bez něj se certifikát vystaví znovu, ale při opakovaných obnovách hrozí limit Let's Encrypt).
+
+Názvy volumes mají předponu podle adresáře instalace (`/opt/moje-obec` → `moje-obec_app_data`); ověřte je příkazem `docker volume ls`.
+
+Denní záloha skriptem `/opt/moje-obec/zaloha.sh` (spouští uživatel ve skupině `docker`):
 
 ```bash
-# /etc/cron.d/moje-obec-zaloha
-15 3 * * * obec cd /opt/moje-obec && docker compose exec -T db pg_dump -U platforma -Fc platforma > zalohy/db-$(date +\%F).dump && find zalohy -name 'db-*.dump' -mtime +30 -delete
+#!/bin/sh
+set -eu
+cd /opt/moje-obec
+mkdir -p zalohy && chmod 700 zalohy
+D=$(date +%F)
+docker compose exec -T db pg_dump -U platforma -Fc platforma > zalohy/db-$D.dump
+docker run --rm -v moje-obec_app_data:/data:ro -v "$PWD/zalohy":/z alpine tar czf /z/soubory-$D.tar.gz -C /data .
+docker run --rm -v moje-obec_caddy_data:/data:ro -v "$PWD/zalohy":/z alpine tar czf /z/caddy-$D.tar.gz -C /data .
+tar czf zalohy/konfigurace-$D.tar.gz .env obec.yml
+find zalohy -name '*-*.dump' -mtime +30 -delete
+find zalohy -name '*-*.tar.gz' -mtime +30 -delete
 ```
-
-**Nahrané soubory obce** (přílohy úřední desky, fotky, loga) nejsou v databázi, ale ve volume `app_data` (v kontejneru `/app/data`). Zálohujte ho také, např. denně:
 
 ```bash
-docker run --rm -v moje-obec_app_data:/data -v $PWD/zalohy:/z alpine tar czf /z/soubory-$(date +%F).tar.gz -C /data soubory
+chmod 700 /opt/moje-obec/zaloha.sh
+# /etc/cron.d/moje-obec-zaloha  (v crontabu se % musí psát jako \%; skript to obchází)
+15 3 * * * obec /opt/moje-obec/zaloha.sh
 ```
+
+Zálohy kopírujte i **mimo server** (rsync na jiný stroj, objektové úložiště) — záloha na stejném disku neochrání před ztrátou serveru. Obsahují osobní údaje a tajemství: šifrovat a omezit přístup. Jednou za čas obnovu vyzkoušejte na jiném stroji.
 
 Databáze potřebuje rozšíření `unaccent` (hledání bez diakritiky); migrace ho zakládá sama — obraz `postgres:16-alpine` ho obsahuje a vlastník databáze ho smí vytvořit. U spravovaného Postgresu (cloud) ověřte, že je rozšíření povolené.
 
-Obnova: `docker compose exec -T db pg_restore -U platforma -d platforma --clean < zalohy/db-2026-10-13.dump`. Zálohy ukládejte i mimo server (rsync na jiný stroj / objektové úložiště). Záloha musí obsahovat i `.env` a `obec.yml` (jinak nelze obnovit přihlášení — podpisové klíče OIDC jsou v DB, ale cookie tajemství v `.env`).
+### Obnova
+
+Obnovuje se **při zastavené aplikaci** (jinak by do databáze během obnovy zapisovala — fronta hlášení, sezení):
+
+```bash
+cd /opt/moje-obec
+docker compose stop app
+# databáze: --clean smaže a znovu založí objekty ze zálohy
+docker compose exec -T db pg_restore -U platforma -d platforma --clean --if-exists < zalohy/db-2026-10-13.dump
+# soubory obce
+docker run --rm -v moje-obec_app_data:/data -v "$PWD/zalohy":/z alpine sh -c 'tar xzf /z/soubory-2026-10-13.tar.gz -C /data'
+docker compose start app
+docker compose logs -f app     # migrace doběhnou, čekejte na „Moje obec 2.0 běží“
+```
+
+Na novém serveru: nejdřív vrátit `.env` a `obec.yml` (a případně `caddy_data`), `docker compose up -d db`, obnovit databázi a soubory jako výše, pak `docker compose up -d`.
 
 ## 6. Aktualizace
 

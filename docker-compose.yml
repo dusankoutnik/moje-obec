@@ -1,5 +1,12 @@
 # „Jeden balík na vlastní server": aplikace + PostgreSQL + Caddy (automatické HTTPS přes Let's Encrypt).
 # Nastavení: .env (tajemství, DOMENA) a obec.yml (profil obce). Spuštění: docker compose up -d
+# Logy kontejnerů s rotací (jinak rostou bez omezení a zaplní disk malého serveru).
+x-logovani: &logovani
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '5'
+
 services:
   app:
     image: ghcr.io/moje-obec/platforma:latest
@@ -19,6 +26,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    logging: *logovani
     networks: [vnitrni]
 
   db:
@@ -38,6 +46,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    logging: *logovani
     networks: [vnitrni]
 
   caddy:
@@ -55,6 +64,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on: [app]
+    logging: *logovani
     networks: [vnitrni]
 
 volumes:

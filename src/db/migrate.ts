@@ -27,7 +27,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.met
   const { nactiEnv } = await import('../config/env.js');
   const { vytvorDb, pockejNaDb } = await import('./index.js');
   const env = nactiEnv();
-  const db = vytvorDb(env.DATABASE_URL, 2);
+  const db = vytvorDb(env.DATABASE_URL, 2, { statementTimeoutMs: 0 }); // migrace (indexy) smí běžet déle
   await pockejNaDb(db);
   await migruj(db, { info: (o, m) => console.log(m, JSON.stringify(o)) });
   await db.destroy();
