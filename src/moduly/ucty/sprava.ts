@@ -1,8 +1,15 @@
 // Správa účtů úřadem: seznam, detail s rolemi a blokací, audit log, přehled OIDC klientů.
 import type { FastifyInstance } from 'fastify';
-import { ROLE, type Role } from '../../db/types.js';
+import { ROLE, type Role, type Uzivatel } from '../../db/types.js';
 import { vyzadujRoli } from './opravneni.js';
 import { maRoli, type UctySluzba } from './sluzba.js';
+
+/** smí aktor blokovat/odblokovat cíl? Sám sebe nikdy (odblokovat by se pak nedal), účet admina jen admin. */
+export function smiBlokovat(aktor: Uzivatel, cil: Pick<Uzivatel, 'id' | 'role'>): boolean {
+  if (aktor.id === cil.id) return false;
+  if ((cil.role ?? []).includes('admin') && !maRoli(aktor, 'admin')) return false;
+  return true;
+}
 
 export default async function spravaRoutes(app: FastifyInstance, z: { ucty: UctySluzba }) {
   const { ucty } = z;
@@ -60,6 +67,7 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
         historie,
         jeAdmin: maRoli(req.uzivatel, 'admin'),
         samSobe: req.uzivatel!.id === u.id,
+        smiBlokovat: smiBlokovat(req.uzivatel!, u),
       });
     },
   );
@@ -72,6 +80,10 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
       if (!cil) return reply.callNotFound();
       const aktor = req.uzivatel!;
       if (req.body.akce === 'blokovat' || req.body.akce === 'odblokovat') {
+        if (!smiBlokovat(aktor, cil)) {
+          req.session.flash = { typ: 'chyba', text: t('sprava.blokace_nelze') };
+          return reply.redirect(`/sprava/uzivatele/${cil.id}`);
+        }
         await ucty.blokuj(cil.id, req.body.akce === 'blokovat', aktor, req.ip);
         req.session.flash = { typ: 'ok', text: t('app.ulozeno') };
       } else if (req.body.akce === 'role') {

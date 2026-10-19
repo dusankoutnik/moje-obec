@@ -4,6 +4,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import { escapujHtml, perexOpakujeText, textZHtml, zkrat } from '../../lib/html.js';
 import { lidskaVelikost, popisTypu } from '../../lib/soubory.js';
+import { jeBezpecnyOdkaz } from '../../lib/navrat.js';
+import { cisloStrany } from '../../lib/vstupy.js';
 import { urlSouboru } from '../../web/soubory.js';
 import type { WebSluzby } from './index.js';
 import { rozdelPodleVidei } from './videa.js';
@@ -103,7 +105,7 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
   app.get<{ Querystring: { kategorie?: string; strana?: string } }>('/aktuality', async (req, reply) => {
     const kategorie = await s.obsah.kategorie();
     const k = kategorie.find((x) => x.slug === req.query.kategorie);
-    const v = await s.obsah.aktuality({ kategorie: k?.id ?? null, stranka: Number(req.query.strana) || 1 });
+    const v = await s.obsah.aktuality({ kategorie: k?.id ?? null, stranka: cisloStrany(req.query.strana) });
     return reply.view('web/aktuality', {
       titulek: t('web.aktuality'),
       kategorie,
@@ -275,7 +277,8 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       }
     }
     const kam = await s.presmerovani.najdi(req.url);
-    if (kam) {
+    // i starší záznamy z doby před přísnější kontrolou: jen vlastní cesta nebo http(s)
+    if (kam && jeBezpecnyOdkaz(kam)) {
       reply.redirect(kam, 301);
       return true;
     }

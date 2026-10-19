@@ -29,6 +29,7 @@ import { vyzadujRoli } from '../ucty/opravneni.js';
 import type { WebSluzby } from './index.js';
 import { navrhAlt } from './sprava.js';
 import { PresmerovaniSluzba } from './dalsi.js';
+import { jeBezpecnyOdkaz } from '../../lib/navrat.js';
 
 type Telo = Record<string, string | string[] | undefined>;
 const jeden = (v: unknown) =>
@@ -626,8 +627,7 @@ export default async function webSpravaDalsi(app: FastifyInstance, s: WebSluzby)
     if (jeden(b.akce) === 'smazat') await s.presmerovani.smaz(jeden(b.stara));
     else {
       const nova = jeden(b.nova);
-      if (jeden(b.stara) && /^(\/(?!\/)|https?:\/\/)/.test(nova))
-        await s.presmerovani.pridej(jeden(b.stara), nova);
+      if (jeden(b.stara) && jeBezpecnyOdkaz(nova)) await s.presmerovani.pridej(jeden(b.stara), nova);
       else req.session.flash = { typ: 'chyba', text: t('web.chyba_presmerovani') };
     }
     await zapisAudit(app.db, {

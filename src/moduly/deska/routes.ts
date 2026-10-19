@@ -2,6 +2,7 @@
 import type { FastifyInstance } from 'fastify';
 import { escapujHtml } from '../../lib/html.js';
 import { lidskaVelikost, popisTypu } from '../../lib/soubory.js';
+import { cisloStrany } from '../../lib/vstupy.js';
 import { urlSouboru } from '../../web/soubory.js';
 import { TYPY_ROZPOCTU, type DeskaSluzba } from './sluzba.js';
 import { sbirkaPp, vyplnPi } from './povinne.js';
@@ -33,8 +34,8 @@ export default async function deskaRoutes(app: FastifyInstance, z: { sluzba: Des
       const f = {
         kategorie: String(req.query.kategorie ?? ''),
         q: String(req.query.q ?? '').slice(0, 100),
-        rok: Number(req.query.rok) || undefined,
-        stranka: Number(req.query.strana) || 1,
+        rok: /^\d{4}$/.test(String(req.query.rok ?? '')) ? Number(req.query.rok) : undefined,
+        stranka: cisloStrany(req.query.strana),
       };
       const vysledek = await sluzba.archiv(f);
       const roky = await sluzba.rokyArchivu();

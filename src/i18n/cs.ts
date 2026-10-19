@@ -86,6 +86,8 @@ export const cs = {
     rozsah_obec: 'část obce, rezidentství a role v obci',
     rozsah_offline_access: 'přístup i v době, kdy nejste přihlášeni',
     chyba: 'Přihlašovací sezení vypršelo. Začněte prosím znovu z aplikace, ze které jste přišli.',
+    zruseno: 'Přihlášení bylo zrušeno.',
+    nepovedlo: 'Přihlášení se nepovedlo. Zkuste to prosím znovu.',
   },
   ucet: {
     titulek: 'Můj účet',
@@ -182,6 +184,7 @@ export const cs = {
     odblokovat: 'Odblokovat účet',
     blokovan: 'zablokován',
     sam_sobe: 'Vlastní role si měnit nemůžete.',
+    blokace_nelze: 'Tento účet blokovat nemůžete (vlastní účet nebo účet administrátora).',
     vytvoren: 'Vytvořen',
     posledni: 'Poslední přihlášení',
     pocet: 'Celkem {n} účtů',

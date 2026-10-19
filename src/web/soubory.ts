@@ -38,13 +38,17 @@ export default async function souboryRoutes(app: FastifyInstance) {
       const s = await app.soubory.podleId(req.params.id);
       if (!s) return reply.callNotFound();
       // příloha dokumentu desky, který veřejnost nevidí (sejmutý dokument jiného úřadu, koš) — jen pro úřad
-      if (
-        app.obec.moduly.deska &&
-        s.druh === 'dokument' &&
-        !maRoli(req.uzivatel, 'deska') &&
-        (await app.deska.souborNeverejny(s.id))
-      )
-        return reply.callNotFound();
+      const priloha =
+        app.obec.moduly.deska && s.druh === 'dokument' ? await app.deska.stavPrilohy(s.id) : 'neni';
+      if (priloha === 'neverejna' && !maRoli(req.uzivatel, 'deska')) return reply.callNotFound();
+      // Přílohy desky se časem stanou neveřejnými (sejmutí, koš) → nesmí zůstat rok v mezipaměti prohlížeče ani
+      // proxy. Neveřejné (vidí je jen úřad) vůbec neukládat, veřejné jen krátce; ostatní soubory se nemění.
+      const mezipamet =
+        priloha === 'neverejna'
+          ? 'private, no-store'
+          : priloha === 'verejna'
+            ? 'public, max-age=300'
+            : 'public, max-age=31536000, immutable';
       const nahled = req.query.v === 'nahled' && s.mime.startsWith('image/') && s.druh !== 'logo';
       let cesta = app.soubory.cesta(s.id, nahled ? 'nahled' : '');
       let mime = nahled ? 'image/webp' : s.mime;
@@ -60,7 +64,7 @@ export default async function souboryRoutes(app: FastifyInstance) {
         .header('content-type', mime === 'text/vtt' ? 'text/vtt; charset=utf-8' : mime)
         .header('accept-ranges', 'bytes')
         .header('x-content-type-options', 'nosniff')
-        .header('cache-control', 'public, max-age=31536000, immutable');
+        .header('cache-control', mezipamet);
       if (!s.mime.startsWith('image/')) {
         const nazev = s.puvodni_nazev;
         const ascii =

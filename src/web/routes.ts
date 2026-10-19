@@ -25,7 +25,8 @@ export default async function webRoutes(app: FastifyInstance) {
   }
 
   // Živost + připojení k DB. Vrací 503, když databáze neodpovídá — pro Docker healthcheck i monitoring.
-  app.get('/healthz', async (_req, reply) => {
+  // Detail chyby (adresa a port databáze) jde jen do logu, ne anonymnímu klientovi.
+  app.get('/healthz', async (req, reply) => {
     try {
       await sql`select 1`.execute(app.db);
       return reply.send({
@@ -34,7 +35,8 @@ export default async function webRoutes(app: FastifyInstance) {
         cas: new Date().toISOString(),
       });
     } catch (e) {
-      return reply.code(503).send({ stav: 'chyba', db: (e as Error).message });
+      req.log.error({ err: e }, 'healthz: databáze neodpovídá');
+      return reply.code(503).send({ stav: 'chyba' });
     }
   });
 

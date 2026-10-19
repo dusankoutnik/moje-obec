@@ -214,7 +214,8 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
         .code(403)
         .view('chyba', { status: 403, nadpis: app.t('app.chyba_403'), text: app.t('app.csrf') });
     }
-    const status = e.statusCode && e.statusCode >= 400 ? e.statusCode : 500;
+    // neplatný identifikátor v adrese nebo formuláři (ne-UUID → Postgres 22P02 „invalid input syntax“) = nenalezeno
+    const status = e.code === '22P02' ? 404 : e.statusCode && e.statusCode >= 400 ? e.statusCode : 500;
     if (status >= 500) req.log.error({ err: e, url: req.url }, 'neošetřená chyba');
     if (status === 403) {
       return reply

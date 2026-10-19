@@ -224,7 +224,8 @@ export class DeskaSluzba {
    * soubor patří jen k dokumentům, které veřejnost nevidí (sejmuté z kategorie s neveřejným archivem, koš,
    * připravené) — pak ho /soubory nevydá anonymům. Soubor bez vazby na desku (web, obrázky) je veřejný.
    */
-  async souborNeverejny(souborId: string, ted = new Date()): Promise<boolean> {
+  /** je soubor přílohou dokumentu desky, a pokud ano, vidí ho teď veřejnost? */
+  async stavPrilohy(souborId: string, ted = new Date()): Promise<'neni' | 'verejna' | 'neverejna'> {
     const r = await sql<{ verejne: number; celkem: number }>`
       SELECT count(*)::int AS celkem,
         count(*) FILTER (WHERE d.smazano_at IS NULL AND d.vyveseno_od <= ${ted}
@@ -232,7 +233,8 @@ export class DeskaSluzba {
       FROM ud_prilohy p JOIN ud_dokumenty d ON d.id = p.dokument_id JOIN ud_kategorie k ON k.id = d.kategorie_id
       WHERE p.soubor_id = ${souborId}`.execute(this.db);
     const x = r.rows[0]!;
-    return x.celkem > 0 && x.verejne === 0;
+    if (!x.celkem) return 'neni';
+    return x.verejne ? 'verejna' : 'neverejna';
   }
 
   prilohy(dokumentId: string) {

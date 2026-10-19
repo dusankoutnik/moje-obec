@@ -5,6 +5,7 @@ import { bezDiakritiky, normalizujEmail } from '../../lib/kontakty.js';
 import { overHeslo } from '../../lib/krypto.js';
 import { hlidejLimit } from '../../lib/limit.js';
 import { zapisAudit } from '../../lib/audit.js';
+import { bezpecnyNavrat } from '../../lib/navrat.js';
 import { autorizacniUrl, type OidcKlient } from './oidc/klient.js';
 import { vyzadujPrihlaseni } from './opravneni.js';
 import type { UctySluzba } from './sluzba.js';
@@ -20,10 +21,7 @@ interface Zavislosti {
 }
 
 // kam se smí po přihlášení vrátit — jen vlastní cesty (ochrana před open redirect)
-function bezpecnaCesta(zpet: unknown): string {
-  const s = String(zpet ?? '');
-  return /^\/(?!\/)/.test(s) ? s : '/ucet';
-}
+const bezpecnaCesta = (zpet: unknown) => bezpecnyNavrat(zpet, '/ucet');
 
 export default async function uctyRoutes(app: FastifyInstance, z: Zavislosti) {
   const { klient, ucty } = z;
@@ -46,10 +44,12 @@ export default async function uctyRoutes(app: FastifyInstance, z: Zavislosti) {
     if (!ulozeno) return reply.redirect('/prihlaseni');
     delete req.session.oidc;
     const url = new URL(req.url, app.env.BASE_URL);
-    if (url.searchParams.get('error')) {
+    const chyba = url.searchParams.get('error');
+    if (chyba) {
+      // text z URL (error_description) se nezobrazuje — kdokoliv by ho mohl podstrčit odkazem
       req.session.flash = {
         typ: 'info',
-        text: url.searchParams.get('error_description') ?? url.searchParams.get('error') ?? '',
+        text: t(chyba === 'access_denied' ? 'oidc.zruseno' : 'oidc.nepovedlo'),
       };
       return reply.redirect('/');
     }
@@ -60,7 +60,7 @@ export default async function uctyRoutes(app: FastifyInstance, z: Zavislosti) {
       await req.session.regenerate();
       req.session.uzivatelId = u.id;
       req.session.idToken = v.idToken;
-      return reply.redirect(ulozeno.zpet ?? '/ucet');
+      return reply.redirect(bezpecnaCesta(ulozeno.zpet));
     } catch (e) {
       req.log.warn({ err: e }, 'OIDC callback selhal');
       req.session.flash = { typ: 'chyba', text: t('oidc.chyba') };

@@ -7,6 +7,7 @@ import type { TypObsahu, WebObsah } from '../../db/types.js';
 import { casPraha, datumPraha } from '../../lib/datum.js';
 import { obrazkyBezAlt, pocetBezPopisu, sanitizuj, textZHtml, zkrat } from '../../lib/html.js';
 import { chybaSouboruText, lidskaVelikost, popisTypu } from '../../lib/soubory.js';
+import { jeBezpecnyOdkaz } from '../../lib/navrat.js';
 import { souboryZPole } from '../../web/nahravani.js';
 import { urlSouboru } from '../../web/soubory.js';
 import { vyzadujRoli } from '../ucty/opravneni.js';
@@ -188,7 +189,7 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
     }
     if (typ === 'odkaz') {
       const url = jeden(b.odkaz_url);
-      pole.odkaz_url = /^(\/(?!\/)|https?:\/\/)/.test(url) ? url.slice(0, 500) : '';
+      pole.odkaz_url = jeBezpecnyOdkaz(url) ? url.slice(0, 500) : '';
     }
     if (typ === 'aktualita') {
       pole.kategorie_id = Number(jeden(b.kategorie_id)) || null;

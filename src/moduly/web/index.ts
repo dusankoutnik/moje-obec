@@ -16,6 +16,7 @@ import webSpravaVidea from './sprava-videa.js';
 import { upozorniNaKonecDotaci, zalozVychoziMenu } from './udrzba.js';
 import { jeVelikost } from './pisma.js';
 import { maRoli } from '../ucty/sluzba.js';
+import { bezpecnyNavrat } from '../../lib/navrat.js';
 
 export const COOKIE_VELIKOST = 'mo_velikost';
 
@@ -88,7 +89,7 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
         httpOnly: true,
       });
     const zpet = String(req.query.zpet ?? '/');
-    return reply.header('cache-control', 'no-store').redirect(/^\/(?!\/)/.test(zpet) ? zpet : '/');
+    return reply.header('cache-control', 'no-store').redirect(bezpecnyNavrat(zpet));
   });
 
   await app.register(webVerejne, s);

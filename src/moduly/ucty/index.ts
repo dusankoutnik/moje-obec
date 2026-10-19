@@ -10,6 +10,7 @@ import { UctySluzba } from './sluzba.js';
 import interakceRoutes from './interakce.js';
 import uctyRoutes from './routes.js';
 import spravaRoutes from './sprava.js';
+import { CSP_OIDC, zakladniHlavicky } from '../../web/hlavicky.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -30,9 +31,12 @@ async function uctyModul(app: FastifyInstance) {
     sub.removeAllContentTypeParsers();
     sub.addContentTypeParser('*', (_req, _payload, done) => done(null));
     const handler = provider.callback();
+    const hlavicky = { ...zakladniHlavicky(app.env), 'content-security-policy': CSP_OIDC };
     // originalUrl (jako u Expressu) říká provideru, pod jakou cestou je namountovaný → správné URL v discovery
     const predej = (req: FastifyRequest, reply: FastifyReply) => {
       reply.hijack();
+      // odpověď píše provider sám → bezpečnostní hlavičky z onSend by chyběly
+      for (const [k, v] of Object.entries(hlavicky)) reply.raw.setHeader(k, v);
       const raw = req.raw as IncomingMessage & { originalUrl?: string };
       raw.originalUrl = raw.url;
       raw.url = raw.url!.slice(OIDC_PREFIX.length) || '/';

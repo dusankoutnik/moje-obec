@@ -3,7 +3,7 @@ import type { Db } from '../../db/index.js';
 import type { Role, Uzivatel } from '../../db/types.js';
 import { ROLE } from '../../db/types.js';
 import { zapisAudit } from '../../lib/audit.js';
-import { hashujHeslo, overHeslo } from '../../lib/krypto.js';
+import { hashujHeslo, overHeslo, overHesloNaprazdno, potrebujeRehash } from '../../lib/krypto.js';
 
 export { ROLE };
 
@@ -69,8 +69,15 @@ export class UctySluzba {
 
   async prihlasHeslem(email: string, heslo: string): Promise<Uzivatel | null> {
     const u = await this.podleEmailu(email);
-    if (!u || !u.heslo_hash) return null;
-    return (await overHeslo(heslo, u.heslo_hash)) ? u : null;
+    if (!u || !u.heslo_hash) return overHesloNaprazdno(heslo).then(() => null);
+    if (!(await overHeslo(heslo, u.heslo_hash))) return null;
+    // starší parametry scryptu → přepočítat teď, když heslo známe
+    if (potrebujeRehash(u.heslo_hash)) {
+      const novy = await hashujHeslo(heslo);
+      await this.db.updateTable('uzivatele').set({ heslo_hash: novy }).where('id', '=', u.id).execute();
+      return { ...u, heslo_hash: novy };
+    }
+    return u;
   }
 
   async nastavHeslo(id: string, heslo: string, ip?: string | null) {

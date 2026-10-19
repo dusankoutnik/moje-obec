@@ -19,16 +19,29 @@ export const CSP = [
   "base-uri 'self'",
 ].join('; ');
 
+/**
+ * Hlavičky pro každou odpověď. Odpovědi, které Fastify neodesílá sám (hijack — OIDC provider), je musí nastavit
+ * ručně přes tuto funkci, háček onSend se na ně nevztahuje.
+ */
+export function zakladniHlavicky(env: { BASE_URL: string; ROBOTS_NOINDEX: boolean }): Record<string, string> {
+  const h: Record<string, string> = {
+    'x-content-type-options': 'nosniff',
+    'referrer-policy': 'strict-origin-when-cross-origin',
+    'x-frame-options': 'SAMEORIGIN',
+  };
+  // HSTS jen u instalace na https (za proxy je BASE_URL https, i když aplikace sama poslouchá na http)
+  if (env.BASE_URL.startsWith('https://')) h['strict-transport-security'] = 'max-age=31536000';
+  if (env.ROBOTS_NOINDEX) h['x-robots-tag'] = 'noindex, nofollow';
+  return h;
+}
+
+/** CSP pro stránky OIDC provideru: jeho stránky (form_post, odhlášení) mají vložený skript, proto bez script-src */
+export const CSP_OIDC = "frame-ancestors 'self'; object-src 'none'; base-uri 'self'";
+
 export default fp(async function hlavicky(app: FastifyInstance) {
-  const https = app.env.BASE_URL.startsWith('https://');
-  const noindex = app.env.ROBOTS_NOINDEX;
+  const zaklad = zakladniHlavicky(app.env);
   app.addHook('onSend', async (_req, reply, payload) => {
-    reply.header('x-content-type-options', 'nosniff');
-    reply.header('referrer-policy', 'strict-origin-when-cross-origin');
-    reply.header('x-frame-options', 'SAMEORIGIN');
-    // HSTS jen u instalace na https (za proxy je BASE_URL https, i když aplikace sama poslouchá na http)
-    if (https) reply.header('strict-transport-security', 'max-age=31536000');
-    if (noindex) reply.header('x-robots-tag', 'noindex, nofollow');
+    for (const [k, v] of Object.entries(zaklad)) reply.header(k, v);
     // CSP jen pro stránky; soubory (/soubory) si nastavují vlastní přísnější (sandbox), PDF ji nepotřebuje
     const typ = String(reply.getHeader('content-type') ?? '');
     if (typ.startsWith('text/html') && !reply.hasHeader('content-security-policy'))
