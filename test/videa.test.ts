@@ -110,13 +110,15 @@ describe('pomůcky videí', () => {
     expect(rozsah('items=0-1', 100)).toBeNull();
   });
 
-  it('limit nahrávání: 300 MB jen přihlášenému ve správě videí', () => {
-    const req = (url: string, uzivatelId?: string) => ({ url, session: { uzivatelId } }) as never;
-    expect(limitNahrani(req('/sprava/web/videa', 'u'))).toBe(300 * 1024 * 1024);
-    expect(limitNahrani(req('/sprava/web/videa/abc', 'u'))).toBe(300 * 1024 * 1024);
+  it('limit nahrávání: 300 MB jen redaktorovi webu ve správě videí', () => {
+    const req = (url: string, role?: string[]) => ({ url, uzivatel: role ? { role } : null }) as never;
+    expect(limitNahrani(req('/sprava/web/videa', ['web']))).toBe(300 * 1024 * 1024);
+    expect(limitNahrani(req('/sprava/web/videa/abc', ['spravce']))).toBe(300 * 1024 * 1024);
     expect(limitNahrani(req('/sprava/web/videa'))).toBe(30 * 1024 * 1024);
-    expect(limitNahrani(req('/sprava/web/galerie', 'u'))).toBe(30 * 1024 * 1024);
-    expect(limitNahrani(req('/sprava/web/videax', 'u'))).toBe(30 * 1024 * 1024);
+    expect(limitNahrani(req('/sprava/web/videa', []))).toBe(30 * 1024 * 1024);
+    expect(limitNahrani(req('/sprava/web/videa', ['deska']))).toBe(30 * 1024 * 1024);
+    expect(limitNahrani(req('/sprava/web/galerie', ['web']))).toBe(30 * 1024 * 1024);
+    expect(limitNahrani(req('/sprava/web/videax', ['web']))).toBe(30 * 1024 * 1024);
   });
 
   it('import: najde iframe YouTube, <video> z WordPressu, [video], [embed] a blok Vložení', () => {
