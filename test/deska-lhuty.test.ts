@@ -2,6 +2,7 @@
 // předčasné sejmutí jen u visícího dokumentu a uložení formuláře, které nevrátí sejmutý dokument na desku.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { datumPraha, pridejDny } from '../src/lib/datum.js';
+import { DeskaSluzba } from '../src/moduly/deska/sluzba.js';
 import { csrfZ, postSoubory, prihlasSRoli, Prohlizec, spustTestApp, type TestApp } from './pomocnici.js';
 
 let t: TestApp;
@@ -201,5 +202,32 @@ describe('nahrazení rozpočtové dokumentace', () => {
     const f2 = await spravce.get(`/sprava/deska/${novy.id}`);
     await spravce.post(`/sprava/deska/${novy.id}/kos`, { _csrf: csrfZ(f2.text), akce: 'obnovit' });
     expect((await dokument('Rozpočet 2026')).nahrazeno_id).toBe(novy.id);
+  });
+
+  it('uložení uvnitř transakce volajícího (import) funguje a s ní se i vrátí', async () => {
+    const kat = Number(await katId('rozpocet'));
+    const data = {
+      nazev: 'Návrh rozpočtu 2030 (import)',
+      kategorieId: kat,
+      cisloJednaci: '',
+      puvodce: '',
+      popis: '',
+      od: dnes(),
+      do: null,
+      typRozpoctu: 'navrh_rozpoctu' as const,
+      rok: 2030,
+    };
+    await t.db
+      .transaction()
+      .execute(async (trx) => {
+        await new DeskaSluzba(trx).uloz(null, data, null);
+        throw new Error('zrušit');
+      })
+      .catch(() => undefined);
+    expect(
+      await t.db.selectFrom('ud_dokumenty').select('id').where('nazev', '=', data.nazev).execute(),
+    ).toHaveLength(0);
+    await t.db.transaction().execute((trx) => new DeskaSluzba(trx).uloz(null, data, null));
+    expect((await dokument(data.nazev)).rok).toBe(2030);
   });
 });

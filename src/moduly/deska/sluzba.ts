@@ -94,6 +94,12 @@ const NA_STRANKU = 30;
 export class DeskaSluzba {
   constructor(private db: Db) {}
 
+  /** transakce; když už služba běží nad transakcí volajícího (import), použije ji — Kysely vnořené neumí */
+  private vTransakci<T>(fn: (trx: Kysely<Database>) => Promise<T>): Promise<T> {
+    if (this.db.isTransaction) return fn(this.db);
+    return this.db.transaction().execute(fn);
+  }
+
   kategorie(jenAktivni = true) {
     let q = this.db.selectFrom('ud_kategorie').selectAll().orderBy('poradi').orderBy('nazev');
     if (jenAktivni) q = q.where('aktivni', '=', true);
@@ -281,7 +287,7 @@ export class DeskaSluzba {
     ip?: string | null,
     puvodniUrl?: string | null,
   ): Promise<string> {
-    const vysledek = await this.db.transaction().execute(async (trx) => {
+    const vysledek = await this.vTransakci(async (trx) => {
       const puvodni = id
         ? await trx.selectFrom('ud_dokumenty').selectAll().where('id', '=', id).executeTakeFirst()
         : undefined;
@@ -363,7 +369,7 @@ export class DeskaSluzba {
   }
 
   async doKose(id: string, smazat: boolean, aktorId: string, ip?: string | null) {
-    await this.db.transaction().execute(async (trx) => {
+    await this.vTransakci(async (trx) => {
       await trx
         .updateTable('ud_dokumenty')
         .set({ smazano_at: smazat ? new Date() : null })
