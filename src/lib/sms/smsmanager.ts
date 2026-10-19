@@ -8,6 +8,7 @@
 //   hlavička X-Request-Signature = HMAC-SHA256 hex surového těla (je-li nastaven default_callback_secret).
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { SmsChyba, type SmsPoskytovatel, type StavDoruceni, type VysledekOdeslani } from './typy.js';
+import { chybaOdpovedi, jsonZ, volejBranu } from './http.js';
 
 export interface SmsManagerKonfigurace {
   apiKey: string;
@@ -19,6 +20,8 @@ export interface SmsManagerKonfigurace {
   apiUrl?: string;
   restUrl?: string;
   fetch?: typeof fetch;
+  /** časový limit požadavku (ms) */
+  timeoutMs?: number;
 }
 
 export const SMSMANAGER_STAVY: Record<string, StavDoruceni> = {
@@ -45,27 +48,31 @@ export class SmsManager implements SmsPoskytovatel {
   }
 
   async posli(telefon: string, text: string): Promise<VysledekOdeslani> {
+    if (text.length > 1000) throw new SmsChyba(`SMS Manager: zpráva má ${text.length} znaků, nejvýš 1000`);
     const telo: Record<string, unknown> = {
-      body: text.slice(0, 1000),
+      body: text,
       to: [{ phone_number: telefon.replace(/^\+/, '') }],
       tag: 'transactional',
       flow: [{ sms: { gateway: this.cfg.gateway ?? 'high', type: 'sms' } }],
     };
     if (this.cfg.odesilatel) telo.sender = this.cfg.odesilatel;
-    const res = await this.f(`${this.apiUrl}/message`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-api-key': this.cfg.apiKey },
-      body: JSON.stringify(telo),
-    });
-    if (!res.ok)
-      throw new SmsChyba(
-        `SMS Manager ${res.status}: ${(await res.text()).slice(0, 300)}`,
-        res.status >= 500 || res.status === 503,
-      );
-    const data = (await res.json()) as {
+    const res = await volejBranu(
+      this.f,
+      'SMS Manager',
+      `${this.apiUrl}/message`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': this.cfg.apiKey },
+        body: JSON.stringify(telo),
+      },
+      this.cfg.timeoutMs,
+    );
+    if (!res.ok) throw chybaOdpovedi('SMS Manager', res);
+    const data = jsonZ<{
       accepted?: { key: string; message_id: string }[];
       rejected?: { key: string }[];
-    };
+    }>(res);
+    if (!data) throw new SmsChyba('SMS Manager: neočekávaná odpověď', true);
     const prijato = data.accepted?.[0];
     if (!prijato)
       throw new SmsChyba(`SMS Manager: zpráva odmítnuta (${JSON.stringify(data.rejected ?? [])})`);
@@ -73,12 +80,16 @@ export class SmsManager implements SmsPoskytovatel {
   }
 
   async stavDoruceni(branaId: string): Promise<StavDoruceni> {
-    const res = await this.f(`${this.restUrl}/message?id=${encodeURIComponent(branaId)}`, {
-      headers: { 'x-api-key': this.cfg.apiKey },
-    });
-    if (!res.ok) return 'nezjisteno';
-    const data = (await res.json()) as { message?: { status_code?: string; delivery_code?: string } | null };
-    const m = data.message;
+    const res = await volejBranu(
+      this.f,
+      'SMS Manager',
+      `${this.restUrl}/message?id=${encodeURIComponent(branaId)}`,
+      { headers: { 'x-api-key': this.cfg.apiKey } },
+      this.cfg.timeoutMs,
+    ).catch(() => null);
+    if (!res?.ok) return 'nezjisteno';
+    const data = jsonZ<{ message?: { status_code?: string; delivery_code?: string } | null }>(res);
+    const m = data?.message;
     if (!m) return 'nezjisteno';
     if (m.delivery_code === '201' || m.delivery_code === '202') return 'doruceno';
     if (m.status_code === '200') return 'odeslano';

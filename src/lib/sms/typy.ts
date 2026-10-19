@@ -26,12 +26,16 @@ export interface SmsPoskytovatel {
     telo: unknown,
     hlavicky: Record<string, string | string[] | undefined>,
   ): Promise<{ branaId: string; stav: StavDoruceni }[]>;
+  /** Hromadné stažení doručenek (brány, které nemají dotaz na jednu zprávu, např. SMSbrána inbox). */
+  stahniDorucenky?(): Promise<{ branaId: string; stav: StavDoruceni }[]>;
 }
 
 export class SmsChyba extends Error {
   constructor(
     message: string,
     public readonly docasna = false,
+    /** brána řekla, za jak dlouho to zkusit znovu (Retry-After, ms) */
+    public readonly zkusitZaMs?: number,
   ) {
     super(message);
     this.name = 'SmsChyba';

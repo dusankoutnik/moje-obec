@@ -214,6 +214,7 @@ describe('rozpočet', () => {
       nazev: 'Návrh rozpočtu 2027',
       kategorie_id: kat,
       od: pridejDny(dnes(), -20),
+      duvod_data: 'visel na papírové desce',
       do_odvolani: 'ano',
       typ_rozpoctu: 'navrh_rozpoctu',
       rok: '2027',

@@ -31,6 +31,11 @@
     </div>
     <p class="napoveda" id="do-n"><%= it.t('deska.do_napoveda') %></p>
     <label class="zatrzitko"><input type="checkbox" name="do_odvolani" value="ano" <%= it.f.do_odvolani === 'ano' ? 'checked' : '' %>> <%= it.t('deska.do_odvolani_pole') %></label>
+    <% if (it.jeSpravce) { %>
+    <label for="duvod_data"><%= it.t('deska.duvod_data') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+    <input id="duvod_data" name="duvod_data" maxlength="300" value="<%= it.f.duvod_data || '' %>" aria-describedby="duvod-data-n">
+    <p class="napoveda" id="duvod-data-n"><%= it.t('deska.duvod_data_napoveda') %></p>
+    <% } %>
   </fieldset>
 
   <fieldset id="rozpocet-pole">

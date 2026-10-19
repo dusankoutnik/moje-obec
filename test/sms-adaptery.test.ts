@@ -169,3 +169,83 @@ describe('SMSGate', () => {
     expect(volani[1]!.url).toBe('https://api.sms-gate.app/3rdparty/v1/message/g1');
   });
 });
+
+describe('odolnost bran (code review 19. 10. 2026)', () => {
+  // fetch, který neodpoví nikdy — skončí jen přerušením (časový limit)
+  const visici = (async (_u: string | URL | Request, init?: RequestInit) =>
+    new Promise<Response>((_, rej) =>
+      init?.signal?.addEventListener('abort', () => rej(init.signal!.reason)),
+    )) as unknown as typeof fetch;
+
+  it('zaseknutá brána: po časovém limitu dočasná chyba (fronta to zkusí znovu)', async () => {
+    const brany = [
+      new SmsGate({ url: 'https://brana.invalid/m', user: 'U', pass: 'P', fetch: visici, timeoutMs: 30 }),
+      new SmsBrana({ login: 'l', password: 'p', fetch: visici, timeoutMs: 30 }),
+      new GoSms({ clientId: 'i', clientSecret: 's', channel: '1', fetch: visici, timeoutMs: 30 }),
+      new SmsManager({ apiKey: 'k', fetch: visici, timeoutMs: 30 }),
+    ];
+    for (const b of brany) {
+      const e = await b.posli('+420777123456', 'x').catch((x: unknown) => x);
+      expect(e, b.nazev).toBeInstanceOf(SmsChyba);
+      expect((e as SmsChyba).docasna, b.nazev).toBe(true);
+      expect((e as SmsChyba).message).toMatch(/neodpověděla/);
+    }
+  });
+
+  it('síťová chyba je dočasná', async () => {
+    const f = (async () => {
+      throw new TypeError('fetch failed');
+    }) as unknown as typeof fetch;
+    const e = await new SmsGate({ url: 'https://x.invalid/m', user: 'U', fetch: f })
+      .posli('+420777123456', 'x')
+      .catch((x: unknown) => x);
+    expect((e as SmsChyba).docasna).toBe(true);
+  });
+
+  it('429/408/425 jsou dočasné a nesou Retry-After; 400 je trvalá', async () => {
+    for (const status of [429, 408, 425, 503]) {
+      const f = (async () =>
+        new Response('pomalu', { status, headers: { 'retry-after': '120' } })) as unknown as typeof fetch;
+      const e = (await new SmsManager({ apiKey: 'k', fetch: f })
+        .posli('+420777123456', 'x')
+        .catch((x: unknown) => x)) as SmsChyba;
+      expect(e.docasna, String(status)).toBe(true);
+      expect(e.zkusitZaMs).toBe(120_000);
+    }
+    const { f } = falesnyFetch([{ status: 400, telo: 'spatne' }]);
+    const e = (await new SmsGate({ url: 'https://x.invalid/m', user: 'U', fetch: f })
+      .posli('+420777123456', 'x')
+      .catch((x: unknown) => x)) as SmsChyba;
+    expect(e.docasna).toBe(false);
+  });
+
+  it('SMSbrána: odpověď bez <err>0</err> (např. HTML chybová stránka) není „odesláno“', async () => {
+    const { f } = falesnyFetch([{ status: 200, telo: '<html><body>Údržba</body></html>', typ: 'text/html' }]);
+    const e = (await new SmsBrana({ login: 'l', password: 'p', fetch: f })
+      .posli('+420777123456', 'x')
+      .catch((x: unknown) => x)) as SmsChyba;
+    expect(e).toBeInstanceOf(SmsChyba);
+    expect(e.docasna).toBe(true);
+  });
+
+  it('příliš dlouhý text brána neořízne potichu, ale odmítne', async () => {
+    const { f, volani } = falesnyFetch([]);
+    await expect(
+      new SmsBrana({ login: 'l', password: 'p', fetch: f }).posli('+420777123456', 'x'.repeat(460)),
+    ).rejects.toThrow(/459/);
+    expect(volani).toHaveLength(0);
+  });
+
+  it('přesměrování spojí hromadné doručenky obou bran (s předponou u skutečné)', async () => {
+    const { PresmerovaniSms } = await import('../src/lib/sms/presmerovani.js');
+    const { KonzoleSms } = await import('../src/lib/sms/konzole.js');
+    const xml = `<result><err>0</err><inbox><delivery_report><item><idsms>7</idsms><status>1</status></item></delivery_report></inbox></result>`;
+    const { f } = falesnyFetch([{ status: 200, telo: xml }]);
+    const p = new PresmerovaniSms(
+      new KonzoleSms(),
+      new SmsBrana({ login: 'l', password: 'p', fetch: f }),
+      new Map(),
+    );
+    expect(await p.stahniDorucenky!()).toEqual([{ branaId: 'presm:7', stav: 'doruceno' }]);
+  });
+});

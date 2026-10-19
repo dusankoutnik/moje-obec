@@ -59,6 +59,10 @@ const EnvSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   OTP_DEV_ZOBRAZIT: bool,
+  // ochrana SMS s kódy: prodleva mezi kódy na stejné číslo (s), povolené předvolby, denní rozpočet celé instalace
+  OTP_COOLDOWN_S: z.coerce.number().int().min(0).default(60),
+  SMS_POVOLENE_PREDVOLBY: z.string().default('+420,+421'),
+  SMS_DENNI_LIMIT_KODU: z.coerce.number().int().min(0).default(300),
   IK_SMS_INTERVAL_MIN_MS: z.coerce.number().default(1000),
   IK_SMS_INTERVAL_MAX_MS: z.coerce.number().default(3000),
   IK_EMAIL_INTERVAL_MS: z.coerce.number().default(500),

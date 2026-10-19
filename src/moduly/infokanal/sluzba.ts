@@ -4,7 +4,15 @@ import type { Db } from '../../db/index.js';
 import type { KanalPreference, Odberatel } from '../../db/types.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { nahodnyToken } from '../../lib/krypto.js';
-import { rozpoznejKontakt } from '../../lib/kontakty.js';
+import { bezDiakritiky, rozpoznejKontakt } from '../../lib/kontakty.js';
+
+/** nejdelší SMS (i s předponou), kterou přijmou všechny podporované brány — SMSbrána.cz má limit 459 znaků */
+export const MAX_SMS_ZNAKU = 459;
+
+/** délka SMS po odstranění diakritiky, jak ji fronta skutečně pošle */
+export function delkaSms(prefix: string, text: string): number {
+  return bezDiakritiky(`${prefix}${text}`).length;
+}
 
 export interface Kategorie {
   id: number;
@@ -111,7 +119,10 @@ export interface NoveHlaseni {
 }
 
 export class InfokanalSluzba {
-  constructor(private db: Db) {}
+  constructor(
+    private db: Db,
+    private volby: { smsPrefix?: string } = {},
+  ) {}
 
   kategorie(): Promise<Kategorie[]> {
     return this.db.selectFrom('ik_kategorie').selectAll().orderBy('poradi').execute();
@@ -142,7 +153,8 @@ export class InfokanalSluzba {
       .then((r) => r.map((x) => x.kategorie_id));
   }
 
-  // Přihlášení k odběru z webu: založí/obnoví odběratele (neověřeného); ověření udělá OTP.
+  // Založí/obnoví odběratele. Volat jen s ověřeným telefonem (kód, účet) nebo úřadem — přepisuje údaje.
+  // E-mail, který už má jiný odběratel, se neuloží (emailObsazeny) — unikátní index by jinak shodil požadavek.
   async zalozNeboObnov(data: {
     jmeno: string;
     telefon: string | null;
@@ -154,7 +166,7 @@ export class InfokanalSluzba {
     overeno: boolean;
     souhlas: boolean;
     uzivatelId?: string | null;
-  }): Promise<Odberatel> {
+  }): Promise<{ o: Odberatel; emailObsazeny: boolean }> {
     const existujici = data.telefon
       ? await this.odberatelPodleTelefonu(data.telefon)
       : data.email
@@ -164,14 +176,25 @@ export class InfokanalSluzba {
             .where((eb) => eb(eb.fn('lower', ['email']), '=', data.email!.toLowerCase()))
             .executeTakeFirst()
         : undefined;
+    const jinyEmail = data.email
+      ? await this.db
+          .selectFrom('ik_odberatele')
+          .select('id')
+          .where((eb) => eb(eb.fn('lower', ['email']), '=', data.email!.toLowerCase()))
+          .$if(!!existujici, (q) => q.where('id', '!=', existujici!.id))
+          .executeTakeFirst()
+      : undefined;
+    const emailObsazeny = !!jinyEmail;
     const hodnoty = {
       jmeno: data.jmeno,
-      email: data.email,
+      // obsazený e-mail: u existujícího odběratele nechat původní, u nového žádný
+      ...(emailObsazeny ? (existujici ? {} : { email: null }) : { email: data.email }),
       cast_obce: data.castObce,
-      kanal: data.kanal,
+      kanal: emailObsazeny && !existujici?.email ? ('sms' as KanalPreference) : data.kanal,
       odhlasen_at: null,
       souhlas_at: data.souhlas ? new Date() : null,
-      uzivatel_id: data.uzivatelId ?? null,
+      // vazbu na účet nepřepisovat na prázdnou (např. přihláška bez přihlášení)
+      ...(data.uzivatelId ? { uzivatel_id: data.uzivatelId } : existujici ? {} : { uzivatel_id: null }),
       ...(data.overeno ? { overen_at: new Date() } : {}),
     };
     let o: Odberatel;
@@ -190,7 +213,7 @@ export class InfokanalSluzba {
         .executeTakeFirstOrThrow();
     }
     await this.nastavOptouty(o.id, data.optouty);
-    return o;
+    return { o, emailObsazeny };
   }
 
   async nastavOptouty(odberatelId: string, kategorieIds: number[]) {
@@ -256,8 +279,16 @@ export class InfokanalSluzba {
   async zalozHlaseni(
     autorId: string | null,
     h: NoveHlaseni,
-  ): Promise<{ id: string; prijemcu: number } | { chyba: 'zadny_kanal' | 'zadny_prijemce' | 'kategorie' }> {
+  ): Promise<
+    | { id: string; prijemcu: number }
+    | { chyba: 'zadny_kanal' | 'zadny_prijemce' | 'kategorie' }
+    | { chyba: 'sms_dlouha'; znaku: number; max: number }
+  > {
     const maSms = !!h.smsText?.trim();
+    if (maSms) {
+      const znaku = delkaSms(this.volby.smsPrefix ?? '', h.smsText!.trim());
+      if (znaku > MAX_SMS_ZNAKU) return { chyba: 'sms_dlouha', znaku, max: MAX_SMS_ZNAKU };
+    }
     const maEmail = !!(h.emailPredmet?.trim() && h.emailText?.trim());
     if (!maSms && !maEmail && !h.clanekTitulek) return { chyba: 'zadny_kanal' };
     const kategorie = await this.kategoriePodleId(h.kategorieId);

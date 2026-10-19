@@ -154,7 +154,8 @@ export interface IkHlaseniTable {
 }
 export type Hlaseni = Selectable<IkHlaseniTable>;
 
-export type StavPrijemce = 'ceka' | 'odeslano' | 'doruceno' | 'selhalo' | 'vzdano';
+// odesila_se = řádek si zabral rozesílací worker (atomicky), odeslání právě probíhá
+export type StavPrijemce = 'ceka' | 'odesila_se' | 'odeslano' | 'doruceno' | 'selhalo' | 'vzdano';
 export interface IkPrijemciTable {
   id: Generated<number>;
   hlaseni_id: string;
@@ -167,6 +168,10 @@ export interface IkPrijemciTable {
   posledni_chyba: string | null;
   odeslano_at: TimestampNullable;
   doruceno_at: TimestampNullable;
+  /** kdy si řádek zabral worker (stav odesila_se) — podle toho se hledají zaseknuté */
+  zabrano_at: TimestampNullable;
+  /** dočasná chyba: další pokus nejdřív v tento čas */
+  dalsi_pokus_at: TimestampNullable;
 }
 
 // ---- soubory ----
@@ -221,6 +226,11 @@ export interface UdDokumentyTable {
   vytvoreno_at: TimestampGenerated;
   upraveno_at: TimestampGenerated;
   smazano_at: TimestampNullable;
+  /** rozpočtová dokumentace: dokument, který tento sejmul jako nahrazený (vratné) */
+  nahrazeno_id: string | null;
+  /** stav před nahrazením — pro obnovu, když nahrazující dokument zmizí nebo se změní */
+  pred_nahrazenim_do: TimestampNullable;
+  pred_nahrazenim_duvod: string | null;
 }
 export type UdDokument = Selectable<UdDokumentyTable>;
 

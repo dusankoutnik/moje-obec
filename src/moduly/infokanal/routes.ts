@@ -8,6 +8,23 @@ import { hlidejLimit } from '../../lib/limit.js';
 
 const KANALY: KanalPreference[] = ['sms', 'smisene', 'email'];
 
+/** údaje z přihlášky k odběru, které se uloží až po ověření kódu (do té doby jsou jen v sezení) */
+interface CekajiciOdber {
+  telefon: string;
+  jmeno: string;
+  email: string | null;
+  castObce: string;
+  kanal: KanalPreference;
+  optouty: number[];
+  do: number;
+}
+
+declare module 'fastify' {
+  interface Session {
+    odberCeka?: CekajiciOdber;
+  }
+}
+
 function poleCisel(v: unknown): number[] {
   const arr = v === undefined ? [] : Array.isArray(v) ? v : [v];
   return arr.map(Number).filter((n) => Number.isInteger(n) && n > 0);
@@ -76,29 +93,47 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
       const zvolene = new Set(poleCisel(b.kategorie));
       const optouty = kategorie.filter((k) => !k.povinna && !zvolene.has(k.id)).map((k) => k.id);
 
-      // přihlášený uživatel se stejným telefonem = telefon už je ověřený kódem při přihlášení → bez dalšího OTP
-      const zUctu = !!req.uzivatel && req.uzivatel.telefon === telefon;
-      const o = await sluzba.zalozNeboObnov({
+      const udaje = {
         jmeno: String(b.jmeno ?? '')
           .trim()
           .slice(0, 120),
         telefon,
         email,
         castObce,
-        kanal: email ? kanal : 'sms',
+        kanal: email ? kanal : ('sms' as KanalPreference),
         optouty,
-        zdroj: zUctu ? 'ucet' : 'web',
-        overeno: zUctu,
-        souhlas: true,
-        uzivatelId: req.uzivatel?.id ?? null,
-      });
+      };
+      // přihlášený uživatel se stejným telefonem = telefon už je ověřený kódem při přihlášení → bez dalšího OTP
+      const zUctu = !!req.uzivatel && req.uzivatel.telefon === telefon;
       if (zUctu) {
+        const { o, emailObsazeny } = await sluzba.zalozNeboObnov({
+          ...udaje,
+          zdroj: 'ucet',
+          overeno: true,
+          souhlas: true,
+          uzivatelId: req.uzivatel!.id,
+        });
         req.session.odber = { odberatelId: o.id, do: Date.now() + ODBER_PLATNOST_MS };
-        req.session.flash = { typ: 'ok', text: t('infokanal.potvrzeno') };
+        req.session.flash = {
+          typ: emailObsazeny ? 'info' : 'ok',
+          text: t(emailObsazeny ? 'infokanal.email_obsazeny' : 'infokanal.potvrzeno'),
+        };
         return reply.redirect('/infokanal/odber');
       }
+      // Bez ověření kódem se v databázi nic nemění (ani u existujícího odběratele) — kdo zná cizí číslo,
+      // nesmí odběr obnovit ani přesměrovat e-maily. Údaje počkají v sezení a uloží se po ověření kódu.
       const v = await app.otp.vydej(telefon, 'odber');
-      if ('chyba' in v) return vykresli(t('prihlaseni.limit'));
+      if ('chyba' in v)
+        return vykresli(
+          t(
+            v.chyba === 'predvolba'
+              ? 'prihlaseni.predvolba'
+              : v.chyba === 'rozpocet'
+                ? 'prihlaseni.odesilani_selhalo'
+                : 'prihlaseni.limit',
+          ),
+        );
+      req.session.odberCeka = { ...udaje, do: Date.now() + ODBER_PLATNOST_MS };
       try {
         await app.sms.posli(
           telefon,
@@ -145,28 +180,20 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
           devKod: null,
         });
       if (!(await sluzba.odberatelPodleTelefonu(telefon))) return neutralni();
+      // limit kontaktu ani chyba brány se navenek neliší od neznámého čísla (jinak by šlo zjistit, kdo odebírá)
       const v = await app.otp.vydej(telefon, 'odber');
-      if ('chyba' in v)
-        return reply.view('infokanal/index', {
-          titulek: t('infokanal.titulek'),
-          kategorie,
-          f: req.body,
-          kanaly: KANALY,
-          chyba: t('prihlaseni.limit'),
-        });
+      if ('chyba' in v) {
+        req.log.info({ chyba: v.chyba }, 'kód pro správu odběru nevydán');
+        return neutralni();
+      }
       try {
         await app.sms.posli(
           telefon,
           bezDiakritiky(`${app.obec.texty.sms_prefix}Kod pro spravu odberu: ${v.kod} (plati 10 minut)`),
         );
-      } catch {
-        return reply.view('infokanal/index', {
-          titulek: t('infokanal.titulek'),
-          kategorie,
-          f: req.body,
-          kanaly: KANALY,
-          chyba: t('prihlaseni.odesilani_selhalo'),
-        });
+      } catch (e) {
+        req.log.error({ err: e }, 'odeslání kódu pro správu odběru selhalo');
+        return neutralni();
       }
       return reply.view('infokanal/overeni', {
         titulek: t('infokanal.overeni_titulek'),
@@ -185,7 +212,33 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
       const telefon = normalizujTelefon(req.body.telefon);
       if (!telefon) return reply.redirect('/infokanal');
       const ok = await app.otp.over(telefon, 'odber', String(req.body.kod ?? ''));
-      const o = ok ? await sluzba.odberatelPodleTelefonu(telefon) : undefined;
+      let o = ok ? await sluzba.odberatelPodleTelefonu(telefon) : undefined;
+      let emailObsazeny = false;
+      // přihláška k odběru: teprve teď (telefon ověřen) se údaje z formuláře zapíšou
+      const ceka = req.session.odberCeka;
+      if (ok && ceka && ceka.telefon === telefon && ceka.do > Date.now()) {
+        const byloOvereno = !!o?.overen_at && !o?.odhlasen_at;
+        const v = await sluzba.zalozNeboObnov({
+          jmeno: ceka.jmeno,
+          telefon,
+          email: ceka.email,
+          castObce: ceka.castObce,
+          kanal: ceka.kanal,
+          optouty: ceka.optouty,
+          zdroj: 'web',
+          overeno: true,
+          souhlas: true,
+          uzivatelId: req.uzivatel?.telefon === telefon ? req.uzivatel.id : null,
+        });
+        o = v.o;
+        emailObsazeny = v.emailObsazeny;
+        delete req.session.odberCeka;
+        req.session.odber = { odberatelId: o.id, do: Date.now() + ODBER_PLATNOST_MS };
+        if (emailObsazeny) req.session.flash = { typ: 'info', text: t('infokanal.email_obsazeny') };
+        else if (!byloOvereno) req.session.flash = { typ: 'ok', text: t('infokanal.potvrzeno') };
+        else req.session.flash = { typ: 'ok', text: t('infokanal.kategorie_nastaveny') };
+        return reply.redirect('/infokanal/odber');
+      }
       if (!ok || !o) {
         return reply.view('infokanal/overeni', {
           titulek: t('infokanal.overeni_titulek'),

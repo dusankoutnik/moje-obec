@@ -16,7 +16,7 @@ afterAll(async () => db.destroy());
 
 describe('OTP kódy', () => {
   it('vydá, ověří jednou, hashuje', async () => {
-    const otp = new OtpSluzba(db, 'tajemstvi');
+    const otp = new OtpSluzba(db, 'tajemstvi', { cooldownS: 0 });
     const v = await otp.vydej('+420777000001', 'prihlaseni');
     expect('kod' in v && v.kod).toMatch(/^\d{6}$/);
     const kod = (v as { kod: string }).kod;
@@ -27,7 +27,7 @@ describe('OTP kódy', () => {
     expect(await otp.over('+420777000001', 'prihlaseni', kod)).toBe(false); // už použitý
   });
   it('limit 3 za hodinu a max pokusů', async () => {
-    const otp = new OtpSluzba(db, 'tajemstvi');
+    const otp = new OtpSluzba(db, 'tajemstvi', { cooldownS: 0 });
     const kody: string[] = [];
     for (let i = 0; i < 3; i++)
       kody.push(((await otp.vydej('+420777000002', 'prihlaseni')) as { kod: string }).kod);
@@ -38,7 +38,7 @@ describe('OTP kódy', () => {
     expect(await otp.over('+420777000002', 'prihlaseni', kody[2]!)).toBe(false);
   });
   it('prošlý kód neplatí', async () => {
-    const otp = new OtpSluzba(db, 'tajemstvi');
+    const otp = new OtpSluzba(db, 'tajemstvi', { cooldownS: 0 });
     const { kod } = (await otp.vydej('+420777000003', 'prihlaseni')) as { kod: string };
     await sql`UPDATE otp_kody SET expires_at = now() - interval '1 minute' WHERE kontakt = '+420777000003'`.execute(
       db,

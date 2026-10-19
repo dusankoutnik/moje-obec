@@ -8,8 +8,27 @@ import type { Database } from './types.js';
 
 export type Db = Kysely<Database>;
 
-export function vytvorDb(connectionString: string, maxPool = 8): Db {
-  const pool = new pg.Pool({ connectionString, max: maxPool });
+export interface VolbyDb {
+  /** jak dlouho čekat na spojení z poolu / na připojení k serveru (ms) */
+  connectionTimeoutMillis?: number;
+  /** nejdelší dotaz (ms); 0 = bez limitu (migrace a importy si ho mohou vypnout) */
+  statementTimeoutMs?: number;
+  /** kam hlásit chyby nečinných spojení (restart Postgresu) — jinak by shodily proces */
+  priChybe?: (e: Error) => void;
+}
+
+export function vytvorDb(connectionString: string, maxPool = 8, volby: VolbyDb = {}): Db {
+  const pool = new pg.Pool({
+    connectionString,
+    max: maxPool,
+    connectionTimeoutMillis: volby.connectionTimeoutMillis ?? 10_000,
+    statement_timeout: volby.statementTimeoutMs ?? 30_000,
+  });
+  // nečinné spojení, které spadne (restart/výpadek Postgresu), vyvolá na poolu 'error' — bez posluchače by to
+  // byla neošetřená výjimka a pád celé aplikace; pool spojení zahodí a příště otevře nové
+  pool.on('error', (e) =>
+    (volby.priChybe ?? ((x) => console.error('Postgres: chyba nečinného spojení', x)))(e),
+  );
   return new Kysely<Database>({ dialect: new PostgresDialect({ pool }) });
 }
 

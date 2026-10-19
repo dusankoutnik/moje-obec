@@ -46,8 +46,25 @@ export interface TestApp {
   zavri(): Promise<void>;
 }
 
+/** testy smějí mazat jen databázi, jejíž název končí na _test (ochrana před překlepem v TEST_DATABASE_URL) */
+export function jeTestovaciDb(url: string): boolean {
+  try {
+    const jmeno = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''));
+    return /_test$/.test(jmeno);
+  } catch {
+    return false;
+  }
+}
+
 // vyprázdní schéma (migrace si ho při startu aplikace znovu postaví)
-export async function vycistiDb(db: Db) {
+export async function vycistiDb(db: Db, url = TEST_DB_URL) {
+  if (!jeTestovaciDb(url))
+    throw new Error(
+      `Testy mažou celé schéma — databáze v TEST_DATABASE_URL musí končit na _test (${url.replace(/\/\/[^@]*@/, '//…@')})`,
+    );
+  const r = await sql<{ db: string }>`SELECT current_database() AS db`.execute(db);
+  if (!/_test$/.test(r.rows[0]!.db))
+    throw new Error(`Připojená databáze ${r.rows[0]!.db} nekončí na _test — schéma nesmažu`);
   await sql`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`.execute(db);
 }
 
@@ -63,6 +80,7 @@ export async function spustTestApp(volby: { vycistit?: boolean } = {}): Promise<
     OIDC_COOKIE_SECRET: 'b'.repeat(64),
     OIDC_PLATFORMA_SECRET: 'c'.repeat(32),
     OTP_DEV_ZOBRAZIT: '1',
+    OTP_COOLDOWN_S: '0',
     LOG_LEVEL: 'silent',
     DATA_DIR: '/tmp/platforma-test-data',
     IK_SMS_INTERVAL_MIN_MS: '1',

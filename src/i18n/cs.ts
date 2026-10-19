@@ -54,6 +54,8 @@ export const cs = {
     kod_odeslan: 'Kód jsme poslali na číslo {telefon}.',
     kod_nespravny: 'Kód nesouhlasí nebo vypršel. Zkuste to znovu, nebo si nechte poslat nový.',
     limit: 'Příliš mnoho pokusů — zkuste to prosím za hodinu.',
+    predvolba:
+      'Na toto číslo kódy SMSkou neposíláme (jen česká a slovenská čísla). Obraťte se prosím na úřad.',
     telefon_neplatny: 'To nevypadá jako telefonní číslo. Zadejte ho ve tvaru 777 123 456.',
     overit: 'Přihlásit',
     nebo_heslem: 'Mám e-mail a heslo',
@@ -238,6 +240,10 @@ export const cs = {
     uz_odebira: 'Toto číslo už hlášení dostává. Chcete si odběr upravit? Přihlaste se kódem.',
     spravovat_kodem: 'Spravovat odběr (kód z SMS)',
     kategorie_nastaveny: 'Nastavení odběru je uložené.',
+    email_obsazeny:
+      'Odběr je potvrzený, ale zadaný e-mail už používá jiný odběr — e-mail jsme proto neuložili. Zkontrolujte ho v nastavení.',
+    sms_dlouha: 'Text SMS je příliš dlouhý ({znaku} znaků i s předponou, nejvýš {max}). Zkraťte ho prosím.',
+    naplanovani_neplatne: 'Čas naplánování není platný.',
     kontakt_chybi: 'Zadejte telefon.',
     hlaseni: 'Hlášení',
     nove_hlaseni: 'Nové hlášení',
@@ -400,6 +406,15 @@ export const cs = {
       'Jen výjimečně (dokument vyvěšen omylem, byl zrušen). Dokument zůstane v archivu s uvedeným důvodem.',
     sejmout_potvrdit: 'Opravdu sejmout dokument z úřední desky ještě před koncem lhůty?',
     sejmout_duvod_chybi: 'Napište důvod předčasného sejmutí.',
+    sejmout_nevisi:
+      'Dokument teď na desce nevisí (ještě nebyl vyvěšen, už je sejmutý nebo je v koši) — není co sejmout.',
+    chyba_od_minulost:
+      'Datum vyvěšení nemůže být v minulosti — lhůta se počítá od skutečného vyvěšení. Zpětné datum smí zadat jen správce s důvodem.',
+    chyba_od_vyveseny: 'Datum vyvěšení už vyvěšeného dokumentu smí změnit jen správce (s uvedením důvodu).',
+    chyba_duvod_data: 'Napište důvod zpětného data nebo změny data vyvěšení.',
+    duvod_data: 'Důvod zpětného data / změny data vyvěšení',
+    duvod_data_napoveda:
+      'Jen pro správce: vyplňte, pokud datum vyvěšení leží v minulosti nebo měníte datum už vyvěšeného dokumentu. Zapíše se do auditu.',
     sejmuto_ok: 'Dokument je sejmutý a je v archivu.',
     do_kose: 'Přesunout do koše',
     kos_napoveda: 'Dokument zmizí z webu i z archivu. Z koše ho jde kdykoliv obnovit.',

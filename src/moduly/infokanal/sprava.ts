@@ -6,6 +6,19 @@ import { vyzadujRoli } from '../ucty/opravneni.js';
 import { sanitizuj, textNaHtml, textZHtml, zkrat } from '../../lib/html.js';
 import { PRAZDNA_POLE } from '../web/obsah.js';
 import type { InfokanalSluzba } from './sluzba.js';
+import { casPraha } from '../../lib/datum.js';
+
+/** hodnota z <input type="datetime-local"> (YYYY-MM-DDTHH:MM) je čas v Praze, ne v pásmu serveru */
+export function naplanovanoZFormulare(v: unknown): Date | null | 'neplatne' {
+  const s = String(v ?? '').trim();
+  if (!s) return null;
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::\d{2})?$/.exec(s);
+  if (!m) return 'neplatne';
+  const h = Number(m[2]);
+  const min = Number(m[3]);
+  if (h > 23 || min > 59) return 'neplatne';
+  return casPraha(m[1]!, h, min) ?? 'neplatne';
+}
 import type { RozesilaciFronta } from './fronta.js';
 
 export default async function infokanalSprava(
@@ -47,7 +60,9 @@ export default async function infokanalSprava(
           smsPrefix: app.obec.texty.sms_prefix,
         });
       const cilDetail = b.casti === undefined ? [] : Array.isArray(b.casti) ? b.casti : [b.casti];
-      const naplanovano = String(b.naplanovano_na ?? '').trim() ? new Date(String(b.naplanovano_na)) : null;
+      const naplanovanoVstup = naplanovanoZFormulare(b.naplanovano_na);
+      if (naplanovanoVstup === 'neplatne') return vykresli(t('infokanal.naplanovani_neplatne'));
+      const naplanovano = naplanovanoVstup;
       const v = await sluzba.zalozHlaseni(req.uzivatel!.id, {
         kategorieId: Number(b.kategorie_id),
         krizove: b.krizove === 'ano',
@@ -58,16 +73,18 @@ export default async function infokanalSprava(
         emailText: String(b.email_text ?? '').trim() || null,
         clanekTitulek: String(b.clanek_titulek ?? '').trim() || null,
         clanekHtml: String(b.clanek_text ?? '').trim() || null,
-        naplanovanoNa: naplanovano && !Number.isNaN(naplanovano.getTime()) ? naplanovano : null,
+        naplanovanoNa: naplanovano,
         smsJenBezEmailu: b.sms_jen_bez_emailu === 'ano',
       });
       if ('chyba' in v)
         return vykresli(
-          v.chyba === 'zadny_kanal'
-            ? t('infokanal.zadny_kanal')
-            : v.chyba === 'zadny_prijemce'
-              ? t('infokanal.zadny_prijemce')
-              : 'Neplatná kategorie.',
+          v.chyba === 'sms_dlouha'
+            ? t('infokanal.sms_dlouha', { znaku: v.znaku, max: v.max })
+            : v.chyba === 'zadny_kanal'
+              ? t('infokanal.zadny_kanal')
+              : v.chyba === 'zadny_prijemce'
+                ? t('infokanal.zadny_prijemce')
+                : 'Neplatná kategorie.',
         );
       fronta.kopni();
       // článek z hlášení → aktualita na webu obce (modul web), s datem rozeslání

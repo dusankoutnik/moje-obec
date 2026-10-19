@@ -1,8 +1,8 @@
 // Úřední deska — doménová logika: vyvěšení/sejmutí, zákonné minimum doby vyvěšení, rozpočtová dokumentace
 // („zveřejněno do schválení nového“), přílohy, hledání. Čisté funkce (zkontrolujDobu, coNahrazuje) bez DB kvůli testům.
-import { sql } from 'kysely';
+import { sql, type Kysely } from 'kysely';
 import type { Db } from '../../db/index.js';
-import type { UdKategorie } from '../../db/types.js';
+import type { Database, UdKategorie } from '../../db/types.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { datumPraha, konecDne, rozdilDni, zacatekDne } from '../../lib/datum.js';
 import { odpovida, tsDotaz } from '../../lib/hledani.js';
@@ -281,77 +281,103 @@ export class DeskaSluzba {
     ip?: string | null,
     puvodniUrl?: string | null,
   ): Promise<string> {
-    const hodnoty = {
-      nazev: data.nazev,
-      kategorie_id: data.kategorieId,
-      cislo_jednaci: data.cisloJednaci,
-      puvodce: data.puvodce,
-      popis: data.popis,
-      vyveseno_od: zacatekDne(data.od)!,
-      sejmuto_do: data.do ? konecDne(data.do)! : null,
-      typ_rozpoctu: data.typRozpoctu,
-      rok: data.rok,
-      upraveno_at: new Date(),
-    };
-    let novyId: string;
-    if (id) {
-      await this.db.updateTable('ud_dokumenty').set(hodnoty).where('id', '=', id).execute();
-      novyId = id;
-    } else {
-      const r = await this.db
-        .insertInto('ud_dokumenty')
-        .values({ ...hodnoty, autor_id: aktorId, puvodni_url: puvodniUrl ?? null })
-        .returning('id')
-        .executeTakeFirstOrThrow();
-      novyId = r.id;
-    }
-    const nahrazeno = data.typRozpoctu ? await this.nahradStarsi(novyId, data) : 0;
+    const vysledek = await this.db.transaction().execute(async (trx) => {
+      const puvodni = id
+        ? await trx.selectFrom('ud_dokumenty').selectAll().where('id', '=', id).executeTakeFirst()
+        : undefined;
+      // Den se nezměnil → ponechat přesný čas (jinak by uložení formuláře vrátilo dnes sejmutý dokument
+      // na desku až do půlnoci, nebo posunulo okamžik vyvěšení).
+      const odBeze =
+        puvodni && datumPraha(puvodni.vyveseno_od) === data.od ? puvodni.vyveseno_od : zacatekDne(data.od)!;
+      const doBeze =
+        puvodni && (puvodni.sejmuto_do ? datumPraha(puvodni.sejmuto_do) : null) === data.do
+          ? puvodni.sejmuto_do
+          : data.do
+            ? konecDne(data.do)!
+            : null;
+      const doZmeneno = !!puvodni && doBeze !== puvodni.sejmuto_do;
+      const hodnoty = {
+        nazev: data.nazev,
+        kategorie_id: data.kategorieId,
+        cislo_jednaci: data.cisloJednaci,
+        puvodce: data.puvodce,
+        popis: data.popis,
+        vyveseno_od: odBeze,
+        sejmuto_do: doBeze,
+        typ_rozpoctu: data.typRozpoctu,
+        rok: data.rok,
+        upraveno_at: new Date(),
+        // ruční změna data sejmutí u nahrazeného dokumentu = úřad rozhodl sám, obnova už ho nepřepíše
+        ...(doZmeneno ? { nahrazeno_id: null, pred_nahrazenim_do: null, pred_nahrazenim_duvod: null } : {}),
+      };
+      let novyId: string;
+      if (id) {
+        await trx.updateTable('ud_dokumenty').set(hodnoty).where('id', '=', id).execute();
+        novyId = id;
+        // co tento dokument dřív sejmul jako nahrazené, vrátit — pravidla se hned použijí znovu s novými údaji
+        await obnovNahrazene(trx, id);
+      } else {
+        const r = await trx
+          .insertInto('ud_dokumenty')
+          .values({ ...hodnoty, autor_id: aktorId, puvodni_url: puvodniUrl ?? null })
+          .returning('id')
+          .executeTakeFirstOrThrow();
+        novyId = r.id;
+      }
+      const vKosi = !!puvodni?.smazano_at;
+      const nahrazeno =
+        data.typRozpoctu && !vKosi
+          ? await nahradStarsi(trx, novyId, data.typRozpoctu, data.rok, data.nazev, odBeze)
+          : 0;
+      return { novyId, nahrazeno };
+    });
     await zapisAudit(this.db, {
       uzivatelId: aktorId,
       akce: id ? 'deska.uprava' : 'deska.vyveseni',
-      detail: { id: novyId, nazev: data.nazev, od: data.od, do: data.do, nahrazeno },
+      detail: {
+        id: vysledek.novyId,
+        nazev: data.nazev,
+        od: data.od,
+        do: data.do,
+        nahrazeno: vysledek.nahrazeno,
+      },
       ip,
     });
-    return novyId;
+    return vysledek.novyId;
   }
 
-  // rozpočtová dokumentace: starší dokumenty, které nový nahrazuje, se sejmou k datu jeho vyvěšení
-  private async nahradStarsi(id: string, data: DataDokumentu): Promise<number> {
-    if (!data.typRozpoctu || !data.rok) return 0;
-    const od = zacatekDne(data.od)!;
-    let n = 0;
-    for (const pravidlo of coNahrazuje(data.typRozpoctu)) {
-      const r = await this.db
-        .updateTable('ud_dokumenty')
-        .set({ sejmuto_do: od, sejmuti_duvod: `nahrazeno: ${data.nazev}`, upraveno_at: new Date() })
-        .where('id', '!=', id)
-        .where('smazano_at', 'is', null)
-        .where('typ_rozpoctu', '=', pravidlo.typ)
-        .where('rok', pravidlo.rok === 'starsi' ? '<' : '<=', data.rok)
-        .where('vyveseno_od', '<', od)
-        .where((eb) => eb.or([eb('sejmuto_do', 'is', null), eb('sejmuto_do', '>', od)]))
-        .executeTakeFirst();
-      n += Number(r.numUpdatedRows ?? 0);
-    }
-    return n;
-  }
-
-  /** předčasné sejmutí (před koncem lhůty) — vždy s důvodem, auditováno */
-  async sejmiHned(id: string, duvod: string, aktorId: string, ip?: string | null) {
-    await this.db
+  /** předčasné sejmutí (před koncem lhůty) — vždy s důvodem, auditováno; jen dokument, který právě visí */
+  async sejmiHned(id: string, duvod: string, aktorId: string, ip?: string | null): Promise<boolean> {
+    const ted = new Date();
+    const r = await this.db
       .updateTable('ud_dokumenty')
-      .set({ sejmuto_do: new Date(), sejmuti_duvod: duvod, upraveno_at: new Date() })
+      .set({ sejmuto_do: ted, sejmuti_duvod: duvod, upraveno_at: ted })
       .where('id', '=', id)
-      .execute();
+      .where('smazano_at', 'is', null)
+      .where('vyveseno_od', '<=', ted)
+      .where((eb) => eb.or([eb('sejmuto_do', 'is', null), eb('sejmuto_do', '>', ted)]))
+      .executeTakeFirst();
+    if (!Number(r.numUpdatedRows ?? 0)) return false;
     await zapisAudit(this.db, { uzivatelId: aktorId, akce: 'deska.sejmuti', detail: { id, duvod }, ip });
+    return true;
   }
 
   async doKose(id: string, smazat: boolean, aktorId: string, ip?: string | null) {
-    await this.db
-      .updateTable('ud_dokumenty')
-      .set({ smazano_at: smazat ? new Date() : null })
-      .where('id', '=', id)
-      .execute();
+    await this.db.transaction().execute(async (trx) => {
+      await trx
+        .updateTable('ud_dokumenty')
+        .set({ smazano_at: smazat ? new Date() : null })
+        .where('id', '=', id)
+        .execute();
+      if (smazat) {
+        // dokument v koši nic nenahrazuje — co sejmul, se vrací na desku
+        await obnovNahrazene(trx, id);
+      } else {
+        const d = await trx.selectFrom('ud_dokumenty').selectAll().where('id', '=', id).executeTakeFirst();
+        if (d?.typ_rozpoctu && (TYPY_ROZPOCTU as readonly string[]).includes(d.typ_rozpoctu))
+          await nahradStarsi(trx, id, d.typ_rozpoctu as TypRozpoctu, d.rok, d.nazev, d.vyveseno_od);
+      }
+    });
     await zapisAudit(this.db, {
       uzivatelId: aktorId,
       akce: smazat ? 'deska.kos' : 'deska.obnoveni',
@@ -408,6 +434,62 @@ export class DeskaSluzba {
         .onConflict((oc) => oc.column('slug').doNothing())
         .execute();
   }
+}
+
+type DbNeboTrx = Kysely<Database>;
+
+// dotaz na dokumenty, které nový dokument rozpočtové dokumentace nahrazuje (sejmou se k datu jeho vyvěšení)
+function dotazNahrazovanych(db: DbNeboTrx, typ: TypRozpoctu, rok: number, od: Date, mimoId: string | null) {
+  return db
+    .selectFrom('ud_dokumenty')
+    .where('smazano_at', 'is', null)
+    .$if(!!mimoId, (q) => q.where('id', '!=', mimoId!))
+    .where((eb) =>
+      eb.or(
+        coNahrazuje(typ).map((p) =>
+          eb.and([eb('typ_rozpoctu', '=', p.typ), eb('rok', p.rok === 'starsi' ? '<' : '<=', rok)]),
+        ),
+      ),
+    )
+    .where('vyveseno_od', '<', od)
+    .where((eb) => eb.or([eb('sejmuto_do', 'is', null), eb('sejmuto_do', '>', od)]));
+}
+
+// Rozpočtová dokumentace: starší dokumenty, které nový nahrazuje, se sejmou k datu jeho vyvěšení.
+// Vratně — u sejmutého se pamatuje, kdo ho sejmul a jak visel předtím (překlep v roce, koš → obnovNahrazene).
+async function nahradStarsi(
+  db: DbNeboTrx,
+  id: string,
+  typ: TypRozpoctu,
+  rok: number | null,
+  nazev: string,
+  od: Date,
+): Promise<number> {
+  if (!rok || !coNahrazuje(typ).length) return 0;
+  const ids = (await dotazNahrazovanych(db, typ, rok, od, id).select('id').execute()).map((r) => r.id);
+  if (!ids.length) return 0;
+  await sql`
+    UPDATE ud_dokumenty SET
+      pred_nahrazenim_do = CASE WHEN nahrazeno_id IS NULL THEN sejmuto_do ELSE pred_nahrazenim_do END,
+      pred_nahrazenim_duvod = CASE WHEN nahrazeno_id IS NULL THEN sejmuti_duvod ELSE pred_nahrazenim_duvod END,
+      nahrazeno_id = ${id},
+      sejmuto_do = ${od},
+      sejmuti_duvod = ${'nahrazeno: ' + nazev},
+      upraveno_at = now()
+    WHERE id IN (${sql.join(ids)})`.execute(db);
+  return ids.length;
+}
+
+// vrátí dokumenty, které daný dokument sejmul jako nahrazené, do stavu před nahrazením
+async function obnovNahrazene(db: DbNeboTrx, id: string): Promise<number> {
+  const r = await sql`
+    UPDATE ud_dokumenty SET
+      sejmuto_do = pred_nahrazenim_do,
+      sejmuti_duvod = coalesce(pred_nahrazenim_duvod, ''),
+      nahrazeno_id = NULL, pred_nahrazenim_do = NULL, pred_nahrazenim_duvod = NULL,
+      upraveno_at = now()
+    WHERE nahrazeno_id = ${id}`.execute(db);
+  return Number(r.numAffectedRows ?? 0);
 }
 
 export function dnesPraha() {

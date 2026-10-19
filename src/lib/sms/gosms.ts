@@ -6,6 +6,7 @@
 // Stav: GET /api/v1/messages/{id} → delivery.recipients.{delivered|undelivered|delivering}
 // Webhook: POST pole událostí [{event:"delivery", delivery:{…}, links:{message:"/api/v1/messages/<id>"}}] — bez podpisu, jen Basic auth v URL.
 import { SmsChyba, type SmsPoskytovatel, type StavDoruceni, type VysledekOdeslani } from './typy.js';
+import { chybaOdpovedi, jsonZ, volejBranu, type OdpovedBrany } from './http.js';
 
 export interface GoSmsKonfigurace {
   clientId: string;
@@ -14,6 +15,8 @@ export interface GoSmsKonfigurace {
   channel: string;
   baseUrl?: string;
   fetch?: typeof fetch;
+  /** časový limit požadavku (ms) */
+  timeoutMs?: number;
 }
 
 interface Delivery {
@@ -55,28 +58,37 @@ export class GoSms implements SmsPoskytovatel {
 
   private async ziskejToken(): Promise<string> {
     if (this.token && this.token.platiDo > Date.now() + 60_000) return this.token.hodnota;
-    const res = await this.f(`${this.base}/oauth/v2/token`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: this.cfg.clientId,
-        client_secret: this.cfg.clientSecret,
-        grant_type: 'client_credentials',
-      }),
-    });
-    if (!res.ok)
-      throw new SmsChyba(`GoSMS token ${res.status}: ${(await res.text()).slice(0, 200)}`, res.status >= 500);
-    const data = (await res.json()) as { access_token: string; expires_in?: number };
+    const o = await volejBranu(
+      this.f,
+      'GoSMS',
+      `${this.base}/oauth/v2/token`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: this.cfg.clientId,
+          client_secret: this.cfg.clientSecret,
+          grant_type: 'client_credentials',
+        }),
+      },
+      this.cfg.timeoutMs,
+    );
+    if (!o.ok) throw chybaOdpovedi('GoSMS token', o);
+    const data = jsonZ<{ access_token?: string; expires_in?: number }>(o);
+    if (!data?.access_token) throw new SmsChyba('GoSMS token: neočekávaná odpověď', true);
     this.token = { hodnota: data.access_token, platiDo: Date.now() + (data.expires_in ?? 3600) * 1000 };
     return data.access_token;
   }
 
-  private async api(cesta: string, init: RequestInit = {}, opakovat = true): Promise<Response> {
+  private async api(cesta: string, init: RequestInit = {}, opakovat = true): Promise<OdpovedBrany> {
     const token = await this.ziskejToken();
-    const res = await this.f(`${this.base}${cesta}`, {
-      ...init,
-      headers: { ...(init.headers as Record<string, string>), authorization: `Bearer ${token}` },
-    });
+    const res = await volejBranu(
+      this.f,
+      'GoSMS',
+      `${this.base}${cesta}`,
+      { ...init, headers: { ...(init.headers as Record<string, string>), authorization: `Bearer ${token}` } },
+      this.cfg.timeoutMs,
+    );
     if (res.status === 401 && opakovat) {
       this.token = null;
       return this.api(cesta, init, false);
@@ -90,21 +102,18 @@ export class GoSms implements SmsPoskytovatel {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ message: text, channel: Number(this.cfg.channel), recipients: [telefon] }),
     });
-    if (res.status !== 201) {
-      const t = await res.text();
-      throw new SmsChyba(`GoSMS ${res.status}: ${t.slice(0, 300)}`, res.status >= 500);
-    }
-    const data = (await res.json()) as { link?: string; recipients?: { invalid?: string[] } };
+    if (res.status !== 201) throw chybaOdpovedi('GoSMS', res);
+    const data = jsonZ<{ link?: string; recipients?: { invalid?: string[] } }>(res);
+    if (!data) throw new SmsChyba('GoSMS: neočekávaná odpověď', true);
     if (data.recipients?.invalid?.includes(telefon)) throw new SmsChyba(`GoSMS: neplatné číslo ${telefon}`);
     const id = data.link?.split('/').pop() ?? null;
     return { branaId: id };
   }
 
   async stavDoruceni(branaId: string): Promise<StavDoruceni> {
-    const res = await this.api(`/api/v1/messages/${encodeURIComponent(branaId)}`);
-    if (!res.ok) return 'nezjisteno';
-    const data = (await res.json()) as { delivery?: Delivery };
-    return gosmsStav(data.delivery);
+    const res = await this.api(`/api/v1/messages/${encodeURIComponent(branaId)}`).catch(() => null);
+    if (!res?.ok) return 'nezjisteno';
+    return gosmsStav(jsonZ<{ delivery?: Delivery }>(res)?.delivery);
   }
 
   async zpracujWebhook(telo: unknown): Promise<{ branaId: string; stav: StavDoruceni }[]> {

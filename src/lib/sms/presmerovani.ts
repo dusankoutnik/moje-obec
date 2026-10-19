@@ -53,4 +53,15 @@ export class PresmerovaniSms implements SmsPoskytovatel {
   get zpracujWebhook() {
     return this.zaklad.zpracujWebhook?.bind(this.zaklad);
   }
+
+  // hromadné doručenky z obou poskytovatelů (id ze skutečné brány dostanou předponu jako při odeslání)
+  get stahniDorucenky() {
+    const z = this.zaklad.stahniDorucenky?.bind(this.zaklad);
+    const s = this.skutecny.stahniDorucenky?.bind(this.skutecny);
+    if (!z && !s) return undefined;
+    return async () => [
+      ...(z ? await z() : []),
+      ...(s ? (await s()).map((d) => ({ ...d, branaId: PREFIX + d.branaId })) : []),
+    ];
+  }
 }

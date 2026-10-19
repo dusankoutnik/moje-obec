@@ -9,6 +9,7 @@
 // nebo PUSH na URL nastavenou v administraci (GET/POST parametry income_id, number, status, time, sms_id).
 import { createHash, randomBytes } from 'node:crypto';
 import { SmsChyba, type SmsPoskytovatel, type StavDoruceni, type VysledekOdeslani } from './typy.js';
+import { chybaOdpovedi, volejBranu } from './http.js';
 
 export interface SmsBranaKonfigurace {
   login: string;
@@ -17,6 +18,8 @@ export interface SmsBranaKonfigurace {
   odesilatel?: string;
   url?: string;
   fetch?: typeof fetch;
+  /** časový limit požadavku (ms) */
+  timeoutMs?: number;
   /** pro testy: pevný čas */
   ted?: () => Date;
 }
@@ -88,20 +91,29 @@ export class SmsBrana implements SmsPoskytovatel {
 
   private async zavolej(params: Record<string, string>): Promise<string> {
     const q = new URLSearchParams({ ...this.auth(), ...params });
-    const res = await this.f(`${this.url}?${q.toString()}`, { method: 'GET' });
-    const text = await res.text();
-    if (!res.ok) throw new SmsChyba(`SMSbrána HTTP ${res.status}`, res.status >= 500);
-    const err = xmlHodnota(text, 'err');
-    if (err !== null && err !== '0')
+    const o = await volejBranu(
+      this.f,
+      'SMSbrána',
+      `${this.url}?${q.toString()}`,
+      { method: 'GET' },
+      this.cfg.timeoutMs,
+    );
+    if (!o.ok) throw chybaOdpovedi('SMSbrána', { ...o, text: '' });
+    const err = xmlHodnota(o.text, 'err');
+    // úspěch je jen výslovné <err>0</err> — HTML chybová stránka nebo prázdná odpověď není „odesláno“
+    if (err === null) throw new SmsChyba('SMSbrána: neočekávaná odpověď (chybí <err>)', true);
+    if (err !== '0')
       throw new SmsChyba(`SMSbrána chyba ${err}: ${CHYBY[err] ?? 'neznámá'}`, DOCASNE.has(err));
-    return text;
+    return o.text;
   }
 
   async posli(telefon: string, text: string): Promise<VysledekOdeslani> {
+    // delší text brána odmítne (chyba 12); tiché oříznutí by poslalo jiný text, než úřad schválil
+    if (text.length > 459) throw new SmsChyba(`SMSbrána: zpráva má ${text.length} znaků, nejvýš 459`);
     const params: Record<string, string> = {
       action: 'send_sms',
       number: telefon,
-      message: text.slice(0, 459),
+      message: text,
       delivery_report: '1',
     };
     if (this.cfg.odesilatel) params.sender_id = this.cfg.odesilatel;

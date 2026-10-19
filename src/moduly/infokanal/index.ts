@@ -18,7 +18,7 @@ declare module 'fastify' {
 
 // fastify-plugin: dekorátory (app.ucty, app.infokanal…) mají být vidět v celé aplikaci, ne jen v tomto modulu
 async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }) {
-  const sluzba = new InfokanalSluzba(app.db);
+  const sluzba = new InfokanalSluzba(app.db, { smsPrefix: app.obec.texty.sms_prefix });
   const fronta = new RozesilaciFronta(
     app.db,
     app.sms,
@@ -65,8 +65,12 @@ async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }
   if (!volby.planovac) fronta.vypniPlanovac();
   if (volby.planovac) {
     app.addHook('onReady', async () => fronta.kopni());
-    const kazdouMinutu = new Cron('* * * * *', () => fronta.kopni());
-    const dorucenky = new Cron('*/5 * * * *', async () => {
+    const kazdouMinutu = new Cron('* * * * *', { protect: true }, async () => {
+      await fronta.uklidZaseknute().catch((e) => app.log.warn({ err: e }, 'fronta: úklid zaseknutých'));
+      fronta.kopni();
+    });
+    // protect: další běh nezačne, dokud předchozí (pomalá brána) neskončí
+    const dorucenky = new Cron('*/5 * * * *', { protect: true }, async () => {
       await fronta.aktualizujDorucenky().catch((e) => app.log.warn({ err: e }, 'doručenky'));
     });
     app.addHook('onClose', async () => {

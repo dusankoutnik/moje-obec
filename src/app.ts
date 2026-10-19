@@ -16,7 +16,8 @@ import type { UlozenyVzhled } from './moduly/web/vzhled.js';
 import { vytvorT, type T } from './i18n/index.js';
 import { vytvorLogger } from './lib/logger.js';
 import type { FastifyBaseLogger } from 'fastify';
-import { OtpSluzba } from './lib/otp.js';
+import { OtpSluzba, rozeberPredvolby } from './lib/otp.js';
+import { sql } from 'kysely';
 import { vytvorLimit, type Limit } from './lib/limit.js';
 import { KonzoleMail, SmtpMail, type MailPoskytovatel } from './lib/mail.js';
 import { vytvorSmsPoskytovatele } from './lib/sms/index.js';
@@ -97,7 +98,11 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   });
 
   const obec = volby.obec ?? nactiObec(path.resolve(env.OBEC_YML));
-  const db = volby.db ?? vytvorDb(env.DATABASE_URL);
+  const db =
+    volby.db ??
+    vytvorDb(env.DATABASE_URL, 8, {
+      priChybe: (e) => log.error({ err: e }, 'Postgres: chyba nečinného spojení'),
+    });
   await pockejNaDb(db);
   if (volby.migrovat !== false) await migruj(db, log);
 
@@ -107,7 +112,15 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   app.decorate('t', vytvorT('cs'));
   app.decorate('sms', volby.sms ?? vytvorSmsPoskytovatele(env, log));
   app.decorate('mail', volby.mail ?? vytvorMail(env, log));
-  app.decorate('otp', new OtpSluzba(db, env.SESSION_SECRET));
+  app.decorate(
+    'otp',
+    new OtpSluzba(db, env.SESSION_SECRET, {
+      cooldownS: env.OTP_COOLDOWN_S,
+      predvolby: rozeberPredvolby(env.SMS_POVOLENE_PREDVOLBY),
+      denniRozpocetSms: env.SMS_DENNI_LIMIT_KODU,
+      priVycerpaniRozpoctu: (pocet) => upozorniNaRozpocetSms(app, pocet),
+    }),
+  );
   app.decorate('limity', {
     poslat: vytvorLimit(10, 15),
     overit: vytvorLimit(20, 15),
@@ -251,6 +264,39 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   });
 
   return app;
+}
+
+// Denní rozpočet SMS s kódy je vyčerpaný (možné zneužití) — záznam do nastavení a e-mail správcům.
+async function upozorniNaRozpocetSms(app: FastifyInstance, pocet: number) {
+  app.log.error({ pocet, limit: app.env.SMS_DENNI_LIMIT_KODU }, 'vyčerpán denní rozpočet SMS s kódy');
+  const stav = { at: new Date().toISOString(), pocet, limit: app.env.SMS_DENNI_LIMIT_KODU };
+  await app.db
+    .insertInto('nastaveni')
+    .values({ klic: 'sms_rozpocet_vycerpan', hodnota: JSON.stringify(stav) })
+    .onConflict((oc) =>
+      oc.column('klic').doUpdateSet({ hodnota: JSON.stringify(stav), upraven_at: new Date() }),
+    )
+    .execute();
+  const spravci = await app.db
+    .selectFrom('uzivatele')
+    .select('email')
+    .where('email', 'is not', null)
+    .where('blokovan_at', 'is', null)
+    .where(sql<boolean>`role && ARRAY['admin','spravce']::text[]`)
+    .execute();
+  for (const s of spravci) {
+    await app.mail
+      .posli({
+        komu: s.email!,
+        predmet: `${app.obec.obec.nazev}: vyčerpán denní limit SMS s ověřovacími kódy`,
+        text:
+          `Za posledních 24 hodin bylo vydáno ${pocet} kódů SMSkou (limit ${app.env.SMS_DENNI_LIMIT_KODU}). ` +
+          `Další kódy se do vypršení limitu neposílají — přihlášení SMSkou teď nefunguje.\n\n` +
+          `Může jít o zneužití (hromadné žádosti o kódy na cizí čísla). Zkontrolujte log aplikace; ` +
+          `limit lze upravit proměnnou SMS_DENNI_LIMIT_KODU.`,
+      })
+      .catch((e) => app.log.warn({ err: e }, 'upozornění na rozpočet SMS se nepodařilo odeslat'));
+  }
 }
 
 function vytvorMail(env: Env, log: FastifyBaseLogger): MailPoskytovatel {

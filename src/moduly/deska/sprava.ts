@@ -131,6 +131,29 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
     };
   }
 
+  /**
+   * Zákonná lhůta se počítá od skutečného vyvěšení — datum „od“ v minulosti by dokument jen naoko prodloužil.
+   * Nový dokument: od nejdřív dnes (správce smí zpětně s důvodem, např. dokument visel na papírové desce).
+   * Už vyvěšený dokument: změnit „od“ smí jen správce s důvodem. Vrací text chyby, nebo null.
+   */
+  function kontrolaData(
+    req: FastifyRequest,
+    b: Telo,
+    od: string,
+    puvodni?: { vyveseno_od: Date },
+  ): { chyba: string } | { duvod: string | null } {
+    const dnes = datumPraha(new Date());
+    const zmeneno = puvodni ? datumPraha(puvodni.vyveseno_od) !== od : true;
+    if (!zmeneno) return { duvod: null };
+    const uzVisi = !!puvodni && puvodni.vyveseno_od <= new Date();
+    if (od >= dnes && !uzVisi) return { duvod: null };
+    if (!maRoli(req.uzivatel, 'spravce'))
+      return { chyba: t(uzVisi ? 'deska.chyba_od_vyveseny' : 'deska.chyba_od_minulost') };
+    const duvod = jeden(b.duvod_data).slice(0, 300);
+    if (!duvod) return { chyba: t('deska.chyba_duvod_data') };
+    return { duvod };
+  }
+
   // přílohy z formuláře → úložiště; vrací id uložených a chyby jednotlivých souborů
   async function ulozPrilohy(req: FastifyRequest): Promise<{ ids: string[]; chyby: string[] }> {
     const ids: string[] = [];
@@ -185,12 +208,22 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
     const v = await nactiFormular(b);
     if ('chyba' in v)
       return reply.code(400).view('deska/sprava/formular', await formular(req, { f: b, chyba: v.chyba }));
+    const datum = kontrolaData(req, b, v.data.od);
+    if ('chyba' in datum)
+      return reply.code(400).view('deska/sprava/formular', await formular(req, { f: b, chyba: datum.chyba }));
     const prilohy = await ulozPrilohy(req);
     if (prilohy.chyby.length)
       return reply
         .code(400)
         .view('deska/sprava/formular', await formular(req, { f: b, chyba: prilohy.chyby.join(' ') }));
     const id = await sluzba.uloz(null, v.data, req.uzivatel!.id, req.ip);
+    if (datum.duvod)
+      await zapisAudit(app.db, {
+        uzivatelId: req.uzivatel!.id,
+        akce: 'deska.zpetne_datum',
+        detail: { id, od: v.data.od, duvod: datum.duvod },
+        ip: req.ip,
+      });
     await sluzba.pridejPrilohy(id, prilohy.ids);
     const prijemcu = await rozesli(req, id, v.data, b);
     const vyveseno = casPraha(v.data.od)! <= new Date();
@@ -238,8 +271,23 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
             'deska/sprava/formular',
             await formular(req, { d, f: b, chyba: v.chyba, prilohy: d.prilohy }),
           );
+      const datum = kontrolaData(req, b, v.data.od, d);
+      if ('chyba' in datum)
+        return reply
+          .code(400)
+          .view(
+            'deska/sprava/formular',
+            await formular(req, { d, f: b, chyba: datum.chyba, prilohy: d.prilohy }),
+          );
       const prilohy = await ulozPrilohy(req);
       await sluzba.uloz(d.id, v.data, req.uzivatel!.id, req.ip);
+      if (datum.duvod)
+        await zapisAudit(app.db, {
+          uzivatelId: req.uzivatel!.id,
+          akce: 'deska.zmena_data',
+          detail: { id: d.id, z: datumPraha(d.vyveseno_od), na: v.data.od, duvod: datum.duvod },
+          ip: req.ip,
+        });
       await sluzba.pridejPrilohy(d.id, prilohy.ids);
       await sluzba.odeberPrilohy(d.id, vice(b.odebrat).map(String));
       req.session.flash = prilohy.chyby.length
@@ -260,8 +308,10 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
         req.session.flash = { typ: 'chyba', text: t('deska.sejmout_duvod_chybi') };
         return reply.redirect(`/sprava/deska/${d.id}`);
       }
-      await sluzba.sejmiHned(d.id, duvod, req.uzivatel!.id, req.ip);
-      req.session.flash = { typ: 'ok', text: t('deska.sejmuto_ok') };
+      const ok = await sluzba.sejmiHned(d.id, duvod, req.uzivatel!.id, req.ip);
+      req.session.flash = ok
+        ? { typ: 'ok', text: t('deska.sejmuto_ok') }
+        : { typ: 'chyba', text: t('deska.sejmout_nevisi') };
       return reply.redirect(`/sprava/deska/${d.id}`);
     },
   );

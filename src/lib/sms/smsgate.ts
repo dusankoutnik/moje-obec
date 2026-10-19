@@ -1,13 +1,16 @@
 // SMSGate (sms-gate.app) — Android telefon jako GSM brána, cloud nebo vlastní server.
 // Používáme pro vývoj; pro obce není oficiální cestou (viz docs/MODULY.md — infokanál).
 // API: POST <URL> {message, phoneNumbers:[…]} s Basic auth → 202 {id, state}; GET <URL>/<id> → {state}.
-import { SmsChyba, type SmsPoskytovatel, type StavDoruceni, type VysledekOdeslani } from './typy.js';
+import { type SmsPoskytovatel, type StavDoruceni, type VysledekOdeslani } from './typy.js';
+import { chybaOdpovedi, jsonZ, volejBranu } from './http.js';
 
 export interface SmsGateKonfigurace {
   url: string; // např. https://api.sms-gate.app/3rdparty/v1/message
   user: string;
   pass: string;
   fetch?: typeof fetch;
+  /** časový limit požadavku (ms) */
+  timeoutMs?: number;
 }
 
 const STAVY: Record<string, StavDoruceni> = {
@@ -30,26 +33,32 @@ export class SmsGate implements SmsPoskytovatel {
   }
 
   async posli(telefon: string, text: string): Promise<VysledekOdeslani> {
-    const res = await this.f(this.cfg.url, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: this.auth },
-      body: JSON.stringify({ message: text.slice(0, 640), phoneNumbers: [telefon] }),
-    });
-    if (!res.ok)
-      throw new SmsChyba(
-        `SMSGate ${res.status}: ${(await res.text()).slice(0, 200)}`,
-        res.status >= 500 || res.status === 429,
-      );
-    const data = (await res.json().catch(() => ({}))) as { id?: string };
+    const o = await volejBranu(
+      this.f,
+      'SMSGate',
+      this.cfg.url,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: this.auth },
+        body: JSON.stringify({ message: text, phoneNumbers: [telefon] }),
+      },
+      this.cfg.timeoutMs,
+    );
+    if (!o.ok) throw chybaOdpovedi('SMSGate', o);
+    const data = jsonZ<{ id?: string }>(o) ?? {};
     return { branaId: data.id ?? null };
   }
 
   async stavDoruceni(branaId: string): Promise<StavDoruceni> {
-    const res = await this.f(`${this.cfg.url.replace(/\/$/, '')}/${encodeURIComponent(branaId)}`, {
-      headers: { authorization: this.auth },
-    });
-    if (!res.ok) return 'nezjisteno';
-    const data = (await res.json().catch(() => ({}))) as { state?: string };
+    const o = await volejBranu(
+      this.f,
+      'SMSGate',
+      `${this.cfg.url.replace(/\/$/, '')}/${encodeURIComponent(branaId)}`,
+      { headers: { authorization: this.auth } },
+      this.cfg.timeoutMs,
+    ).catch(() => null);
+    if (!o?.ok) return 'nezjisteno';
+    const data = jsonZ<{ state?: string }>(o) ?? {};
     return STAVY[data.state ?? ''] ?? 'nezjisteno';
   }
 }
