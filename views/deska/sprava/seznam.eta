@@ -1,0 +1,35 @@
+<% layout('/layout') %>
+<p><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<div class="hlavicka-stranky">
+  <h1><%= it.t('deska.sprava_titulek') %></h1>
+  <a class="tlacitko velke" href="/sprava/deska/novy">＋ <%= it.t('deska.novy') %></a>
+</div>
+<nav class="zalozky" aria-label="<%= it.t('deska.stavy') %>">
+  <a href="/sprava/deska?stav=vyveseno" <%= it.stav === 'vyveseno' ? 'aria-current=page' : '' %>><%= it.t('deska.stav_vyveseno') %> (<%= it.pocty.vyveseno %>)</a>
+  <a href="/sprava/deska?stav=pripraveno" <%= it.stav === 'pripraveno' ? 'aria-current=page' : '' %>><%= it.t('deska.stav_pripraveno') %> (<%= it.pocty.pripraveno %>)</a>
+  <a href="/sprava/deska?stav=sejmuto" <%= it.stav === 'sejmuto' ? 'aria-current=page' : '' %>><%= it.t('deska.stav_sejmuto') %></a>
+  <% if (it.jeSpravce) { %><a href="/sprava/deska?stav=kos" <%= it.stav === 'kos' ? 'aria-current=page' : '' %>><%= it.t('deska.stav_kos') %></a><% } %>
+</nav>
+<form method="get" action="/sprava/deska" class="filtr" role="search">
+  <input type="hidden" name="stav" value="<%= it.stav %>">
+  <div><label for="q"><%= it.t('deska.hledat') %></label><input id="q" name="q" type="search" value="<%= it.q %>"></div>
+  <button class="tlacitko sekundarni" type="submit"><%= it.t('deska.filtrovat') %></button>
+</form>
+<% if (it.pocty.konci > 0 && it.stav === 'vyveseno') { %><p class="flash flash-info"><%= it.t('deska.brzy_konci', { n: it.pocty.konci }) %></p><% } %>
+<% if (!it.dokumenty.length) { %><p class="prazdne"><%= it.t('deska.nic_sprava') %></p><% } else { %>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <caption class="vh"><%= it.t('deska.stav_' + it.stav) %></caption>
+  <thead><tr><th scope="col"><%= it.t('deska.nazev') %></th><th scope="col"><%= it.t('deska.kategorie') %></th><th scope="col"><%= it.t('deska.vyveseno_cele') %></th><th scope="col"><%= it.t('deska.sejmuto_cele') %></th></tr></thead>
+  <tbody>
+  <% it.dokumenty.forEach(function (d) { %>
+    <tr><td><a href="/sprava/deska/<%= d.id %>"><%= d.nazev %></a><% if (d.hlaseni_id) { %> <span class="stitek" title="<%= it.t('deska.rozeslano_stitek') %>">📣</span><% } %></td><td><%= d.kategorie %></td><td><%= it.fmtDatum(d.vyveseno_od, false) %></td><td><%= d.sejmuto_do ? it.fmtDatum(d.sejmuto_do, false) : it.t('deska.do_odvolani') %></td></tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+<p class="odkazy-pod">
+  <a href="/uredni-deska"><%= it.t('deska.zobrazit_verejne') %></a>
+  <% if (it.jeSpravce) { %> · <a href="/sprava/deska/kategorie"><%= it.t('deska.kategorie_sprava') %></a> · <a href="/sprava/povinne-informace"><%= it.t('pi.titulek') %></a><% } %>
+</p>

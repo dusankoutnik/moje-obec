@@ -1,0 +1,8 @@
+<% var f = it.f; var t = it.t; %>
+<label for="titulky"><%= t('videa.titulky_soubor') %> <small>(<%= t('app.nepovinne') %>)</small></label>
+<input id="titulky" name="titulky" type="file" accept=".vtt,.srt,text/vtt" aria-describedby="titulky-n">
+<p class="napoveda" id="titulky-n"><%= t('videa.titulky_napoveda') %></p>
+<label for="prepis"><%= t('videa.prepis_pole') %> <small>(<%= t('app.nepovinne') %>)</small></label>
+<textarea id="prepis" name="prepis" rows="4" aria-describedby="prepis-n"><%= f.prepis || '' %></textarea>
+<p class="napoveda" id="prepis-n"><%= t('videa.prepis_napoveda') %></p>
+<label class="zatrzitko"><input type="checkbox" name="na_titulce" value="ano" <%= f.na_titulce ? 'checked' : '' %>> <%= t('videa.na_titulce') %></label>

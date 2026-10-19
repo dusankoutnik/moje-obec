@@ -1,0 +1,41 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web/videa">← <%= it.t('videa.titulek') %></a></p>
+<div class="hlavicka-stranky">
+  <h1><%= it.v.nazev %></h1>
+  <span class="stav-stitek <%= it.v.stav === 'zverejneno' ? 'stav-auto' : 'stav-vychozi' %>"><%= it.v.stav === 'zverejneno' ? it.t('web.stav_zverejneno') : it.t('web.stav_koncept') %></span>
+</div>
+<% if (it.v.smazano_at) { %><div class="flash flash-info" role="status"><%= it.t('web.je_v_kosi') %></div><% } %>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<% if (it.v.stav === 'zverejneno') { %><p><a href="/videa#video-<%= it.v.id %>"><%= it.t('web.zobrazit_na_webu') %> →</a></p><% } %>
+<% if (it.z) { %><div class="video-nahled-sprava"><%~ include('/web/_video', { v: it.z, t: it.t }) %></div><% } %>
+<form method="post" action="/sprava/web/videa/<%= it.v.id %>" enctype="multipart/form-data" class="formular siroky">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <% if (it.v.zdroj === 'soubor') { %>
+    <% if (it.soubor) { %><p class="napoveda"><%= it.t('videa.soubor_aktualni', { popis: it.soubor.puvodni_nazev + ', ' + it.lidskaVelikost(it.soubor.velikost) }) %></p><% } %>
+    <label for="soubor"><%= it.t('videa.soubor_nahradit') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+    <input id="soubor" name="soubor" type="file" accept="video/mp4,video/webm,.mp4,.m4v,.webm" aria-describedby="soubor-n">
+    <p class="napoveda" id="soubor-n"><%= it.t('videa.soubor_napoveda') %></p>
+  <% } else { %>
+    <label for="odkaz"><%= it.t('videa.odkaz') %></label>
+    <input id="odkaz" name="odkaz" type="url" inputmode="url" value="<%= it.f.odkaz || '' %>" aria-describedby="odkaz-n">
+    <p class="napoveda" id="odkaz-n"><%= it.t('videa.odkaz_napoveda') %></p>
+  <% } %>
+  <%~ include('/web/sprava/_video-pole', { f: it.f, t: it.t }) %>
+  <label for="plakat"><%= it.t('videa.plakat') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+  <input id="plakat" name="plakat" type="file" accept="image/*" aria-describedby="plakat-n">
+  <p class="napoveda" id="plakat-n"><%= it.t('videa.plakat_napoveda') %></p>
+  <% if (it.v.zdroj !== 'soubor') { %><label class="zatrzitko"><input type="checkbox" name="plakat_znovu" value="ano"> <%= it.t('videa.plakat_znovu') %></label><% } %>
+  <%~ include('/web/sprava/_video-dalsi', { f: it.f, t: it.t }) %>
+  <% if (it.titulkySoubor) { %><label class="zatrzitko"><input type="checkbox" name="titulky_odebrat" value="ano"> <%= it.t('videa.titulky_odebrat') %> (<%= it.titulkySoubor.puvodni_nazev %>)</label><% } %>
+  <div class="tlacitka-dole">
+    <button class="tlacitko velke" type="submit" name="akce" value="zverejnit"><%= it.v.stav === 'zverejneno' ? it.t('web.ulozit_zverejnit') : it.t('videa.zverejnit') %></button>
+    <button class="tlacitko sekundarni" type="submit" name="akce" value="ulozit"><%= it.t('app.ulozit') %></button>
+    <% if (it.v.stav === 'zverejneno') { %><button class="tlacitko sekundarni" type="submit" name="akce" value="skryt"><%= it.t('web.skryt') %></button><% } %>
+  </div>
+</form>
+<% if (!it.v.smazano_at) { %>
+<form method="post" action="/sprava/web/videa/<%= it.v.id %>" data-confirm="<%= it.t('videa.kos_potvrdit') %>" class="alternativa">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="kos">
+  <button class="tlacitko nebezpecne" type="submit"><%= it.t('web.smazat') %></button>
+</form>
+<% } %>

@@ -1,0 +1,10 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/galerie">← <%= it.t('web.galerie') %></a></p>
+<h1><%= it.g.nazev %></h1>
+<% if (it.g.datum) { %><p class="clanek-meta"><%= it.g.datum.split('-').reverse().join('. ') %></p><% } %>
+<% if (it.g.popis) { %><p class="perex"><%= it.g.popis %></p><% } %>
+<ul class="mrizka-fotek">
+<% it.fotky.forEach(function (f) { %>
+  <li><figure><a href="/soubory/<%= f.id %>/<%= encodeURIComponent(f.puvodni_nazev) %>"<% if (!f.alt) { %> aria-label="<%= it.t('web.obrazek_bez_popisu_odkaz') %>"<% } %>><img src="/soubory/<%= f.id %>/<%= encodeURIComponent(f.puvodni_nazev) %>?v=nahled" alt="<%= f.alt %>" loading="lazy"></a><% if (f.popisek) { %><figcaption><%= f.popisek %></figcaption><% } %></figure></li>
+<% }) %>
+</ul>

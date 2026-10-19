@@ -1,0 +1,21 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<div class="hlavicka-stranky">
+  <h1><%= it.t('web.dotace') %></h1>
+  <a class="tlacitko velke" href="/sprava/web/dotace/nova">＋ <%= it.t('web.nova_dotace') %></a>
+</div>
+<p class="perex"><%= it.t('web.dotace_sprava_perex') %></p>
+<% if (!it.dotace.length) { %><p class="prazdne"><%= it.t('web.zadne_dotace') %></p><% } %>
+<ul class="seznam-dotaci-sprava">
+<% it.dotace.forEach(function (d) {
+  var stav = d.stav !== 'hotovo' ? 'koncept' : d.zobrazit_od > it.dnes ? 'pozdeji' : d.zobrazit_do && d.zobrazit_do < it.dnes ? 'skoncila' : 'zobrazuje';
+  var dni = d.zobrazit_do ? Math.round((Date.parse(d.zobrazit_do) - Date.parse(it.dnes)) / 86400000) : null; %>
+  <li class="karta">
+    <h2><a href="/sprava/web/dotace/<%= d.id %>"><%= d.projekt %></a></h2>
+    <p><span class="stav-stitek stav-<%= stav === 'zobrazuje' ? 'auto' : stav === 'koncept' ? 'vychozi' : 'chybi' %>"><%= it.t('web.dotace_stav_' + stav) %></span>
+      <% if (stav === 'zobrazuje' && dni !== null && dni <= 30) { %> <strong class="varovani"><%= it.t('web.dotace_konci_za', { n: dni }) %></strong><% } %></p>
+    <p class="poznamka"><%= d.poskytovatel %> · <%= it.t('web.log', { n: d.log }) %> · <%= d.zobrazit_od.split('-').reverse().join('. ') %> – <%= d.zobrazit_do ? d.zobrazit_do.split('-').reverse().join('. ') : it.t('web.bez_konce') %><%= d.v_paticce ? ' · ' + it.t('web.v_paticce_kratce') : '' %></p>
+    <p><a href="/sprava/web/dotace/<%= d.id %>"><%= it.t('web.upravit') %></a> · <a href="/sprava/web/dotace/<%= d.id %>/loga"><%= it.t('web.loga') %></a> · <a href="/sprava/web/dotace/<%= d.id %>/zobrazeni"><%= it.t('web.kdy_zobrazovat') %></a></p>
+  </li>
+<% }) %>
+</ul>

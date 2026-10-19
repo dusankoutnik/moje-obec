@@ -1,0 +1,13 @@
+<% layout('/layout') %>
+<h1><%= it.t('sprava.audit') %></h1>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th><%= it.t('sprava.cas') %></th><th><%= it.t('sprava.uzivatel') %></th><th><%= it.t('sprava.akce') %></th><th><%= it.t('sprava.detail_zaznamu') %></th><th>IP</th></tr></thead>
+  <tbody>
+  <% if (!it.zaznamy.length) { %><tr><td colspan="5"><%= it.t('sprava.zadne') %></td></tr><% } %>
+  <% it.zaznamy.forEach(function (z) { %>
+    <tr><td><%= it.fmtDatum(z.ts) %></td><td><% if (z.uzivatel_id) { %><a href="/sprava/uzivatele/<%= z.uzivatel_id %>"><%= (z.jmeno + ' ' + z.prijmeni).trim() || it.fmtTelefon(z.telefon) %></a><% } %></td><td><%= z.akce %></td><td><code><%= z.detail ? JSON.stringify(z.detail) : '' %></code></td><td><%= z.ip || '' %></td></tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>

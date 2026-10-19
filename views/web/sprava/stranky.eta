@@ -1,0 +1,32 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<div class="hlavicka-stranky">
+  <h1><%= it.t('web.stranky') %></h1>
+  <div><a class="tlacitko velke" href="/sprava/web/novy?typ=stranka">＋ <%= it.t('web.nova_stranka') %></a> <a class="tlacitko sekundarni" href="/sprava/web/novy?typ=odkaz">＋ <%= it.t('web.novy_odkaz') %></a></div>
+</div>
+<p class="perex"><%= it.t('web.stranky_perex') %></p>
+<% var radek = function (p, uroven, i, n) { %>
+  <li id="p-<%= p.id %>" class="strom-polozka uroven-<%= uroven %>">
+    <div class="strom-radek">
+      <span class="strom-nazev">
+        <% if (p.typ === 'odkaz') { %><span class="stitek" title="<%= it.t('web.typ_odkaz') %>">↗</span><% } %>
+        <a href="/sprava/web/obsah/<%= p.id %>"><%= p.titulek %></a>
+        <% if (p.stav !== 'zverejneno') { %><span class="stav-stitek stav-vychozi"><%= it.t('web.stav_koncept') %></span><% } %>
+        <% if (p.koncept_at) { %><span class="stav-stitek"><%= it.t('web.neuverejnene_zmeny') %></span><% } %>
+        <% if (!p.v_menu) { %><span class="stav-stitek"><%= it.t('web.mimo_menu') %></span><% } %>
+      </span>
+      <span class="strom-akce">
+        <form method="post" action="/sprava/web/stranky/<%= p.id %>/posun" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="smer" value="nahoru"><button class="tlacitko-ikona" type="submit" <%= i === 0 ? 'disabled' : '' %> aria-label="<%= it.t('web.posunout_nahoru', { titulek: p.titulek }) %>">▲</button></form>
+        <form method="post" action="/sprava/web/stranky/<%= p.id %>/posun" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="smer" value="dolu"><button class="tlacitko-ikona" type="submit" <%= i === n - 1 ? 'disabled' : '' %> aria-label="<%= it.t('web.posunout_dolu', { titulek: p.titulek }) %>">▼</button></form>
+        <a class="tlacitko sekundarni male" href="/sprava/web/obsah/<%= p.id %>"><%= it.t('web.upravit') %></a>
+        <% if (uroven === 1 && p.typ === 'stranka') { %><a class="tlacitko sekundarni male" href="/sprava/web/novy?typ=stranka&nadrazena=<%= p.id %>">＋ <%= it.t('web.podstranka') %></a><% } %>
+      </span>
+    </div>
+<% } %>
+<% if (!it.strom.length) { %><p class="prazdne"><%= it.t('web.zadne_stranky') %></p><% } %>
+<ul class="strom">
+<% it.strom.forEach(function (p, i) { if (!p.v_menu && (i === 0 || it.strom[i - 1].v_menu)) { %><li class="strom-oddel"><h2><%= it.t('web.mimo_menu_nadpis') %></h2><p class="napoveda"><%= it.t('web.mimo_menu_napoveda') %></p></li><% } radek(p, 1, i, it.strom.length); %>
+  <% if (p.deti.length) { %><ul><% p.deti.forEach(function (d, j) { radek(d, 2, j, p.deti.length); %></li><% }) %></ul><% } %>
+  </li>
+<% }) %>
+</ul>

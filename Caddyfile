@@ -1,0 +1,18 @@
+# Reverzní proxy s automatickým certifikátem Let's Encrypt. DOMENA a ACME_EMAIL přicházejí z .env.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMENA} {
+	encode zstd gzip
+	reverse_proxy app:3000
+	# Stejné hlavičky posílá i aplikace (src/web/hlavicky.ts) — tady jen pojistka; CSP nastavuje aplikace sama
+	# (liší se podle typu odpovědi: stránky vs. soubory).
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options SAMEORIGIN
+		-Server
+	}
+}

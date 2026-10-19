@@ -1,0 +1,14 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('zmena_emailu.kod_titulek') %></h1>
+<p><%= it.t('zmena_emailu.kod_text', { email: it.email }) %></p>
+<% if (it.devKod) { %><div class="flash flash-info dev"><%= it.t('zmena_emailu.kod_dev', { kod: it.devKod }) %></div><% } %>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<form method="post" action="/ucet/email/potvrdit" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="kod"><%= it.t('prihlaseni.kod') %></label>
+  <input id="kod" name="kod" type="text" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" maxlength="6" required autofocus class="kod">
+  <button class="tlacitko" type="submit"><%= it.t('zmena_emailu.potvrdit') %></button>
+</form>
+<p class="alternativa"><a href="/ucet">← <%= it.t('app.zpet') %></a></p>
+</div>

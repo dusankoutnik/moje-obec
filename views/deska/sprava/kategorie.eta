@@ -1,0 +1,25 @@
+<% layout('/layout') %>
+<p><a href="/sprava/deska">← <%= it.t('deska.sprava_titulek') %></a></p>
+<h1><%= it.t('deska.kategorie_sprava') %></h1>
+<p class="perex"><%= it.t('deska.kategorie_perex') %></p>
+<% it.kategorie.concat([null]).forEach(function (k) { %>
+<details class="karta" <%= k ? '' : 'open' %>>
+  <summary><%= k ? k.nazev : '＋ ' + it.t('deska.kategorie_nova') %><% if (k && !k.aktivni) { %> (<%= it.t('deska.skryta') %>)<% } %></summary>
+  <form method="post" action="/sprava/deska/kategorie" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <% if (k) { %><input type="hidden" name="id" value="<%= k.id %>"><% } %>
+    <% var p = k ? k.id : 'nova'; %>
+    <label for="nazev-<%= p %>"><%= it.t('deska.nazev') %></label><input id="nazev-<%= p %>" name="nazev" required maxlength="120" value="<%= k ? k.nazev : '' %>">
+    <div class="radek">
+      <div><label for="min-<%= p %>"><%= it.t('deska.kat_min') %></label><input id="min-<%= p %>" name="min_dni" type="number" min="0" max="3650" value="<%= k ? k.min_dni : 0 %>"></div>
+      <div><label for="vych-<%= p %>"><%= it.t('deska.kat_vychozi') %></label><input id="vych-<%= p %>" name="vychozi_dni" type="number" min="0" max="3650" value="<%= k ? k.vychozi_dni : 15 %>"></div>
+    </div>
+    <label for="poradi-<%= p %>"><%= it.t('deska.kat_poradi') %></label><input id="poradi-<%= p %>" name="poradi" type="number" value="<%= k ? k.poradi : 100 %>">
+    <label class="zatrzitko"><input type="checkbox" name="rozpocet" value="ano" <%= k && k.rozpocet ? 'checked' : '' %>> <%= it.t('deska.kat_rozpocet') %></label>
+    <label class="zatrzitko"><input type="checkbox" name="archiv_verejny" value="ano" <%= !k || k.archiv_verejny ? 'checked' : '' %> aria-describedby="archiv-<%= p %>-n"> <%= it.t('deska.kat_archiv') %></label>
+    <p class="napoveda" id="archiv-<%= p %>-n"><%= it.t('deska.kat_archiv_napoveda') %></p>
+    <% if (k) { %><label class="zatrzitko"><input type="checkbox" name="aktivni" value="ano" <%= k.aktivni ? 'checked' : '' %>> <%= it.t('deska.kat_aktivni') %></label><% } %>
+    <button class="tlacitko" type="submit"><%= it.t('app.ulozit') %></button>
+  </form>
+</details>
+<% }) %>

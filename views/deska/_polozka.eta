@@ -1,0 +1,10 @@
+<li class="dok">
+  <h<%= it.h || 3 %> class="dok-nazev"><a href="/uredni-deska/<%= it.d.id %>"><%= it.d.nazev %></a></h<%= it.h || 3 %>>
+  <p class="dok-meta">
+    <span class="stitek"><%= it.d.kategorie %></span>
+    <span><%= it.t('deska.vyveseno') %> <time datetime="<%= it.d.vyveseno_od.toISOString() %>"><%= it.fmtDatum(it.d.vyveseno_od, false) %></time></span>
+    <span><%= it.d.sejmuto_do ? it.t('deska.sejmuto') + ' ' + it.fmtDatum(it.d.sejmuto_do, false) : it.t('deska.do_odvolani') %></span>
+    <% if (it.d.cislo_jednaci) { %><span><%= it.t('deska.cj') %> <%= it.d.cislo_jednaci %></span><% } %>
+    <% if (Number(it.d.priloh) > 0) { %><span><%= it.t('deska.priloh', { n: it.d.priloh }) %></span><% } %>
+  </p>
+</li>

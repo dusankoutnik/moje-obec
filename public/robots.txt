@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /oidc/
+Disallow: /sprava/
+Disallow: /infokanal/sprava/

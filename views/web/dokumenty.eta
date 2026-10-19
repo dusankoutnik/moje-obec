@@ -1,0 +1,14 @@
+<% layout('/layout') %>
+<h1><%= it.t('web.dokumenty') %></h1>
+<p class="perex"><%= it.t('web.dokumenty_perex') %></p>
+<% if (!it.dokumenty.length) { %><p class="prazdne"><%= it.t('web.zadne_dokumenty') %></p><% } %>
+<% it.skupiny.forEach(function (sk) { %>
+<section>
+  <h2><%= sk || it.t('web.ostatni') %></h2>
+  <ul class="prilohy">
+  <% it.dokumenty.filter(function (d) { return d.skupina === sk; }).forEach(function (d) { %>
+    <li><a href="<%= it.urlSouboru({ id: d.soubor_id, puvodni_nazev: d.puvodni_nazev }) %>"><%= d.nazev %></a> <span class="poznamka">(<%= it.popisTypu(d.pripona) %>, <%= it.lidskaVelikost(d.velikost) %>)</span><% if (d.popis) { %><br><span class="poznamka"><%= d.popis %></span><% } %></li>
+  <% }) %>
+  </ul>
+</section>
+<% }) %>

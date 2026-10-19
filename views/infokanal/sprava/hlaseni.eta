@@ -1,0 +1,22 @@
+<% layout('/layout') %>
+<h1><%= it.obec.texty.nazev_infokanalu %> — <%= it.t('infokanal.hlaseni') %></h1>
+<p><a class="tlacitko" href="/infokanal/sprava/nove"><%= it.t('infokanal.nove_hlaseni') %></a> <a class="tlacitko sekundarni" href="/infokanal/sprava/odberatele"><%= it.t('infokanal.odberatele') %></a></p>
+<p><%= it.t('infokanal.pocet_odberatelu', { n: it.stat.celkem, sms: it.stat.sms, email: it.stat.email }) %></p>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th><%= it.t('infokanal.vytvoreno_kdy') %></th><th><%= it.t('infokanal.kategorie_pole') %></th><th><%= it.t('infokanal.hlaseni') %></th><th><%= it.t('infokanal.stav') %></th><th><%= it.t('infokanal.prijemci') %></th><th><%= it.t('infokanal.autor') %></th></tr></thead>
+  <tbody>
+  <% if (!it.hlaseni.length) { %><tr><td colspan="6"><%= it.t('sprava.zadne') %></td></tr><% } %>
+  <% it.hlaseni.forEach(function (h) { %>
+    <tr>
+      <td><%= it.fmtDatum(h.vytvoreno_at) %></td>
+      <td><%= h.krizove ? '🚨 ' : '' %><%= h.kategorie %><%= h.zdroj_automatu ? ' 🤖' : '' %></td>
+      <td><a href="/infokanal/sprava/hlaseni/<%= h.id %>"><%= (h.email_predmet || h.clanek_titulek || h.sms_text || '').slice(0, 80) %></a></td>
+      <td><%= it.t('infokanal.stav_' + h.stav) %></td>
+      <td><%= h.odeslano %> / <%= h.prijemcu %></td>
+      <td><%= ((h.jmeno || '') + ' ' + (h.prijmeni || '')).trim() %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>

@@ -1,0 +1,20 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('prihlaseni.titulek') %></h1>
+<p><%= it.t('prihlaseni.kod_odeslan', { telefon: it.telefonZobrazeny }) %></p>
+<% if (it.devKod) { %><div class="flash flash-info dev"><%= it.t('prihlaseni.dev_kod', { kod: it.devKod }) %></div><% } %>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<form method="post" action="/oidc/interaction/<%= it.uid %>/kod" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <input type="hidden" name="telefon" value="<%= it.telefon %>">
+  <label for="kod"><%= it.t('prihlaseni.kod') %></label>
+  <input id="kod" name="kod" type="text" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" maxlength="6" required autofocus class="kod" aria-describedby="kod-napoveda">
+  <p class="napoveda" id="kod-napoveda"><%= it.t('prihlaseni.kod_napoveda') %></p>
+  <button class="tlacitko" type="submit"><%= it.t('prihlaseni.overit') %></button>
+</form>
+<form method="post" action="/oidc/interaction/<%= it.uid %>/telefon" class="inline">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <input type="hidden" name="telefon" value="<%= it.telefon %>">
+  <button class="odkaz-tlacitko" type="submit"><%= it.t('prihlaseni.znovu') %></button>
+</form>
+</div>

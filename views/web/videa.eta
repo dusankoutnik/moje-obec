@@ -1,0 +1,6 @@
+<% layout('/layout') %>
+<h1><%= it.t('videa.titulek') %></h1>
+<% if (!it.videa.length) { %><p class="prazdne"><%= it.t('videa.zadna') %></p><% } %>
+<div class="mrizka-videi stranka-videi">
+<% it.videa.forEach(function (v) { %><%~ include('/web/_video-karta', { v: v, t: it.t, h: 'h2' }) %><% }) %>
+</div>

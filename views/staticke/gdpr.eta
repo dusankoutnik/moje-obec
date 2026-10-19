@@ -1,0 +1,34 @@
+<% layout('/layout') %>
+<% var o = it.obec.obec; %>
+<h1><%= it.titulek %></h1>
+<p><strong>Správce osobních údajů:</strong> <%= o.nazev %>, <%= o.adresa.ulice %>, <%= o.adresa.psc %> <%= o.adresa.mesto %><% if (o.ico) { %>, IČO <%= o.ico %><% } %><% if (o.kontakt.email) { %>, e-mail <a href="mailto:<%= o.kontakt.email %>"><%= o.kontakt.email %></a><% } %><% if (o.kontakt.datova_schranka) { %>, datová schránka <%= o.kontakt.datova_schranka %><% } %>.</p>
+<% if (o.poverenec.jmeno || o.poverenec.email) { %><p><strong>Pověřenec pro ochranu osobních údajů:</strong> <%= o.poverenec.jmeno %><% if (o.poverenec.adresa) { %>, <%= o.poverenec.adresa %><% } %><% if (o.poverenec.telefon) { %>, <a href="tel:<%= o.poverenec.telefon.replace(/\s/g, '') %>"><%= it.fmtTelefon(o.poverenec.telefon) %></a><% } %> <% if (o.poverenec.email) { %>(<a href="mailto:<%= o.poverenec.email %>"><%= o.poverenec.email %></a>)<% } %></p><% } %>
+
+<h2>Jaké údaje zpracováváme, proč a na jakém právním základě</h2>
+<p>Obec je orgánem veřejné moci. Osobní údaje proto zpracovává hlavně proto, že jí to ukládá zákon (čl. 6 odst. 1 písm. c) GDPR), nebo při plnění úkolů ve veřejném zájmu a výkonu veřejné moci (písm. e)). Oprávněný zájem (písm. f)) obec při plnění svých úkolů jako právní základ nepoužívá.</p>
+<ul>
+  <li><strong>Výkon působnosti obce</strong> (úřední deska, žádosti o informace, podání a podněty, povinně zveřejňované informace, rozpočet): údaje v rozsahu, který stanoví zvláštní zákony (správní řád, zákon o obcích, zákon č. 106/1999 Sb. a další). Právní základ: plnění právní povinnosti a úkolu ve veřejném zájmu (čl. 6 odst. 1 písm. c) a e)). Na úřední desce zveřejňujeme jen nezbytné údaje; dokumenty jiných úřadů se po sejmutí veřejně nezobrazují.</li>
+  <li><strong>Účet občana:</strong> telefonní číslo (přihlašovací klíč), jméno a příjmení, přezdívka, část obce, volitelně e-mail. Účel: přístup ke službám obce (přihlášení, rezervace, platby, zprávy). Právní základ: úkol ve veřejném zájmu — služby obce jejím občanům (písm. e)); nepovinné údaje se souhlasem (písm. a)), který můžete kdykoli odvolat.</li>
+  <li><strong><%= it.obec.texty.nazev_infokanalu %> (zprávy do mobilu a e-mailu):</strong> telefon a/nebo e-mail, jméno, část obce, nastavení odběru. Účel: zasílání hlášení obce. Právní základ: souhlas (písm. a)); varování a krizové zprávy úkol ve veřejném zájmu (písm. e)).</li>
+  <li><strong>Provozní a bezpečnostní záznamy:</strong> čas a IP adresa přihlášení, záznamy o změnách (audit). Účel: bezpečnost služeb a prokazatelnost úkonů úřadu. Právní základ: úkol ve veřejném zájmu a zajištění bezpečnosti zpracování (písm. e) a čl. 32 GDPR).</li>
+</ul>
+
+<h2>Příjemci a zpracovatelé</h2>
+<p>Osobní údaje nepředáváme nikomu, kdo k tomu nemá zákonný důvod. Technicky s nimi na základě smlouvy (čl. 28 GDPR) pracují tito zpracovatelé:</p>
+<ul>
+  <% o.zpracovatele.forEach(function (z) { %><li><%= z.nazev %><% if (z.ucel) { %> — <%= z.ucel %><% } %></li><% }) %>
+  <% if (!o.zpracovatele.length) { %><li>poskytovatel serveru (hostingu), na kterém stránky a služby obce běží,</li><% } %>
+  <li>poskytovatel SMS brány — doručení SMS kódů pro přihlášení a zpráv, které jste si objednali (jen telefonní číslo a text zprávy),</li>
+  <li>poskytovatel e-mailové služby — doručení e-mailů (jen adresa a text zprávy).</li>
+</ul>
+<p>Údaje zpracováváme v Evropské unii a mimo EU/EHP je nepředáváme. Výjimkou je přehrání videa z YouTube nebo Vimea: přehrávač služby se načte až po vašem kliknutí a služba (u YouTube společnost Google) pak zpracovává údaje podle svých pravidel.</p>
+
+<h2>Doba uložení</h2>
+<p>Údaje účtu a odběru uchováváme po dobu jejich trvání; po zrušení je anonymizujeme. Provozní záznamy uchováváme nejdéle 2 roky. Dokumenty úřadu uchováváme po dobu stanovenou spisovým a skartačním plánem obce (zákon č. 499/2004 Sb., o archivnictví a spisové službě).</p>
+
+<h2>Vaše práva</h2>
+<p>Máte právo na přístup ke svým údajům, jejich opravu, výmaz, omezení zpracování, přenositelnost (u údajů zpracovávaných se souhlasem), právo vznést námitku proti zpracování ve veřejném zájmu a právo kdykoli odvolat souhlas. Žádosti vyřizuje obecní úřad<% if (o.kontakt.email) { %>: <a href="mailto:<%= o.kontakt.email %>"><%= o.kontakt.email %></a><% } %>. Máte také právo podat stížnost u Úřadu pro ochranu osobních údajů (<a href="https://uoou.gov.cz/">uoou.gov.cz</a>). K automatizovanému rozhodování ani profilování nedochází.</p>
+
+<h2>Cookies</h2>
+<p>Stránky používají jen technicky nezbytné cookies (přihlášení, ochrana formulářů, zvolená velikost písma) a nenačítají nic z cizích serverů.<% if (it.obec.patika.zasady_cookies) { %> Podrobný přehled: <a href="<%= it.obec.patika.zasady_cookies %>"><%= it.t('staticke.zasady_cookies') %></a>.<% } %></p>
+<% if (it.doplnek) { %><div class="obsah-html doplnek-obce"><%~ it.doplnek.obsah_html %></div><% } %>

@@ -1,0 +1,32 @@
+<% layout('/layout') %>
+<h1><%= it.t('deska.titulek') %></h1>
+<p class="perex"><%= it.t('deska.perex') %></p>
+<% if (it.f.kategorie === 'vyhlasky') { %><p class="poznamka"><%= it.t('deska.sbirka_pp_text') %> <a href="<%= it.sbirkaPp %>"><%= it.t('deska.sbirka_pp') %></a>.</p><% } %>
+<form method="get" action="/uredni-deska" class="filtr" role="search">
+  <div>
+    <label for="q"><%= it.t('deska.hledat') %></label>
+    <input id="q" name="q" type="search" value="<%= it.f.q %>">
+  </div>
+  <div>
+    <label for="kategorie"><%= it.t('deska.kategorie') %></label>
+    <select id="kategorie" name="kategorie">
+      <option value=""><%= it.t('deska.vse') %></option>
+      <% it.kategorie.forEach(function (k) { %><option value="<%= k.slug %>" <%= it.f.kategorie === k.slug ? 'selected' : '' %>><%= k.nazev %></option><% }) %>
+    </select>
+  </div>
+  <button class="tlacitko" type="submit"><%= it.t('deska.filtrovat') %></button>
+</form>
+<p class="pocet" role="status"><%= it.t('deska.pocet_vyveseno', { n: it.dokumenty.length }) %><% if (it.f.q || it.f.kategorie) { %> · <a href="/uredni-deska"><%= it.t('deska.zrusit_filtr') %></a><% } %></p>
+<% if (!it.dokumenty.length) { %>
+<p class="prazdne"><%= it.t('deska.nic') %></p>
+<% } else { %>
+<ul class="dokumenty">
+<% it.dokumenty.forEach(function (d) { %><%~ include('/deska/_polozka', { d: d, t: it.t, fmtDatum: it.fmtDatum, h: 2 }) %><% }) %>
+</ul>
+<% } %>
+<p class="odkazy-pod">
+  <a href="/uredni-deska/archiv"><%= it.t('deska.archiv') %></a> ·
+  <a href="/rozpocet"><%= it.t('deska.rozpocet_titulek') %></a> ·
+  <a href="/povinne-informace"><%= it.t('pi.titulek') %></a> ·
+  <a href="<%= it.rss %>"><%= it.t('deska.rss') %></a>
+</p>

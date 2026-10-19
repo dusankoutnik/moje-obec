@@ -1,0 +1,18 @@
+<% layout('/layout') %>
+<h1><%= it.t('web.aktuality') %></h1>
+<% if (it.kategorie.length) { %>
+<nav class="stitky-filtr" aria-label="<%= it.t('web.kategorie') %>">
+  <a href="/aktuality" <%= !it.aktivni ? 'aria-current=page' : '' %>><%= it.t('deska.vse') %></a>
+  <% it.kategorie.forEach(function (k) { %><a href="/aktuality?kategorie=<%= k.slug %>" <%= it.aktivni === k.slug ? 'aria-current=page' : '' %>><%= k.nazev %></a><% }) %>
+</nav>
+<% } %>
+<% if (!it.radky.length) { %><p class="prazdne"><%= it.t('web.zadne_aktuality') %></p><% } %>
+<div class="karty-clanku seznam-clanku">
+  <% it.radky.forEach(function (a) { %><%~ include('/web/_karta-aktuality', { a: a, obr: it.obr, fmtDatum: it.fmtDatum, zkrat: it.zkrat, h: 2 }) %><% }) %>
+</div>
+<nav class="strankovani" aria-label="<%= it.t('deska.strankovani') %>">
+  <% var k = it.aktivni ? 'kategorie=' + it.aktivni + '&' : ''; %>
+  <% if (it.strana > 1) { %><a href="/aktuality?<%= k %>strana=<%= it.strana - 1 %>">← <%= it.t('deska.novejsi') %></a><% } else { %><span></span><% } %>
+  <% if (it.dalsi) { %><a href="/aktuality?<%= k %>strana=<%= it.strana + 1 %>"><%= it.t('deska.starsi') %> →</a><% } %>
+</nav>
+<p class="odkazy-pod"><a href="/aktuality/rss.xml"><%= it.t('deska.rss') %></a></p>

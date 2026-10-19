@@ -1,0 +1,12 @@
+<% layout('/layout') %>
+<h1><%= it.t('sprava.klienti') %></h1>
+<p>Issuer: <code><%= it.issuer %></code> · discovery: <a href="<%= it.issuer %>/.well-known/openid-configuration"><code><%= it.issuer %>/.well-known/openid-configuration</code></a></p>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th>client_id</th><th>Název</th><th>Redirect URI</th><th>Důvěryhodný</th><th>Aktivní</th><th><%= it.t('sprava.vytvoren') %></th></tr></thead>
+  <tbody>
+  <% it.klienti.forEach(function (k) { %><tr><td><code><%= k.client_id %></code></td><td><%= k.nazev %></td><td><%= k.redirect_uris.join(', ') %></td><td><%= k.duveryhodny ? it.t('app.ano') : it.t('app.ne') %></td><td><%= k.aktivni ? it.t('app.ano') : it.t('app.ne') %></td><td><%= it.fmtDatum(k.vytvoren_at, false) %></td></tr><% }) %>
+  </tbody>
+</table>
+</div>
+<p class="napoveda">Nového klienta zatím založíte SQL vložením do tabulky <code>oidc_klienti</code> (viz docs/VYVOJ.md); formulář přijde v etapě 1.</p>

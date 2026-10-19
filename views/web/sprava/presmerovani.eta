@@ -1,0 +1,19 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<h1><%= it.t('web.presmerovani') %></h1>
+<p class="perex"><%= it.t('web.presmerovani_perex') %></p>
+<form method="post" action="/sprava/web/presmerovani" class="formular inline-form">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <div><label for="stara"><%= it.t('web.stara_adresa') %></label><input id="stara" name="stara" required placeholder="/2024/05/clanek/"></div>
+  <div><label for="nova"><%= it.t('web.nova_adresa') %></label><input id="nova" name="nova" required placeholder="/aktuality/clanek"></div>
+  <button class="tlacitko" type="submit"><%= it.t('web.pridat') %></button>
+</form>
+<div class="tabulka-obal"><table class="tabulka kompaktni">
+  <thead><tr><th scope="col"><%= it.t('web.stara_adresa') %></th><th scope="col"><%= it.t('web.nova_adresa') %></th><th scope="col"><%= it.t('web.pouzito') %></th><th scope="col"><span class="vh"><%= it.t('sprava.akce') %></span></th></tr></thead>
+  <tbody>
+  <% it.seznam.forEach(function (r) { %>
+    <tr><td><code><%= r.stara_cesta %></code></td><td><a href="<%= r.nova_cesta %>"><%= r.nova_cesta %></a></td><td><%= r.pocet %>×</td>
+      <td><form method="post" action="/sprava/web/presmerovani" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="smazat"><input type="hidden" name="stara" value="<%= r.stara_cesta %>"><button class="odkaz-tlacitko" type="submit"><%= it.t('web.odebrat') %></button></form></td></tr>
+  <% }) %>
+  </tbody>
+</table></div>

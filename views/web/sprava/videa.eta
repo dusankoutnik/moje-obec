@@ -1,0 +1,52 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<h1><%= it.t('videa.titulek') %></h1>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<details class="karta" <%= !it.videa.length || it.otevrit ? 'open' : '' %>>
+  <summary class="tlacitko velke">＋ <%= it.t('videa.nove') %></summary>
+  <form method="post" action="/sprava/web/videa" enctype="multipart/form-data" class="formular siroky video-formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <fieldset>
+      <legend><%= it.t('videa.zdroj') %></legend>
+      <label class="zatrzitko"><input type="radio" name="zdroj" value="odkaz" id="zdroj-odkaz" <%= it.f.zdroj !== 'soubor' ? 'checked' : '' %>> <%= it.t('videa.zdroj_odkaz') %></label>
+      <label class="zatrzitko"><input type="radio" name="zdroj" value="soubor" id="zdroj-soubor" <%= it.f.zdroj === 'soubor' ? 'checked' : '' %>> <%= it.t('videa.zdroj_soubor') %></label>
+    </fieldset>
+    <div class="jen-odkaz">
+      <label for="odkaz"><%= it.t('videa.odkaz') %></label>
+      <input id="odkaz" name="odkaz" type="url" inputmode="url" value="<%= it.f.odkaz || '' %>" aria-describedby="odkaz-n" placeholder="https://www.youtube.com/watch?v=…">
+      <p class="napoveda" id="odkaz-n"><%= it.t('videa.odkaz_napoveda') %></p>
+    </div>
+    <div class="jen-soubor">
+      <label for="soubor"><%= it.t('videa.soubor') %></label>
+      <input id="soubor" name="soubor" type="file" accept="video/mp4,video/webm,.mp4,.m4v,.webm" aria-describedby="soubor-n">
+      <p class="napoveda" id="soubor-n"><%= it.t('videa.soubor_napoveda') %></p>
+    </div>
+    <%~ include('/web/sprava/_video-pole', { f: it.f, t: it.t }) %>
+    <label for="plakat"><%= it.t('videa.plakat') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+    <input id="plakat" name="plakat" type="file" accept="image/*" aria-describedby="plakat-n">
+    <p class="napoveda" id="plakat-n"><%= it.t('videa.plakat_napoveda') %></p>
+    <%~ include('/web/sprava/_video-dalsi', { f: it.f, t: it.t }) %>
+    <div class="tlacitka-dole">
+      <button class="tlacitko velke" type="submit" name="akce" value="zverejnit"><%= it.t('videa.zverejnit') %></button>
+      <button class="tlacitko sekundarni" type="submit" name="akce" value="koncept"><%= it.t('videa.ulozit_koncept') %></button>
+    </div>
+  </form>
+</details>
+<% if (!it.videa.length) { %><p class="prazdne"><%= it.t('videa.zadna') %></p><% } %>
+<ul class="videa-sprava">
+<% it.videa.forEach(function (v, i) { %>
+  <li id="v-<%= v.id %>" class="karta">
+    <% if (v.plakat) { %><img src="<%= v.plakat.url %>?v=nahled" alt="" loading="lazy"><% } else { %><span class="karta-obr-prazdny"></span><% } %>
+    <div>
+      <h2><a href="/sprava/web/videa/<%= v.id %>"><%= v.nazev %></a></h2>
+      <p><span class="stav-stitek <%= v.stav === 'zverejneno' ? 'stav-auto' : 'stav-vychozi' %>"><%= v.stav === 'zverejneno' ? it.t('web.stav_zverejneno') : it.t('web.stav_koncept') %></span>
+        <span class="poznamka"><%= it.t('videa.zdroj_' + (v.zdroj === 'soubor' ? 'souboru' : v.zdroj)) %><%= v.na_titulce ? ' · ' + it.t('videa.na_titulce_kratce') : '' %></span></p>
+    </div>
+    <form method="post" action="/sprava/web/videa/<%= v.id %>" class="poradi-videa">
+      <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+      <button class="tlacitko-ikona" type="submit" name="akce" value="nahoru" <%= i === 0 ? 'disabled' : '' %> aria-label="<%= it.t('videa.posunout_nahoru', { nazev: v.nazev }) %>">▲</button>
+      <button class="tlacitko-ikona" type="submit" name="akce" value="dolu" <%= i === it.videa.length - 1 ? 'disabled' : '' %> aria-label="<%= it.t('videa.posunout_dolu', { nazev: v.nazev }) %>">▼</button>
+    </form>
+  </li>
+<% }) %>
+</ul>

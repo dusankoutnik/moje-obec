@@ -1,0 +1,100 @@
+<% layout('/layout') %>
+<p><a href="/sprava/deska">← <%= it.t('deska.sprava_titulek') %></a></p>
+<h1><%= it.d ? it.t('deska.upravit') : it.t('deska.novy') %></h1>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<% if (it.d) { %><p><a href="/uredni-deska/<%= it.d.id %>"><%= it.t('deska.zobrazit_na_webu') %> →</a></p><% } %>
+<form method="post" action="<%= it.d ? '/sprava/deska/' + it.d.id : '/sprava/deska/novy' %>" enctype="multipart/form-data" class="formular siroky" id="deska-formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <fieldset>
+    <legend><span class="krok">1</span> <%= it.t('deska.krok_co') %></legend>
+    <label for="nazev"><%= it.t('deska.nazev') %> <small>(<%= it.t('app.povinne') %>)</small></label>
+    <input id="nazev" name="nazev" required maxlength="300" value="<%= it.f.nazev || '' %>" aria-describedby="nazev-n">
+    <p class="napoveda" id="nazev-n"><%= it.t('deska.nazev_napoveda') %></p>
+    <label for="kategorie_id"><%= it.t('deska.kategorie') %></label>
+    <select id="kategorie_id" name="kategorie_id">
+      <% it.kategorie.forEach(function (k) { %><option value="<%= k.id %>" data-vychozi="<%= k.vychozi_dni %>" data-min="<%= k.min_dni %>" data-rozpocet="<%= k.rozpocet ? 1 : 0 %>" <%= String(it.f.kategorie_id) === String(k.id) ? 'selected' : '' %>><%= k.nazev %><%= k.min_dni ? ' — ' + it.t('deska.min_dni', { n: k.min_dni }) : '' %></option><% }) %>
+    </select>
+    <div class="radek">
+      <div><label for="cislo_jednaci"><%= it.t('deska.cj_cele') %> <small>(<%= it.t('app.nepovinne') %>)</small></label><input id="cislo_jednaci" name="cislo_jednaci" maxlength="100" value="<%= it.f.cislo_jednaci || '' %>"></div>
+      <div><label for="puvodce"><%= it.t('deska.puvodce') %> <small>(<%= it.t('app.nepovinne') %>)</small></label><input id="puvodce" name="puvodce" maxlength="200" value="<%= it.f.puvodce || '' %>" aria-describedby="puvodce-n"><p class="napoveda" id="puvodce-n"><%= it.t('deska.puvodce_napoveda') %></p></div>
+    </div>
+    <label for="popis"><%= it.t('deska.popis') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+    <textarea id="popis" name="popis" rows="4" maxlength="3000" aria-describedby="popis-n"><%= it.f.popis || '' %></textarea>
+    <p class="napoveda" id="popis-n"><%= it.t('deska.popis_napoveda') %></p>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="krok">2</span> <%= it.t('deska.krok_kdy') %></legend>
+    <div class="radek">
+      <div><label for="od"><%= it.t('deska.od') %></label><input id="od" name="od" type="date" required value="<%= it.f.od || it.dnes %>"></div>
+      <div><label for="do"><%= it.t('deska.do') %></label><input id="do" name="do" type="date" value="<%= it.f.do || '' %>" aria-describedby="do-n"></div>
+    </div>
+    <p class="napoveda" id="do-n"><%= it.t('deska.do_napoveda') %></p>
+    <label class="zatrzitko"><input type="checkbox" name="do_odvolani" value="ano" <%= it.f.do_odvolani === 'ano' ? 'checked' : '' %>> <%= it.t('deska.do_odvolani_pole') %></label>
+  </fieldset>
+
+  <fieldset id="rozpocet-pole">
+    <legend><span class="krok">3</span> <%= it.t('deska.krok_rozpocet') %></legend>
+    <p class="napoveda"><%= it.t('deska.rozpocet_napoveda') %></p>
+    <div class="radek">
+      <div><label for="typ_rozpoctu"><%= it.t('deska.typ_rozpoctu') %></label>
+        <select id="typ_rozpoctu" name="typ_rozpoctu"><option value=""><%= it.t('deska.typ_zadny') %></option>
+          <% it.typy.forEach(function (typ) { %><option value="<%= typ %>" <%= it.f.typ_rozpoctu === typ ? 'selected' : '' %>><%= it.t('deska.typ_' + typ) %></option><% }) %>
+        </select></div>
+      <div><label for="rok"><%= it.t('deska.rok') %></label><input id="rok" name="rok" type="number" min="2000" max="2100" value="<%= it.f.rok || '' %>"></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="krok"><%= 4 %></span> <%= it.t('deska.prilohy') %></legend>
+    <% if (it.prilohy.length) { %>
+    <ul class="prilohy-sprava">
+      <% it.prilohy.forEach(function (s) { %><li><a href="<%= it.urlSouboru(s) %>"><%= s.puvodni_nazev %></a> <span class="poznamka">(<%= it.popisTypu(s.pripona) %>, <%= it.lidskaVelikost(s.velikost) %>)</span> <label class="zatrzitko inline-zatrzitko"><input type="checkbox" name="odebrat" value="<%= s.id %>"> <%= it.t('deska.odebrat_prilohu') %></label></li><% }) %>
+    </ul>
+    <% } %>
+    <label for="prilohy"><%= it.prilohy.length ? it.t('deska.pridat_prilohy') : it.t('deska.nahrat_prilohy') %></label>
+    <input id="prilohy" name="prilohy" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.rtf,image/jpeg,image/png" aria-describedby="prilohy-n">
+    <p class="napoveda" id="prilohy-n"><%= it.t('deska.prilohy_napoveda') %></p>
+  </fieldset>
+
+  <% if (!it.d && it.infokanal) { %>
+  <fieldset>
+    <legend><span class="krok">5</span> <%= it.t('deska.krok_rozeslat') %></legend>
+    <label class="zatrzitko"><input type="checkbox" name="rozeslat" value="ano" <%= it.f.rozeslat === 'ano' ? 'checked' : '' %>> <%= it.t('deska.rozeslat', { kanal: it.obec.texty.nazev_infokanalu }) %></label>
+    <div class="odsazeno">
+      <label class="zatrzitko"><input type="checkbox" name="poslat_sms" value="ano" <%= it.f.poslat_sms === 'ano' ? 'checked' : '' %>> <%= it.t('deska.rozeslat_sms') %></label>
+      <label for="sms_text"><%= it.t('deska.sms_vlastni') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+      <textarea id="sms_text" name="sms_text" rows="2" maxlength="300" aria-describedby="sms-n"><%= it.f.sms_text || '' %></textarea>
+      <p class="napoveda" id="sms-n"><%= it.t('deska.sms_napoveda') %></p>
+    </div>
+  </fieldset>
+  <% } %>
+  <button class="tlacitko velke" type="submit"><%= it.d ? it.t('deska.ulozit_zmeny') : it.t('deska.vyvesit') %></button>
+</form>
+
+<% if (it.d && it.jeSpravce) { %>
+<div class="sloupce">
+  <% if (!it.d.smazano_at && (!it.d.sejmuto_do || it.d.sejmuto_do > new Date())) { %>
+  <section class="karta">
+    <h2><%= it.t('deska.sejmout_hned') %></h2>
+    <p class="napoveda"><%= it.t('deska.sejmout_napoveda') %></p>
+    <form method="post" action="/sprava/deska/<%= it.d.id %>/sejmout" class="formular" data-confirm="<%= it.t('deska.sejmout_potvrdit') %>">
+      <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+      <label for="duvod"><%= it.t('deska.duvod_sejmuti') %></label>
+      <input id="duvod" name="duvod" required maxlength="300">
+      <button class="tlacitko nebezpecne" type="submit"><%= it.t('deska.sejmout_hned') %></button>
+    </form>
+  </section>
+  <% } %>
+  <section class="karta">
+    <h2><%= it.d.smazano_at ? it.t('deska.obnovit') : it.t('deska.do_kose') %></h2>
+    <p class="napoveda"><%= it.d.smazano_at ? it.t('deska.v_kosi_napoveda') : it.t('deska.kos_napoveda') %></p>
+    <% if (it.d.smazano_at) { %><form method="post" action="/sprava/deska/<%= it.d.id %>/kos"><% } else { %><form method="post" action="/sprava/deska/<%= it.d.id %>/kos" data-confirm="<%= it.t('deska.kos_potvrdit') %>"><% } %>
+      <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+      <input type="hidden" name="akce" value="<%= it.d.smazano_at ? 'obnovit' : 'smazat' %>">
+      <button class="tlacitko <%= it.d.smazano_at ? '' : 'nebezpecne' %>" type="submit"><%= it.d.smazano_at ? it.t('deska.obnovit') : it.t('deska.do_kose') %></button>
+    </form>
+  </section>
+</div>
+<% } %>
+<script src="/static/js/deska.js?v=<%= it.v %>" defer></script>

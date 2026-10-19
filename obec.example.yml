@@ -1,0 +1,87 @@
+# Profil obce — jediné místo, kde se instalace přizpůsobuje konkrétní obci.
+# Zkopírujte do obec.yml a vyplňte. Tajné údaje (hesla, klíče) sem NEPATŘÍ — ty jsou v .env.
+obec:
+  nazev: Obec Příkladov
+  kratky_nazev: Příkladov
+  ico: '00000000'
+  dic: ''
+  adresa:
+    ulice: Příkladov 1
+    psc: '123 45'
+    mesto: Příkladov
+  kontakt:
+    telefon: '+420 123 456 789'
+    email: obec@example.cz
+    web: https://www.example.cz
+    datova_schranka: ''
+    epodatelna: ''
+    fax: ''
+    uredni_hodiny: |-
+      Pondělí 8:00 – 17:00
+      Středa 8:00 – 17:00
+  bankovni_ucet:
+    cislo: ''
+    iban: ''
+  # Povinně zveřejňované informace (vyhl. 515/2020 Sb.)
+  # nadřízený orgán v přenesené působnosti (bod 2), např. „Krajský úřad Libereckého kraje, U Jezu 642/2a, 461 80 Liberec“
+  nadrizeny_organ: ''
+  # plátce DPH (bod 7): true / false; když chybí, bod se zvýrazní k doplnění
+  # platce_dph: false
+  # adresa obce ve Sbírce právních předpisů (bod 11.2); prázdné = https://sbirkapp.gov.cz/vydavatel/<datová schránka>
+  sbirka_pp: ''
+  # Části obce (cílení hlášení, rezidentství, filtry)
+  casti:
+    - Příkladov
+  # Kód obce (ČSÚ/RÚIAN) a ORP — výstrahy ČHMÚ (ORP) a odstávky ČEZ (kód obce)
+  kod_obce: ''
+  orp_cisorp: ''
+  poverenec:
+    jmeno: ''
+    email: ''
+  # Zpracovatelé osobních údajů (GDPR čl. 28) — hosting, SMS brána, e-mailová služba podle smluv obce
+  zpracovatele: []
+  #  - { nazev: 'Poskytovatel serveru s.r.o.', ucel: 'pronájem serveru, na kterém web běží' }
+  # Fakta do úvodu webu (statistiky), např.:
+  fakta:
+    - { hodnota: '500', popisek: 'obyvatel' }
+  # Obecní úřad a zastupitelstvo — organizační struktura (povinné informace bod 3) a kontakty
+  lide:
+    - { skupina: Vedení obce, funkce: Starosta, jmeno: Jan Novák, telefon: '', email: '' }
+
+# Vzhled webu (správa ho může přepsat v administraci: Obecní web → Vzhled).
+# Barva se automaticky ztmaví, pokud by bílý text na ní neměl kontrast 4,5 : 1.
+vzhled:
+  barva: '#1b5e20'
+  znak: ''
+  uvodni_foto: ''
+  motto: ''
+  # barevné schéma (vlastiborice, outdoor, uredni-modra, vinova, lesni, bridlice, terakota, svestkova, morska,
+  # nebo vlastni = barva výše), písmo (ubuntu, citelne, moderni, source, tradicni, nunito, genos, outdoor)
+  # a výchozí velikost písma (normalni, velke, extra) — vše jde změnit ve správě
+  schema: uredni-modra
+  pismo: ubuntu
+  velikost: normalni
+
+moduly:
+  ucty: true
+  infokanal: true
+  deska: true
+  web: true
+  rezervace: false
+  knihovna: false
+
+texty:
+  nazev_infokanalu: Infokanál
+  sms_prefix: 'PRIKLADOV: '
+
+# Prohlášení o přístupnosti (zák. 99/2019 Sb.): stav souladu plne / castecne / ne, data posouzení (RRRR-MM-DD)
+pristupnost:
+  stav: castecne
+  vypracovano: ''
+  aktualizovano: ''
+  posouzeni: vlastním posouzením provedeným obcí
+
+patika:
+  prohlaseni_o_pristupnosti: /prohlaseni-o-pristupnosti
+  ochrana_osobnich_udaju: /ochrana-osobnich-udaju
+  kontakt: /kontakt

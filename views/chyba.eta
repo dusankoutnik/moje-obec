@@ -1,0 +1,4 @@
+<% layout('/layout') %>
+<h1><%= it.nadpis %></h1>
+<p><%= it.text %></p>
+<p><a href="/" class="tlacitko sekundarni"><%= it.t('app.domu') %></a></p>

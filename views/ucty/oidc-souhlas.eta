@@ -1,0 +1,13 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('oidc.souhlas_titulek') %></h1>
+<p><%= it.t('oidc.souhlas_text', { klient: it.klient }) %></p>
+<ul>
+  <% it.rozsahy.forEach(function (r) { %><li><%= it.t('oidc.rozsah_' + r) %></li><% }) %>
+</ul>
+<form method="post" action="/oidc/interaction/<%= it.uid %>/pristup" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <button class="tlacitko" type="submit" name="rozhodnuti" value="povolit"><%= it.t('oidc.povolit') %></button>
+  <button class="tlacitko sekundarni" type="submit" name="rozhodnuti" value="odmitnout"><%= it.t('oidc.odmitnout') %></button>
+</form>
+</div>

@@ -1,0 +1,24 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<h1><%= it.t('web.galerie') %></h1>
+<details class="karta" <%= it.galerie.length ? '' : 'open' %>>
+  <summary class="tlacitko velke">＋ <%= it.t('web.nova_galerie') %></summary>
+  <form method="post" action="/sprava/web/galerie" enctype="multipart/form-data" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <label for="nazev"><%= it.t('web.nazev_galerie') %></label><input id="nazev" name="nazev" required maxlength="200">
+    <label for="datum"><%= it.t('web.datum') %></label><input id="datum" name="datum" type="date" value="<%= it.datumPraha(new Date()) %>">
+    <label for="popis"><%= it.t('web.popis') %> <small>(<%= it.t('app.nepovinne') %>)</small></label><textarea id="popis" name="popis" rows="2"></textarea>
+    <label for="fotky"><%= it.t('web.vybrat_fotky') %></label>
+    <input id="fotky" name="fotky" type="file" multiple accept="image/*" aria-describedby="fotky-n">
+    <p class="napoveda" id="fotky-n"><%= it.t('web.fotky_napoveda') %></p>
+    <button class="tlacitko velke" type="submit"><%= it.t('web.zalozit_galerii') %></button>
+  </form>
+</details>
+<ul class="mrizka-galerii sprava">
+<% it.galerie.forEach(function (g) { %>
+  <li><a href="/sprava/web/galerie/<%= g.id %>">
+    <% if (g.titulni_id) { %><img src="/soubory/<%= g.titulni_id %>/nahled?v=nahled" alt="" loading="lazy"><% } else { %><span class="karta-obr-prazdny"></span><% } %>
+    <strong><%= g.nazev %></strong><span class="poznamka"><%= g.stav === 'zverejneno' ? it.t('web.stav_zverejneno') : it.t('web.stav_koncept') %> · <%= it.t('web.fotek', { n: g.pocet }) %></span>
+  </a></li>
+<% }) %>
+</ul>

@@ -1,0 +1,41 @@
+# Vývoj na vlastním počítači: Postgres v kontejneru (port 5432 jen na localhost), aplikace přes `npm run dev`
+# nebo v kontejneru s tsx watch (služba app). Testy: TEST_DATABASE_URL=postgres://platforma:platforma@localhost:5432/platforma_test
+services:
+  db:
+    image: postgres:16-alpine
+    command: -c shared_buffers=32MB
+    environment:
+      POSTGRES_DB: platforma
+      POSTGRES_USER: platforma
+      POSTGRES_PASSWORD: platforma
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - dev_db:/var/lib/postgresql/data
+      - ./scripts/dev-db-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U platforma']
+      interval: 5s
+      retries: 10
+
+  app:
+    image: node:22-bookworm-slim
+    working_dir: /app
+    command: sh -c "npm install --no-audit --no-fund && npx tsx watch src/index.ts"
+    user: '${UID:-1000}:${GID:-1000}'
+    environment:
+      HOME: /tmp
+      DATABASE_URL: postgres://platforma:platforma@db:5432/platforma
+      BASE_URL: http://localhost:3000
+      INTERNAL_BASE_URL: http://127.0.0.1:3000
+    env_file: .env
+    volumes:
+      - .:/app
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dev_db:

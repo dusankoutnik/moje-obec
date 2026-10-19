@@ -1,0 +1,37 @@
+<% layout('/layout') %>
+<h1><%= it.t('infokanal.odber_titulek') %></h1>
+<p><%= it.t('infokanal.odber_text') %></p>
+<div class="sloupce">
+<section class="karta">
+<form method="post" action="/infokanal/odber" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="telefon"><%= it.t('infokanal.telefon') %></label>
+  <input id="telefon" type="tel" value="<%= it.fmtTelefon(it.o.telefon) %>" readonly>
+  <label for="jmeno"><%= it.t('infokanal.jmeno') %></label>
+  <input id="jmeno" name="jmeno" maxlength="120" value="<%= it.o.jmeno %>">
+  <label for="email"><%= it.t('infokanal.email') %></label>
+  <input id="email" name="email" type="email" value="<%= it.o.email || '' %>">
+  <label for="cast_obce"><%= it.t('infokanal.cast_obce') %></label>
+  <select id="cast_obce" name="cast_obce">
+    <option value=""><%= it.t('ucet.cast_obce_mimo') %></option>
+    <% it.obec.obec.casti.forEach(function (c) { %><option value="<%= c %>" <%= it.o.cast_obce === c ? 'selected' : '' %>><%= c %></option><% }) %>
+  </select>
+  <fieldset>
+    <legend><%= it.t('infokanal.kanal') %></legend>
+    <% it.kanaly.forEach(function (k) { %><label class="zatrzitko"><input type="radio" name="kanal" value="<%= k %>" <%= it.o.kanal === k ? 'checked' : '' %>> <%= it.t('infokanal.kanal_' + k) %></label><% }) %>
+  </fieldset>
+  <fieldset>
+    <legend><%= it.t('infokanal.kategorie') %></legend>
+    <% it.kategorie.forEach(function (k) { %>
+      <label class="zatrzitko"><input type="checkbox" name="kategorie" value="<%= k.id %>" <%= k.povinna ? 'checked disabled' : (it.optouty.has(k.id) ? '' : 'checked') %>> <%= k.nazev %><% if (k.povinna) { %> <small>(<%= it.t('infokanal.kategorie_povinna') %>)</small><% } %></label>
+    <% }) %>
+  </fieldset>
+  <button class="tlacitko" type="submit"><%= it.t('app.ulozit') %></button>
+</form>
+</section>
+<section class="karta">
+  <h2><%= it.t('infokanal.odhlasit_titulek') %></h2>
+  <p><%= it.t('infokanal.odhlasit_text') %></p>
+  <form method="post" action="/infokanal/odber/zrusit"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko nebezpecne" type="submit"><%= it.t('infokanal.odhlasit_potvrdit') %></button></form>
+</section>
+</div>

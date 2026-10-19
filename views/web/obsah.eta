@@ -1,0 +1,30 @@
+<% layout('/layout') %>
+<% var o = it.o; %>
+<div class="clanek-obal<%= it.podstranky && it.podstranky.length || (it.sourozenci && it.sourozenci.length) ? ' s-bokem' : '' %>">
+<article class="clanek">
+  <% if (it.zpet) { %><p class="drobky"><a href="<%= it.zpet.url %>">← <%= it.zpet.text %></a></p><% } else if (it.rodic) { %><p class="drobky"><a href="/<%= it.rodic.slug %>">← <%= it.rodic.titulek %></a></p><% } %>
+  <h1><%= o.titulek %></h1>
+  <% if (o.typ === 'aktualita' && o.datum) { %><p class="clanek-meta"><time datetime="<%= o.datum.toISOString() %>"><%= it.fmtDatum(o.datum, false) %></time><% if (it.kategorie) { %> · <a href="/aktuality?kategorie=<%= it.kategorie.slug %>"><%= it.kategorie.nazev %></a><% } %></p><% } %>
+  <% if (o.typ === 'akce') { %>
+  <dl class="seznam akce-udaje">
+    <dt><%= it.t('web.kdy') %></dt><dd><%= o.datum ? it.fmtDatum(o.datum, !o.akce_cely_den) : '' %><%= o.akce_konec ? ' – ' + it.fmtDatum(o.akce_konec, !o.akce_cely_den) : '' %></dd>
+    <% if (o.akce_misto) { %><dt><%= it.t('web.kde') %></dt><dd><%= o.akce_misto %></dd><% } %>
+  </dl>
+  <% } %>
+  <% if (it.zobrazitPerex) { %><p class="perex"><%= o.perex %></p><% } %>
+  <% if (it.obrazek) { %><figure class="clanek-obr"><img src="<%= it.urlSouboru(it.obrazek) %>" alt="<%= it.obrazek.alt %>" <% if (it.obrazek.sirka) { %>width="<%= it.obrazek.sirka %>" height="<%= it.obrazek.vyska %>"<% } %>></figure><% } %>
+  <div class="obsah-html"><% var casti = it.castiObsahu || [{ html: o.obsah_html }]; casti.forEach(function (c) { %><% if (c.video) { %><figure class="video-v-obsahu"><%~ include('/web/_video', { v: c.video, t: it.t }) %><figcaption><strong><%= c.video.nazev %></strong><% if (c.video.popis) { %> — <%= c.video.popis %><% } %></figcaption></figure><% } else { %><%~ c.html %><% } %><% }) %></div>
+  <% if (o.typ === 'stranka' && o.upraveno_at && !it.nahled) { %><p class="poznamka clanek-aktualizovano"><%= it.t('web.aktualizovano') %> <time datetime="<%= new Date(o.upraveno_at).toISOString() %>"><%= it.fmtDatum(o.upraveno_at, false) %></time></p><% } %>
+  <% if (it.podstranky && it.podstranky.length) { %>
+  <ul class="dlazdice-podstranek">
+    <% it.podstranky.forEach(function (p) { %><li><a href="<%= p.url %>"><strong><%= p.titulek %></strong><% if (p.perex) { %><span><%= it.zkrat(p.perex, 140) %></span><% } %></a></li><% }) %>
+  </ul>
+  <% } %>
+</article>
+<% if (it.sourozenci && it.sourozenci.length) { %>
+<nav class="bocni-menu" aria-label="<%= it.rodic.titulek %>">
+  <h2><a href="/<%= it.rodic.slug %>"><%= it.rodic.titulek %></a></h2>
+  <ul><% it.sourozenci.forEach(function (p) { %><li><a href="<%= p.url %>" <%= p.id === o.id ? 'aria-current=page' : '' %>><%= p.titulek %></a></li><% }) %></ul>
+</nav>
+<% } %>
+</div>

@@ -1,0 +1,14 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web/obsah/<%= it.o.id %>">← <%= it.o.titulek %></a></p>
+<h1><%= it.t('web.revize') %>: <%= it.o.titulek %></h1>
+<p class="perex"><%= it.t('web.revize_perex') %></p>
+<% if (!it.revize.length) { %><p class="prazdne"><%= it.t('sprava.zadne') %></p><% } %>
+<ol class="revize">
+<% it.revize.forEach(function (r, i) { %>
+  <li class="karta">
+    <p><strong><%= it.fmtDatum(r.vytvoreno_at) %></strong> · <%= r.duvod === 'zverejneni' ? it.t('web.rev_zverejneno') : it.t('web.rev_koncept') %> · <%= ((r.jmeno || '') + ' ' + (r.prijmeni || '')).trim() || r.prezdivka || '—' %><%= i === 0 ? ' · ' + it.t('web.rev_posledni') : '' %></p>
+    <details><summary><%= it.t('web.rev_ukazat') %></summary><h2><%= r.data.titulek %></h2><% if (r.data.perex) { %><p class="perex"><%= r.data.perex %></p><% } %><div class="obsah-html"><%~ r.data.obsah_html %></div></details>
+    <form method="post" action="/sprava/web/obsah/<%= it.o.id %>/revize/<%= r.id %>" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('web.rev_nacist') %></button></form>
+  </li>
+<% }) %>
+</ol>

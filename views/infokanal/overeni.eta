@@ -1,0 +1,14 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('infokanal.overeni_titulek') %></h1>
+<p><%= it.t(it.neutralni ? 'infokanal.overeni_text_neutralni' : 'infokanal.overeni_text', { telefon: it.telefonZobrazeny }) %></p>
+<% if (it.devKod) { %><div class="flash flash-info dev"><%= it.t('prihlaseni.dev_kod', { kod: it.devKod }) %></div><% } %>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<form method="post" action="/infokanal/overeni" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <input type="hidden" name="telefon" value="<%= it.telefon %>">
+  <label for="kod"><%= it.t('prihlaseni.kod') %></label>
+  <input id="kod" name="kod" type="text" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" maxlength="6" required autofocus class="kod">
+  <button class="tlacitko" type="submit"><%= it.t('app.pokracovat') %></button>
+</form>
+</div>

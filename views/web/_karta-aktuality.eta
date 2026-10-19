@@ -1,0 +1,8 @@
+<article class="karta-clanku">
+  <% if (it.a.obrazek_id) { %><div class="karta-obr-obal"><img class="karta-obr" src="<%= it.obr(it.a.obrazek_id, it.a.obrazek_nazev) %>" alt="<%= it.a.obrazek_alt || '' %>" loading="lazy"></div><% } %>
+  <div class="karta-telo">
+    <p class="karta-meta"><% if (it.a.datum) { %><time datetime="<%= it.a.datum.toISOString() %>"><%= it.fmtDatum(it.a.datum, false) %></time><% } %><% if (it.a.kategorie) { %> · <%= it.a.kategorie %><% } %></p>
+    <h<%= it.h || 3 %>><a href="/aktuality/<%= it.a.slug %>"><%= it.a.titulek %></a></h<%= it.h || 3 %>>
+    <% if (it.a.perex) { %><p class="karta-perex"><%= it.zkrat(it.a.perex, 220) %></p><% } %>
+  </div>
+</article>

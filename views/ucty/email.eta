@@ -1,0 +1,22 @@
+<% layout('/layout') %>
+<div class="uzke">
+<p><a href="/ucet">← <%= it.t('ucet.titulek') %></a></p>
+<h1><%= it.t('zmena_emailu.titulek') %></h1>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<dl class="seznam"><dt><%= it.t('zmena_emailu.soucasny') %></dt><dd><%= it.u.email || it.t('ucet.email_zadny') %></dd></dl>
+<form method="post" action="/ucet/email" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="email"><%= it.t('zmena_emailu.novy') %></label>
+  <input id="email" name="email" type="email" autocomplete="email" required value="<%= it.email || '' %>" aria-describedby="email-napoveda">
+  <p class="napoveda" id="email-napoveda"><%= it.t('zmena_emailu.novy_napoveda') %></p>
+  <button class="tlacitko" type="submit"><%= it.t('zmena_emailu.poslat') %></button>
+</form>
+<% if (it.u.email) { %>
+<form method="post" action="/ucet/email" class="formular alternativa" data-confirm="<%= it.t('zmena_emailu.odebrat_napoveda') %>">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <input type="hidden" name="akce" value="odebrat">
+  <p class="napoveda"><%= it.t('zmena_emailu.odebrat_napoveda') %></p>
+  <button class="tlacitko nebezpecne" type="submit"><%= it.t('zmena_emailu.odebrat') %></button>
+</form>
+<% } %>
+</div>

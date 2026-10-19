@@ -1,0 +1,34 @@
+<% layout('/layout') %>
+<p><a href="/infokanal/sprava">← <%= it.t('infokanal.hlaseni') %></a></p>
+<h1><%= it.h.krizove ? '🚨 ' : '' %><%= it.h.email_predmet || it.h.clanek_titulek || it.t('infokanal.hlaseni') %></h1>
+<div class="sloupce">
+<section class="karta">
+  <dl class="seznam">
+    <dt><%= it.t('infokanal.stav') %></dt><dd><%= it.t('infokanal.stav_' + it.h.stav) %><% if (it.h.naplanovano_na) { %> (<%= it.fmtDatum(it.h.naplanovano_na) %>)<% } %></dd>
+    <dt><%= it.t('infokanal.kategorie_pole') %></dt><dd><%= it.h.kategorie %></dd>
+    <dt><%= it.t('infokanal.cil') %></dt><dd><%= it.h.cil === 'casti' ? it.h.cil_detail.join(', ') : it.t('infokanal.cil_vse') %></dd>
+    <dt><%= it.t('infokanal.autor') %></dt><dd><%= ((it.h.jmeno || '') + ' ' + (it.h.prijmeni || '')).trim() || it.h.zdroj_automatu || '—' %></dd>
+    <dt><%= it.t('infokanal.vytvoreno_kdy') %></dt><dd><%= it.fmtDatum(it.h.vytvoreno_at) %></dd>
+  </dl>
+  <% if (it.h.sms_text) { %><h3>SMS (<%= it.segmentu %>×)</h3><pre class="sms"><%= it.obec.texty.sms_prefix %><%= it.h.sms_text %></pre><% } %>
+  <% if (it.h.email_predmet) { %><h3>E-mail: <%= it.h.email_predmet %></h3><pre class="sms"><%= it.h.email_text %></pre><% } %>
+  <% if (it.h.clanek_titulek) { %><h3>Článek: <%= it.h.clanek_titulek %></h3><pre class="sms"><%= it.h.clanek_html %></pre><% } %>
+  <% if (it.h.stav === 'odesila_se' || it.h.stav === 'naplanovano') { %>
+  <form method="post" action="/infokanal/sprava/hlaseni/<%= it.h.id %>/zrusit"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko nebezpecne" type="submit"><%= it.t('infokanal.zrusit_hlaseni') %></button></form>
+  <% } %>
+</section>
+<section class="karta">
+  <h2><%= it.t('infokanal.prijemci') %></h2>
+  <ul>
+  <% it.h.stavy.forEach(function (s) { %><li><%= s.kanal === 'sms' ? 'SMS' : 'E-mail' %> — <%= it.t('infokanal.' + s.stav) %>: <strong><%= s.n %></strong></li><% }) %>
+  </ul>
+  <div class="tabulka-obal">
+  <table class="tabulka kompaktni">
+    <thead><tr><th>Kanál</th><th>Kontakt</th><th><%= it.t('infokanal.stav') %></th><th>Odesláno</th><th>Chyba</th></tr></thead>
+    <tbody>
+    <% it.h.prijemci.forEach(function (p) { %><tr><td><%= p.kanal %></td><td><%= p.kanal === 'sms' ? it.fmtTelefon(p.kontakt) : p.kontakt %></td><td><%= it.t('infokanal.' + p.stav) %></td><td><%= it.fmtDatum(p.odeslano_at) %></td><td><%= p.posledni_chyba || '' %></td></tr><% }) %>
+    </tbody>
+  </table>
+  </div>
+</section>
+</div>

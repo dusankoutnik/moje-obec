@@ -1,0 +1,14 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('prihlaseni.titulek') %></h1>
+<p><%= it.t('prihlaseni.perex') %></p>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<form method="post" action="/oidc/interaction/<%= it.uid %>/telefon" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="telefon"><%= it.t('prihlaseni.telefon') %></label>
+  <input id="telefon" name="telefon" type="tel" inputmode="tel" autocomplete="tel" required autofocus value="<%= it.telefon || '' %>" aria-describedby="telefon-napoveda">
+  <p class="napoveda" id="telefon-napoveda"><%= it.t('prihlaseni.telefon_napoveda') %></p>
+  <button class="tlacitko" type="submit"><%= it.t('prihlaseni.poslat_kod') %></button>
+</form>
+<p class="alternativa"><a href="/oidc/interaction/<%= it.uid %>/heslo"><%= it.t('prihlaseni.nebo_heslem') %></a> · <a href="/oidc/interaction/<%= it.uid %>/zrusit"><%= it.t('app.zrusit') %></a></p>
+</div>

@@ -1,0 +1,40 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<div class="hlavicka-stranky">
+  <h1><%= it.titulek %></h1>
+  <a class="tlacitko velke" href="/sprava/web/novy?typ=<%= it.typ %>">＋ <%= it.t('web.novy_' + it.typ) %></a>
+</div>
+<form method="get" action="/sprava/web/<%= it.sekce %>" class="filtr" role="search">
+  <div><label for="q"><%= it.t('web.hledat') %></label><input id="q" name="q" type="search" value="<%= it.q %>"></div>
+  <button class="tlacitko sekundarni" type="submit"><%= it.t('web.hledat') %></button>
+</form>
+<% if (!it.polozky.length) { %><p class="prazdne"><%= it.t('deska.nic_sprava') %></p><% } else { %>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th scope="col"><%= it.t('web.titulek') %></th><th scope="col"><%= it.typ === 'akce' ? it.t('web.zacatek') : it.t('web.datum') %></th><th scope="col"><%= it.t('deska.stavy') %></th></tr></thead>
+  <tbody>
+  <% it.polozky.forEach(function (p) { %>
+    <tr><td><a href="/sprava/web/obsah/<%= p.id %>"><%= p.titulek %></a><% if (p.zdroj) { %> <span class="stitek"><%= it.t('web.zdroj_' + p.zdroj) %></span><% } %></td>
+      <td><%= p.datum ? it.fmtDatum(p.datum, false) : '' %></td>
+      <td><%= p.stav === 'zverejneno' ? it.t('web.stav_zverejneno') : it.t('web.stav_koncept') %><%= p.koncept_at ? ' · ' + it.t('web.neuverejnene_zmeny') : '' %></td></tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+<% if (it.externi && it.externi.length) { %>
+<h2><%= it.t('web.externi_titulek') %></h2>
+<p class="napoveda"><%= it.t('web.externi_napoveda') %></p>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th scope="col"><%= it.t('web.titulek') %></th><th scope="col"><%= it.t('web.zacatek') %></th><th scope="col"><%= it.t('web.misto') %></th></tr></thead>
+  <tbody>
+  <% it.externi.forEach(function (a) { %>
+    <tr><td><% if (a.url) { %><a href="<%= a.url %>"><%= a.titulek %></a><% } else { %><%= a.titulek %><% } %></td>
+      <td><% if (a.opakovani) { %><%= a.opakovani %> <%= it.fmtDatum(a.datum, false) %><% } else { %><%= it.fmtDatum(a.datum, !a.akce_cely_den) %><% } %></td>
+      <td><%= a.akce_misto %></td></tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>

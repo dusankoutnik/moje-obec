@@ -1,0 +1,56 @@
+<% layout('/layout') %>
+<h1><%= it.t('ucet.titulek') %></h1>
+<div class="sloupce">
+<section class="karta">
+  <h2><%= it.t('ucet.udaje') %></h2>
+  <form method="post" action="/ucet" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <label for="telefon"><%= it.t('ucet.telefon') %></label>
+    <input id="telefon" type="tel" value="<%= it.fmtTelefon(it.u.telefon) %>" readonly aria-describedby="telefon-napoveda">
+    <p class="napoveda" id="telefon-napoveda"><%= it.t('ucet.telefon_napoveda') %></p>
+    <div class="radek">
+      <div><label for="jmeno"><%= it.t('ucet.jmeno') %></label><input id="jmeno" name="jmeno" autocomplete="given-name" maxlength="100" value="<%= it.u.jmeno %>"></div>
+      <div><label for="prijmeni"><%= it.t('ucet.prijmeni') %></label><input id="prijmeni" name="prijmeni" autocomplete="family-name" maxlength="100" value="<%= it.u.prijmeni %>"></div>
+    </div>
+    <label for="prezdivka"><%= it.t('ucet.prezdivka') %></label>
+    <input id="prezdivka" name="prezdivka" maxlength="60" value="<%= it.u.prezdivka %>">
+    <label for="cast_obce"><%= it.t('ucet.cast_obce') %></label>
+    <select id="cast_obce" name="cast_obce">
+      <option value="" <%= it.u.cast_obce ? '' : 'selected' %>><%= it.t('ucet.cast_obce_mimo') %></option>
+      <% it.obec.obec.casti.forEach(function (c) { %><option value="<%= c %>" <%= it.u.cast_obce === c ? 'selected' : '' %>><%= c %></option><% }) %>
+    </select>
+    <button class="tlacitko" type="submit"><%= it.t('app.ulozit') %></button>
+  </form>
+</section>
+<section class="karta">
+  <h2><%= it.t('ucet.email') %> a <%= it.t('prihlaseni.heslo').toLowerCase() %></h2>
+  <p class="napoveda"><%= it.t('ucet.citlive_napoveda') %></p>
+  <dl class="seznam">
+    <dt><%= it.t('ucet.email') %></dt><dd><%= it.u.email || it.t('ucet.email_zadny') %></dd>
+    <dt><%= it.t('prihlaseni.heslo') %></dt><dd><%= it.u.heslo_hash ? it.t('app.ano') : it.t('app.ne') %></dd>
+  </dl>
+  <% if (it.u.email_cekajici) { %>
+  <div class="flash flash-info"><%= it.t('ucet.email_ceka', { email: it.u.email_cekajici }) %>
+    <a href="/ucet/email/potvrdit"><%= it.t('ucet.email_ceka_zadat') %></a> ·
+    <form method="post" action="/ucet/email/zrusit" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"> <button class="odkaz-tlacitko" type="submit"><%= it.t('ucet.email_ceka_zrusit') %></button></form>
+  </div>
+  <% } %>
+  <p>
+    <a class="tlacitko sekundarni" href="/ucet/email"><%= it.u.email ? it.t('ucet.email_zmenit') : it.t('ucet.email_pridat') %></a>
+    <% if (it.u.email) { %><a class="tlacitko sekundarni" href="/ucet/heslo"><%= it.t('ucet.heslo_zmenit') %></a><% } %>
+  </p>
+  <h2><%= it.t('ucet.propojene') %></h2>
+  <dl class="seznam">
+    <dt><%= it.t('ucet.role') %></dt><dd><%= it.u.role.length ? it.u.role.join(', ') : it.t('ucet.role_obcan') %></dd>
+    <dt><%= it.t('ucet.rezident') %></dt><dd><%= it.u.rezident ? it.t('app.ano') : it.t('app.ne') %></dd>
+    <dt><%= it.t('ucet.gdpr') %></dt><dd><%= it.fmtDatum(it.u.gdpr_souhlas_at) %></dd>
+    <% if (it.obec.moduly.infokanal) { %>
+    <dt><%= it.t('ucet.infokanal_odber') %></dt>
+    <dd><%= it.odber && it.odber.overen ? it.t('ucet.infokanal_odber_ano') : it.t('ucet.infokanal_odber_ne') %> <a href="/infokanal"><%= it.odber && it.odber.overen ? it.t('ucet.infokanal_spravovat') : it.t('ucet.infokanal_prihlasit') %></a></dd>
+    <% } %>
+  </dl>
+  <h2><%= it.t('ucet.sezeni') %></h2>
+  <p><%= it.t('ucet.sezeni_text') %></p>
+  <form method="post" action="/odhlaseni"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('app.odhlasit') %></button></form>
+</section>
+</div>

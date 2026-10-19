@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="cs" class="velikost-<%= it.velikost || 'normalni' %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= it.titulek ? it.titulek + ' — ' : '' %><%= it.obec.obec.nazev %></title>
+<meta name="description" content="<%= it.popis || (it.vzhled && it.vzhled.motto) || it.t('uvod.perex') %>">
+<link rel="stylesheet" href="/static/css/styl.css?v=<%= it.v %>">
+<% if (it.vzhled) { %><style><%~ it.vzhled.css %></style><% } %>
+<% if (it.fontyNavic) { %><style><%~ it.fontyNavic %></style><% } %>
+<% if (it.editor) { %><link rel="stylesheet" href="/static/vendor/quill/quill.snow.css"><% } %>
+<script src="/static/js/app.js?v=<%= it.v %>" defer></script>
+<% if (it.vzhled) { %><script src="/static/js/web.js?v=<%= it.v %>" defer></script><% } %>
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/ikona-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<% if (it.obec.moduly.web) { %><link rel="alternate" type="application/rss+xml" title="<%= it.t('web.aktuality') %>" href="/aktuality/rss.xml"><% } %>
+<% if (it.noindex) { %><meta name="robots" content="noindex"><% } %>
+</head>
+<% var jeSprava = it.cesta.startsWith('/sprava') || it.cesta.startsWith('/infokanal/sprava'); %>
+<body class="<%= it.vzhled ? 'web' : 'zakladni' %><%= jeSprava ? ' je-sprava' : '' %><%= it.plnaSirka ? ' je-uvod' : '' %>">
+<% if (it.vzhled) { %>
+<div class="pozadi" aria-hidden="true" <% if (it.pozadiStridat && it.pozadiStridat.length) { %>data-fotky="<%= JSON.stringify(it.pozadiStridat) %>"<% } %>>
+  <div class="pozadi-vrstva viditelna"<% if (it.pozadiPrvni) { %> style="background-image:url('<%= it.pozadiPrvni %>')"<% } %>></div>
+  <div class="pozadi-vrstva"></div>
+</div>
+<% } %>
+<a class="skip" href="#obsah"><%= it.t('app.skip') %></a>
+<% if (it.nahled) { %><div class="nahled-pruh" role="status"><%= it.t('web.nahled_pruh') %></div><% } %>
+<% if (it.nahledVzhledu) { %>
+<div class="nahled-pruh nahled-vzhledu" role="status">
+  <%= it.t('web.nahled_vzhledu') %>
+  <form method="post" action="/sprava/web/vzhled/nahled-pouzit" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko male" type="submit"><%= it.t('web.nahled_pouzit') %></button></form>
+  <form method="post" action="/sprava/web/vzhled/nahled-zrusit" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko sekundarni male" type="submit"><%= it.t('web.nahled_zrusit') %></button></form>
+</div>
+<% } %>
+<header class="hlava">
+  <div class="hlava-pas">
+    <div class="obal hlava-in">
+      <a class="znacka" href="/">
+        <% if (it.vzhled && it.vzhled.znakUrl) { %><img class="znak" src="<%= it.vzhled.znakUrl %>" alt="" width="64" height="64"><% } else { %><img class="znak" src="/static/favicon.svg" alt="" width="64" height="64"><% } %>
+        <span class="znacka-text"><span class="znacka-nazev nazev-<%= it.vzhled ? it.vzhled.nazevStyl : 'normalni' %>"><%= it.vzhled ? it.vzhled.nazev : it.obec.obec.kratky_nazev %></span><span class="znacka-motto"><%= it.t('web.oficialni_web') %></span></span>
+      </a>
+      <div class="nastroje">
+        <% if (it.obec.moduly.web) { %>
+        <form class="hledat" method="get" action="/hledat" role="search">
+          <label for="hledat-q" class="vh"><%= it.t('web.hledat') %></label>
+          <input id="hledat-q" name="q" type="search" placeholder="<%= it.t('web.hledat_placeholder') %>" value="<%= it.q || '' %>">
+          <button type="submit"><span class="vh"><%= it.t('web.hledat') %></span><span aria-hidden="true">⌕</span></button>
+        </form>
+        <form class="velikost-pisma" method="get" action="/velikost" aria-label="<%= it.t('web.velikost_pisma') %>">
+          <input type="hidden" name="zpet" value="<%= it.cestaSDotazem || it.cesta %>">
+          <% ;[['normalni', 'A'], ['velke', 'A+'], ['extra', 'A++']].forEach(function (v) { %><button type="submit" name="v" value="<%= v[0] %>" aria-pressed="<%= (it.velikost || 'normalni') === v[0] ? 'true' : 'false' %>" title="<%= it.t('web.velikost_' + v[0]) %>"><span aria-hidden="true"><%= v[1] %></span><span class="vh"><%= it.t('web.velikost_' + v[0]) %></span></button><% }) %>
+        </form>
+        <% } %>
+        <nav class="uzivatel" aria-label="<%= it.t('app.ucet') %>">
+          <% if (it.uzivatel) { %>
+            <% if (it.uzivatel.role && it.uzivatel.role.length) { %><a href="/sprava" <%= it.cesta.startsWith('/sprava') ? 'aria-current=page' : '' %>><%= it.t('app.sprava') %></a><% } %>
+            <a href="/ucet" <%= it.cesta === '/ucet' ? 'aria-current=page' : '' %>><%= it.t('app.ucet') %></a>
+            <form method="post" action="/odhlaseni" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="odkaz-tlacitko" type="submit"><%= it.t('app.odhlasit') %></button></form>
+          <% } else { %>
+            <a href="/prihlaseni"><%= it.t('app.prihlasit') %></a>
+          <% } %>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <div class="akcent-pruh" aria-hidden="true"></div>
+  <%
+    var polozky = it.menu ? it.menu : [];
+    if (!it.menu) {
+      if (it.obec.moduly.deska) polozky.push({ titulek: it.t('deska.titulek'), url: '/uredni-deska', deti: [] });
+      if (it.obec.moduly.infokanal) polozky.push({ titulek: it.obec.texty.nazev_infokanalu, url: '/infokanal', deti: [] });
+    }
+    var aktivni = function (m) { return m.url !== '/' && (it.cesta === m.url || it.cesta.indexOf(m.url + '/') === 0 || m.deti.some(function (d) { return it.cesta === d.url; })); };
+  %>
+  <details class="menu-mobil">
+    <summary><span aria-hidden="true">☰</span> <%= it.t('web.menu') %></summary>
+    <% if (it.obec.moduly.web) { %>
+    <form class="hledat-mobil" method="get" action="/hledat" role="search">
+      <label for="hledat-m" class="vh"><%= it.t('web.hledat') %></label>
+      <input id="hledat-m" name="q" type="search" placeholder="<%= it.t('web.hledat_placeholder') %>">
+      <button type="submit"><%= it.t('web.hledat') %></button>
+    </form>
+    <% } %>
+    <nav aria-label="<%= it.t('web.hlavni_navigace') %>">
+      <ul>
+        <li><a href="/"><%= it.t('app.domu') %></a></li>
+        <% polozky.forEach(function (m) { %>
+        <li><a href="<%= m.url %>" <%= aktivni(m) ? 'aria-current=page' : '' %>><%= m.titulek %></a>
+          <% if (m.deti.length) { %><ul><% m.deti.forEach(function (d) { %><li><a href="<%= d.url %>"><%= d.titulek %></a></li><% }) %></ul><% } %>
+        </li>
+        <% }) %>
+      </ul>
+    </nav>
+  </details>
+</header>
+  <nav class="pilulka" aria-label="<%= it.t('web.hlavni_navigace') %>">
+    <ul>
+      <li><a href="/" class="<%= it.cesta === '/' ? 'je-aktivni' : '' %>" style="--d:7.1s;--o:0.4s" <%= it.cesta === '/' ? 'aria-current=page' : '' %>><%= it.t('app.domu') %></a></li>
+      <% polozky.forEach(function (m, i) { %>
+      <li class="<%= m.deti.length ? 'ma-deti' : '' %>">
+        <a href="<%= m.url %>" class="<%= aktivni(m) ? 'je-aktivni' : '' %>" style="--d:<%= (6 + (i * 1.7) % 5).toFixed(1) %>s;--o:<%= ((i * 1.3) % 4).toFixed(1) %>s" <%= aktivni(m) ? 'aria-current=page' : '' %>><%= m.titulek %></a>
+        <% if (m.deti.length) { %><ul><% m.deti.forEach(function (d) { %><li><a href="<%= d.url %>" <%= it.cesta === d.url ? 'aria-current=page' : '' %>><%= d.titulek %></a></li><% }) %></ul><% } %>
+      </li>
+      <% }) %>
+    </ul>
+  </nav>
+<main id="obsah" tabindex="-1" class="<%= it.plnaSirka ? 'plna' : 'obal' %>">
+  <% if (it.plnaSirka) { %>
+    <% if (it.flash) { %><div class="obal"><div class="flash flash-<%= it.flash.typ %>" role="<%= it.flash.typ === 'chyba' ? 'alert' : 'status' %>"><%= it.flash.text %><% if (it.flash.odkaz) { %> <a href="<%= it.flash.odkaz.url %>"><%= it.flash.odkaz.text %> →</a><% } %></div></div><% } %>
+    <%~ it.body %>
+  <% } else { %>
+  <div class="panel-hlavni">
+    <% if (it.flash) { %><div class="flash flash-<%= it.flash.typ %>" role="<%= it.flash.typ === 'chyba' ? 'alert' : 'status' %>"><%= it.flash.text %><% if (it.flash.odkaz) { %> <a href="<%= it.flash.odkaz.url %>"><%= it.flash.odkaz.text %> →</a><% } %></div><% } %>
+    <%~ it.body %>
+  </div>
+  <% } %>
+</main>
+<% if (it.dotacePaticka && it.dotacePaticka.length && !jeSprava && !it.plnaSirka) { %>
+<section class="dotace-paticka obal" aria-labelledby="dotace-paticka-h">
+  <h2 id="dotace-paticka-h" class="vh"><%= it.t('web.podporili_nas') %></h2>
+  <%~ include('/web/_pas-dotaci', { dotace: it.dotacePaticka, t: it.t, maly: true }) %>
+</section>
+<% } %>
+<footer class="paticka">
+  <div class="obal paticka-in">
+    <section>
+      <h2><%= it.obec.obec.nazev %></h2>
+      <p><%= it.obec.obec.adresa.ulice %><br><%= it.obec.obec.adresa.psc %> <%= it.obec.obec.adresa.mesto %></p>
+      <p><% if (it.obec.obec.ico) { %>IČO <%= it.obec.obec.ico %><br><% } %><% if (it.obec.obec.kontakt.datova_schranka) { %>ID DS <%= it.obec.obec.kontakt.datova_schranka %><% } %></p>
+    </section>
+    <section>
+      <h2><%= it.t('app.patika_kontakt') %></h2>
+      <p>
+        <% if (it.obec.obec.kontakt.telefon) { %><a href="tel:<%= it.obec.obec.kontakt.telefon.replace(/\s/g, '') %>"><%= it.obec.obec.kontakt.telefon %></a><br><% } %>
+        <% if (it.obec.obec.kontakt.email) { %><a href="mailto:<%= it.obec.obec.kontakt.email %>"><%= it.obec.obec.kontakt.email %></a><br><% } %>
+        <% if (it.obec.obec.bankovni_ucet.cislo) { %><%= it.t('web.ucet') %> <%= it.obec.obec.bankovni_ucet.cislo %><% } %>
+      </p>
+    </section>
+    <section>
+      <h2><%= it.t('web.uredni_hodiny') %></h2>
+      <p><% ;(it.obec.obec.kontakt.uredni_hodiny || '').split('\n').forEach(function (r) { %><%= r %><br><% }) %></p>
+    </section>
+    <nav aria-labelledby="paticka-odkazy">
+      <h2 id="paticka-odkazy"><%= it.t('web.povinne_odkazy') %></h2>
+      <ul>
+        <% if (it.obec.moduly.deska) { %><li><a href="/uredni-deska"><%= it.t('deska.titulek') %></a></li><li><a href="/povinne-informace"><%= it.t('pi.titulek') %></a></li><% } %>
+        <li><a href="<%= it.obec.patika.prohlaseni_o_pristupnosti %>"><%= it.t('app.patika_pristupnost') %></a></li>
+        <li><a href="<%= it.obec.patika.ochrana_osobnich_udaju %>"><%= it.t('app.patika_gdpr') %></a></li>
+        <li><a href="<%= it.obec.patika.kontakt %>"><%= it.t('app.patika_kontakt') %></a></li>
+        <% if (it.obec.patika.zasady_cookies) { %><li><a href="<%= it.obec.patika.zasady_cookies %>"><%= it.t('staticke.zasady_cookies') %></a></li><% } %>
+        <% if (it.obec.moduly.web) { %><li><a href="/dotace"><%= it.t('web.dotace') %></a></li><li><a href="/mapa-stranek"><%= it.t('staticke.mapa_titulek') %></a></li><% } %>
+      </ul>
+    </nav>
+  </div>
+  <p class="obal paticka-zdroj"><%= it.t('app.patika_zdroj') %></p>
+</footer>
+</body>
+</html>

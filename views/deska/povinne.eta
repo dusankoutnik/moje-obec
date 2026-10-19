@@ -1,0 +1,16 @@
+<% layout('/layout') %>
+<h1><%= it.t('pi.titulek') %></h1>
+<p class="perex"><%= it.t('pi.perex') %></p>
+<nav class="obsah-pi" aria-label="<%= it.t('pi.obsah') %>">
+  <ol>
+  <% it.body.filter(function (b) { return b.uroven === 1; }).forEach(function (b) { %><li><a href="#bod-<%= b.klic.replace('.', '-') %>"><%= b.nazev %></a></li><% }) %>
+  </ol>
+</nav>
+<div class="pi">
+<% it.body.forEach(function (b) { %>
+  <section id="bod-<%= b.klic.replace('.', '-') %>" class="pi-bod pi-u<%= b.uroven %>">
+    <% if (b.uroven === 1) { %><h2><%= b.klic %>. <%= b.nazev %></h2><% } else { %><h3><%= b.klic %> <%= b.nazev %></h3><% } %>
+    <% if (!b.skupina) { %><div class="obsah-html"><% if (b.html) { %><%~ b.html %><% } else { %><p class="poznamka"><%= it.t('pi.doplnuje_se') %></p><% } %></div><% } %>
+  </section>
+<% }) %>
+</div>

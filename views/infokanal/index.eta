@@ -1,0 +1,47 @@
+<% layout('/layout') %>
+<h1><%= it.obec.texty.nazev_infokanalu %></h1>
+<p class="perex"><%= it.t('infokanal.perex') %></p>
+<div class="sloupce">
+<section class="karta">
+<h2><%= it.t('infokanal.prihlaseni_k_odberu') %></h2>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<form method="post" action="/infokanal" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="jmeno"><%= it.t('infokanal.jmeno') %></label>
+  <input id="jmeno" name="jmeno" autocomplete="name" maxlength="120" value="<%= it.f.jmeno || '' %>">
+  <label for="telefon"><%= it.t('infokanal.telefon') %></label>
+  <input id="telefon" name="telefon" type="tel" inputmode="tel" autocomplete="tel" required value="<%= it.f.telefon || '' %>" aria-describedby="telefon-napoveda">
+  <p class="napoveda" id="telefon-napoveda"><%= it.t('infokanal.telefon_napoveda') %></p>
+  <label for="email"><%= it.t('infokanal.email') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+  <input id="email" name="email" type="email" autocomplete="email" value="<%= it.f.email || '' %>" aria-describedby="email-napoveda">
+  <p class="napoveda" id="email-napoveda"><%= it.t('infokanal.email_napoveda') %></p>
+  <label for="cast_obce"><%= it.t('infokanal.cast_obce') %></label>
+  <select id="cast_obce" name="cast_obce">
+    <option value=""><%= it.t('ucet.cast_obce_mimo') %></option>
+    <% it.obec.obec.casti.forEach(function (c) { %><option value="<%= c %>" <%= it.f.cast_obce === c ? 'selected' : '' %>><%= c %></option><% }) %>
+  </select>
+  <fieldset>
+    <legend><%= it.t('infokanal.kanal') %></legend>
+    <% it.kanaly.forEach(function (k) { %><label class="zatrzitko"><input type="radio" name="kanal" value="<%= k %>" <%= (it.f.kanal || 'sms') === k ? 'checked' : '' %>> <%= it.t('infokanal.kanal_' + k) %></label><% }) %>
+  </fieldset>
+  <fieldset>
+    <legend><%= it.t('infokanal.kategorie') %></legend>
+    <% it.kategorie.forEach(function (k) { %>
+      <label class="zatrzitko"><input type="checkbox" name="kategorie" value="<%= k.id %>" <%= k.povinna ? 'checked disabled' : 'checked' %>> <%= k.nazev %><% if (k.povinna) { %> <small>(<%= it.t('infokanal.kategorie_povinna') %>)</small><% } %></label>
+    <% }) %>
+  </fieldset>
+  <label class="zatrzitko"><input type="checkbox" name="souhlas" value="ano" required> <%= it.t('infokanal.souhlas') %> <a href="<%= it.obec.patika.ochrana_osobnich_udaju %>" target="_blank" rel="noopener"><%= it.t('souhlas.odkaz') %></a></label>
+  <button class="tlacitko" type="submit"><%= it.t('infokanal.prihlasit') %></button>
+</form>
+</section>
+<section class="karta">
+<h2><%= it.t('infokanal.spravovat_kodem') %></h2>
+<p><%= it.t('infokanal.uz_odebira') %></p>
+<form method="post" action="/infokanal/kod" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="telefon2"><%= it.t('prihlaseni.telefon') %></label>
+  <input id="telefon2" name="telefon" type="tel" inputmode="tel" autocomplete="tel" required>
+  <button class="tlacitko sekundarni" type="submit"><%= it.t('prihlaseni.poslat_kod') %></button>
+</form>
+</section>
+</div>

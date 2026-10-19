@@ -1,0 +1,13 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<h1><%= it.t('web.kategorie_aktualit') %></h1>
+<p class="perex"><%= it.t('web.kategorie_aktualit_perex') %></p>
+<% it.kategorie.concat([null]).forEach(function (k) { var p = k ? k.id : 'nova'; %>
+<form method="post" action="/sprava/web/kategorie" class="formular inline-form karta">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <% if (k) { %><input type="hidden" name="id" value="<%= k.id %>"><% } %>
+  <div><label for="nazev-<%= p %>"><%= k ? it.t('web.titulek') : it.t('web.kategorie_nova') %></label><input id="nazev-<%= p %>" name="nazev" maxlength="100" value="<%= k ? k.nazev : '' %>" <%= k ? 'required' : '' %>></div>
+  <div><label for="poradi-<%= p %>"><%= it.t('deska.kat_poradi') %></label><input id="poradi-<%= p %>" name="poradi" type="number" value="<%= k ? k.poradi : 100 %>"></div>
+  <button class="tlacitko" type="submit"><%= k ? it.t('app.ulozit') : it.t('web.pridat') %></button>
+</form>
+<% }) %>

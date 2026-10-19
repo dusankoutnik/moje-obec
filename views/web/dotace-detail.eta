@@ -1,0 +1,9 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/dotace">← <%= it.t('web.dotace') %></a></p>
+<h1><%= it.d.projekt %></h1>
+<div class="dotace-loga velka"><% it.d.loga.forEach(function (l) { %><img src="/soubory/<%= l.id %>/<%= encodeURIComponent(l.puvodni_nazev) %>" alt="<%= l.alt %>"><% }) %></div>
+<dl class="seznam">
+  <% if (it.d.poskytovatel) { %><dt><%= it.t('web.poskytovatel') %></dt><dd><%= it.d.poskytovatel %></dd><% } %>
+</dl>
+<% if (it.d.text) { %><div class="obsah-html"><% it.d.text.split(/\n{2,}/).forEach(function (o) { %><p><%= o %></p><% }) %></div><% } %>
+<% if (it.d.odkaz) { %><p><a href="<%= it.d.odkaz %>"><%= it.t('web.vice_o_projektu') %> →</a></p><% } %>

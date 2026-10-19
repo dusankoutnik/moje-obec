@@ -1,0 +1,42 @@
+[
+  {
+    "projekt": "Vybudování víceúčelového hřiště",
+    "poskytovatel": "Liberecký kraj",
+    "text": "Vybudování vlastibořického hřiště podpořil Liberecký kraj.",
+    "odkaz": "https://www.kraj-lbc.cz/",
+    "loga": [
+      {
+        "url": "https://vlastiborice.cz/wp-content/uploads/2024/02/banner-hriste.png",
+        "alt": "Vybudování vlastibořického hřiště podpořil Liberecký kraj"
+      }
+    ]
+  },
+  {
+    "projekt": "Modernizace a rozšíření veřejného osvětlení",
+    "poskytovatel": "Liberecký kraj",
+    "text": "Modernizaci a rozšíření veřejného osvětlení v obci podpořil Liberecký kraj.",
+    "odkaz": "https://www.kraj-lbc.cz/",
+    "loga": [
+      {
+        "url": "https://vlastiborice.cz/wp-content/uploads/2026/10/verejne-osvetleni.jpg",
+        "alt": "Modernizaci a rozšíření veřejného osvětlení v obci podpořil Liberecký kraj"
+      }
+    ]
+  },
+  {
+    "projekt": "Vybavení do obce Vlastibořice",
+    "poskytovatel": "Evropská unie (Strategický plán SZP 2023–2027) prostřednictvím MAS Achát",
+    "text": "Projekt „Vybavení do obce Vlastibořice“ byl spolufinancován Evropskou unií prostřednictvím Strategického plánu SZP na období 2023–2027 a realizován ve spolupráci s MAS Achát. Cílem projektu bylo pořízení štěpkovače, podlahového mycího stroje a vysavače pro obec. Celkové náklady 149 761 Kč, z toho dotace 80 % (119 808 Kč).",
+    "odkaz": "https://www.mapaprojektu.cz/",
+    "loga": [
+      {
+        "url": "https://vlastiborice.cz/wp-content/uploads/2025/10/publicita-obec-vlastiborice-1.jpg",
+        "alt": "Projekt Vybavení do obce Vlastibořice byl spolufinancován Evropskou unií — Strategický plán SZP"
+      },
+      {
+        "url": "https://vlastiborice.cz/wp-content/uploads/2025/05/screenshot-3-710x413.jpg",
+        "alt": "Projekt realizován ve spolupráci s MAS Achát"
+      }
+    ]
+  }
+]

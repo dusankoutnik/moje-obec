@@ -1,0 +1,134 @@
+<% layout('/layout') %>
+<% var f = it.f; var o = it.o; var typ = it.typ; var zverejneno = o && o.stav === 'zverejneno'; %>
+<p class="drobky"><a href="/sprava/web/<%= it.sekce %>">← <%= it.t('web.' + it.sekce) %></a></p>
+<div class="hlavicka-stranky">
+  <h1><%= it.titulek %></h1>
+  <span class="stav-stitek <%= zverejneno ? 'stav-auto' : 'stav-vychozi' %>"><%= zverejneno ? it.t('web.stav_zverejneno') : it.t('web.stav_koncept') %></span>
+</div>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<% if (o && o.koncept) { %>
+<div class="flash flash-info" role="status"><%= it.t('web.ma_koncept', { cas: it.fmtDatum(o.koncept_at) }) %>
+  <form method="post" action="/sprava/web/obsah/<%= o.id %>/zahodit" class="inline" data-confirm="<%= it.t('web.zahodit_potvrdit') %>"><input type="hidden" name="_csrf" value="<%= it.csrf %>"> <button class="odkaz-tlacitko" type="submit"><%= it.t('web.zahodit_koncept') %></button></form>
+</div>
+<% } %>
+<% if (o && o.smazano_at) { %>
+<div class="flash flash-chyba" role="status"><%= it.t('web.je_v_kosi') %> <form method="post" action="/sprava/web/obsah/<%= o.id %>/obnovit" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="odkaz-tlacitko" type="submit"><%= it.t('web.obnovit') %></button></form></div>
+<% } %>
+
+<form method="post" action="<%= o ? '/sprava/web/obsah/' + o.id : '/sprava/web/novy' %>" enctype="multipart/form-data" class="formular editor-formular" id="editor-formular"
+      data-autosave="<%= o ? '/sprava/web/obsah/' + o.id + '/autosave' : '/sprava/web/obsah/novy/autosave' %>" data-typ="<%= typ %>">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <input type="hidden" name="typ" value="<%= typ %>">
+  <% if (o) { %><input type="hidden" name="id" value="<%= o.id %>"><% } %>
+  <div class="editor-mrizka">
+    <div class="editor-hlavni">
+      <label for="titulek"><%= typ === 'odkaz' ? it.t('web.text_odkazu') : it.t('web.titulek') %></label>
+      <input id="titulek" name="titulek" class="velky-vstup" required maxlength="250" value="<%= f.titulek %>" autocomplete="off">
+
+      <% if (typ === 'odkaz') { %>
+        <label for="odkaz_url"><%= it.t('web.adresa_odkazu') %></label>
+        <input id="odkaz_url" name="odkaz_url" required value="<%= f.odkaz_url %>" aria-describedby="odkaz-n" inputmode="url">
+        <p class="napoveda" id="odkaz-n"><%= it.t('web.adresa_odkazu_napoveda') %></p>
+      <% } else { %>
+        <label for="perex"><%= it.t('web.perex') %> <small>(<%= typ === 'stranka' ? it.t('app.nepovinne') : it.t('web.doporuceno') %>)</small></label>
+        <textarea id="perex" name="perex" rows="2" maxlength="600" aria-describedby="perex-n"><%= f.perex %></textarea>
+        <p class="napoveda" id="perex-n"><%= it.t('web.perex_napoveda') %></p>
+
+        <label for="obsah_html" id="obsah-label"><%= it.t('web.text') %></label>
+        <p class="napoveda" id="obsah-n"><%= it.t('web.text_napoveda') %></p>
+        <textarea id="obsah_html" name="obsah_html" rows="18" data-editor="plny" aria-describedby="obsah-n"><%= f.obsah_html %></textarea>
+        <noscript><p class="napoveda"><%= it.t('web.bez_js') %></p></noscript>
+      <% } %>
+    </div>
+
+    <aside class="editor-bok">
+      <section class="karta panel-zverejneni">
+        <h2><%= it.t('web.zverejneni') %></h2>
+        <p class="autosave-stav napoveda" aria-live="polite" id="autosave-stav"><%= o ? it.t('web.naposledy_ulozeno', { cas: it.fmtDatum(o.koncept_at || o.upraveno_at) }) : it.t('web.zatim_neulozeno') %></p>
+        <button class="tlacitko velke plna-sirka" type="submit" name="akce" value="zverejnit"><%= zverejneno ? it.t('web.zverejnit_zmeny') : it.t('web.zverejnit') %></button>
+        <button class="tlacitko sekundarni plna-sirka" type="submit" name="akce" value="koncept" formnovalidate><%= it.t('web.ulozit_rozpracovane') %></button>
+        <% if (typ !== 'odkaz') { %><button class="tlacitko sekundarni plna-sirka" type="submit" formaction="/sprava/web/nahled" formtarget="_blank" formnovalidate><%= it.t('web.nahled') %> ↗</button><% } %>
+        <p class="napoveda"><%= zverejneno ? it.t('web.napoveda_zverejneny') : it.t('web.napoveda_koncept') %></p>
+        <% if (it.verejnaUrl) { %><p><a href="<%= it.verejnaUrl %>"><%= it.t('web.zobrazit_na_webu') %> →</a></p><% } %>
+      </section>
+
+      <% if (typ === 'aktualita') { %>
+      <section class="karta">
+        <h2><%= it.t('web.zarazeni') %></h2>
+        <label for="datum"><%= it.t('web.datum_zverejneni') %></label>
+        <div class="radek-uzky"><input id="datum" name="datum" type="date" value="<%= f.datum ? it.datumPraha(new Date(f.datum)) : '' %>"><label for="cas" class="vh"><%= it.t('web.cas') %></label><input id="cas" name="cas" type="time" value="<%= f.datum ? new Date(f.datum).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Prague' }) : '' %>"></div>
+        <p class="napoveda"><%= it.t('web.datum_napoveda') %></p>
+        <label for="kategorie_id"><%= it.t('web.kategorie') %></label>
+        <select id="kategorie_id" name="kategorie_id"><option value=""><%= it.t('web.bez_kategorie') %></option>
+          <% it.kategorie.forEach(function (k) { %><option value="<%= k.id %>" <%= f.kategorie_id === k.id ? 'selected' : '' %>><%= k.nazev %></option><% }) %>
+        </select>
+      </section>
+      <% } %>
+
+      <% if (typ === 'akce') { %>
+      <section class="karta">
+        <h2><%= it.t('web.kdy_a_kde') %></h2>
+        <% var od = f.datum ? new Date(f.datum) : null, dd = f.akce_konec ? new Date(f.akce_konec) : null; var hm = function (d) { return d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Prague' }); }; %>
+        <label for="datum_od"><%= it.t('web.zacatek') %></label>
+        <div class="radek-uzky"><input id="datum_od" name="datum_od" type="date" required value="<%= od ? it.datumPraha(od) : '' %>"><label for="cas_od" class="vh"><%= it.t('web.cas') %></label><input id="cas_od" name="cas_od" type="time" value="<%= od && !f.akce_cely_den ? hm(od) : '' %>"></div>
+        <label for="datum_do"><%= it.t('web.konec') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+        <div class="radek-uzky"><input id="datum_do" name="datum_do" type="date" value="<%= dd ? it.datumPraha(dd) : '' %>"><label for="cas_do" class="vh"><%= it.t('web.cas') %></label><input id="cas_do" name="cas_do" type="time" value="<%= dd && !f.akce_cely_den ? hm(dd) : '' %>"></div>
+        <label class="zatrzitko"><input type="checkbox" name="cely_den" value="ano" <%= f.akce_cely_den ? 'checked' : '' %>> <%= it.t('web.cely_den') %></label>
+        <label for="misto"><%= it.t('web.kde') %></label>
+        <input id="misto" name="misto" maxlength="200" value="<%= f.akce_misto %>">
+      </section>
+      <% } %>
+
+      <% if (typ === 'stranka' || typ === 'odkaz') { %>
+      <section class="karta">
+        <h2><%= it.t('web.umisteni') %></h2>
+        <label for="nadrazena_id"><%= it.t('web.nadrazena') %></label>
+        <select id="nadrazena_id" name="nadrazena_id" <%= it.maDeti ? 'disabled' : '' %> aria-describedby="nad-n">
+          <option value=""><%= it.t('web.hlavni_uroven') %></option>
+          <% it.nadrazene.forEach(function (n) { %><option value="<%= n.id %>" <%= f.nadrazena_id === n.id ? 'selected' : '' %>><%= n.titulek %></option><% }) %>
+        </select>
+        <p class="napoveda" id="nad-n"><%= it.maDeti ? it.t('web.ma_podstranky') : it.t('web.nadrazena_napoveda') %></p>
+        <label class="zatrzitko"><input type="checkbox" name="v_menu" value="ano" <%= f.v_menu ? 'checked' : '' %>> <%= it.t('web.v_menu') %></label>
+      </section>
+      <% } %>
+
+      <% if (typ !== 'odkaz') { %>
+      <section class="karta">
+        <h2><%= it.t('web.obrazek') %> <small>(<%= it.t('app.nepovinne') %>)</small></h2>
+        <% if (it.obrazek) { %>
+          <img class="nahled-obr" src="<%= it.urlSouboru(it.obrazek, true) %>" alt="">
+          <label class="zatrzitko"><input type="checkbox" name="odebrat_obrazek" value="ano"> <%= it.t('web.odebrat_obrazek') %></label>
+        <% } %>
+        <label for="obrazek"><%= it.obrazek ? it.t('web.vymenit_obrazek') : it.t('web.nahrat_obrazek') %></label>
+        <input id="obrazek" name="obrazek" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic">
+        <label for="obrazek_alt"><%= it.t('web.popis_obrazku') %></label>
+        <input id="obrazek_alt" name="obrazek_alt" maxlength="300" value="<%= it.obrazek ? it.obrazek.alt : '' %>" aria-describedby="alt-n">
+        <p class="napoveda" id="alt-n"><%= it.t('web.popis_obrazku_napoveda') %></p>
+      </section>
+      <% } %>
+
+      <% if (typ !== 'odkaz') { %>
+      <details class="karta">
+        <summary><%= it.t('web.pokrocile') %></summary>
+        <label for="slug"><%= it.t('web.adresa_stranky') %></label>
+        <input id="slug" name="slug" value="<%= f.slug %>" pattern="[a-z0-9-]*" aria-describedby="slug-n">
+        <p class="napoveda" id="slug-n"><%= it.t('web.adresa_napoveda') %></p>
+      </details>
+      <% } %>
+
+      <% if (o) { %>
+      <section class="karta">
+        <h2><%= it.t('web.dalsi_akce') %></h2>
+        <ul class="odkazy-akci">
+          <li><a href="/sprava/web/obsah/<%= o.id %>/revize"><%= it.t('web.revize') %></a></li>
+          <% if (zverejneno) { %><li><button class="odkaz-tlacitko" type="submit" formaction="/sprava/web/obsah/<%= o.id %>/skryt" formnovalidate data-confirm="<%= it.t('web.skryt_potvrdit') %>"><%= it.t('web.skryt') %></button></li><% } %>
+          <% if (!o.smazano_at) { %><li><a class="nebezpecny-odkaz" href="/sprava/web/obsah/<%= o.id %>/smazat"><%= it.t('web.smazat') %></a></li><% } %>
+        </ul>
+      </section>
+      <% } %>
+    </aside>
+  </div>
+</form>
+<div id="alt-dialog-sablona" hidden data-nadpis="<%= it.t('web.alt_dialog_nadpis') %>" data-napoveda="<%= it.t('web.popis_obrazku_napoveda') %>" data-ok="<%= it.t('web.alt_dialog_ok') %>" data-zrusit="<%= it.t('app.zrusit') %>" data-chyba="<%= it.t('web.alt_dialog_chyba') %>" data-nahravam="<%= it.t('web.nahravam') %>" data-ulozeno="<%= it.t('web.autosave_ok') %>" data-neulozeno="<%= it.t('web.autosave_chyba') %>" data-zmeny="<%= it.t('web.neulozene_zmeny') %>" data-video-nadpis="<%= it.t('videa.vlozit') %>" data-video-napoveda="<%= it.t('videa.vlozit_napoveda') %>" data-video-label="<%= it.t('videa.titulek') %>" data-video-koncept="<%= it.t('web.stav_koncept') %>"></div>
+<script src="/static/vendor/quill/quill.js" defer></script>
+<script src="/static/js/editor.js?v=<%= it.v %>" defer></script>

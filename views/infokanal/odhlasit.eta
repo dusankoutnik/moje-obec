@@ -1,0 +1,10 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('infokanal.odhlasit_titulek') %></h1>
+<p><%= it.t('infokanal.odhlasit_text') %> (<%= it.o.email || it.fmtTelefon(it.o.telefon) %>)</p>
+<form method="post" action="/infokanal/odhlasit/<%= it.token %>" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <button class="tlacitko nebezpecne" type="submit"><%= it.t('infokanal.odhlasit_potvrdit') %></button>
+  <a class="tlacitko sekundarni" href="/infokanal"><%= it.t('app.zrusit') %></a>
+</form>
+</div>

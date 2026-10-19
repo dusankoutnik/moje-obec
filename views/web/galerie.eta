@@ -1,0 +1,11 @@
+<% layout('/layout') %>
+<h1><%= it.t('web.galerie') %></h1>
+<% if (!it.galerie.length) { %><p class="prazdne"><%= it.t('web.zadne_galerie') %></p><% } %>
+<ul class="mrizka-galerii">
+<% it.galerie.forEach(function (g) { %>
+  <li><a href="/galerie/<%= g.slug %>">
+    <% if (g.titulni_id) { %><img src="/soubory/<%= g.titulni_id %>/nahled.jpg?v=nahled" alt="" loading="lazy"><% } else { %><span class="karta-obr-prazdny"></span><% } %>
+    <strong><%= g.nazev %></strong><span class="poznamka"><%= g.datum ? g.datum.split('-').reverse().join('. ') : '' %> · <%= it.t('web.fotek', { n: g.pocet }) %></span>
+  </a></li>
+<% }) %>
+</ul>

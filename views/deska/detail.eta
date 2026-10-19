@@ -1,0 +1,22 @@
+<% layout('/layout') %>
+<p><a href="<%= it.sejmuto ? '/uredni-deska/archiv' : '/uredni-deska' %>">← <%= it.sejmuto ? it.t('deska.archiv') : it.t('deska.titulek') %></a></p>
+<% if (it.sejmuto) { %><div class="flash flash-info" role="status"><%= it.t('deska.uz_sejmuto', { datum: it.fmtDatum(it.d.sejmuto_do, false) }) %></div><% } %>
+<h1><%= it.d.nazev %></h1>
+<dl class="seznam dok-udaje">
+  <dt><%= it.t('deska.kategorie') %></dt><dd><a href="/uredni-deska?kategorie=<%= it.d.kategorie_slug %>"><%= it.d.kategorie %></a></dd>
+  <% if (it.d.cislo_jednaci) { %><dt><%= it.t('deska.cj_cele') %></dt><dd><%= it.d.cislo_jednaci %></dd><% } %>
+  <% if (it.d.puvodce) { %><dt><%= it.t('deska.puvodce') %></dt><dd><%= it.d.puvodce %></dd><% } %>
+  <dt><%= it.t('deska.vyveseno_cele') %></dt><dd><%= it.fmtDatum(it.d.vyveseno_od, false) %></dd>
+  <dt><%= it.t('deska.sejmuto_cele') %></dt><dd><%= it.d.sejmuto_do ? it.fmtDatum(it.d.sejmuto_do, false) : it.t('deska.do_odvolani') %></dd>
+  <% if (it.d.typ_rozpoctu) { %><dt><%= it.t('deska.typ_rozpoctu') %></dt><dd><%= it.t('deska.typ_' + it.d.typ_rozpoctu) %> <%= it.d.rok %></dd><% } %>
+</dl>
+<% if (it.d.popis) { %><div class="dok-popis"><% it.d.popis.split(/\n{2,}/).forEach(function (o) { %><p><%= o %></p><% }) %></div><% } %>
+<% if (it.d.prilohy.length) { %>
+<h2><%= it.t('deska.prilohy') %></h2>
+<ul class="prilohy">
+<% it.d.prilohy.forEach(function (s) { %>
+  <li><a href="<%= it.urlSouboru(s) %>"><%= s.puvodni_nazev %></a> <span class="poznamka">(<%= it.popisTypu(s.pripona) %>, <%= it.lidskaVelikost(s.velikost) %>)</span></li>
+<% }) %>
+</ul>
+<% } %>
+<% if (it.sejmuto && it.d.sejmuti_duvod) { %><p class="poznamka"><%= it.t('deska.duvod_sejmuti') %>: <%= it.d.sejmuti_duvod %></p><% } %>

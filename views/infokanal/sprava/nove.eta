@@ -1,0 +1,41 @@
+<% layout('/layout') %>
+<p><a href="/infokanal/sprava">← <%= it.t('infokanal.hlaseni') %></a></p>
+<h1><%= it.t('infokanal.nove_hlaseni') %></h1>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<form method="post" action="/infokanal/sprava/nove" class="formular siroky">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <div class="radek">
+    <div>
+      <label for="kategorie_id"><%= it.t('infokanal.kategorie_pole') %></label>
+      <select id="kategorie_id" name="kategorie_id" required>
+        <% it.kategorie.forEach(function (k) { %><option value="<%= k.id %>" <%= String(it.f.kategorie_id) === String(k.id) ? 'selected' : '' %>><%= k.nazev %></option><% }) %>
+      </select>
+    </div>
+    <div>
+      <label for="naplanovano_na"><%= it.t('infokanal.naplanovat_na') %></label>
+      <input id="naplanovano_na" name="naplanovano_na" type="datetime-local" value="<%= it.f.naplanovano_na || '' %>">
+    </div>
+  </div>
+  <label class="zatrzitko"><input type="checkbox" name="krizove" value="ano" <%= it.f.krizove === 'ano' ? 'checked' : '' %>> <%= it.t('infokanal.krizove') %></label>
+  <fieldset>
+    <legend><%= it.t('infokanal.cil') %></legend>
+    <label class="zatrzitko"><input type="radio" name="cil" value="vse" <%= it.f.cil !== 'casti' ? 'checked' : '' %>> <%= it.t('infokanal.cil_vse') %></label>
+    <label class="zatrzitko"><input type="radio" name="cil" value="casti" <%= it.f.cil === 'casti' ? 'checked' : '' %>> <%= it.t('infokanal.cil_casti') %></label>
+    <div class="odsazeno">
+    <% it.obec.obec.casti.forEach(function (c) { %><label class="zatrzitko"><input type="checkbox" name="casti" value="<%= c %>" <%= Array.isArray(it.f.casti) ? (it.f.casti.includes(c) ? 'checked' : '') : (it.f.casti === c ? 'checked' : '') %>> <%= c %></label><% }) %>
+    </div>
+  </fieldset>
+  <label for="sms_text"><%= it.t('infokanal.sms_text') %></label>
+  <textarea id="sms_text" name="sms_text" rows="3" maxlength="459" aria-describedby="sms-napoveda"><%= it.f.sms_text || '' %></textarea>
+  <p class="napoveda" id="sms-napoveda"><%= it.t('infokanal.sms_napoveda', { n: '1–3', prefix: it.smsPrefix }) %></p>
+  <label class="zatrzitko"><input type="checkbox" name="sms_jen_bez_emailu" value="ano" <%= it.f.sms_jen_bez_emailu === 'ano' ? 'checked' : '' %>> SMS jen kontaktům bez e-mailu (šetří SMS; krizové ignorují)</label>
+  <label for="email_predmet"><%= it.t('infokanal.email_predmet') %></label>
+  <input id="email_predmet" name="email_predmet" maxlength="200" value="<%= it.f.email_predmet || '' %>">
+  <label for="email_text"><%= it.t('infokanal.email_text') %></label>
+  <textarea id="email_text" name="email_text" rows="8"><%= it.f.email_text || '' %></textarea>
+  <label for="clanek_titulek"><%= it.t('infokanal.clanek_titulek') %></label>
+  <input id="clanek_titulek" name="clanek_titulek" maxlength="200" value="<%= it.f.clanek_titulek || '' %>">
+  <label for="clanek_text"><%= it.t('infokanal.clanek_html') %></label>
+  <textarea id="clanek_text" name="clanek_text" rows="6"><%= it.f.clanek_text || '' %></textarea>
+  <button class="tlacitko" type="submit"><%= it.t('infokanal.odeslat') %></button>
+</form>

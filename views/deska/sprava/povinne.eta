@@ -1,0 +1,17 @@
+<% layout('/layout') %>
+<p><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<h1><%= it.t('pi.titulek') %></h1>
+<p class="perex"><%= it.t('pi.sprava_perex') %></p>
+<% if (it.chybi) { %><div class="flash flash-chyba" role="status"><%= it.t('pi.chybi_pocet', { n: it.chybi }) %></div><% } else { %><div class="flash" role="status"><%= it.t('pi.vse_vyplneno') %></div><% } %>
+<% if (it.vychozi) { %><p class="poznamka"><%= it.t('pi.vychozi_pocet', { n: it.vychozi }) %></p><% } %>
+<ul class="pi-sprava">
+<% it.body.forEach(function (b) { %>
+  <% if (b.skupina) { %><li class="pi-skupina"><strong><%= b.klic %>. <%= b.nazev %></strong></li><% } else { %>
+  <li class="pi-polozka pi-<%= b.stav %>">
+    <a href="/sprava/povinne-informace/<%= b.klic %>"><%= b.klic %> <%= b.nazev %></a>
+    <span class="stav-stitek stav-<%= b.stav %>"><%= it.t('pi.stav_' + b.stav) %></span>
+  </li>
+  <% } %>
+<% }) %>
+</ul>
+<p><a href="/povinne-informace"><%= it.t('pi.zobrazit_verejne') %> →</a></p>

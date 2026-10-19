@@ -1,0 +1,20 @@
+<% layout('/layout') %>
+<h1><%= it.t('uvod.titulek') %></h1>
+<p class="perex"><%= it.t('uvod.perex') %></p>
+<div class="karty">
+  <% if (it.obec.moduly.ucty) { %>
+  <article class="karta">
+    <h2><a href="<%= it.uzivatel ? '/ucet' : '/prihlaseni' %>"><%= it.t('uvod.karta_ucet') %></a></h2>
+    <p><%= it.t('uvod.karta_ucet_text') %></p>
+    <% if (!it.uzivatel) { %><a class="tlacitko" href="/prihlaseni"><%= it.t('app.prihlasit') %></a><% } else { %><a class="tlacitko sekundarni" href="/ucet"><%= it.t('app.ucet') %></a><% } %>
+  </article>
+  <% } %>
+  <% if (it.obec.moduly.infokanal) { %>
+  <article class="karta">
+    <h2><a href="/infokanal"><%= it.obec.texty.nazev_infokanalu %></a></h2>
+    <p><%= it.t('uvod.karta_infokanal_text') %></p>
+    <% if (it.odber && it.odber.overen) { %><a class="tlacitko sekundarni" href="/infokanal"><%= it.t('ucet.infokanal_spravovat') %></a><% } else { %><a class="tlacitko" href="/infokanal"><%= it.t('ucet.infokanal_prihlasit') %></a><% } %>
+  </article>
+  <% } %>
+</div>
+<p class="poznamka"><%= it.t('uvod.stav_projektu') %></p>

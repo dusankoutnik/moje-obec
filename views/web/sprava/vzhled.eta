@@ -1,0 +1,149 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<h1><%= it.t('web.vzhled') %></h1>
+<p class="perex"><%= it.t('web.vzhled_perex') %></p>
+<% if (it.maPredchozi) { %>
+<form method="post" action="/sprava/web/vzhled/zpet" class="inline" data-confirm="<%= it.t('web.vzhled_zpet_potvrdit') %>">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <button class="tlacitko sekundarni" type="submit">↶ <%= it.t('web.vzhled_zpet') %></button>
+</form>
+<% } %>
+<form method="post" action="/sprava/web/vzhled" enctype="multipart/form-data" class="formular vzhled-formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+
+  <fieldset>
+    <legend><span class="krok">1</span> <%= it.t('web.vzhled_schema') %></legend>
+    <p class="napoveda"><%= it.t('web.vzhled_schema_napoveda') %></p>
+    <div class="volby-mrizka">
+      <% var aktSchema = it.v.schema ? it.v.schema.id : 'vlastni'; %>
+      <% it.schemata.forEach(function (s) { %>
+      <label class="volba">
+        <input type="radio" name="schema" value="<%= s.id %>" <%= aktSchema === s.id ? 'checked' : '' %>>
+        <span class="miniatura" style="background: linear-gradient(180deg, <%= s.hex.tmava %>cc, <%= s.hex.tmava %>), <%= s.hex.tmava %>" aria-hidden="true">
+          <span class="mini-pruh" style="background: <%= s.hex.akcent %>"></span>
+          <span class="mini-nazev" style="color: <%= s.hex.naTmave %>">Aa obec</span>
+          <span class="mini-tlacitka">
+            <span style="background: <%= s.hex.aktivni %>; color: <%= s.hex.aktivniText %>">Úvod</span>
+            <span style="background: <%= s.hex.primarni %>; color: #fff">Obec</span>
+            <span style="background: <%= s.hex.akcent %>; color: <%= s.hex.tmava %>">Zprávy</span>
+          </span>
+          <span class="mini-karta" style="border-color: <%= s.hex.primarni %>; color: <%= s.hex.primarni %>">Aktualita</span>
+        </span>
+        <span class="volba-text"><strong><%= s.nazev %></strong><span><%= s.popis %></span></span>
+      </label>
+      <% }) %>
+      <label class="volba">
+        <input type="radio" name="schema" value="vlastni" <%= aktSchema === 'vlastni' ? 'checked' : '' %>>
+        <span class="miniatura miniatura-vlastni" style="background: <%= it.v.paleta.primarni %>" aria-hidden="true"><span class="mini-nazev" style="color:#fff">Aa obec</span></span>
+        <span class="volba-text"><strong><%= it.t('web.vzhled_vlastni') %></strong><span><%= it.t('web.vzhled_vlastni_popis') %></span></span>
+      </label>
+    </div>
+    <label for="barva"><%= it.t('web.barva_obce') %></label>
+    <input id="barva" name="barva" type="color" value="<%= it.v.barva %>" aria-describedby="barva-n" class="barva-vstup">
+    <p class="napoveda" id="barva-n"><%= it.t('web.barva_napoveda') %> <%= it.t('web.kontrast', { k: String(it.v.paleta.kontrast).replace('.', ',') }) %></p>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="krok">2</span> <%= it.t('web.vzhled_pismo') %></legend>
+    <div class="volby-mrizka pisma">
+      <% it.pisma.forEach(function (p) { %>
+      <label class="volba">
+        <input type="radio" name="pismo" value="<%= p.id %>" <%= it.v.pismo.id === p.id ? 'checked' : '' %>>
+        <span class="ukazka-pisma" aria-hidden="true">
+          <span class="ukazka-nadpis" style="font-family: <%= p.rodinaDisplay %>">Vlastibořice</span>
+          <span style="font-family: <%= p.rodinaNadpis %>; font-weight: 700">Obecní úřad informuje</span>
+          <span style="font-family: <%= p.rodina %>">Příliš žluťoučký kůň úpěl ďábelské ódy.</span>
+        </span>
+        <span class="volba-text"><strong><%= p.nazev %></strong><span><%= p.popis %></span></span>
+      </label>
+      <% }) %>
+    </div>
+    <% const rodinaId = function (id) { return it.rodiny.find(function (x) { return x.id === id }) } %>
+    <div class="pismo-vlastni">
+      <label class="zatrzitko"><input type="radio" name="pismo" value="vlastni" <%= it.v.pismo.id === 'vlastni' ? 'checked' : '' %>> <strong><%= it.t('web.pismo_vlastni') %></strong></label>
+      <p class="napoveda"><%= it.t('web.pismo_vlastni_text') %></p>
+      <div class="pismo-vybery">
+        <% ;[['pismo_telo', 'telo', it.proTelo], ['pismo_nadpis', 'nadpis', it.proNadpis], ['pismo_titulek', 'titulek', it.rodiny.map(function (x) { return x.id })]].forEach(function (x) { %>
+        <label><%= it.t('web.' + x[0]) %>
+          <select name="<%= x[0] %>" data-cast="<%= x[1] %>">
+            <% x[2].forEach(function (id) { const r = rodinaId(id) %><option value="<%= id %>" data-rodina="<%= r.rodina %>" data-vaha="<%= r.vahaTitulku %>" <%= it.slozeni[x[1]] === id ? 'selected' : '' %>><%= r.nazev %> — <%= r.popis %></option><% }) %>
+          </select>
+        </label>
+        <% }) %>
+      </div>
+      <div class="ukazka-pisma ukazka-vlastni" aria-hidden="true">
+        <span class="ukazka-nadpis" data-ukazka="titulek" style="font-family: <%= rodinaId(it.slozeni.titulek).rodina %>; font-weight: <%= rodinaId(it.slozeni.titulek).vahaTitulku %>"><%= it.v.nazev %></span>
+        <span data-ukazka="nadpis" style="font-family: <%= rodinaId(it.slozeni.nadpis).rodina %>; font-weight: 700">Obecní úřad informuje</span>
+        <span data-ukazka="telo" style="font-family: <%= rodinaId(it.slozeni.telo).rodina %>">Příliš žluťoučký kůň úpěl ďábelské ódy. Úřední hodiny: pondělí a středa 7–17 h.</span>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="krok">3</span> <%= it.t('web.vzhled_velikost') %></legend>
+    <p class="napoveda"><%= it.t('web.vzhled_velikost_napoveda') %></p>
+    <% ;[['normalni', 1], ['velke', 1.25], ['extra', 1.375]].forEach(function (x) { %>
+    <label class="zatrzitko"><input type="radio" name="velikost" value="<%= x[0] %>" <%= it.v.velikost === x[0] ? 'checked' : '' %>> <span style="font-size: <%= x[1] %>em"><%= it.t('web.velikost_' + x[0]) %></span></label>
+    <% }) %>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="krok">4</span> <%= it.t('web.znak') %></legend>
+    <% if (it.v.znakUrl) { %><p><img src="<%= it.v.znakUrl %>" alt="" class="znak-nahled"> <img src="/ikona-32.png?<%= it.v.znakId || '' %>" alt="" width="32" height="32" class="ikona-nahled"> <span class="napoveda"><%= it.t('web.znak_ikona') %></span></p>
+      <% if (it.v.znakId) { %><label class="zatrzitko"><input type="checkbox" name="odebrat_znak" value="ano"> <%= it.t('web.odebrat') %></label><% } %><% } %>
+    <label for="znak"><%= it.t('web.nahrat_znak') %></label>
+    <input id="znak" name="znak" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" aria-describedby="znak-n">
+    <p class="napoveda" id="znak-n"><%= it.t('web.znak_napoveda') %></p>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="krok">5</span> <%= it.t('web.vzhled_pozadi') %></legend>
+    <p class="napoveda"><%= it.t('web.vzhled_pozadi_napoveda') %></p>
+    <% if (it.pozadi.length) { %>
+    <ul class="pozadi-sprava">
+      <% it.pozadi.forEach(function (f, i) { %>
+      <li>
+        <img src="<%= f.url %>" alt="">
+        <label class="zatrzitko"><input type="radio" name="pozadi_pevne" value="<%= f.id %>" <%= (it.v.ulozeno.pozadi_pevne === f.id || (!it.v.ulozeno.pozadi_pevne && i === 0)) ? 'checked' : '' %>> <%= it.t('web.pozadi_pevna') %></label>
+        <label class="zatrzitko"><input type="checkbox" name="odebrat_pozadi" value="<%= f.id %>"> <%= it.t('web.odebrat') %></label>
+      </li>
+      <% }) %>
+    </ul>
+    <% } %>
+    <label for="pozadi"><%= it.t('web.pozadi_pridat') %></label>
+    <input id="pozadi" name="pozadi" type="file" multiple accept="image/jpeg,image/png,image/webp" aria-describedby="pozadi-n">
+    <p class="napoveda" id="pozadi-n"><%= it.t('web.pozadi_napoveda') %></p>
+    <p class="vh" id="rezim-h"><%= it.t('web.pozadi_rezim') %></p>
+    <div role="radiogroup" aria-labelledby="rezim-h">
+      <strong aria-hidden="true"><%= it.t('web.pozadi_rezim') %></strong>
+      <% ;['stridani', 'nahodne', 'pevne'].forEach(function (r) { %>
+      <label class="zatrzitko"><input type="radio" name="pozadi_rezim" value="<%= r %>" <%= it.v.pozadiRezim === r ? 'checked' : '' %>> <%= it.t('web.pozadi_' + r) %></label>
+      <% }) %>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="krok">6</span> <%= it.t('web.nazev_a_motto') %></legend>
+    <label for="nazev"><%= it.t('web.nazev_obce') %></label>
+    <input id="nazev" name="nazev" maxlength="60" value="<%= it.v.nazev %>" aria-describedby="nazev-n" required>
+    <p class="napoveda" id="nazev-n"><%= it.t('web.nazev_napoveda') %></p>
+    <p class="popisek-skupiny" id="styl-n"><%= it.t('web.nazev_styl') %></p>
+    <div class="nazev-styly" role="radiogroup" aria-labelledby="styl-n">
+      <% ;['normalni', 'verzalky', 'kapitalky'].forEach(function (st) { %>
+      <label class="zatrzitko"><input type="radio" name="nazev_styl" value="<%= st %>" <%= it.v.nazevStyl === st ? 'checked' : '' %>>
+        <span class="nazev-ukazka nazev-<%= st %>" style="font-family: <%= rodinaId(it.slozeni.titulek).rodina %>"><%= it.v.nazev %></span>
+        <small><%= it.t('web.nazev_' + st) %></small></label>
+      <% }) %>
+    </div>
+    <label for="motto"><%= it.t('web.motto') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+    <input id="motto" name="motto" maxlength="200" value="<%= it.v.motto %>" aria-describedby="motto-n">
+    <p class="napoveda" id="motto-n"><%= it.t('web.motto_napoveda') %></p>
+  </fieldset>
+
+  <div class="tlacitka-dole">
+    <button class="tlacitko sekundarni velke" type="submit" name="akce" value="nahled" formtarget="_blank"><%= it.t('web.vzhled_nahled') %> ↗</button>
+    <button class="tlacitko velke" type="submit" name="akce" value="ulozit"><%= it.t('web.vzhled_pouzit') %></button>
+  </div>
+  <p class="napoveda"><%= it.t('web.vzhled_nahled_napoveda') %></p>
+</form>
+<script src="/static/js/vzhled.js?v=<%= it.v %>" defer></script>

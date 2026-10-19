@@ -1,0 +1,27 @@
+<% layout('/layout') %>
+<h1><%= it.t('sprava.uzivatele') %></h1>
+<form method="get" action="/sprava/uzivatele" class="formular inline-form">
+  <label for="q"><%= it.t('sprava.hledat') %></label>
+  <input id="q" name="q" value="<%= it.q %>" aria-describedby="q-napoveda">
+  <button class="tlacitko sekundarni" type="submit"><%= it.t('sprava.hledat') %></button>
+  <span class="napoveda" id="q-napoveda"><%= it.t('sprava.hledat_napoveda') %></span>
+</form>
+<p><%= it.t('sprava.pocet', { n: it.pocet }) %></p>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th><%= it.t('ucet.prijmeni') %></th><th><%= it.t('ucet.jmeno') %></th><th><%= it.t('ucet.telefon') %></th><th><%= it.t('ucet.email') %></th><th><%= it.t('ucet.cast_obce') %></th><th><%= it.t('ucet.role') %></th><th><%= it.t('sprava.vytvoren') %></th></tr></thead>
+  <tbody>
+  <% it.seznam.forEach(function (u) { %>
+    <tr class="<%= u.blokovan_at ? 'blokovan' : '' %>">
+      <td><a href="/sprava/uzivatele/<%= u.id %>"><%= u.prijmeni || '—' %></a></td>
+      <td><%= u.jmeno %></td>
+      <td><%= it.fmtTelefon(u.telefon) %></td>
+      <td><%= u.email || '' %></td>
+      <td><%= u.cast_obce %></td>
+      <td><%= u.role.join(', ') %><%= u.blokovan_at ? ' · ' + it.t('sprava.blokovan') : '' %></td>
+      <td><%= it.fmtDatum(u.vytvoren_at, false) %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>

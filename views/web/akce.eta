@@ -1,0 +1,17 @@
+<% layout('/layout') %>
+<h1><%= it.probehle ? it.t('web.probehle_akce') : it.t('web.akce') %></h1>
+<% if (!it.akce.length) { %><p class="prazdne"><%= it.t('web.zadne_akce') %></p><% } %>
+<ul class="seznam-akci">
+<% it.akce.forEach(function (a) { %>
+  <li class="akce-polozka">
+    <div class="akce-datum" aria-hidden="true"><span class="den"><%= new Date(a.datum).toLocaleDateString('cs-CZ', { day: 'numeric', timeZone: 'Europe/Prague' }) %></span><span class="mesic"><%= new Date(a.datum).toLocaleDateString('cs-CZ', { month: 'short', timeZone: 'Europe/Prague' }) %></span></div>
+    <div>
+      <% const odkaz = it.odkazAkce(a) %>
+      <h2><% if (odkaz) { %><a href="<%= odkaz %>"><%= a.titulek %></a><% } else { %><%= a.titulek %><% } %></h2>
+      <p class="karta-meta"><% if (a.opakovani) { %><%= a.opakovani %> <%= it.fmtDatum(a.datum, false) %><% } else { %><%= it.fmtDatum(a.datum, !a.akce_cely_den) %><%= a.akce_konec ? ' – ' + it.fmtDatum(a.akce_konec, !a.akce_cely_den) : '' %><% } %><%= a.akce_misto ? ' · ' + a.akce_misto : '' %></p>
+      <% if (a.perex) { %><p><%= it.zkrat(a.perex, 200) %></p><% } %>
+    </div>
+  </li>
+<% }) %>
+</ul>
+<p class="odkazy-pod"><% if (it.probehle) { %><a href="/akce"><%= it.t('web.nadchazejici_akce') %> →</a><% } else { %><a href="/akce?probehle=1"><%= it.t('web.probehle_akce') %> →</a><% } %></p>

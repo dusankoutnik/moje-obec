@@ -1,0 +1,21 @@
+<% layout('/layout') %>
+<div class="uzke">
+<p><a href="/ucet">← <%= it.t('ucet.titulek') %></a></p>
+<h1><%= it.t('ucet.heslo_titulek') %></h1>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<% if (!it.u.email) { %>
+  <p><%= it.t('ucet.heslo_vyzaduje_email') %></p>
+  <p><a class="tlacitko" href="/ucet/email"><%= it.t('ucet.email_pridat') %></a></p>
+<% } else { %>
+<p><%= it.t('ucet.heslo_text') %></p>
+<form method="post" action="/ucet/heslo" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <input type="text" name="username" autocomplete="username" value="<%= it.u.email %>" hidden>
+  <label for="heslo"><%= it.t('ucet.heslo_nove') %></label>
+  <input id="heslo" name="heslo" type="password" autocomplete="new-password" minlength="10" required autofocus>
+  <label for="heslo2"><%= it.t('ucet.heslo_znovu') %></label>
+  <input id="heslo2" name="heslo2" type="password" autocomplete="new-password" minlength="10" required>
+  <button class="tlacitko" type="submit"><%= it.t('app.ulozit') %></button>
+</form>
+<% } %>
+</div>

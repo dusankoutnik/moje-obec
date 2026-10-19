@@ -1,0 +1,47 @@
+<% layout('/layout') %>
+<h1><%= it.titulek %></h1>
+<% if (it.doplnek) { %>
+<% /* obec má vlastní prohlášení (vlastní posouzení) — nahrazuje obecnou šablonu */ %>
+<div class="obsah-html doplnek-obce"><%~ it.doplnek.obsah_html %></div>
+<% } else { %>
+<% var o = it.obec.obec, p = it.obec.pristupnost; %>
+<% var datum = function (d) { return d ? it.fmtDatum(new Date(d + 'T12:00:00Z'), false) : ''; }; %>
+<p><%= o.nazev %> se zavazuje k zpřístupnění svých internetových stránek v souladu se zákonem č. 99/2019 Sb., o přístupnosti internetových stránek a mobilních aplikací a o změně zákona č. 365/2000 Sb., o informačních systémech veřejné správy, ve znění pozdějších předpisů, který provádí směrnici Evropského parlamentu a Rady (EU) 2016/2102.</p>
+<p>Toto prohlášení o přístupnosti se vztahuje na internetové stránky <a href="<%= it.baseUrl %>"><%= it.baseUrl.replace(/^https?:\/\//, '') %></a>.</p>
+
+<h2>Stav souladu</h2>
+<% if (p.stav === 'plne') { %>
+<p>Tyto internetové stránky jsou v souladu se zákonem č. 99/2019 Sb. (požadavky normy ČSN EN 301 549, která odpovídá WCAG 2.1 na úrovni AA).</p>
+<% } else if (p.stav === 'castecne') { %>
+<p>Tyto internetové stránky jsou částečně v souladu se zákonem č. 99/2019 Sb. (požadavky normy ČSN EN 301 549, která odpovídá WCAG 2.1 na úrovni AA), a to kvůli nesouladu uvedenému níže.</p>
+<% } else { %>
+<p>Tyto internetové stránky nejsou v souladu se zákonem č. 99/2019 Sb. Nesoulad a jeho důvody jsou uvedeny níže.</p>
+<% } %>
+<p>Stránky jsou navrženy podle WCAG 2.1 úrovně AA: fungují bez JavaScriptu, s klávesnicí, se zvětšeným písmem i na mobilním telefonu, mají dostatečné barevné kontrasty a popisky formulářů.</p>
+
+<% if (p.stav !== 'plne') { %>
+<h2>Nepřístupný obsah</h2>
+<p>Níže uvedený obsah není přístupný z následujících důvodů:</p>
+<h3>Nesoulad se zákonem č. 99/2019 Sb.</h3>
+<ul>
+  <li><strong>Dokumenty PDF:</strong> část dokumentů ke stažení (zejména naskenované dokumenty na úřední desce a dokumenty převzaté z předchozího webu obce) nemá textovou vrstvu nebo strukturu (tagy), takže je čtečky obrazovky nepřečtou (WCAG 1.1.1, 1.3.1). <em>Náhradní řešení:</em> obsah dokumentu vám obecní úřad na požádání poskytne v přístupné podobě nebo ho přečte.</li>
+  <li><strong>Obrázky z předchozího webu:</strong> část obrázků převzatých z dřívějších stránek obce zatím nemá textový popis (WCAG 1.1.1). Popisy postupně doplňujeme.</li>
+  <li><strong>Videa:</strong> některá videa nemají titulky ani textový přepis (WCAG 1.2.2, 1.2.3). <em>Náhradní řešení:</em> obsah videa popíše obecní úřad na požádání.</li>
+</ul>
+<h3>Obsah, na který se zákon nevztahuje</h3>
+<ul>
+  <li>dokumenty v kancelářských formátech zveřejněné před 23. září 2018, pokud nejsou potřebné pro aktivní správní postupy,</li>
+  <li>obsah třetích stran, který obec nevytvořila ani nekontroluje — zejména dokumenty jiných úřadů vyvěšené na úřední desce.</li>
+</ul>
+<% } %>
+
+<h2>Vypracování tohoto prohlášení o přístupnosti</h2>
+<% if (p.vypracovano) { %><p>Toto prohlášení bylo vypracováno dne <%= datum(p.vypracovano) %>.<% if (p.aktualizovano && p.aktualizovano !== p.vypracovano) { %> Naposledy bylo prohlášení přezkoumáno a aktualizováno dne <%= datum(p.aktualizovano) %>.<% } %> Posouzení bylo provedeno <%= p.posouzeni %>.</p><% } else { %><p>Posouzení bylo provedeno <%= p.posouzeni %>. Datum vypracování prohlášení obec doplní.</p><% } %>
+
+<h2>Zpětná vazba a kontaktní údaje</h2>
+<p>Narazíte-li na obsah, který pro vás není přístupný, nebo potřebujete-li dokument v přístupné podobě, napište nám na <a href="mailto:<%= o.kontakt.email %>"><%= o.kontakt.email %></a><% if (o.kontakt.telefon) { %>, zavolejte na <%= it.fmtTelefon(o.kontakt.telefon) || o.kontakt.telefon %><% } %> nebo pište poštou na adresu <%= o.nazev %>, <%= o.adresa.ulice %>, <%= o.adresa.psc %> <%= o.adresa.mesto %>.</p>
+<p><strong>Podnět k nápravě:</strong> máte-li důvodné podezření, že stránky nesplňují požadavky na přístupnost nebo že je uvedený důvod nepřístupnosti neopodstatněný, můžete obci podat podnět požadující nápravu (§ 9 zákona č. 99/2019 Sb.). Podnět se vyřizuje obdobně jako petice — obec na něj odpoví do 30 dnů.</p>
+
+<h2>Postupy pro prosazování práva</h2>
+<p>Pokud s vyřízením podnětu nebudete spokojeni, můžete se obrátit na orgán dozoru, který kontroluje dodržování zákona č. 99/2019 Sb.: <strong>Digitální a informační agentura</strong>, Na Vápence 915/14, 130 00 Praha 3, datová schránka yukd8p7, e-mail <a href="mailto:posta@dia.gov.cz">posta@dia.gov.cz</a>, <a href="https://www.dia.gov.cz/">www.dia.gov.cz</a>.</p>
+<% } %>

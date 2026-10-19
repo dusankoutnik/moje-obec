@@ -1,0 +1,6 @@
+<% var f = it.f; var t = it.t; %>
+<label for="nazev"><%= t('videa.nazev') %></label>
+<input id="nazev" name="nazev" maxlength="200" value="<%= f.nazev || '' %>" aria-describedby="nazev-n">
+<p class="napoveda" id="nazev-n"><%= t('videa.nazev_napoveda') %></p>
+<label for="popis"><%= t('videa.popis') %> <small>(<%= t('app.nepovinne') %>)</small></label>
+<textarea id="popis" name="popis" rows="2" maxlength="500"><%= f.popis || '' %></textarea>

@@ -1,0 +1,6 @@
+<% var v = it.v; var h = it.h || 'h3'; %>
+<article class="video-karta" id="video-<%= v.id %>" aria-labelledby="vh-<%= v.id %>">
+  <<%= h %> id="vh-<%= v.id %>" class="video-nazev"><%= v.nazev %></<%= h %>>
+  <% if (v.popis) { %><p class="video-popis"><%= v.popis %></p><% } %>
+  <%~ include('/web/_video', { v: v, t: it.t }) %>
+</article>

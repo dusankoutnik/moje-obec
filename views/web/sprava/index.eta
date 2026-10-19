@@ -1,0 +1,40 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<h1><%= it.t('web.sprava_titulek') %></h1>
+<p class="perex"><%= it.t('web.sprava_perex') %></p>
+<% if (it.koncici.length) { %><div class="flash flash-info" role="status"><%= it.t('web.dotace_koncici', { n: it.koncici.length }) %> <a href="/sprava/web/dotace"><%= it.t('web.dotace') %> →</a></div><% } %>
+<div class="dlazdice-akci">
+  <a class="dlazdice hlavni" href="/sprava/web/novy?typ=aktualita"><span class="ikona" aria-hidden="true">✍️</span><strong><%= it.t('web.napsat_aktualitu') %></strong><span><%= it.t('web.napsat_aktualitu_text') %></span></a>
+  <a class="dlazdice" href="/sprava/web/stranky"><span class="ikona" aria-hidden="true">📄</span><strong><%= it.t('web.stranky') %></strong><span><%= it.t('web.stranky_text') %></span></a>
+  <a class="dlazdice" href="/sprava/web/aktuality"><span class="ikona" aria-hidden="true">📰</span><strong><%= it.t('web.aktuality') %></strong><span><%= it.t('web.aktuality_text') %></span></a>
+  <a class="dlazdice" href="/sprava/web/akce"><span class="ikona" aria-hidden="true">📅</span><strong><%= it.t('web.akce') %></strong><span><%= it.t('web.akce_text') %></span></a>
+  <a class="dlazdice" href="/sprava/web/galerie"><span class="ikona" aria-hidden="true">🖼️</span><strong><%= it.t('web.galerie') %></strong><span><%= it.t('web.galerie_text') %></span></a>
+  <a class="dlazdice" href="/sprava/web/videa"><span class="ikona" aria-hidden="true">🎬</span><strong><%= it.t('videa.titulek') %></strong><span><%= it.t('videa.sprava_text') %></span></a>
+  <a class="dlazdice" href="/sprava/web/dokumenty"><span class="ikona" aria-hidden="true">📎</span><strong><%= it.t('web.dokumenty') %></strong><span><%= it.t('web.dokumenty_text') %></span></a>
+  <a class="dlazdice" href="/sprava/web/dotace"><span class="ikona" aria-hidden="true">🏅</span><strong><%= it.t('web.dotace') %></strong><span><%= it.t('web.dotace_text') %></span></a>
+  <% if (it.obec.moduly.deska) { %><a class="dlazdice" href="/sprava/deska"><span class="ikona" aria-hidden="true">📋</span><strong><%= it.t('deska.titulek') %></strong><span><%= it.t('sprava.deska_text') %></span></a><% } %>
+  <% if (it.jeSpravce) { %><a class="dlazdice" href="/sprava/web/vzhled"><span class="ikona" aria-hidden="true">🎨</span><strong><%= it.t('web.vzhled') %></strong><span><%= it.t('web.vzhled_text') %></span></a><% } %>
+  <% if (it.jeSpravce) { %><a class="dlazdice" href="/sprava/web/kategorie"><span class="ikona" aria-hidden="true">🏷️</span><strong><%= it.t('web.kategorie_aktualit') %></strong><span><%= it.t('web.kategorie_aktualit_perex') %></span></a><% } %>
+  <a class="dlazdice" href="/sprava/web/kos"><span class="ikona" aria-hidden="true">🗑️</span><strong><%= it.t('web.kos') %></strong><span><%= it.t('web.kos_text') %></span></a>
+  <% if (it.jeSpravce) { %><a class="dlazdice" href="/sprava/web/presmerovani"><span class="ikona" aria-hidden="true">↪️</span><strong><%= it.t('web.presmerovani') %></strong><span><%= it.t('web.presmerovani_text', { n: it.pocetPresmerovani }) %></span></a><% } %>
+</div>
+<% if (it.koncepty.length) { %>
+<section class="karta">
+  <h2><%= it.t('web.rozpracovane') %></h2>
+  <ul class="kratky-seznam">
+    <% it.koncepty.forEach(function (k) { %><li><a href="/sprava/web/obsah/<%= k.id %>"><%= k.titulek %></a><span class="poznamka"><%= it.t('web.typ_' + k.typ) %> · <%= k.stav === 'zverejneno' ? it.t('web.neuverejnene_zmeny') : it.t('web.stav_koncept') %> · <%= it.fmtDatum(k.koncept_at || k.upraveno_at) %></span></li><% }) %>
+  </ul>
+</section>
+<% } %>
+<% if (it.bezPopisu.length) { %>
+<section class="karta" id="bez-popisu">
+  <h2><%= it.t('web.bez_popisu_titulek', { n: it.bezPopisuCelkem }) %></h2>
+  <p class="napoveda"><%= it.t('web.bez_popisu_text') %></p>
+  <details>
+    <summary><%= it.t('web.bez_popisu_seznam', { n: it.bezPopisu.length }) %></summary>
+    <ul class="kratky-seznam">
+      <% it.bezPopisu.forEach(function (o) { %><li><a href="/sprava/web/obsah/<%= o.id %>"><%= o.titulek %></a><span class="poznamka"><%= it.t('web.typ_' + o.typ) %> · <%= it.t('web.bez_popisu_pocet', { n: o.n }) %></span></li><% }) %>
+    </ul>
+  </details>
+</section>
+<% } %>

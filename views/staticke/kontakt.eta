@@ -1,0 +1,38 @@
+<% layout('/layout') %>
+<% var o = it.obec.obec; %>
+<h1><%= it.titulek %></h1>
+<div class="sloupce">
+<section class="karta">
+  <h2><%= it.t('web.obecni_urad') %></h2>
+  <address class="adresa">
+    <strong><%= o.nazev %></strong><br>
+    <%= o.adresa.ulice %><br><%= o.adresa.psc %> <%= o.adresa.mesto %><br>
+    <% if (o.kontakt.telefon) { %>Telefon: <a href="tel:<%= o.kontakt.telefon.replace(/\s/g, '') %>"><%= o.kontakt.telefon %></a><br><% } %>
+    <% if (o.kontakt.email) { %>E-mail: <a href="mailto:<%= o.kontakt.email %>"><%= o.kontakt.email %></a><br><% } %>
+    <% if (o.kontakt.datova_schranka) { %>Datová schránka: <%= o.kontakt.datova_schranka %><br><% } %>
+    <% if (o.ico) { %>IČO: <%= o.ico %><br><% } %>
+    <% if (o.bankovni_ucet.cislo) { %>Bankovní účet: <%= o.bankovni_ucet.cislo %><% } %>
+  </address>
+  <% if (o.kontakt.uredni_hodiny) { %>
+  <h2><%= it.t('web.uredni_hodiny') %></h2>
+  <p><% o.kontakt.uredni_hodiny.split('\n').forEach(function (r) { %><%= r %><br><% }) %></p>
+  <% } %>
+</section>
+<% if (o.lide.length) { %>
+<section class="karta">
+  <% var skupiny = []; o.lide.forEach(function (c) { if (skupiny.indexOf(c.skupina) < 0) skupiny.push(c.skupina); }); %>
+  <% skupiny.forEach(function (s) { %>
+  <h2><%= s %></h2>
+  <ul class="kratky-seznam">
+    <% o.lide.filter(function (c) { return c.skupina === s; }).forEach(function (c) { %>
+    <li><strong><%= c.jmeno %></strong><span class="poznamka"><%= c.funkce %></span><% if (c.poznamka) { %><span class="poznamka"><%= c.poznamka %></span><% } %>
+      <% if (c.telefon) { %><a href="tel:<%= c.telefon %>"><%= it.fmtTelefon(c.telefon) %></a><% } %>
+      <% if (c.email) { %><a href="mailto:<%= c.email %>"><%= c.email %></a><% } %></li>
+    <% }) %>
+  </ul>
+  <% }) %>
+</section>
+<% } %>
+</div>
+<% if (o.poverenec.jmeno) { %><p class="poznamka"><%= it.t('staticke.poverenec') %>: <%= o.poverenec.jmeno %><% if (o.poverenec.adresa) { %>, <%= o.poverenec.adresa %><% } %><% if (o.poverenec.telefon) { %>, <a href="tel:<%= o.poverenec.telefon.replace(/\s/g, '') %>"><%= it.fmtTelefon(o.poverenec.telefon) %></a><% } %><% if (o.poverenec.email) { %>, <a href="mailto:<%= o.poverenec.email %>"><%= o.poverenec.email %></a><% } %></p><% } %>
+<% if (it.doplnek) { %><div class="obsah-html doplnek-obce"><%~ it.doplnek.obsah_html %></div><% } %>

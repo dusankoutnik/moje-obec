@@ -1,0 +1,14 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('prihlaseni.heslem_titulek') %></h1>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<form method="post" action="/oidc/interaction/<%= it.uid %>/heslo" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="email"><%= it.t('prihlaseni.email') %></label>
+  <input id="email" name="email" type="email" autocomplete="username" required autofocus value="<%= it.email || '' %>">
+  <label for="heslo"><%= it.t('prihlaseni.heslo') %></label>
+  <input id="heslo" name="heslo" type="password" autocomplete="current-password" required>
+  <button class="tlacitko" type="submit"><%= it.t('prihlaseni.overit') %></button>
+</form>
+<p class="alternativa"><a href="/oidc/interaction/<%= it.uid %>"><%= it.t('prihlaseni.nebo_telefonem') %></a></p>
+</div>

@@ -1,0 +1,14 @@
+<% layout('/layout') %>
+<h1><%= it.t('web.hledat') %></h1>
+<form method="get" action="/hledat" class="filtr" role="search">
+  <div><label for="q2"><%= it.t('web.hledany_text') %></label><input id="q2" name="q" type="search" value="<%= it.q %>" autofocus></div>
+  <button class="tlacitko" type="submit"><%= it.t('web.hledat') %></button>
+</form>
+<% if (it.q) { %>
+<p class="pocet" role="status"><%= it.t('web.nalezeno', { n: it.vysledky.length }) %></p>
+<ol class="vysledky">
+<% it.vysledky.forEach(function (v) { %>
+  <li><p class="karta-meta"><span class="stitek"><%= v.typ %></span><% if (v.datum) { %> <%= it.fmtDatum(v.datum, false) %><% } %></p><h2><a href="<%= v.url %>"><%= v.titulek %></a></h2><% if (v.text) { %><p><%= v.text %></p><% } %></li>
+<% }) %>
+</ol>
+<% } %>

@@ -1,0 +1,11 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('souhlas.titulek') %></h1>
+<p><%= it.t('souhlas.text') %></p>
+<p><a href="<%= it.obec.patika.ochrana_osobnich_udaju %>" target="_blank" rel="noopener"><%= it.t('souhlas.odkaz') %></a></p>
+<form method="post" action="/oidc/interaction/<%= it.uid %>/souhlas" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <button class="tlacitko" type="submit" name="souhlas" value="ano"><%= it.t('souhlas.potvrdit') %></button>
+  <button class="tlacitko sekundarni" type="submit" name="souhlas" value="ne"><%= it.t('souhlas.nesouhlas') %></button>
+</form>
+</div>

@@ -1,0 +1,57 @@
+# Vývojové nasazení na serveru obce Vlastibořice (dev.vlastiborice.cz): bez Caddy — TLS a HTTP heslo řeší
+# Nginx Proxy Manager na externí síti `web`. Žádný veřejný port; Postgres jen na vnitřní síti.
+# Spuštění: docker compose -f docker-compose.dev-server.yml up -d --build
+services:
+  platforma:
+    build: .
+    container_name: platforma
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://platforma:${POSTGRES_PASSWORD:?Nastavte POSTGRES_PASSWORD v .env}@platforma_db:5432/platforma
+      HOST: 0.0.0.0
+      PORT: '3000'
+      INTERNAL_BASE_URL: http://127.0.0.1:3000
+      OBEC_YML: /app/obec.yml
+      # vývojová instalace: X-Robots-Tag noindex a robots.txt „Disallow: /“ (NPM robots.txt přebíjí také)
+      ROBOTS_NOINDEX: '1'
+    volumes:
+      - ./obec.yml:/app/obec.yml:ro
+      - platforma_data:/app/data # nahrané soubory obce — přežijí rebuild
+    # zpracování fotek (sharp) a import potřebují víc než původních 384 MB
+    mem_limit: 640m
+    depends_on:
+      platforma_db:
+        condition: service_healthy
+    networks:
+      - default
+      - web
+
+  platforma_db:
+    image: postgres:16-alpine
+    container_name: platforma_db
+    restart: unless-stopped
+    command: -c shared_buffers=32MB -c max_connections=30
+    environment:
+      POSTGRES_DB: platforma
+      POSTGRES_USER: platforma
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Nastavte POSTGRES_PASSWORD v .env}
+    volumes:
+      - platforma_db_data:/var/lib/postgresql/data
+    mem_limit: 192m
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U platforma -d platforma']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - default
+
+volumes:
+  platforma_data:
+  platforma_db_data:
+
+networks:
+  default:
+  web:
+    external: true

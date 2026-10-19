@@ -1,0 +1,26 @@
+<% layout('/layout') %>
+<p><a href="/uredni-deska">← <%= it.t('deska.titulek') %></a></p>
+<h1><%= it.t('deska.archiv') %></h1>
+<p class="perex"><%= it.t('deska.archiv_perex') %></p>
+<form method="get" action="/uredni-deska/archiv" class="filtr" role="search">
+  <div><label for="q"><%= it.t('deska.hledat') %></label><input id="q" name="q" type="search" value="<%= it.f.q %>"></div>
+  <div><label for="kategorie"><%= it.t('deska.kategorie') %></label>
+    <select id="kategorie" name="kategorie"><option value=""><%= it.t('deska.vse') %></option>
+      <% it.kategorie.forEach(function (k) { %><option value="<%= k.slug %>" <%= it.f.kategorie === k.slug ? 'selected' : '' %>><%= k.nazev %></option><% }) %>
+    </select></div>
+  <div><label for="rok"><%= it.t('deska.rok_vyveseni') %></label>
+    <select id="rok" name="rok"><option value=""><%= it.t('deska.vse') %></option>
+      <% it.roky.forEach(function (r) { %><option value="<%= r %>" <%= it.f.rok === r ? 'selected' : '' %>><%= r %></option><% }) %>
+    </select></div>
+  <button class="tlacitko" type="submit"><%= it.t('deska.filtrovat') %></button>
+</form>
+<% if (!it.radky.length) { %><p class="prazdne"><%= it.t('deska.nic_archiv') %></p><% } else { %>
+<ul class="dokumenty">
+<% it.radky.forEach(function (d) { %><%~ include('/deska/_polozka', { d: d, t: it.t, fmtDatum: it.fmtDatum, h: 2 }) %><% }) %>
+</ul>
+<% } %>
+<nav class="strankovani" aria-label="<%= it.t('deska.strankovani') %>">
+  <% var q = 'kategorie=' + encodeURIComponent(it.f.kategorie) + '&q=' + encodeURIComponent(it.f.q) + '&rok=' + (it.f.rok || ''); %>
+  <% if (it.strana > 1) { %><a href="/uredni-deska/archiv?<%= q %>&strana=<%= it.strana - 1 %>">← <%= it.t('deska.novejsi') %></a><% } %>
+  <% if (it.dalsi) { %><a href="/uredni-deska/archiv?<%= q %>&strana=<%= it.strana + 1 %>"><%= it.t('deska.starsi') %> →</a><% } %>
+</nav>

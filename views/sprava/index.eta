@@ -1,0 +1,25 @@
+<% layout('/layout') %>
+<h1><%= it.t('sprava.titulek') %></h1>
+<div class="karty">
+  <% if (it.jeSpravce) { %>
+  <article class="karta"><h2><a href="/sprava/uzivatele"><%= it.t('sprava.uzivatele') %></a></h2><p><%= it.t('sprava.uzivatele_text') %></p><p class="cislo"><%= it.t('sprava.pocet', { n: it.pocet }) %></p></article>
+  <% } %>
+  <% if (it.jeRedaktor && it.obec.moduly.infokanal) { %>
+  <article class="karta"><h2><a href="/infokanal/sprava"><%= it.obec.texty.nazev_infokanalu %></a></h2><p><%= it.t('sprava.infokanal_text') %></p><a class="tlacitko" href="/infokanal/sprava/nove"><%= it.t('infokanal.nove_hlaseni') %></a></article>
+  <% } %>
+  <% if (it.jeWeb && it.obec.moduly.web) { %>
+  <article class="karta"><h2><a href="/sprava/web"><%= it.t('web.sprava_titulek') %></a></h2><p><%= it.t('sprava.web_text') %></p><a class="tlacitko" href="/sprava/web/novy?typ=aktualita"><%= it.t('web.napsat_aktualitu') %></a></article>
+  <% } %>
+  <% if (it.jeSpravce && it.obec.moduly.web) { %>
+  <article class="karta"><h2><a href="/sprava/web/vzhled">🎨 <%= it.t('web.vzhled') %></a></h2><p><%= it.t('web.vzhled_text') %></p><a class="tlacitko" href="/sprava/web/vzhled"><%= it.t('web.vzhled_zmenit') %></a></article>
+  <% } %>
+  <% if (it.jeDeska && it.obec.moduly.deska) { %>
+  <article class="karta"><h2><a href="/sprava/deska"><%= it.t('deska.titulek') %></a></h2><p><%= it.t('sprava.deska_text') %></p><a class="tlacitko" href="/sprava/deska/novy"><%= it.t('deska.novy') %></a><% if (it.jeSpravce) { %> <a href="/sprava/povinne-informace"><%= it.t('pi.titulek') %></a><% } %></article>
+  <% } %>
+  <% if (it.jeSpravce) { %>
+  <article class="karta"><h2><a href="/sprava/audit"><%= it.t('sprava.audit') %></a></h2><p><%= it.t('sprava.audit_text') %></p></article>
+  <% } %>
+  <% if (it.uzivatel.role.includes('admin')) { %>
+  <article class="karta"><h2><a href="/sprava/klienti"><%= it.t('sprava.klienti') %></a></h2><p><%= it.t('sprava.klienti_text') %></p></article>
+  <% } %>
+</div>

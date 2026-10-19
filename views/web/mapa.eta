@@ -1,0 +1,33 @@
+<% layout('/layout') %>
+<h1><%= it.titulek %></h1>
+<p class="perex"><%= it.t('staticke.mapa_perex') %></p>
+<div class="mapa-stranek">
+<% if (it.menu.length) { %>
+<section aria-labelledby="mapa-menu">
+  <h2 id="mapa-menu"><%= it.t('staticke.mapa_menu') %></h2>
+  <ul>
+    <% it.menu.forEach(function (k) { %>
+    <li><a href="<%= k.url %>"><%= k.titulek %></a><% if (k.deti.length) { %>
+      <ul><% k.deti.forEach(function (d) { %><li><a href="<%= d.url %>"><%= d.titulek %></a></li><% }) %></ul><% } %></li>
+    <% }) %>
+  </ul>
+</section>
+<% } %>
+<section aria-labelledby="mapa-sluzby">
+  <h2 id="mapa-sluzby"><%= it.t('staticke.mapa_sluzby') %></h2>
+  <ul>
+    <% it.sluzby.forEach(function (s) { %><li><a href="<%= s.url %>"><%= s.titulek %></a></li><% }) %>
+  </ul>
+</section>
+<% if (it.mimoMenu.length) { %>
+<section aria-labelledby="mapa-dalsi">
+  <h2 id="mapa-dalsi"><%= it.t('staticke.mapa_dalsi') %></h2>
+  <ul>
+    <% it.mimoMenu.forEach(function (k) { %>
+    <li><a href="<%= k.url %>"><%= k.titulek %></a><% if (k.deti.length) { %>
+      <ul><% k.deti.forEach(function (d) { %><li><a href="<%= d.url %>"><%= d.titulek %></a></li><% }) %></ul><% } %></li>
+    <% }) %>
+  </ul>
+</section>
+<% } %>
+</div>

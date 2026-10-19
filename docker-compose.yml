@@ -1,0 +1,67 @@
+# „Jeden balík na vlastní server": aplikace + PostgreSQL + Caddy (automatické HTTPS přes Let's Encrypt).
+# Nastavení: .env (tajemství, DOMENA) a obec.yml (profil obce). Spuštění: docker compose up -d
+services:
+  app:
+    image: ghcr.io/moje-obec/platforma:latest
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://platforma:${POSTGRES_PASSWORD:?Nastavte POSTGRES_PASSWORD v .env}@db:5432/platforma
+      HOST: 0.0.0.0
+      PORT: '3000'
+      INTERNAL_BASE_URL: http://127.0.0.1:3000
+      OBEC_YML: /app/obec.yml
+    volumes:
+      - ./obec.yml:/app/obec.yml:ro
+      - app_data:/app/data # nahrané soubory obce (přílohy, fotky) — zálohovat spolu s DB
+    mem_limit: 768m
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [vnitrni]
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    # šetrné k malému VPS (obec má stovky uživatelů, ne miliony)
+    command: -c shared_buffers=64MB -c max_connections=40
+    environment:
+      POSTGRES_DB: platforma
+      POSTGRES_USER: platforma
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Nastavte POSTGRES_PASSWORD v .env}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    mem_limit: 256m
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U platforma -d platforma']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [vnitrni]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      DOMENA: ${DOMENA:?Nastavte DOMENA v .env (např. obec.example.cz)}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+    networks: [vnitrni]
+
+volumes:
+  app_data:
+  db_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  vnitrni:

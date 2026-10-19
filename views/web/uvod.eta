@@ -1,0 +1,84 @@
+<% layout('/layout') %>
+<section class="hero" aria-labelledby="hero-nazev">
+  <div class="hero-in">
+    <% if (it.vzhled.motto) { %><p class="hero-odznak vstup" style="--z:.1s"><%= it.vzhled.motto %></p><% } %>
+    <h1 id="hero-nazev" class="hero-nazev vstup nazev-<%= it.vzhled.nazevStyl %>" style="--z:.2s; --znaku:<%= Math.max.apply(null, it.vzhled.nazev.split(/\s+/).map(function (w) { return w.length })) %>"><%= it.vzhled.nazev %></h1>
+    <p class="hero-podtitul vstup" style="--z:.32s"><%= it.t('web.oficialni_web') %></p>
+    <% if (it.statistiky.length) { %>
+    <section class="statistiky vstup" style="--z:.44s" aria-labelledby="stat-h">
+      <h2 id="stat-h" class="vh"><%= it.t('web.statistiky') %></h2>
+      <dl>
+        <% it.statistiky.forEach(function (s) { %>
+        <div class="stat">
+          <dt><%= s.popisek %></dt>
+          <dd><% if (s.odkaz) { %><a href="<%= s.odkaz %>"><% } %><span <% if (s.cislo !== undefined) { %>data-cislo="<%= s.cislo %>"<% } %>><%= s.hodnota %></span><% if (s.odkaz) { %></a><% } %></dd>
+        </div>
+        <% }) %>
+      </dl>
+    </section>
+    <% } %>
+    <a class="hero-dolu vstup" style="--z:.56s" href="#rychle"><span class="vh"><%= it.t('web.dolu') %></span><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></a>
+  </div>
+</section>
+
+<div class="obal sekce-uvod">
+  <nav class="rychle" id="rychle" aria-label="<%= it.t('web.rychle_odkazy') %>">
+    <ul>
+      <% if (it.obec.moduly.deska) { %><li><a href="/uredni-deska"><span class="ikona" aria-hidden="true">📋</span><%= it.t('deska.titulek') %></a></li><% } %>
+      <li><a href="/aktuality"><span class="ikona" aria-hidden="true">📰</span><%= it.t('web.aktuality') %></a></li>
+      <li><a href="/kontakt"><span class="ikona" aria-hidden="true">🏛️</span><%= it.t('web.obecni_urad') %></a></li>
+      <% if (it.obec.moduly.infokanal) { %><li><a href="/infokanal"><span class="ikona" aria-hidden="true">📱</span><%= it.t('web.zpravy_do_mobilu') %></a></li><% } %>
+      <li><a href="/akce"><span class="ikona" aria-hidden="true">📅</span><%= it.t('web.akce') %></a></li>
+      <li><a href="<%= it.uzivatel ? '/ucet' : '/prihlaseni' %>"><span class="ikona" aria-hidden="true">👤</span><%= it.t('app.ucet') %></a></li>
+    </ul>
+  </nav>
+
+  <section class="sekce" aria-labelledby="h-aktuality">
+    <div class="sekce-hlavicka">
+      <h2 id="h-aktuality"><%= it.t('web.nejnovejsi') %></h2>
+    </div>
+    <% if (!it.aktuality.length) { %><p class="prazdne-na-tmave"><%= it.t('web.zadne_aktuality') %></p><% } %>
+    <div class="karty-clanku uvod-karty">
+      <% it.aktuality.forEach(function (a) { %><%~ include('/web/_karta-aktuality', { a: a, obr: it.obr, fmtDatum: it.fmtDatum, zkrat: it.zkrat }) %><% }) %>
+    </div>
+    <p class="sekce-dal"><a class="tlacitko" href="/aktuality"><%= it.t('web.vse_aktuality') %> ›</a></p>
+  </section>
+
+  <div class="uvod-mrizka">
+    <% if (it.obec.moduly.deska) { %>
+    <section class="panel" aria-labelledby="h-deska">
+      <h2 id="h-deska"><%= it.t('deska.titulek') %></h2>
+      <% if (!it.deska.length) { %><p class="prazdne"><%= it.t('deska.nic') %></p><% } %>
+      <ul class="kratky-seznam">
+        <% it.deska.forEach(function (d) { %><li><a href="/uredni-deska/<%= d.id %>"><%= d.nazev %></a><span class="poznamka"><%= it.t('deska.vyveseno') %> <%= it.fmtDatum(d.vyveseno_od, false) %></span></li><% }) %>
+      </ul>
+      <a class="tlacitko sekundarni" href="/uredni-deska"><%= it.t('web.cela_deska') %> ›</a>
+    </section>
+    <% } %>
+    <section class="panel" aria-labelledby="h-akce">
+      <h2 id="h-akce"><%= it.t('web.nadchazejici_akce') %></h2>
+      <% if (!it.akce.length) { %><p class="prazdne"><%= it.t('web.zadne_akce') %></p><% } %>
+      <ul class="kratky-seznam">
+        <% it.akce.forEach(function (a) { %><li><% const odkaz = it.odkazAkce(a) %><% if (odkaz) { %><a href="<%= odkaz %>"><%= a.titulek %></a><% } else { %><strong><%= a.titulek %></strong><% } %><span class="poznamka"><%= a.opakovani ? a.opakovani + ' ' + it.fmtDatum(a.datum, false) : it.fmtDatum(a.datum, !a.akce_cely_den) %><%= a.akce_misto ? ' · ' + a.akce_misto : '' %></span></li><% }) %>
+      </ul>
+      <a class="tlacitko sekundarni" href="/akce"><%= it.t('web.vsechny_akce') %> ›</a>
+    </section>
+  </div>
+
+  <% if (it.videa && it.videa.length) { %>
+  <section class="panel videa-uvod" aria-labelledby="h-videa">
+    <h2 id="h-videa"><%= it.t('videa.titulek') %></h2>
+    <div class="mrizka-videi">
+      <% it.videa.forEach(function (v) { %><%~ include('/web/_video-karta', { v: v, t: it.t, h: 'h3' }) %><% }) %>
+    </div>
+    <% if (it.videaCelkem > it.videa.length) { %><a class="tlacitko sekundarni" href="/videa"><%= it.t('videa.vsechna') %> ›</a><% } %>
+  </section>
+  <% } %>
+
+  <% if (it.dotace.length) { %>
+  <section class="panel dotace-uvod" aria-labelledby="h-dotace">
+    <h2 id="h-dotace"><%= it.t('web.podporili_nas') %></h2>
+    <%~ include('/web/_pas-dotaci', { dotace: it.dotace, t: it.t }) %>
+  </section>
+  <% } %>
+</div>

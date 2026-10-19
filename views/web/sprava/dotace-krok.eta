@@ -1,0 +1,77 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web/dotace">← <%= it.t('web.dotace') %></a></p>
+<h1><%= it.d ? it.d.projekt : it.t('web.nova_dotace') %></h1>
+<ol class="kroky" aria-label="<%= it.t('web.kroky') %>">
+  <li <%= it.krok === 1 ? 'aria-current=step' : '' %>><% if (it.d && it.krok !== 1) { %><a href="/sprava/web/dotace/<%= it.d.id %>"><% } %><span>1</span> <%= it.t('web.dotace_krok1') %><% if (it.d && it.krok !== 1) { %></a><% } %></li>
+  <li <%= it.krok === 2 ? 'aria-current=step' : '' %>><% if (it.d && it.krok !== 2) { %><a href="/sprava/web/dotace/<%= it.d.id %>/loga"><% } %><span>2</span> <%= it.t('web.dotace_krok2') %><% if (it.d && it.krok !== 2) { %></a><% } %></li>
+  <li <%= it.krok === 3 ? 'aria-current=step' : '' %>><% if (it.d && it.krok !== 3) { %><a href="/sprava/web/dotace/<%= it.d.id %>/zobrazeni"><% } %><span>3</span> <%= it.t('web.dotace_krok3') %><% if (it.d && it.krok !== 3) { %></a><% } %></li>
+</ol>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+
+<% if (it.krok === 1) { %>
+<form method="post" action="/sprava/web/dotace/<%= it.d ? it.d.id : 'nova' %>" class="formular siroky">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="projekt"><%= it.t('web.projekt') %></label>
+  <input id="projekt" name="projekt" required maxlength="300" value="<%= it.f.projekt || '' %>" aria-describedby="projekt-n">
+  <p class="napoveda" id="projekt-n"><%= it.t('web.projekt_napoveda') %></p>
+  <label for="poskytovatel"><%= it.t('web.poskytovatel') %></label>
+  <input id="poskytovatel" name="poskytovatel" maxlength="300" value="<%= it.f.poskytovatel || '' %>" aria-describedby="posk-n">
+  <p class="napoveda" id="posk-n"><%= it.t('web.poskytovatel_napoveda') %></p>
+  <label for="text"><%= it.t('web.text_publicity') %></label>
+  <textarea id="text" name="text" rows="4" maxlength="2000" aria-describedby="text-n"><%= it.f.text || '' %></textarea>
+  <p class="napoveda" id="text-n"><%= it.t('web.text_publicity_napoveda') %></p>
+  <label for="odkaz"><%= it.t('web.odkaz_projektu') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+  <input id="odkaz" name="odkaz" type="url" maxlength="500" value="<%= it.f.odkaz || '' %>" placeholder="https://">
+  <button class="tlacitko velke" type="submit"><%= it.t('web.dal_loga') %> →</button>
+</form>
+<% if (it.d) { %>
+<form method="post" action="/sprava/web/dotace/<%= it.d.id %>" data-confirm="<%= it.t('web.dotace_kos_potvrdit') %>" class="alternativa"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="kos"><button class="tlacitko nebezpecne" type="submit"><%= it.t('web.smazat') %></button></form>
+<% } %>
+<% } %>
+
+<% if (it.krok === 2) { %>
+<p class="perex"><%= it.t('web.loga_perex') %></p>
+<form method="post" action="/sprava/web/dotace/<%= it.d.id %>/loga" enctype="multipart/form-data" class="formular siroky">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="loga"><%= it.loga.length ? it.t('web.pridat_logo') : it.t('web.nahrat_logo') %></label>
+  <input id="loga" name="loga" type="file" multiple accept="image/png,image/jpeg,image/svg+xml,image/webp" aria-describedby="loga-n">
+  <p class="napoveda" id="loga-n"><%= it.t('web.loga_napoveda') %></p>
+  <button class="tlacitko sekundarni" type="submit" name="akce" value="nahrat"><%= it.t('web.nahrat_a_ukazat') %></button>
+  <% if (it.loga.length) { %>
+  <h2><%= it.t('web.nahrana_loga') %></h2>
+  <ul class="loga-sprava">
+    <% it.loga.forEach(function (l) { %>
+    <li><div class="logo-karta"><img src="/soubory/<%= l.id %>/logo.png" alt=""></div>
+      <label for="alt_<%= l.id %>"><%= it.t('web.popis_loga') %></label>
+      <input id="alt_<%= l.id %>" name="alt_<%= l.id %>" value="<%= l.alt %>" maxlength="300" required>
+      <button class="odkaz-tlacitko nebezpecny-odkaz" type="submit" name="odebrat" value="<%= l.id %>" formnovalidate><%= it.t('web.odebrat_logo') %></button></li>
+    <% }) %>
+  </ul>
+  <h2><%= it.t('web.nahled_pasu') %></h2>
+  <p class="napoveda"><%= it.t('web.nahled_pasu_napoveda') %></p>
+  <div class="nahled-pasu">
+    <%~ include('/web/_pas-dotaci', { dotace: it.ostatni.concat([{ id: it.d.id, projekt: it.d.projekt, poskytovatel: it.d.poskytovatel, loga: it.loga }]), t: it.t }) %>
+  </div>
+  <% } %>
+  <button class="tlacitko velke" type="submit" name="akce" value="dal"><%= it.t('web.dal_zobrazeni') %> →</button>
+</form>
+<% } %>
+
+<% if (it.krok === 3) { %>
+<form method="post" action="/sprava/web/dotace/<%= it.d.id %>/zobrazeni" class="formular siroky">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <div class="radek">
+    <div><label for="zobrazit_od"><%= it.t('web.zobrazit_od') %></label><input id="zobrazit_od" name="zobrazit_od" type="date" required value="<%= it.f.zobrazit_od %>"></div>
+    <div><label for="zobrazit_do"><%= it.t('web.zobrazit_do') %> <small>(<%= it.t('app.nepovinne') %>)</small></label><input id="zobrazit_do" name="zobrazit_do" type="date" value="<%= it.f.zobrazit_do || '' %>" aria-describedby="do-n"></div>
+  </div>
+  <p class="napoveda" id="do-n"><%= it.t('web.zobrazit_do_napoveda') %></p>
+  <label class="zatrzitko"><input type="checkbox" name="v_paticce" value="ano" <%= it.f.v_paticce ? 'checked' : '' %>> <%= it.t('web.v_paticce') %></label>
+  <label for="poradi"><%= it.t('deska.kat_poradi') %></label><input id="poradi" name="poradi" type="number" value="<%= it.f.poradi %>">
+  <h2><%= it.t('web.nahled_dotace') %></h2>
+  <div class="karta">
+    <div class="dotace-loga"><% it.loga.forEach(function (l) { %><img src="/soubory/<%= l.id %>/logo.png" alt="<%= l.alt %>"><% }) %></div>
+    <h3><%= it.d.projekt %></h3><% if (it.d.text) { %><p><%= it.d.text %></p><% } %>
+  </div>
+  <button class="tlacitko velke" type="submit"><%= it.d.stav === 'hotovo' ? it.t('app.ulozit') : it.t('web.zverejnit') %></button>
+</form>
+<% } %>

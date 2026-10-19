@@ -1,0 +1,20 @@
+<% layout('/layout') %>
+<h1><%= it.t('deska.rozpocet_titulek') %></h1>
+<p class="perex"><%= it.t('deska.rozpocet_perex') %></p>
+<% it.typy.forEach(function (typ) { var platne = it.platne.filter(function (d) { return d.typ_rozpoctu === typ; }); if (!platne.length) return; %>
+<section class="karta rozpocet-typ">
+  <h2><%= it.t('deska.typ_' + typ) %></h2>
+  <ul class="dokumenty">
+  <% platne.forEach(function (d) { %><li class="dok"><h3 class="dok-nazev"><a href="/uredni-deska/<%= d.id %>"><%= d.nazev %></a></h3><p class="dok-meta"><span><%= it.t('deska.na_rok', { rok: d.rok }) %></span><span><%= it.t('deska.zverejneno') %> <%= it.fmtDatum(d.vyveseno_od, false) %></span></p></li><% }) %>
+  </ul>
+</section>
+<% }) %>
+<% if (!it.platne.length) { %><p class="prazdne"><%= it.t('deska.rozpocet_nic') %></p><% } %>
+<% if (it.archiv.length) { %>
+<details class="karta">
+  <summary><%= it.t('deska.rozpocet_archiv', { n: it.archiv.length }) %></summary>
+  <ul>
+  <% it.archiv.forEach(function (d) { %><li><a href="/uredni-deska/<%= d.id %>"><%= d.nazev %></a> — <%= it.t('deska.typ_' + d.typ_rozpoctu) %> <%= d.rok %> (<%= it.fmtDatum(d.vyveseno_od, false) %> – <%= it.fmtDatum(d.sejmuto_do, false) %>)</li><% }) %>
+  </ul>
+</details>
+<% } %>

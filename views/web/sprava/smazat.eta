@@ -1,0 +1,12 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.titulek %></h1>
+<p><%= it.t('web.smazat_otazka', { titulek: it.o.titulek }) %></p>
+<p class="napoveda"><%= it.t('web.smazat_napoveda') %></p>
+<% if (it.maDeti) { %><p class="flash flash-info"><%= it.t('web.smazat_deti') %></p><% } %>
+<form method="post" action="/sprava/web/obsah/<%= it.o.id %>/smazat">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <button class="tlacitko nebezpecne velke" type="submit"><%= it.t('web.smazat_ano') %></button>
+  <a class="tlacitko sekundarni velke" href="/sprava/web/obsah/<%= it.o.id %>"><%= it.t('web.smazat_ne') %></a>
+</form>
+</div>

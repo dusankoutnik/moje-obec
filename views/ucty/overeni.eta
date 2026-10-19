@@ -1,0 +1,40 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('overeni.titulek') %></h1>
+<p><%= it.t('overeni.text') %></p>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<% if (it.kodOdeslan) { %>
+  <p><%= it.t('overeni.kod_odeslan', { telefon: it.fmtTelefon(it.telefon) }) %></p>
+  <% if (it.devKod) { %><div class="flash flash-info dev"><%= it.t('prihlaseni.dev_kod', { kod: it.devKod }) %></div><% } %>
+  <form method="post" action="/ucet/overeni/kod" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <input type="hidden" name="dalsi" value="<%= it.dalsi %>">
+    <label for="kod"><%= it.t('prihlaseni.kod') %></label>
+    <input id="kod" name="kod" type="text" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" maxlength="6" required autofocus class="kod" aria-describedby="kod-napoveda">
+    <p class="napoveda" id="kod-napoveda"><%= it.t('prihlaseni.kod_napoveda') %></p>
+    <button class="tlacitko" type="submit"><%= it.t('overeni.kod_overit') %></button>
+  </form>
+<% } else if (it.maHeslo) { %>
+  <form method="post" action="/ucet/overeni/heslo" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <input type="hidden" name="dalsi" value="<%= it.dalsi %>">
+    <label for="heslo"><%= it.t('overeni.heslo') %></label>
+    <input id="heslo" name="heslo" type="password" autocomplete="current-password" required autofocus>
+    <button class="tlacitko" type="submit"><%= it.t('overeni.heslo_overit') %></button>
+  </form>
+<% } else { %>
+  <p><%= it.t('overeni.sms_text', { telefon: it.fmtTelefon(it.telefon) }) %></p>
+<% } %>
+<form method="post" action="/ucet/overeni/sms" class="<%= it.maHeslo || it.kodOdeslan ? 'alternativa' : 'formular' %>">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <input type="hidden" name="dalsi" value="<%= it.dalsi %>">
+  <% if (it.maHeslo && !it.kodOdeslan) { %>
+  <button class="odkaz-tlacitko" type="submit"><%= it.t('overeni.nebo_sms', { telefon: it.fmtTelefon(it.telefon) }) %></button>
+  <% } else if (it.kodOdeslan) { %>
+  <button class="odkaz-tlacitko" type="submit"><%= it.t('prihlaseni.znovu') %></button>
+  <% } else { %>
+  <button class="tlacitko" type="submit"><%= it.t('overeni.sms_poslat') %></button>
+  <% } %>
+</form>
+<p class="alternativa"><a href="/ucet">← <%= it.t('app.zpet') %></a></p>
+</div>

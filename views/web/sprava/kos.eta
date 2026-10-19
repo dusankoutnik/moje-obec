@@ -1,0 +1,30 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<h1><%= it.t('web.kos') %></h1>
+<p class="perex"><%= it.t('web.kos_perex') %></p>
+<% var nic = !it.obsah.length && !it.galerie.length && !it.dokumenty.length && !it.dotace.length && !(it.videa || []).length; %>
+<% if (nic) { %><p class="prazdne"><%= it.t('web.kos_prazdny') %></p><% } %>
+<% if (it.obsah.length) { %>
+<ul class="kratky-seznam">
+<% it.obsah.forEach(function (o) { %>
+  <li><span><strong><%= o.titulek %></strong> <span class="poznamka"><%= it.t('web.typ_' + o.typ) %> · <%= it.t('web.smazano') %> <%= it.fmtDatum(o.smazano_at) %></span></span>
+    <form method="post" action="/sprava/web/obsah/<%= o.id %>/obnovit" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko sekundarni male" type="submit"><%= it.t('web.obnovit') %></button></form></li>
+<% }) %>
+</ul>
+<% } %>
+<% it.galerie.forEach(function (g) { %>
+  <p><strong><%= g.nazev %></strong> <span class="poznamka"><%= it.t('web.galerie') %></span>
+  <form method="post" action="/sprava/web/galerie/<%= g.id %>" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="obnovit"><button class="tlacitko sekundarni male" type="submit"><%= it.t('web.obnovit') %></button></form></p>
+<% }) %>
+<% var videaKos = it.videa || []; videaKos.forEach(function (v) { %>
+  <p><strong><%= v.nazev %></strong> <span class="poznamka"><%= it.t('videa.titulek') %> · <%= it.t('web.smazano') %> <%= it.fmtDatum(v.smazano_at) %></span>
+  <form method="post" action="/sprava/web/videa/<%= v.id %>" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="obnovit"><button class="tlacitko sekundarni male" type="submit"><%= it.t('web.obnovit') %></button></form></p>
+<% }) %>
+<% it.dokumenty.forEach(function (d) { %>
+  <p><strong><%= d.nazev %></strong> <span class="poznamka"><%= it.t('web.dokumenty') %></span>
+  <form method="post" action="/sprava/web/dokumenty" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="obnovit"><input type="hidden" name="id" value="<%= d.id %>"><button class="tlacitko sekundarni male" type="submit"><%= it.t('web.obnovit') %></button></form></p>
+<% }) %>
+<% it.dotace.forEach(function (d) { %>
+  <p><strong><%= d.projekt %></strong> <span class="poznamka"><%= it.t('web.dotace') %></span>
+  <form method="post" action="/sprava/web/dotace/<%= d.id %>" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="obnovit"><button class="tlacitko sekundarni male" type="submit"><%= it.t('web.obnovit') %></button></form></p>
+<% }) %>

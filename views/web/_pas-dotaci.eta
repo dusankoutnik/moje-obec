@@ -1,0 +1,5 @@
+<ul class="pas-dotaci<%= it.maly ? ' maly' : '' %>">
+<% it.dotace.forEach(function (d) { d.loga.forEach(function (l) { %>
+  <li><a href="/dotace/<%= d.id %>" title="<%= d.projekt %>"><img src="/soubory/<%= l.id %>/<%= encodeURIComponent(l.puvodni_nazev) %>" alt="<%= l.alt || d.poskytovatel %>" loading="lazy" <% if (l.sirka && l.vyska) { %>width="<%= l.sirka %>" height="<%= l.vyska %>"<% } %>></a></li>
+<% }) }) %>
+</ul>

@@ -1,0 +1,14 @@
+<% layout('/layout') %>
+<h1><%= it.t('web.dotace') %></h1>
+<p class="perex"><%= it.t('web.dotace_perex') %></p>
+<% if (!it.dotace.length) { %><p class="prazdne"><%= it.t('web.zadne_dotace') %></p><% } %>
+<ul class="seznam-dotaci">
+<% it.dotace.forEach(function (d) { %>
+  <li class="karta">
+    <div class="dotace-loga"><% d.loga.forEach(function (l) { %><img src="/soubory/<%= l.id %>/<%= encodeURIComponent(l.puvodni_nazev) %>" alt="<%= l.alt %>" loading="lazy"><% }) %></div>
+    <h2><a href="/dotace/<%= d.id %>"><%= d.projekt %></a></h2>
+    <% if (d.poskytovatel) { %><p class="poznamka"><%= it.t('web.poskytovatel') %>: <%= d.poskytovatel %></p><% } %>
+    <% if (d.text) { %><p><%= d.text %></p><% } %>
+  </li>
+<% }) %>
+</ul>

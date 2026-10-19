@@ -1,0 +1,27 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<h1><%= it.t('web.dokumenty') %></h1>
+<section class="karta">
+  <h2>＋ <%= it.t('web.pridat_dokument') %></h2>
+  <form method="post" action="/sprava/web/dokumenty" enctype="multipart/form-data" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <label for="soubor"><%= it.t('web.soubor') %></label><input id="soubor" name="soubor" type="file" required>
+    <label for="nazev"><%= it.t('web.nazev_dokumentu') %> <small>(<%= it.t('web.nazev_dokumentu_n') %>)</small></label><input id="nazev" name="nazev" maxlength="250">
+    <label for="skupina"><%= it.t('web.skupina') %></label><input id="skupina" name="skupina" list="skupiny" maxlength="100" aria-describedby="sk-n">
+    <datalist id="skupiny"><% it.skupiny.forEach(function (s) { %><option value="<%= s %>"><% }) %></datalist>
+    <p class="napoveda" id="sk-n"><%= it.t('web.skupina_napoveda') %></p>
+    <label for="popis"><%= it.t('web.popis') %> <small>(<%= it.t('app.nepovinne') %>)</small></label><input id="popis" name="popis" maxlength="1000">
+    <button class="tlacitko velke" type="submit"><%= it.t('web.nahrat') %></button>
+  </form>
+</section>
+<% if (it.dokumenty.length) { %>
+<div class="tabulka-obal"><table class="tabulka">
+  <thead><tr><th scope="col"><%= it.t('web.nazev_dokumentu') %></th><th scope="col"><%= it.t('web.skupina') %></th><th scope="col"><%= it.t('web.soubor') %></th><th scope="col"><span class="vh"><%= it.t('sprava.akce') %></span></th></tr></thead>
+  <tbody>
+  <% it.dokumenty.forEach(function (d) { %>
+    <tr><td><%= d.nazev %></td><td><%= d.skupina %></td><td><a href="<%= it.urlSouboru({ id: d.soubor_id, puvodni_nazev: d.puvodni_nazev }) %>"><%= it.popisTypu(d.pripona) %>, <%= it.lidskaVelikost(d.velikost) %></a></td>
+    <td><form method="post" action="/sprava/web/dokumenty" class="inline" data-confirm="<%= it.t('web.dokument_kos_potvrdit') %>"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="kos"><input type="hidden" name="id" value="<%= d.id %>"><button class="tlacitko nebezpecne male" type="submit"><%= it.t('web.smazat') %></button></form></td></tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>

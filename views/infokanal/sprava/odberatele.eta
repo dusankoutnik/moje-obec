@@ -1,0 +1,28 @@
+<% layout('/layout') %>
+<p><a href="/infokanal/sprava">← <%= it.t('infokanal.hlaseni') %></a></p>
+<h1><%= it.t('infokanal.odberatele') %></h1>
+<p><%= it.t('infokanal.pocet_odberatelu', { n: it.stat.celkem, sms: it.stat.sms, email: it.stat.email }) %></p>
+<details class="karta">
+  <summary><%= it.t('infokanal.pridat_odberatele') %></summary>
+  <form method="post" action="/infokanal/sprava/odberatele" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <div class="radek">
+      <div><label for="jmeno"><%= it.t('infokanal.jmeno') %></label><input id="jmeno" name="jmeno" maxlength="120"></div>
+      <div><label for="telefon"><%= it.t('infokanal.telefon') %></label><input id="telefon" name="telefon" type="tel"></div>
+      <div><label for="email"><%= it.t('infokanal.email') %></label><input id="email" name="email" type="email"></div>
+      <div><label for="cast_obce"><%= it.t('infokanal.cast_obce') %></label><select id="cast_obce" name="cast_obce"><option value=""><%= it.t('ucet.cast_obce_mimo') %></option><% it.obec.obec.casti.forEach(function (c) { %><option value="<%= c %>"><%= c %></option><% }) %></select></div>
+    </div>
+    <label class="zatrzitko"><input type="checkbox" name="souhlas" value="ano" checked> Souhlas udělen osobně / písemně (evidence GDPR)</label>
+    <button class="tlacitko" type="submit"><%= it.t('infokanal.pridat_odberatele') %></button>
+  </form>
+</details>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th><%= it.t('infokanal.jmeno') %></th><th><%= it.t('ucet.telefon') %></th><th><%= it.t('ucet.email') %></th><th><%= it.t('ucet.cast_obce') %></th><th><%= it.t('infokanal.kanal') %></th><th><%= it.t('infokanal.stav') %></th><th><%= it.t('infokanal.zdroj') %></th></tr></thead>
+  <tbody>
+  <% it.odberatele.forEach(function (o) { %>
+    <tr class="<%= o.odhlasen_at ? 'blokovan' : '' %>"><td><%= o.jmeno %></td><td><%= it.fmtTelefon(o.telefon) %></td><td><%= o.email || '' %></td><td><%= o.cast_obce %></td><td><%= o.kanal %></td><td><%= o.odhlasen_at ? it.t('infokanal.odhlasen') : o.overen_at ? it.t('infokanal.overen') : it.t('infokanal.neoveren') %></td><td><%= o.zdroj %></td></tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>

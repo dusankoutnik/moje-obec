@@ -1,0 +1,15 @@
+<% layout('/layout') %>
+<p><a href="/sprava/povinne-informace">← <%= it.t('pi.titulek') %></a></p>
+<h1><%= it.bod.klic %> <%= it.bod.nazev %></h1>
+<p><span class="stav-stitek stav-<%= it.bod.stav %>"><%= it.t('pi.stav_' + it.bod.stav) %></span></p>
+<% if (it.bod.napoveda) { %><p class="napoveda"><%= it.bod.napoveda %></p><% } %>
+<p class="napoveda"><%= it.t('pi.uprava_napoveda') %></p>
+<form method="post" action="/sprava/povinne-informace/<%= it.bod.klic %>" class="formular siroky">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="obsah"><%= it.t('pi.text') %></label>
+  <textarea id="obsah" name="obsah" rows="12" data-editor="zakladni"><%= it.bod.html %></textarea>
+  <button class="tlacitko velke" type="submit" name="akce" value="ulozit"><%= it.t('app.ulozit') %></button>
+  <% if (it.bod.stav === 'vlastni' && (it.bod.auto || it.bod.vychozi)) { %><button class="tlacitko sekundarni" type="submit" name="akce" value="vychozi"><%= it.t('pi.vratit_vychozi') %></button><% } %>
+</form>
+<script src="/static/vendor/quill/quill.js" defer></script>
+<script src="/static/js/editor.js?v=<%= it.v %>" defer></script>

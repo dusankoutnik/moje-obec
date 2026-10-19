@@ -1,0 +1,52 @@
+<% layout('/layout') %>
+<p><a href="/sprava/uzivatele">← <%= it.t('sprava.uzivatele') %></a></p>
+<h1><%= it.t('sprava.detail') %>: <%= (it.u.jmeno + ' ' + it.u.prijmeni).trim() || it.fmtTelefon(it.u.telefon) %></h1>
+<div class="sloupce">
+<section class="karta">
+  <dl class="seznam">
+    <dt><%= it.t('ucet.telefon') %></dt><dd><%= it.fmtTelefon(it.u.telefon) %> <%= it.u.telefon_overen_at ? '✓' : '' %></dd>
+    <dt><%= it.t('ucet.email') %></dt><dd><%= it.u.email || '—' %></dd>
+    <dt><%= it.t('ucet.prezdivka') %></dt><dd><%= it.u.prezdivka || '—' %></dd>
+    <dt><%= it.t('ucet.cast_obce') %></dt><dd><%= it.u.cast_obce || it.t('ucet.cast_obce_mimo') %></dd>
+    <dt><%= it.t('ucet.gdpr') %></dt><dd><%= it.fmtDatum(it.u.gdpr_souhlas_at) || '—' %></dd>
+    <dt><%= it.t('sprava.vytvoren') %></dt><dd><%= it.fmtDatum(it.u.vytvoren_at) %></dd>
+  </dl>
+  <form method="post" action="/sprava/uzivatele/<%= it.u.id %>" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <% if (it.u.blokovan_at) { %>
+      <p class="flash flash-chyba"><%= it.t('sprava.blokovan') %> (<%= it.fmtDatum(it.u.blokovan_at) %>)</p>
+      <button class="tlacitko sekundarni" name="akce" value="odblokovat" type="submit"><%= it.t('sprava.odblokovat') %></button>
+    <% } else { %>
+      <button class="tlacitko nebezpecne" name="akce" value="blokovat" type="submit"><%= it.t('sprava.blokovat') %></button>
+    <% } %>
+  </form>
+</section>
+<section class="karta">
+  <h2><%= it.t('ucet.role') %></h2>
+  <% if (it.jeAdmin && !it.samSobe) { %>
+  <form method="post" action="/sprava/uzivatele/<%= it.u.id %>" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <fieldset>
+      <legend><%= it.t('ucet.role') %></legend>
+      <% it.role.forEach(function (r) { %>
+        <label class="zatrzitko"><input type="checkbox" name="role" value="<%= r %>" <%= it.u.role.includes(r) ? 'checked' : '' %>> <%= it.t('sprava.role_' + r) %></label>
+      <% }) %>
+    </fieldset>
+    <button class="tlacitko" name="akce" value="role" type="submit"><%= it.t('app.ulozit') %></button>
+  </form>
+  <% } else { %>
+    <p><%= it.u.role.length ? it.u.role.join(', ') : it.t('ucet.role_obcan') %></p>
+    <% if (it.samSobe) { %><p class="napoveda"><%= it.t('sprava.sam_sobe') %></p><% } %>
+  <% } %>
+</section>
+</div>
+<h2><%= it.t('sprava.historie') %></h2>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th><%= it.t('sprava.cas') %></th><th><%= it.t('sprava.akce') %></th><th><%= it.t('sprava.detail_zaznamu') %></th></tr></thead>
+  <tbody>
+  <% if (!it.historie.length) { %><tr><td colspan="3"><%= it.t('sprava.zadne') %></td></tr><% } %>
+  <% it.historie.forEach(function (z) { %><tr><td><%= it.fmtDatum(z.ts) %></td><td><%= z.akce %></td><td><code><%= z.detail ? JSON.stringify(z.detail) : '' %></code></td></tr><% }) %>
+  </tbody>
+</table>
+</div>

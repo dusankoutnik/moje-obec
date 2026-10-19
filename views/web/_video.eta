@@ -1,0 +1,21 @@
+<% var v = it.v; var t = it.t; var k = v.id + (it.k || ''); %>
+<% if (v.zdroj === 'soubor' && v.soubor) { %>
+<div class="video-ram">
+  <video controls preload="none" playsinline aria-label="<%= v.nazev %>"<% if (v.plakat) { %> poster="<%= v.plakat.url %>"<% } %>>
+    <source src="<%= v.soubor.url %>" type="<%= v.soubor.mime %>">
+    <% if (v.titulky) { %><track kind="captions" src="<%= v.titulky.url %>" srclang="cs" label="<%= t('videa.titulky') %>"><% } %>
+    <p><%= t('videa.neumi') %> <a href="<%= v.soubor.url %>" download><%= t('videa.stahnout', { popis: v.soubor.popis }) %></a></p>
+  </video>
+</div>
+<p class="video-pod"><a href="<%= v.soubor.url %>" download><%= t('videa.stahnout', { popis: v.soubor.popis }) %></a></p>
+<% } else if (v.prehravac) { %>
+<div class="video-ram video-externi" data-prehravac="<%= v.prehravac %>" data-ramec-titulek="<%= t('videa.ramec_titulek', { nazev: v.nazev, sluzba: v.sluzba }) %>">
+  <a class="video-spust" href="<%= v.odkazSluzba %>" aria-describedby="vs-<%= k %>">
+    <% if (v.plakat) { %><img src="<%= v.plakat.url %>" alt="" loading="lazy"<% if (v.plakat.sirka && v.plakat.vyska) { %> width="<%= v.plakat.sirka %>" height="<%= v.plakat.vyska %>"<% } %>><% } %>
+    <span class="video-tlacitko"><svg aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg><span><%= t('videa.prehrat') %><span class="vh"> „<%= v.nazev %>“</span></span></span>
+    <span class="video-sluzba"><%= t('videa.nacte_se', { sluzba: v.sluzba }) %></span>
+  </a>
+</div>
+<p class="video-pod" id="vs-<%= k %>"><%= t('videa.souhlas', { sluzba: v.sluzba }) %> <a href="<%= v.odkazSluzba %>"><%= t('videa.otevrit_na', { sluzba: v.sluzbaKratce }) %></a></p>
+<% } %>
+<% if (v.prepisHtml) { %><details class="video-prepis"><summary><%= t('videa.prepis') %></summary><%~ v.prepisHtml %></details><% } %>

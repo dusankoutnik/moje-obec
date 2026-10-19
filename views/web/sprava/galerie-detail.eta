@@ -1,0 +1,51 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web/galerie">← <%= it.t('web.galerie') %></a></p>
+<div class="hlavicka-stranky">
+  <h1><%= it.g.nazev %></h1>
+  <span class="stav-stitek <%= it.g.stav === 'zverejneno' ? 'stav-auto' : 'stav-vychozi' %>"><%= it.g.stav === 'zverejneno' ? it.t('web.stav_zverejneno') : it.t('web.stav_koncept') %></span>
+</div>
+<% if (it.g.stav === 'zverejneno') { %><p><a href="/galerie/<%= it.g.slug %>"><%= it.t('web.zobrazit_na_webu') %> →</a></p><% } %>
+<form method="post" action="/sprava/web/galerie/<%= it.g.id %>" enctype="multipart/form-data" class="formular siroky">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <div class="radek">
+    <div><label for="nazev"><%= it.t('web.nazev_galerie') %></label><input id="nazev" name="nazev" required maxlength="200" value="<%= it.g.nazev %>"></div>
+    <div><label for="datum"><%= it.t('web.datum') %></label><input id="datum" name="datum" type="date" value="<%= it.g.datum || '' %>"></div>
+  </div>
+  <label for="popis"><%= it.t('web.popis') %></label><textarea id="popis" name="popis" rows="2"><%= it.g.popis %></textarea>
+  <fieldset>
+    <legend><%= it.t('web.pridat_fotky') %></legend>
+    <label for="fotky" class="vh"><%= it.t('web.vybrat_fotky') %></label>
+    <input id="fotky" name="fotky" type="file" multiple accept="image/*" aria-describedby="fotky-n">
+    <p class="napoveda" id="fotky-n"><%= it.t('web.fotky_napoveda') %></p>
+  </fieldset>
+  <% if (it.fotky.length) { %>
+  <h2><%= it.t('web.fotky_v_galerii', { n: it.fotky.length }) %></h2>
+  <p class="napoveda"><%= it.t('web.fotky_alt_napoveda') %></p>
+  <ul class="fotky-sprava">
+  <% it.fotky.forEach(function (f, i) { %>
+    <li id="f-<%= f.id %>" class="<%= f.alt ? '' : 'chybi-alt' %>">
+      <img src="/soubory/<%= f.id %>/nahled?v=nahled" alt="" loading="lazy">
+      <div>
+        <label for="alt_<%= f.id %>"><%= it.t('web.popis_obrazku') %></label>
+        <input id="alt_<%= f.id %>" name="alt_<%= f.id %>" value="<%= f.alt %>" maxlength="300" required>
+        <label for="popisek_<%= f.id %>"><%= it.t('web.popisek') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+        <input id="popisek_<%= f.id %>" name="popisek_<%= f.id %>" value="<%= f.popisek %>" maxlength="300">
+        <div class="fotka-akce">
+          <button class="tlacitko-ikona" type="submit" name="akce" value="nahoru" formnovalidate formaction="/sprava/web/galerie/<%= it.g.id %>?foto=<%= f.id %>" <%= i === 0 ? 'disabled' : '' %> aria-label="<%= it.t('web.posunout_nahoru', { titulek: f.alt || (i + 1) }) %>">▲</button>
+          <label class="zatrzitko inline-zatrzitko"><input type="checkbox" name="odebrat" value="<%= f.id %>"> <%= it.t('web.odebrat_z_galerie') %></label>
+        </div>
+      </div>
+    </li>
+  <% }) %>
+  </ul>
+  <% } %>
+  <div class="tlacitka-dole">
+    <button class="tlacitko velke" type="submit" name="akce" value="zverejnit"><%= it.g.stav === 'zverejneno' ? it.t('web.ulozit_zverejnit') : it.t('web.zverejnit') %></button>
+    <button class="tlacitko sekundarni" type="submit" name="akce" value="ulozit" formnovalidate><%= it.t('app.ulozit') %></button>
+    <% if (it.g.stav === 'zverejneno') { %><button class="tlacitko sekundarni" type="submit" name="akce" value="skryt" formnovalidate><%= it.t('web.skryt') %></button><% } %>
+  </div>
+</form>
+<form method="post" action="/sprava/web/galerie/<%= it.g.id %>" data-confirm="<%= it.t('web.galerie_kos_potvrdit') %>" class="alternativa">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="kos">
+  <button class="tlacitko nebezpecne" type="submit"><%= it.t('web.smazat') %></button>
+</form>

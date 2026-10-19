@@ -1,0 +1,21 @@
+# Tajné údaje — nikdy do gitu
+.env
+.env.*
+!.env.example
+
+# Závislosti a build
+node_modules/
+dist/
+coverage/
+
+# Běhová data
+data/
+*.log
+
+# Editor / systém
+.DS_Store
+.vscode/
+.idea/
+
+# Profil konkrétní obce (vzor je obec.example.yml)
+obec.yml
