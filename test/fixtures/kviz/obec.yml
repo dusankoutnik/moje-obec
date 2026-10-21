@@ -1,0 +1,65 @@
+# Testovací balík pro Vitest — vymyšlená data, ne skutečná banka otázek
+kategorie: obec
+nazev: Naše obec
+ikona: 🏡
+otazky:
+- id: obec-001
+  otazka: Testovací otázka 1 z oblasti Naše obec?
+  odpovedi:
+  - Správně obec 1
+  - Vedle A obec 1
+  - Vedle B obec 1
+  - Vedle C obec 1
+  obtiznost: 1
+  vysvetleni: Vysvětlení k otázce obec-001.
+  zdroj: https://example.org/zdroj
+- id: obec-002
+  otazka: Testovací otázka 2 z oblasti Naše obec?
+  odpovedi:
+  - Správně obec 2
+  - Vedle A obec 2
+  - Vedle B obec 2
+  - Vedle C obec 2
+  obtiznost: 2
+  vysvetleni: Vysvětlení k otázce obec-002.
+  zdroj: Učebnice testování
+- id: obec-003
+  otazka: Testovací otázka 3 z oblasti Naše obec?
+  odpovedi:
+  - Správně obec 3
+  - Vedle A obec 3
+  - Vedle B obec 3
+  - Vedle C obec 3
+  obtiznost: 3
+  vysvetleni: Vysvětlení k otázce obec-003.
+  zdroj: https://example.org/zdroj
+- id: obec-004
+  otazka: Testovací otázka 4 z oblasti Naše obec?
+  odpovedi:
+  - Správně obec 4
+  - Vedle A obec 4
+  - Vedle B obec 4
+  - Vedle C obec 4
+  obtiznost: 1
+  vysvetleni: Vysvětlení k otázce obec-004.
+  zdroj: Učebnice testování
+- id: obec-005
+  otazka: Testovací otázka 5 z oblasti Naše obec?
+  odpovedi:
+  - Správně obec 5
+  - Vedle A obec 5
+  - Vedle B obec 5
+  - Vedle C obec 5
+  obtiznost: 2
+  vysvetleni: Vysvětlení k otázce obec-005.
+  zdroj: https://example.org/zdroj
+- id: obec-006
+  otazka: Testovací otázka 6 z oblasti Naše obec?
+  odpovedi:
+  - Správně obec 6
+  - Vedle A obec 6
+  - Vedle B obec 6
+  - Vedle C obec 6
+  obtiznost: 3
+  vysvetleni: Vysvětlení k otázce obec-006.
+  zdroj: Učebnice testování
