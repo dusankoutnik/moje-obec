@@ -28,14 +28,15 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
   app.decorate('webUvod', async (_req: FastifyRequest, reply: FastifyReply) => {
     const [aktuality, akceWebu, externi, dotace, videaTitulky, videaCelkem] = await Promise.all([
       s.obsah.aktuality({ naStranku: 4 }),
-      s.obsah.akce({ limit: 3 }),
+      s.obsah.akce({ limit: 5 }),
       s.kalendar.akce(),
       s.dotace.aktivni(),
       s.videa.seznam({ verejne: true, naTitulce: true, limit: 4 }),
       s.videa.pocetVerejnych(),
     ]);
     const videa = await s.videa.proZobrazeni(videaTitulky);
-    const akce = sloucAkce(akceWebu, externi).slice(0, 3);
+    const vsechnyAkce = sloucAkce(akceWebu, externi);
+    const akce = vsechnyAkce.slice(0, 3); // panel „Nadcházející akce“
     const vsechnaDeska = app.obec.moduly.deska ? await app.deska.aktualni() : [];
     const deska = vsechnaDeska.slice(0, 5);
     // živé statistiky do úvodu — jen agregáty, žádná jména
@@ -77,8 +78,8 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       popisek: t('web.stat_aktuality'),
       odkaz: '/aktuality',
     });
-    // tři nejbližší akce (web + rezervace sálu a hřišť + předprodej)
-    akce.forEach((a, i) => {
+    // pět nejbližších akcí (web + rezervace sálu a hřišť + předprodej)
+    vsechnyAkce.slice(0, 5).forEach((a, i) => {
       if (!a.datum) return;
       statistiky.push({
         hodnota: a.datum.toLocaleDateString('cs-CZ', {
