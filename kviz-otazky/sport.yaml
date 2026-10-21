@@ -1,0 +1,196 @@
+kategorie: sport
+nazev: 'Sport'
+ikona: '⚽'
+otazky:
+  - id: sport-001
+    otazka: 'Ve kterém japonském městě vyhráli čeští hokejisté v roce 1998 olympijský turnaj?'
+    odpovedi: ['Nagano', 'Sapporo', 'Tokio', 'Ósaka']
+    obtiznost: 1
+    vysvetleni: 'Turnaj se poprvé hrál s hráči z NHL; ve finále Češi porazili Rusko 1:0.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Ledn%C3%AD_hokej_na_Zimn%C3%ADch_olympijsk%C3%BDch_hr%C3%A1ch_1998_%E2%80%93_turnaj_mu%C5%BEi'
+  - id: sport-002
+    otazka: 'V jaké disciplíně získal Jan Železný tři olympijská zlata?'
+    odpovedi: ['v hodu oštěpem', 've vrhu koulí', 'v hodu diskem', 'v hodu kladivem']
+    obtiznost: 1
+    vysvetleni: 'Vyhrál v Barceloně 1992, Atlantě 1996 a Sydney 2000.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jan_%C5%BDelezn%C3%BD'
+  - id: sport-003
+    otazka: 'Ve kterém městě se v roce 1896 konaly první novodobé olympijské hry?'
+    odpovedi: ['v Athénách', 'v Paříži', 'v Londýně', 'v Olympii']
+    obtiznost: 1
+    vysvetleni: 'Na hrách startovali sportovci ze čtrnácti zemí.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Letn%C3%AD_olympijsk%C3%A9_hry_1896'
+  - id: sport-004
+    otazka: 'Kolik kruhů je na olympijské vlajce?'
+    odpovedi: ['pět', 'čtyři', 'šest', 'sedm']
+    obtiznost: 1
+    vysvetleni: 'Modrý, žlutý, černý, zelený a červený kruh na bílém poli navrhl v roce 1914 Pierre de Coubertin.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Olympijsk%C3%A1_vlajka'
+  - id: sport-005
+    otazka: 'Ze které země pochází sprinter Usain Bolt?'
+    odpovedi: ['z Jamajky', 'z USA', 'z Kanady', 'z Trinidadu a Tobaga']
+    obtiznost: 1
+    vysvetleni: 'Narodil se v Sherwood Content ve farnosti Trelawny a specializoval se na běhy na 100 a 200 m.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Usain_Bolt'
+  - id: sport-006
+    otazka: 'Za který klub hrál basketbalista Michael Jordan většinu své kariéry v NBA?'
+    odpovedi: ['Chicago Bulls', 'Los Angeles Lakers', 'Boston Celtics', 'New York Knicks']
+    obtiznost: 1
+    vysvetleni: 'V Chicagu hrál v letech 1984–1993 a 1995–1998; kariéru ukončil ve Washingtonu Wizards v roce 2003.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Michael_Jordan'
+  - id: sport-007
+    otazka: 'Kolik zlatých medailí získal Emil Zátopek na olympijských hrách v Helsinkách 1952?'
+    odpovedi: ['tři', 'dvě', 'čtyři', 'pět']
+    obtiznost: 2
+    vysvetleni: 'Vyhrál běh na 5 km, na 10 km i maraton, který tehdy běžel poprvé v životě – a ve všech třech ustavil olympijský rekord.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Emil_Z%C3%A1topek'
+  - id: sport-008
+    otazka: 'Na kterém turnaji proměnil Antonín Panenka rozhodující penaltu slavným „dloubákem“?'
+    odpovedi:
+      [
+        'mistrovství Evropy 1976',
+        'mistrovství světa 1962',
+        'mistrovství Evropy 1980',
+        'mistrovství světa 1934',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Finále v Bělehradě proti favorizovanému západnímu Německu rozhodl penaltový rozstřel 5:3 a Československo se stalo mistrem Evropy.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mistrovstv%C3%AD_Evropy_ve_fotbale_1976'
+  - id: sport-009
+    otazka: 'Ve kterých dvou sportech získala Ester Ledecká zlato na olympijských hrách 2018 v Pchjongčchangu?'
+    odpovedi:
+      [
+        'alpské lyžování a snowboarding',
+        'biatlon a běh na lyžích',
+        'snowboarding a skicross',
+        'alpské lyžování a rychlobruslení',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Nejprve vyhrála superobří slalom na lyžích a o týden později paralelní obří slalom na snowboardu.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Ester_Ledeck%C3%A1'
+  - id: sport-010
+    otazka: 'Který český fotbalista získal v roce 2003 Zlatý míč pro nejlepšího fotbalistu Evropy?'
+    odpovedi: ['Pavel Nedvěd', 'Petr Čech', 'Tomáš Rosický', 'Jan Koller']
+    obtiznost: 2
+    vysvetleni: 'Nedvěd tehdy hrál za italský Juventus, kde v roce 2009 ukončil kariéru; za reprezentaci odehrál 91 zápasů.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Pavel_Nedv%C4%9Bd'
+  - id: sport-011
+    otazka: 'Která země pořádala a zároveň vyhrála první mistrovství světa ve fotbale v roce 1930?'
+    odpovedi: ['Uruguay', 'Brazílie', 'Itálie', 'Argentina']
+    obtiznost: 2
+    vysvetleni: 'Turnaje se zúčastnilo jen 13 týmů a všechny zápasy se hrály v jediném městě.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mistrovstv%C3%AD_sv%C4%9Bta_ve_fotbale_1930'
+  - id: sport-012
+    otazka: 'Jak se původně jmenoval boxer Muhammad Ali?'
+    odpovedi: ['Cassius Clay', 'Joe Frazier', 'Sonny Liston', 'George Foreman']
+    obtiznost: 2
+    vysvetleni: 'Narodil se v roce 1942 v Louisville jako Cassius Marcellus Clay Jr.; jako amatér vyhrál olympijské zlato v Římě 1960.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Muhammad_Ali'
+  - id: sport-013
+    otazka: 'Kdo je považován za zakladatele novodobých olympijských her?'
+    odpovedi: ['Pierre de Coubertin', 'Avery Brundage', 'Juan Antonio Samaranch', 'Jacques Rogge']
+    obtiznost: 2
+    vysvetleni: 'V roce 1894 založil Mezinárodní olympijský výbor a v letech 1896–1925 mu předsedal.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Pierre_de_Coubertin'
+  - id: sport-014
+    otazka: 'Na kterých olympijských hrách získal Jesse Owens čtyři zlaté medaile?'
+    odpovedi: ['Berlín 1936', 'Los Angeles 1932', 'Londýn 1948', 'Amsterdam 1928']
+    obtiznost: 2
+    vysvetleni: 'Vyhrál běh na 100 m a 200 m, skok daleký a štafetu na 4 × 100 m.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jesse_Owens'
+  - id: sport-015
+    otazka: 'Kolikrát se stala gymnastka Věra Čáslavská olympijskou vítězkou?'
+    odpovedi: ['sedmkrát', 'pětkrát', 'devětkrát', 'čtyřikrát']
+    obtiznost: 3
+    vysvetleni: 'Sedm zlatých získala na hrách v Tokiu 1964 a v Mexiku 1968; byla také čtyřnásobnou mistryní světa.'
+    zdroj: 'https://cs.wikipedia.org/wiki/V%C4%9Bra_%C4%8C%C3%A1slavsk%C3%A1'
+  - id: sport-016
+    otazka: 'Kdo vstřelil jediný gól finále olympijského hokejového turnaje v Naganu 1998?'
+    odpovedi: ['Petr Svoboda', 'Jaromír Jágr', 'Robert Reichel', 'Martin Ručinský']
+    obtiznost: 3
+    vysvetleni: 'Obránce Petr Svoboda skóroval v 49. minutě; zbytek práce odvedl brankář Dominik Hašek.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Ledn%C3%AD_hokej_na_Zimn%C3%ADch_olympijsk%C3%BDch_hr%C3%A1ch_1998_%E2%80%93_turnaj_mu%C5%BEi'
+  - id: sport-017
+    otazka: 'V jaké disciplíně vyhrála Dana Zátopková olympijské zlato v Helsinkách 1952 – ve stejný den, kdy Emil vyhrál pětku?'
+    odpovedi: ['v hodu oštěpem', 've vrhu koulí', 'v hodu diskem', 've skoku do dálky']
+    obtiznost: 3
+    vysvetleni: 'Obě medaile přišly 24. července 1952 v rozmezí několika minut; Dana a Emil se navíc narodili ve stejný den.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Dana_Z%C3%A1topkov%C3%A1'
+  - id: sport-018
+    otazka: 'Na kterých zimních olympijských hrách vyhrála Kateřina Neumannová zlato v závodě na 30 km?'
+    odpovedi: ['Turín 2006', 'Salt Lake City 2002', 'Nagano 1998', 'Vancouver 2010']
+    obtiznost: 3
+    vysvetleni: 'Šlo o jedinou zlatou medaili z jejích šesti olympijských medailí; kariéru ukončila v roce 2007.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kate%C5%99ina_Neumannov%C3%A1'
+  - id: sport-019
+    otazka: 'Která gymnastka dostala jako první v historii olympijských her nejvyšší možnou známku 10?'
+    odpovedi: ['Nadia Comăneciová', 'Olga Korbutová', 'Věra Čáslavská', 'Larisa Latyninová']
+    obtiznost: 3
+    vysvetleni: 'Stalo se to na hrách v Montrealu 1976, kdy jí bylo čtrnáct let; desítku pak získala ještě šestkrát.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Nadia_Comaneciov%C3%A1'
+  - id: sport-020
+    otazka: 'Kolik titulů mistra světa ve fotbale získal Pelé?'
+    odpovedi: ['tři', 'dva', 'jeden', 'čtyři']
+    obtiznost: 3
+    vysvetleni: 'Vyhrál s Brazílií v letech 1958, 1962 a 1970 a stal se tak prvním hráčem se třemi tituly.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Pel%C3%A9'
+  - id: sport-021
+    otazka: 'Kolik olympijských zlatých medailí získal plavec Michael Phelps?'
+    odpovedi: ['23', '18', '20', '28']
+    obtiznost: 3
+    vysvetleni: 'Celkem získal 28 olympijských medailí; v roce 2016 byl vlajkonošem americké výpravy.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Michael_Phelps'
+  - id: sport-022
+    otazka: 'Který československý fotbalista získal v roce 1962 Zlatý míč pro nejlepšího fotbalistu Evropy?'
+    odpovedi: ['Josef Masopust', 'Antonín Panenka', 'Ivo Viktor', 'Ladislav Novák']
+    obtiznost: 4
+    vysvetleni: 'Cenu dostal půl roku po stříbru z mistrovství světa v Chile, kde byl oporou záložní řady.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Josef_Masopust'
+  - id: sport-023
+    otazka: 'S kým prohrálo Československo finále mistrovství světa ve fotbale 1962 v Chile?'
+    odpovedi: ['s Brazílií', 's Itálií', 's Anglií', 's Jugoslávií']
+    obtiznost: 4
+    vysvetleni: 'Finále se hrálo 17. června 1962; Brazílie obhájila titul a Československo získalo stříbro.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mistrovstv%C3%AD_sv%C4%9Bta_ve_fotbale_1962'
+  - id: sport-024
+    otazka: 'Kolikrát vyhrála Martina Navrátilová dvouhru ve Wimbledonu?'
+    odpovedi: ['devětkrát', 'sedmkrát', 'osmkrát', 'šestkrát']
+    obtiznost: 4
+    vysvetleni: 'Poprvé vyhrála v roce 1978, kdy ve finále porazila Chris Evertovou, naposledy v roce 1990.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Martina_Navr%C3%A1tilov%C3%A1'
+  - id: sport-025
+    otazka: 'Ve kterém městě se v roce 1924 konaly první zimní olympijské hry?'
+    odpovedi: ['v Chamonix', 've Svatém Mořici', 'v Oslu', 'v Lake Placid']
+    obtiznost: 4
+    vysvetleni: 'Původně se jmenovaly Týden zimních sportů; soutěžilo se v 16 disciplínách.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Zimn%C3%AD_olympijsk%C3%A9_hry_1924'
+  - id: sport-026
+    otazka: 'Které mužstvo porazilo v roce 1980 v Lake Placid ve slavném „zázraku na ledě“ hokejisty Sovětského svazu?'
+    odpovedi: ['USA', 'Kanada', 'Švédsko', 'Finsko']
+    obtiznost: 4
+    vysvetleni: 'Američané zvítězili 22. února 1980 4:3, do vedení je deset minut před koncem poslal kapitán Mike Eruzione.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Z%C3%A1zrak_na_led%C4%9B'
+  - id: sport-027
+    otazka: 'Kdo prohrál finále prvního mistrovství světa ve fotbale v roce 1930?'
+    odpovedi: ['Argentina', 'Brazílie', 'USA', 'Jugoslávie']
+    obtiznost: 4
+    vysvetleni: 'Nejlepším střelcem turnaje byl Argentinec Guillermo Stábile s osmi brankami.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mistrovstv%C3%AD_sv%C4%9Bta_ve_fotbale_1930'
+  - id: sport-028
+    otazka: 'Ve kterém roce získali českoslovenští hokejisté svůj první titul mistrů světa?'
+    odpovedi: ['1947', '1949', '1933', '1972']
+    obtiznost: 5
+    vysvetleni: 'Šampionát se hrál v Praze; titul rozhodla až senzační výhra Rakouska nad Švédskem 2:1.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mistrovstv%C3%AD_sv%C4%9Bta_v_ledn%C3%ADm_hokeji_1947'
+  - id: sport-029
+    otazka: 'S kým prohrálo Československo finále mistrovství světa ve fotbale v roce 1934?'
+    odpovedi: ['s Itálií', 's Německem', 's Rakouskem', 's Maďarskem']
+    obtiznost: 5
+    vysvetleni: 'Domácí Italové vyhráli v prodloužení 2:1; výkon rozhodčího Ivana Eklinda tisk kritizoval jako stranický.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mistrovstv%C3%AD_sv%C4%9Bta_ve_fotbale_1934'
+  - id: sport-030
+    otazka: 'Kdo vyhrál maraton na prvních novodobých olympijských hrách v Athénách 1896?'
+    odpovedi: ['Spyridon Luis', 'Emil Zátopek', 'Abebe Bikila', 'Dorando Pietri']
+    obtiznost: 5
+    vysvetleni: 'Řecký atlet pocházel z městečka Marousi nedaleko Athén.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Spyridon_Luis'

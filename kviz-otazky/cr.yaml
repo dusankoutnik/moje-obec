@@ -1,0 +1,486 @@
+kategorie: cr
+nazev: 'Česká republika'
+ikona: '🇨🇿'
+otazky:
+  - id: cr-001
+    otazka: 'Která hora je nejvyšším přírodním bodem Česka?'
+    odpovedi: ['Sněžka', 'Praděd', 'Lysá hora', 'Klínovec']
+    obtiznost: 1
+    vysvetleni: 'Sněžka v Krkonoších měří 1 603 m. Její úplný vrchol leží těsně za hranicí v Polsku, nejvyšší bod na české straně je jen asi o 10 cm níž.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Sněžka'
+  - id: cr-002
+    otazka: 'Na kolik samosprávných krajů se Česko dělí (včetně hlavního města Prahy)?'
+    odpovedi: ['14', '13', '12', '16']
+    obtiznost: 1
+    vysvetleni: 'Samosprávné kraje fungují od roku 2000; počítá se mezi ně i hlavní město Praha.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kraje_v_Česku'
+  - id: cr-003
+    otazka: 'Jak se jmenuje česká státní hymna?'
+    odpovedi: ['Kde domov můj', 'Má vlast', 'Hej, Slované', 'Čechy krásné, Čechy mé']
+    obtiznost: 1
+    vysvetleni: 'Hymnu tvoří první sloka písně Františka Škroupa a Josefa Kajetána Tyla, jak stanoví zákon o státních symbolech.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-3'
+  - id: cr-004
+    otazka: 'Jaký nápis je na vlajce prezidenta republiky (prezidentské standartě)?'
+    odpovedi: ['Pravda vítězí', 'Věrni zůstaneme', 'Národ sobě', 'Za vlast']
+    obtiznost: 1
+    vysvetleni: 'Bílý nápis na červené stuze leží pod velkým státním znakem a je podložen zlatými lipovými ratolestmi.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-3'
+  - id: cr-005
+    otazka: 'Které město je druhé největší v Česku?'
+    odpovedi: ['Brno', 'Ostrava', 'Plzeň', 'Olomouc']
+    obtiznost: 1
+    vysvetleni: 'Brno je druhé jak počtem obyvatel, tak rozlohou, a je největším městem Moravy.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Brno'
+  - id: cr-006
+    otazka: 'S kolika státy Česko sousedí?'
+    odpovedi: ['Se čtyřmi', 'Se třemi', 'S pěti', 'Se šesti']
+    obtiznost: 1
+    vysvetleni: 'Sousedy jsou Německo, Polsko, Slovensko a Rakousko; Česko je vnitrozemský stát bez přístupu k moři.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Česko'
+  - id: cr-007
+    otazka: 'Které jihočeské město s hradem a zámkem v meandrech Vltavy je zapsáno na seznam světového dědictví UNESCO?'
+    odpovedi: ['Český Krumlov', 'Písek', 'Tábor', 'Jindřichův Hradec']
+    obtiznost: 1
+    vysvetleni: 'Krumlovský hrad a zámek je po Pražském hradu druhým největším hradním komplexem v Česku a má jedno z mála dochovaných barokních divadel.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Světové_dědictví_(Česko)'
+  - id: cr-008
+    otazka: 'Na které hoře u Liberce stojí známý televizní vysílač s hotelem a restaurací?'
+    odpovedi: ['Ještěd', 'Javorový vrch', 'Bezděz', 'Říp']
+    obtiznost: 1
+    vysvetleni: 'Ještěd měří 1 012 m n. m.; vedou na něj lanovky a na jeho svazích je lyžařské středisko.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Ještěd'
+  - id: cr-009
+    otazka: 'Která řeka je nejdelší řekou na území Česka?'
+    odpovedi: ['Vltava', 'Labe', 'Morava', 'Ohře']
+    obtiznost: 2
+    vysvetleni: 'Vltava měří přes 430 km a pramení na Šumavě; Labe je celkově delší, ale většina jeho toku leží v Německu.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vltava'
+  - id: cr-010
+    otazka: 'Jaká je mezinárodní telefonní předvolba Česka?'
+    odpovedi: ['+420', '+421', '+42', '+48']
+    obtiznost: 2
+    vysvetleni: 'Do února 1997 Česko i Slovensko sdílely společnou předvolbu +42; Slovensko má dnes +421.'
+    zdroj: 'https://en.wikipedia.org/wiki/Telephone_numbers_in_the_Czech_Republic'
+  - id: cr-011
+    otazka: 'Kdo složil hudbu k písni „Kde domov můj“, dnešní státní hymně?'
+    odpovedi: ['František Škroup', 'Bedřich Smetana', 'Antonín Dvořák', 'Josef Bohuslav Foerster']
+    obtiznost: 2
+    vysvetleni: 'Škroup byl hudebník a dirigent; zemřel roku 1862 v Rotterdamu, kde působil jako kapelník opery.'
+    zdroj: 'https://cs.wikipedia.org/wiki/František_Škroup'
+  - id: cr-012
+    otazka: 'Která obec je nejníže položenou obcí České republiky?'
+    odpovedi: ['Hřensko', 'Děčín', 'Litoměřice', 'Lednice']
+    obtiznost: 2
+    vysvetleni: 'Hřensko leží asi 115 m n. m. u Labe a je vstupní branou do Národního parku České Švýcarsko.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Hřensko'
+  - id: cr-013
+    otazka: 'Jak se jmenuje rozlohou největší rybník v Česku?'
+    odpovedi: ['Rožmberk', 'Bezdrev', 'Velký Tisý', 'Horusický rybník']
+    obtiznost: 2
+    vysvetleni: 'Rožmberk u Třeboně má zatopenou plochu kolem 489 ha a hráz dlouhou přes 2,3 km.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Rožmberk_(rybník)'
+  - id: cr-014
+    otazka: 'Která přehradní nádrž je rozlohou největší vodní plochou v Česku?'
+    odpovedi: ['Lipno', 'Orlík', 'Slapy', 'Nové Mlýny']
+    obtiznost: 2
+    vysvetleni: 'Lipno na Vltavě má rozlohu kolem 48,7 km², a proto se mu přezdívá „jihočeské moře“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vodní_nádrž_Lipno'
+  - id: cr-015
+    otazka: 'Která hora je nejvyšší horou Moravy?'
+    odpovedi: ['Praděd', 'Lysá hora', 'Králický Sněžník', 'Radhošť']
+    obtiznost: 2
+    vysvetleni: 'Praděd v Hrubém Jeseníku měří 1 491 m a je zároveň nejvyšší horou Českého Slezska.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Praděd'
+  - id: cr-016
+    otazka: 'U kterého města se Vltava vlévá do Labe?'
+    odpovedi: ['Mělník', 'Roudnice nad Labem', 'Litoměřice', 'Kralupy nad Vltavou']
+    obtiznost: 2
+    vysvetleni: 'Historické centrum Mělníka stojí na vyvýšenině nad soutokem a okolní svahy jsou známé vinicemi.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mělník'
+  - id: cr-017
+    otazka: 'Ve kterém městě sídlí Ústavní soud České republiky?'
+    odpovedi: ['V Brně', 'V Praze', 'V Olomouci', 'V Plzni']
+    obtiznost: 2
+    vysvetleni: 'Ústavní soud chrání ústavnost; v jeho budově v Brně sídlil už Ústavní soud ČSFR.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Ústavní_soud_České_republiky'
+  - id: cr-018
+    otazka: 'Které město je sídlem Kraje Vysočina?'
+    odpovedi: ['Jihlava', 'Třebíč', 'Havlíčkův Brod', 'Žďár nad Sázavou']
+    obtiznost: 2
+    vysvetleni: 'Jihlava leží na někdejší česko-moravské zemské hranici, kterou tu zčásti tvoří řeka Jihlava.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jihlava'
+  - id: cr-019
+    otazka: 'Kolik státních symbolů vyjmenovává Ústava České republiky?'
+    odpovedi: ['7', '5', '4', '9']
+    obtiznost: 3
+    vysvetleni: 'Jsou to velký a malý státní znak, státní barvy, státní vlajka, vlajka prezidenta republiky, státní pečeť a státní hymna.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-020
+    otazka: 'Na kolik polí je rozdělen štít velkého státního znaku?'
+    odpovedi: ['Na čtyři', 'Na dvě', 'Na tři', 'Na šest']
+    obtiznost: 3
+    vysvetleni: 'Český lev je v prvním a čtvrtém poli, moravská orlice ve druhém a slezská orlice ve třetím.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Státní_znak_České_republiky'
+  - id: cr-021
+    otazka: 'Které je největší přírodní jezero v Česku?'
+    odpovedi: ['Černé jezero', 'Čertovo jezero', 'Plešné jezero', 'Prášilské jezero']
+    obtiznost: 4
+    vysvetleni: 'Ledovcové Černé jezero na Šumavě má rozlohu asi 18,5 ha a hloubku téměř 40 m.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Černé_jezero'
+  - id: cr-022
+    otazka: 'Jakou rozlohu má zhruba Česko?'
+    odpovedi: ['79 tisíc km²', '49 tisíc km²', '93 tisíc km²', '110 tisíc km²']
+    obtiznost: 3
+    vysvetleni: 'Přesně je to 78 871 km², z toho asi 2 % tvoří vodní plochy.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Česko'
+  - id: cr-023
+    otazka: 'Do kterých moří odtéká voda z území Česka?'
+    odpovedi:
+      [
+        'Do Severního, Baltského a Černého',
+        'Do Severního a Baltského',
+        'Do Baltského a Černého',
+        'Do Severního, Černého a Jaderského',
+      ]
+    obtiznost: 3
+    vysvetleni: 'Česko leží na hlavním evropském rozvodí; do Severního moře odvádí vodu Labe, do Baltu Odra a do Černého moře Morava přes Dunaj.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Česko'
+  - id: cr-024
+    otazka: 'Která hora je nejvyšším vrcholem Krušných hor?'
+    odpovedi: ['Klínovec', 'Božídarský Špičák', 'Měděnec', 'Komáří vížka']
+    obtiznost: 3
+    vysvetleni: 'Klínovec měří 1 244 m a je nejvyšším bodem Karlovarského i Ústeckého kraje.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Klínovec'
+  - id: cr-025
+    otazka: 'Ze které divadelní hry pochází píseň „Kde domov můj“?'
+    odpovedi: ['Fidlovačka aneb Žádný hněv a žádná rvačka', 'Strakonický dudák', 'Paličova dcera', 'Jan Hus']
+    obtiznost: 3
+    vysvetleni: 'Hru J. K. Tyla poprvé uvedli v Praze v prosinci 1834; píseň v ní zpívá slepý houslista Mareš.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Fidlovačka_aneb_Žádný_hněv_a_žádná_rvačka'
+  - id: cr-026
+    otazka: 'Která jihočeská vesnice je zapsána na seznam UNESCO pro soubor staveb ve stylu selského baroka?'
+    odpovedi: ['Holašovice', 'Komárov', 'Záboří', 'Plástovice']
+    obtiznost: 3
+    vysvetleni: 'Holašovice u Českých Budějovic jsou na seznamu světového dědictví od roku 1998.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Holašovice'
+  - id: cr-027
+    otazka: 'Se kterým sousedním státem má Česko nejdelší společnou hranici?'
+    odpovedi: ['S Německem', 'S Polskem', 'S Rakouskem', 'Se Slovenskem']
+    obtiznost: 3
+    vysvetleni: 'Hranice s Německem měří asi 811 km, s Polskem 762 km, s Rakouskem 466 km a se Slovenskem 252 km.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Česko'
+  - id: cr-028
+    otazka: 'Který kraj je v Česku rozlohou největší?'
+    odpovedi: ['Středočeský', 'Jihočeský', 'Plzeňský', 'Moravskoslezský']
+    obtiznost: 3
+    vysvetleni: 'Středočeský kraj zabírá téměř 14 % území státu a je i nejlidnatějším krajem.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Středočeský_kraj'
+  - id: cr-029
+    otazka: 'Ve kterém městě je na seznamu UNESCO židovská čtvrť a bazilika sv. Prokopa?'
+    odpovedi: ['V Třebíči', 'V Mikulově', 'V Boskovicích', 'V Kolíně']
+    obtiznost: 3
+    vysvetleni: 'Bazilika ukrývá zhruba 700 let starou kryptu; součástí památky je i židovský hřbitov ze 17. století.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Světové_dědictví_(Česko)'
+  - id: cr-030
+    otazka: 'Jak vypadá slezská orlice ve velkém státním znaku?'
+    odpovedi:
+      [
+        'Černá orlice na zlatém poli',
+        'Červenobíle šachovaná orlice na modrém poli',
+        'Stříbrná orlice na červeném poli',
+        'Zlatá orlice na černém poli',
+      ]
+    obtiznost: 4
+    vysvetleni: 'Slezská orlice má na prsou stříbrné půlměsícové perisonium s křížkem a je ve třetím poli znaku.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Státní_znak_České_republiky'
+  - id: cr-031
+    otazka: 'Jak vypadá moravská orlice ve velkém státním znaku?'
+    odpovedi:
+      [
+        'Stříbrno-červeně šachovaná na modrém poli',
+        'Černá na zlatém poli',
+        'Stříbrná na červeném poli',
+        'Červená na stříbrném poli',
+      ]
+    obtiznost: 4
+    vysvetleni: 'Moravská orlice se zlatou zbrojí a korunou je ve druhém poli štítu, hned vedle českého lva.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Státní_znak_České_republiky'
+  - id: cr-032
+    otazka: 'Která obec je nejsevernější obcí České republiky?'
+    odpovedi: ['Lobendava', 'Šluknov', 'Hrádek nad Nisou', 'Frýdlant']
+    obtiznost: 4
+    vysvetleni: 'Lobendava leží v západní části Šluknovského výběžku; nejsevernější bod státu je na svahu Bukové hory nad místní částí Severní.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Lobendava'
+  - id: cr-033
+    otazka: 'U které obce byl vyměřen geografický střed České republiky?'
+    odpovedi: ['Číhošť', 'Humpolec', 'Pelhřimov', 'Ledeč nad Sázavou']
+    obtiznost: 5
+    vysvetleni: 'Střed republiky připomíná černý kříž v obecním znaku Číhoště.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Číhošť'
+  - id: cr-034
+    otazka: 'Který kraj je po Praze rozlohou nejmenší?'
+    odpovedi: ['Liberecký', 'Karlovarský', 'Zlínský', 'Olomoucký']
+    obtiznost: 4
+    vysvetleni: 'Liberecký kraj tvoří jen čtyři okresy a zabírá asi 4 % území státu.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Liberecký_kraj'
+  - id: cr-035
+    otazka: 'Která hora je nejvyšším vrcholem české části Šumavy?'
+    odpovedi: ['Plechý', 'Boubín', 'Velký Javor', 'Poledník']
+    obtiznost: 4
+    vysvetleni: 'Plechý měří 1 378 m a leží na hranici s Rakouskem; je zároveň nejvyšším bodem Jihočeského kraje; vyšší šumavské vrcholy leží v Bavorsku.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Plechý'
+  - id: cr-036
+    otazka: 'Které město bylo v roce 2023 zapsáno na seznam UNESCO spolu s krajinou, kde se pěstuje chmel?'
+    odpovedi: ['Žatec', 'Louny', 'Rakovník', 'Úštěk']
+    obtiznost: 4
+    vysvetleni: 'V Žatci je největší koncentrace staveb spojených se zpracováním chmele a obchodem s ním.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Žatec'
+  - id: cr-037
+    otazka: 'Ve které obci je na seznamu UNESCO krajina pro chov a výcvik ceremoniálních kočárových koní?'
+    odpovedi: ['Kladruby nad Labem', 'Slatiňany', 'Písek', 'Tlumačov']
+    obtiznost: 4
+    vysvetleni: 'Tamní hřebčín chová starokladrubské koně už od 16. století, mimo jiné vzácné bělouše.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Světové_dědictví_(Česko)'
+  - id: cr-038
+    otazka: 'Z které hory na česko-polské hranici odtéká voda do tří moří (Severního, Baltského i Černého)?'
+    odpovedi: ['Klepáč', 'Králický Sněžník', 'Smrk', 'Sněžka']
+    obtiznost: 5
+    vysvetleni: 'Klepáč leží v Králickém Sněžníku; Poláci mu proto říkají Trójmorski Wierch, tedy Trojmořský vrch.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Klepáč'
+  - id: cr-039
+    otazka: 'Která obec je považována za nejvýše položenou obec v Česku?'
+    odpovedi: ['Kvilda', 'Boží Dar', 'Horní Malá Úpa', 'Modrava']
+    obtiznost: 5
+    vysvetleni: 'Šumavská Kvilda leží zhruba 1 065 m n. m. a drží i další rekordy – na Jezerní slati tu naměřili mráz −41,6 °C.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kvilda'
+  - id: cr-040
+    otazka: 'Kolik převážně barokních soch zdobí Karlův most v Praze?'
+    odpovedi: ['30', '12', '24', '42']
+    obtiznost: 5
+    vysvetleni: 'Sochy se na most umisťovaly od konce 17. století; originály dnes nahrazují kopie a původní sochy jsou hlavně v Lapidáriu na pražském Výstavišti a v sále Gorlice na Vyšehradě.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Karlův_most'
+  - id: cr-041
+    otazka: 'Kdo podle zákona o obcích zastupuje obec navenek?'
+    odpovedi: ['Starosta', 'Tajemník obecního úřadu', 'Předseda finančního výboru', 'Hejtman']
+    obtiznost: 1
+    vysvetleni: 'Starosta za výkon své funkce odpovídá zastupitelstvu obce a musí být občanem České republiky.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-128'
+  - id: cr-042
+    otazka: 'Na jak dlouhé volební období se volí zastupitelstvo obce?'
+    odpovedi: ['Na 4 roky', 'Na 3 roky', 'Na 5 let', 'Na 6 let']
+    obtiznost: 1
+    vysvetleni: 'Volby do zastupitelstev se podle Ústavy konají v prvním celém týdnu měsíce října roku, v němž volební období uplyne.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-043
+    otazka: 'Od kolika let má občan České republiky právo volit?'
+    odpovedi: ['Od 18 let', 'Od 15 let', 'Od 16 let', 'Od 21 let']
+    obtiznost: 1
+    vysvetleni: 'Rozhodující je dosažení 18 let nejpozději v den voleb (u dvoudenních voleb ve druhý den).'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-044
+    otazka: 'Jak je volen prezident České republiky?'
+    odpovedi:
+      ['Přímo občany', 'Poslaneckou sněmovnou', 'Oběma komorami Parlamentu na společné schůzi', 'Senátem']
+    obtiznost: 1
+    vysvetleni: 'Nezíská-li nikdo v prvním kole nadpoloviční většinu platných hlasů, koná se za 14 dní druhé kolo mezi dvěma nejúspěšnějšími kandidáty.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-045
+    otazka: 'Kolik poslanců má Poslanecká sněmovna?'
+    odpovedi: ['200', '150', '81', '300']
+    obtiznost: 1
+    vysvetleni: 'Poslanci se volí na čtyři roky podle zásad poměrného zastoupení.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-046
+    otazka: 'Kdo volí starostu obce?'
+    odpovedi:
+      ['Zastupitelstvo obce ze svých členů', 'Občané obce přímou volbou', 'Rada kraje', 'Ministerstvo vnitra']
+    obtiznost: 1
+    vysvetleni: 'Zastupitelstvo stejně volí i místostarostu; oba musí být členy zastupitelstva.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-128'
+  - id: cr-047
+    otazka: 'Kolik let musí kandidát nejméně mít, aby mohl být zvolen do Senátu?'
+    odpovedi: ['40', '21', '30', '35']
+    obtiznost: 2
+    vysvetleni: 'Stejná věková hranice platí i pro soudce Ústavního soudu, který musí být volitelný do Senátu.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-048
+    otazka: 'Kolik senátorů má Senát Parlamentu České republiky?'
+    odpovedi: ['81', '100', '200', '61']
+    obtiznost: 2
+    vysvetleni: 'Každý senátor je volen v jednom z 81 volebních obvodů většinovým systémem.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-049
+    otazka: 'Smí se zasedání zastupitelstva obce zúčastnit veřejnost?'
+    odpovedi:
+      [
+        'Ano, zasedání je ze zákona veřejné',
+        'Ne, je neveřejné',
+        'Jen se souhlasem starosty',
+        'Jen občané starší 21 let',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Občan obce starší 18 let může na zasedání i vyjadřovat svá stanoviska k projednávaným věcem.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-128'
+  - id: cr-050
+    otazka: 'Který orgán schvaluje rozpočet obce?'
+    odpovedi: ['Zastupitelstvo obce', 'Starosta', 'Rada obce', 'Finanční úřad']
+    obtiznost: 2
+    vysvetleni: 'Zastupitelstvu je vyhrazeno i schválení střednědobého výhledu rozpočtu, závěrečného účtu a účetní závěrky.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-128'
+  - id: cr-051
+    otazka: 'Kdo smí podle zákona č. 106/1999 Sb. požádat úřad o poskytnutí informace?'
+    odpovedi:
+      [
+        'Každá fyzická i právnická osoba',
+        'Jen občan dané obce',
+        'Jen zletilý občan ČR',
+        'Jen novinář nebo advokát',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Zákon o svobodném přístupu k informacím okruh žadatelů nijak neomezuje – žádat může kdokoli.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1999-106'
+  - id: cr-052
+    otazka: 'Jak se oficiálně nazývá úřad, kterému se lidově říká ombudsman?'
+    odpovedi:
+      [
+        'Veřejný ochránce práv',
+        'Nejvyšší kontrolní úřad',
+        'Úřad pro ochranu osobních údajů',
+        'Státní zastupitelství',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Ombudsman prošetřuje stížnosti na postup úřadů; jeho sídlem je ze zákona Brno.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1999-349'
+  - id: cr-053
+    otazka: 'Který dokument je vedle Ústavy součástí ústavního pořádku a zaručuje základní lidská práva?'
+    odpovedi:
+      [
+        'Listina základních práv a svobod',
+        'Občanský zákoník',
+        'Zákon o obcích',
+        'Jednací řád Poslanecké sněmovny',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Ústava uvádí, že základní práva a svobody jsou pod ochranou soudní moci.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-054
+    otazka: 'Kdo volí hejtmana kraje?'
+    odpovedi: ['Zastupitelstvo kraje ze svých členů', 'Občané kraje přímou volbou', 'Vláda', 'Senát']
+    obtiznost: 2
+    vysvetleni: 'Hejtman zastupuje kraj navenek a za výkon funkce odpovídá krajskému zastupitelstvu.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-129'
+  - id: cr-055
+    otazka: 'Jak často se obměňuje složení Senátu?'
+    odpovedi:
+      [
+        'Každé dva roky se volí třetina senátorů',
+        'Každé čtyři roky se volí všichni senátoři',
+        'Každé tři roky se volí polovina senátorů',
+        'Každý rok se volí šestina senátorů',
+      ]
+    obtiznost: 3
+    vysvetleni: 'Senátor je volen na šest let; díky postupné obměně Senát nikdy nekončí celý najednou.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-056
+    otazka: 'Od kolika let lze být zvolen do Poslanecké sněmovny?'
+    odpovedi: ['Od 21 let', 'Od 18 let', 'Od 25 let', 'Od 30 let']
+    obtiznost: 3
+    vysvetleni: 'Do zastupitelstva obce lze kandidovat už od 18 let, do Sněmovny až od 21 let.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-057
+    otazka: 'Kolik kandidátů může volič v obecních volbách nejvýše označit křížkem?'
+    odpovedi: ['Tolik, kolik členů zastupitelstva se volí', 'Nejvýše 4', 'Nejvýše 2', 'Jen jednoho']
+    obtiznost: 3
+    vysvetleni: 'Kandidáty lze vybírat z různých volebních stran, nebo označit jednu celou stranu.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2001-491'
+  - id: cr-058
+    otazka: 'Který orgán obce vydává obecně závazné vyhlášky?'
+    odpovedi: ['Zastupitelstvo obce', 'Starosta', 'Obecní úřad', 'Kontrolní výbor']
+    obtiznost: 3
+    vysvetleni: 'Vyhlášky se vydávají v samostatné působnosti; jejich vydání je vyhrazeno zastupitelstvu.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-128'
+  - id: cr-059
+    otazka: 'Do kdy musí úřad nejpozději poskytnout informaci (bez prodloužení) na žádost podle zákona č. 106/1999 Sb.?'
+    odpovedi: ['Do 15 dnů od přijetí žádosti', 'Do 7 dnů', 'Do 30 dnů', 'Do 60 dnů']
+    obtiznost: 3
+    vysvetleni: 'Ze závažných důvodů lze lhůtu prodloužit nejvýše o 10 dní; nepatří-li žádost úřadu vůbec do působnosti, odloží ji a do 7 dnů to žadateli sdělí.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1999-106'
+  - id: cr-060
+    otazka: 'Jak se nazývá status obce, který leží mezi obcí a městem?'
+    odpovedi: ['Městys', 'Ves', 'Statutární obec', 'Obvod']
+    obtiznost: 3
+    vysvetleni: 'Status městyse i města uděluje na návrh obce předseda Poslanecké sněmovny po vyjádření vlády.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-128'
+  - id: cr-061
+    otazka: 'Mohou v obecních volbách v Česku volit i cizinci?'
+    odpovedi:
+      [
+        'Ano, pokud jim to přiznává mezinárodní smlouva – typicky občané EU přihlášení v obci',
+        'Ne, nikdy',
+        'Ano, každý cizinec s jakýmkoli pobytem',
+        'Jen cizinci žijící v ČR déle než 10 let',
+      ]
+    obtiznost: 3
+    vysvetleni: 'Musí mít také alespoň 18 let a přechodný nebo trvalý pobyt v dané obci.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2001-491'
+  - id: cr-062
+    otazka: 'Který orgán vydává nařízení obce v obci, kde je zřízena rada?'
+    odpovedi: ['Rada obce', 'Starosta', 'Kontrolní výbor', 'Finanční výbor']
+    obtiznost: 4
+    vysvetleni: 'Nařízení může obec vydat jen na základě zmocnění zákonem; v obci bez rady ho vydává zastupitelstvo.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-128'
+  - id: cr-063
+    otazka: 'V obcích s jak velkým zastupitelstvem se rada obce nevolí?'
+    odpovedi: ['Méně než 15 členů', 'Méně než 9 členů', 'Méně než 21 členů', 'Méně než 11 členů']
+    obtiznost: 4
+    vysvetleni: 'V malých obcích pravomoci rady vykonává starosta; rada má 5 až 11 členů a nejvýše třetinu počtu zastupitelů.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-128'
+  - id: cr-064
+    otazka: 'Nejméně kolik dní předem musí obecní úřad vyvěsit na úřední desku informaci o zasedání zastupitelstva?'
+    odpovedi: ['7 dní', '3 dny', '15 dní', '30 dní']
+    obtiznost: 4
+    vysvetleni: 'Informace musí obsahovat místo, dobu a navržený program; zastupitelstvo se schází nejméně jednou za 3 měsíce.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2000-128'
+  - id: cr-065
+    otazka: 'Do kolika dnů musí úřad písemně odpovědět na petici?'
+    odpovedi: ['Do 30 dnů', 'Do 15 dnů', 'Do 60 dnů', 'Do 90 dnů']
+    obtiznost: 4
+    vysvetleni: 'Petiční zákon pochází z roku 1990 a výslovně říká, že výkon petičního práva nesmí být nikomu na újmu.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1990-85'
+  - id: cr-066
+    otazka: 'Z kolika soudců se skládá Ústavní soud a na jak dlouho jsou jmenováni?'
+    odpovedi: ['15 soudců na 10 let', '9 soudců na 6 let', '21 soudců doživotně', '12 soudců na 8 let']
+    obtiznost: 4
+    vysvetleni: 'Soudce jmenuje prezident republiky se souhlasem Senátu.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1993-1'
+  - id: cr-067
+    otazka: 'Kolika kandidátům může volič dát přednostní (preferenční) hlas ve volbách do Poslanecké sněmovny?'
+    odpovedi: ['Nejvýše 4', 'Nejvýše 2', 'Nejvýše 10', 'Libovolnému počtu']
+    obtiznost: 4
+    vysvetleni: 'Zakroužkuje-li víc kandidátů, hlas pro stranu platí, ale přednostní hlasy se nezapočítají.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/1995-247'
+  - id: cr-068
+    otazka: 'Jaká účast oprávněných osob je nutná k platnosti rozhodnutí v místním referendu?'
+    odpovedi: ['Alespoň 35 %', 'Alespoň 25 %', 'Alespoň 50 %', 'Alespoň 20 %']
+    obtiznost: 5
+    vysvetleni: 'Závazné je rozhodnutí, pro které hlasovala nadpoloviční většina zúčastněných a zároveň alespoň 25 % všech oprávněných.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2004-22'
+  - id: cr-069
+    otazka: 'Kolik je v Česku obcí s rozšířenou působností (tzv. obcí III. stupně), nepočítaje Prahu?'
+    odpovedi: ['205', '76', '388', '14']
+    obtiznost: 5
+    vysvetleni: 'Vznikly k roku 2003 a převzaly většinu agend zrušených okresních úřadů; všechny jsou městy.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Obec_s_rozšířenou_působností'
+  - id: cr-070
+    otazka: 'Kdy nabývá účinnosti obecně závazná vyhláška obce, pokud v ní není stanoveno jinak?'
+    odpovedi:
+      [
+        'Počátkem 15. dne po vyhlášení',
+        'Dnem vyhlášení',
+        'Prvním dnem následujícího měsíce',
+        'Po 30 dnech od schválení zastupitelstvem',
+      ]
+    obtiznost: 5
+    vysvetleni: 'Vyhlašuje se ve Sbírce právních předpisů územních samosprávných celků; v naléhavých případech může platit dřív.'
+    zdroj: 'https://www.zakonyprolidi.cz/cs/2021-35'

@@ -1,0 +1,239 @@
+kategorie: eu
+nazev: 'Evropská unie'
+ikona: '🇪🇺'
+otazky:
+  - id: eu-001
+    otazka: 'Kolik hvězd je na vlajce Evropské unie?'
+    odpovedi: ['12', '15', '27', '10']
+    obtiznost: 1
+    vysvetleni: 'Počet dvanácti hvězd je ustálený a nesouvisí s počtem členských států; vlajku přijala už v roce 1955 Rada Evropy.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vlajka_Evropské_unie'
+  - id: eu-002
+    otazka: 'Ve kterém roce vstoupila Česká republika do Evropské unie?'
+    odpovedi: ['2004', '2007', '1999', '2009']
+    obtiznost: 1
+    vysvetleni: 'Česko se stalo členem 1. května 2004 spolu s dalšími devíti státy v dosud největším rozšíření EU.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vstup_České_republiky_do_Evropské_unie'
+  - id: eu-003
+    otazka: 'Která skladba je hymnou Evropské unie?'
+    odpovedi: ['Óda na radost', 'Marseillaisa', 'Novosvětská symfonie', 'Bolero']
+    obtiznost: 1
+    vysvetleni: 'Hymna vychází ze závěrečné věty Beethovenovy Deváté symfonie a kvůli množství jazyků se hraje bez slov.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropská_hymna'
+  - id: eu-004
+    otazka: 'Ve kterém městě sídlí Evropská komise?'
+    odpovedi: ['Brusel', 'Štrasburk', 'Lucemburk', 'Paříž']
+    obtiznost: 1
+    vysvetleni: 'Ústřední budovou Komise je bruselský palác Berlaymont.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropská_komise'
+  - id: eu-005
+    otazka: 'Který členský stát vystoupil v roce 2020 z Evropské unie?'
+    odpovedi: ['Spojené království', 'Norsko', 'Švýcarsko', 'Island']
+    obtiznost: 1
+    vysvetleni: 'Spojené království opustilo EU 31. ledna 2020; Norsko, Švýcarsko ani Island členy EU nikdy nebyly.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Brexit'
+  - id: eu-006
+    otazka: 'Na co je zaměřen program EU Erasmus+?'
+    odpovedi:
+      [
+        'Vzdělávání, mládež a sport, např. studijní pobyty v zahraničí',
+        'Dotace pro zemědělce',
+        'Výstavbu dálnic',
+        'Ochranu vnějších hranic',
+      ]
+    obtiznost: 1
+    vysvetleni: 'Program navazuje na původní Erasmus z roku 1987, pojmenovaný po humanistovi Erasmu Rotterdamském.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Erasmus+'
+  - id: eu-007
+    otazka: 'Co umožňuje schengenský prostor?'
+    odpovedi:
+      [
+        'Cestování přes vnitřní hranice bez hraničních kontrol',
+        'Placení společnou měnou',
+        'Společnou armádu',
+        'Jednotné daně',
+      ]
+    obtiznost: 1
+    vysvetleni: 'Do schengenského prostoru patří i některé státy mimo EU, např. Norsko a Švýcarsko.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Schengenský_prostor'
+  - id: eu-008
+    otazka: 'Ve kterém roce se eurobankovky a euromince dostaly do oběhu?'
+    odpovedi: ['2002', '1999', '1993', '2004']
+    obtiznost: 2
+    vysvetleni: 'Bezhotovostně platilo euro už od 1. ledna 1999, hotovost přišla až 1. ledna 2002.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Euro'
+  - id: eu-009
+    otazka: 'Kterého dne se slaví Den Evropy?'
+    odpovedi: ['9. května', '1. května', '28. října', '1. ledna']
+    obtiznost: 2
+    vysvetleni: 'Připomíná 9. května 1950, kdy Robert Schuman představil plán mírové spolupráce v Evropě.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Den_Evropy'
+  - id: eu-010
+    otazka: 'Ve kterém městě sídlí Evropská centrální banka?'
+    odpovedi: ['Frankfurt nad Mohanem', 'Brusel', 'Lucemburk', 'Paříž']
+    obtiznost: 2
+    vysvetleni: 'ECB řídí měnovou politiku eurozóny; v roce 2014 se přestěhovala do nového sídla ve Frankfurtu.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropská_centrální_banka'
+  - id: eu-011
+    otazka: 'Které město je oficiálním sídlem Evropského parlamentu, kde se konají plenární zasedání?'
+    odpovedi: ['Štrasburk', 'Brusel', 'Lucemburk', 'Haag']
+    obtiznost: 2
+    vysvetleni: 'Parlament pracuje i v Bruselu a Lucemburku; pravidelné stěhování mezi Bruselem a Štrasburkem je dlouhodobě kritizováno.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropský_parlament'
+  - id: eu-012
+    otazka: 'Jak zní motto Evropské unie?'
+    odpovedi: ['Jednotná v rozmanitosti', 'Svoboda, rovnost, bratrství', 'Pravda vítězí', 'Síla v jednotě']
+    obtiznost: 2
+    vysvetleni: 'Oficiálně se užívá latinská verze „In varietate concordia“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Motto_Evropské_unie'
+  - id: eu-013
+    otazka: 'Jak často se konají volby do Evropského parlamentu?'
+    odpovedi: ['Každých 5 let', 'Každé 4 roky', 'Každých 6 let', 'Každé 3 roky']
+    obtiznost: 2
+    vysvetleni: 'Poslanci Evropského parlamentu jsou přímo voleni od roku 1979.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Volby_do_Evropského_parlamentu'
+  - id: eu-014
+    otazka: 'Kolik států vstoupilo do EU v květnu 2004?'
+    odpovedi: ['10', '5', '12', '8']
+    obtiznost: 2
+    vysvetleni: 'Spolu s Českem přistoupily Estonsko, Kypr, Litva, Lotyšsko, Maďarsko, Malta, Polsko, Slovensko a Slovinsko.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropská_unie'
+  - id: eu-015
+    otazka: 'Která smlouva podepsaná v roce 1992 založila Evropskou unii?'
+    odpovedi: ['Maastrichtská', 'Lisabonská', 'Římská', 'Amsterodamská']
+    obtiznost: 2
+    vysvetleni: 'Smlouva byla podepsána 7. února 1992 a v platnost vstoupila 1. listopadu 1993.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Maastrichtská_smlouva'
+  - id: eu-016
+    otazka: 'Který z těchto států NEPATŘIL mezi šest zakládajících států Evropského hospodářského společenství (1957)?'
+    odpovedi: ['Spojené království', 'Lucembursko', 'Itálie', 'Nizozemsko']
+    obtiznost: 2
+    vysvetleni: 'Římské smlouvy podepsaly Francie, Západní Německo, Itálie, Belgie, Lucembursko a Nizozemsko.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Římské_smlouvy'
+  - id: eu-017
+    otazka: 'Podle vesnice ve kterém státě je pojmenován schengenský prostor?'
+    odpovedi: ['Lucembursko', 'Belgie', 'Nizozemsko', 'Německo']
+    obtiznost: 3
+    vysvetleni: 'U lucemburské vesnice Schengen byla 14. června 1985 podepsána Schengenská dohoda.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Schengenský_prostor'
+  - id: eu-018
+    otazka: 'Které dvě země vstoupily do EU v roce 2007?'
+    odpovedi: ['Rumunsko a Bulharsko', 'Chorvatsko a Slovinsko', 'Polsko a Maďarsko', 'Rakousko a Švédsko']
+    obtiznost: 3
+    vysvetleni: 'Slovinsko, Polsko a Maďarsko přistoupily už v roce 2004, Rakousko a Švédsko v roce 1995.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropská_unie'
+  - id: eu-019
+    otazka: 'Který stát se stal členem EU 1. července 2013?'
+    odpovedi: ['Chorvatsko', 'Slovinsko', 'Srbsko', 'Černá Hora']
+    obtiznost: 3
+    vysvetleni: 'Chorvatsko bylo 28. členským státem; v roce 2023 vstoupilo i do eurozóny a schengenského prostoru.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Chorvatsko'
+  - id: eu-020
+    otazka: 'Ve kterém roce předsedala Česká republika poprvé Radě Evropské unie?'
+    odpovedi: ['2009', '2004', '2012', '2015']
+    obtiznost: 3
+    vysvetleni: 'První české předsednictví proběhlo v první polovině roku 2009, druhé ve druhé polovině roku 2022.'
+    zdroj: 'https://cs.wikipedia.org/wiki/České_předsednictví_v_Radě_Evropské_unie_2009'
+  - id: eu-021
+    otazka: 'Ve kterém městě sídlí Soudní dvůr Evropské unie?'
+    odpovedi: ['Lucemburk', 'Haag', 'Štrasburk', 'Brusel']
+    obtiznost: 3
+    vysvetleni: 'Soud byl zřízen v roce 1952; v Haagu sídlí Mezinárodní soudní dvůr OSN, ve Štrasburku Evropský soud pro lidská práva.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Soudní_dvůr_Evropské_unie'
+  - id: eu-022
+    otazka: 'Na jaké suroviny se zaměřovalo Evropské společenství, založené Pařížskou smlouvou z roku 1951?'
+    odpovedi: ['Uhlí a ocel', 'Ropa a zemní plyn', 'Obilí a mléko', 'Dřevo a papír']
+    obtiznost: 3
+    vysvetleni: 'Evropské společenství uhlí a oceli šesti států bylo založeno na 50 let a je považováno za základ dnešní EU.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropské_společenství_uhlí_a_oceli'
+  - id: eu-023
+    otazka: 'Který francouzský ministr zahraničí představil 9. května 1950 plán, z něhož vzešla evropská integrace?'
+    odpovedi: ['Robert Schuman', 'Charles de Gaulle', 'Jean Monnet', 'François Mitterrand']
+    obtiznost: 3
+    vysvetleni: 'Schumanův plán navrhl společně spravovat uhelný a ocelářský průmysl Francie a Německa, aby byla válka mezi nimi nemyslitelná.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Schumanův_plán'
+  - id: eu-024
+    otazka: 'Který z těchto států, ač není členem EU, používá euro na základě dohody s Evropskou unií?'
+    odpovedi: ['Vatikán', 'Švýcarsko', 'Norsko', 'Island']
+    obtiznost: 3
+    vysvetleni: 'Vatikán smí díky dohodě razit vlastní euromince; vyrábí jich málo, a proto jsou oblíbené u sběratelů.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vatikán'
+  - id: eu-025
+    otazka: 'Co NEPATŘÍ mezi čtyři svobody jednotného trhu EU?'
+    odpovedi:
+      ['Jednotná výše daně z příjmu', 'Volný pohyb zboží', 'Volný pohyb služeb', 'Volný pohyb kapitálu']
+    obtiznost: 3
+    vysvetleni: 'Čtyřmi svobodami jsou volný pohyb zboží, osob, služeb a kapitálu; daně z příjmu si státy určují samy.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropský_jednotný_trh'
+  - id: eu-026
+    otazka: 'Ve kterém roce vstoupila v platnost Lisabonská smlouva?'
+    odpovedi: ['2009', '2004', '1999', '2013']
+    obtiznost: 4
+    vysvetleni: 'Smlouva podepsaná v prosinci 2007 začala platit 1. prosince 2009 – Česko ji ratifikovalo jako poslední.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Lisabonská_smlouva'
+  - id: eu-027
+    otazka: 'Která z těchto organizací NENÍ institucí Evropské unie?'
+    odpovedi: ['Rada Evropy', 'Evropská rada', 'Rada Evropské unie', 'Evropský účetní dvůr']
+    obtiznost: 4
+    vysvetleni: 'Rada Evropy je samostatná mezinárodní organizace se sídlem ve Štrasburku, pod kterou spadá Evropský soud pro lidská práva.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Rada_Evropy'
+  - id: eu-028
+    otazka: 'Kolik procent hlasujících podpořilo v referendu v roce 2003 vstup Česka do EU?'
+    odpovedi: ['Přes 77 %', 'Přes 52 %', 'Přes 64 %', 'Přes 91 %']
+    obtiznost: 4
+    vysvetleni: 'Referendum proběhlo 13. a 14. června 2003; ze všech oprávněných voličů pro vstup hlasovalo necelých 42 %.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Referendum_o_přistoupení_České_republiky_k_Evropské_unii'
+  - id: eu-029
+    otazka: 'Která agentura Evropské unie sídlí v Praze?'
+    odpovedi:
+      [
+        'Agentura EU pro kosmický program (EUSPA)',
+        'Europol',
+        'Evropská agentura pro léčivé přípravky',
+        'Evropská agentura pro životní prostředí',
+      ]
+    obtiznost: 4
+    vysvetleni: 'Agentura sídlí v pražských Holešovicích; spravuje mimo jiné družicový navigační systém Galileo.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Agentura_Evropské_unie_pro_Kosmický_program'
+  - id: eu-030
+    otazka: 'Jak se nazývají podmínky, které musí splnit stát, jenž chce vstoupit do EU?'
+    odpovedi: ['Kodaňská kritéria', 'Maastrichtská kritéria', 'Schengenská kritéria', 'Lisabonská kritéria']
+    obtiznost: 4
+    vysvetleni: 'Stanovila je Evropská rada v Kodani v červnu 1993; maastrichtská kritéria se naopak týkají přijetí eura.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kodaňská_kritéria'
+  - id: eu-031
+    otazka: 'Které tři státy vstoupily do EU v roce 1995?'
+    odpovedi:
+      [
+        'Rakousko, Finsko a Švédsko',
+        'Norsko, Švédsko a Dánsko',
+        'Rakousko, Švýcarsko a Lichtenštejnsko',
+        'Irsko, Dánsko a Spojené království',
+      ]
+    obtiznost: 4
+    vysvetleni: 'Norsko mělo vstoupit také, ale vstup Norové v referendu v roce 1994 odmítli.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropská_unie'
+  - id: eu-032
+    otazka: 'Který členský stát EU má vyjednanou trvalou výjimku a nemusí přijmout euro?'
+    odpovedi: ['Dánsko', 'Polsko', 'Maďarsko', 'Česko']
+    obtiznost: 4
+    vysvetleni: 'Ostatní státy mimo eurozónu se zavázaly euro přijmout, jakmile splní kritéria; dánská koruna je pevně navázána na euro v mechanismu ERM II.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Eurozóna'
+  - id: eu-033
+    otazka: 'Ve kterém městě sídlí agentura EU pro ochranu hranic Frontex?'
+    odpovedi: ['Varšava', 'Vídeň', 'Budapešť', 'Praha']
+    obtiznost: 5
+    vysvetleni: 'Frontex koordinuje spolupráci pohraničních stráží členských států; v Česku je jeho partnerem Ředitelství služby cizinecké policie.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Evropská_agentura_pro_pohraniční_a_pobřežní_stráž'
+  - id: eu-034
+    otazka: 'Ve kterém městě byla v roce 2003 podepsána smlouva o přistoupení Česka k Evropské unii?'
+    odpovedi: ['Athény', 'Kodaň', 'Brusel', 'Lucemburk']
+    obtiznost: 5
+    vysvetleni: 'Česko o členství požádalo už 17. ledna 1996; podpis v Athénách a referendum v roce 2003 byly vyvrcholením jednání.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vstup_České_republiky_do_Evropské_unie'
+  - id: eu-035
+    otazka: 'Jaký slogan mělo druhé české předsednictví v Radě EU v roce 2022?'
+    odpovedi: ['Evropa jako úkol', 'Evropa bez hranic', 'Silnější společně', 'Evropa pro všechny']
+    obtiznost: 5
+    vysvetleni: 'Předsednictví bylo slavnostně zahájeno 1. července 2022 v Litomyšli a kvůli válce na Ukrajině se mu říkalo „válečné“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/České_předsednictví_v_Radě_Evropské_unie_2022'

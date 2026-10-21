@@ -1,0 +1,256 @@
+kategorie: vesmir-veda
+nazev: 'Vesmír a věda'
+ikona: '🔭'
+otazky:
+  - id: vesmir-veda-001
+    otazka: 'Která planeta je největší ve Sluneční soustavě?'
+    odpovedi: ['Jupiter', 'Saturn', 'Neptun', 'Uran']
+    obtiznost: 1
+    vysvetleni: 'Jupiter svou gravitací mění dráhy komet a planetek, které proletí v jeho blízkosti.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jupiter_(planeta)'
+  - id: vesmir-veda-002
+    otazka: 'Která planeta obíhá nejblíže Slunci?'
+    odpovedi: ['Merkur', 'Venuše', 'Mars', 'Země']
+    obtiznost: 1
+    vysvetleni: 'Merkur je zároveň nejmenší planetou Sluneční soustavy a nemá žádný měsíc.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Merkur_(planeta)'
+  - id: vesmir-veda-003
+    otazka: 'Kdo byl prvním člověkem ve vesmíru?'
+    odpovedi: ['Jurij Gagarin', 'Neil Armstrong', 'German Titov', 'Alexej Leonov']
+    obtiznost: 1
+    vysvetleni: 'Gagarin odstartoval 12. dubna 1961; tento den se dodnes slaví jako Noc Jurije Gagarina.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jurij_Gagarin'
+  - id: vesmir-veda-004
+    otazka: 'Kdo se jako první člověk prošel po Měsíci?'
+    odpovedi: ['Neil Armstrong', 'Buzz Aldrin', 'Jurij Gagarin', 'Michael Collins']
+    obtiznost: 1
+    vysvetleni: 'Armstrong vystoupil na Měsíc 21. července 1969 (UTC) během mise Apollo 11.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Neil_Armstrong'
+  - id: vesmir-veda-005
+    otazka: 'Kdo byl prvním československým kosmonautem?'
+    odpovedi: ['Vladimír Remek', 'Oldřich Pelčák', 'Jan Janský', 'František Běhounek']
+    obtiznost: 1
+    vysvetleni: 'Remek letěl v roce 1978 a byl prvním kosmonautem z jiné země než SSSR nebo USA; ESA ho označuje za prvního evropského kosmonauta.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vladimír_Remek'
+  - id: vesmir-veda-006
+    otazka: 'Jakou chemickou značku má železo?'
+    odpovedi: ['Fe', 'Zn', 'Ir', 'Ž']
+    obtiznost: 1
+    vysvetleni: 'Značka pochází z latinského názvu ferrum.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Železo'
+  - id: vesmir-veda-007
+    otazka: 'Který nerost má na Mohsově stupnici tvrdosti nejvyšší stupeň?'
+    odpovedi: ['Diamant', 'Korund', 'Křemen', 'Topaz']
+    obtiznost: 1
+    vysvetleni: 'Díky tvrdosti se diamant používá ve vrtných korunkách a v nožích na obrábění kovů.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mohsova_stupnice_tvrdosti'
+  - id: vesmir-veda-008
+    otazka: 'Kolik planet má Sluneční soustava podle definice Mezinárodní astronomické unie?'
+    odpovedi: ['8', '9', '7', '10']
+    obtiznost: 1
+    vysvetleni: 'Definici planety přijalo valné shromáždění IAU v roce 2006; Pluto od té doby mezi planety nepatří.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Planeta'
+  - id: vesmir-veda-009
+    otazka: 'Která hvězda je po Slunci nejbližší hvězdou k Zemi?'
+    odpovedi: ['Proxima Centauri', 'Sirius', 'Polárka', 'Betelgeuze']
+    obtiznost: 2
+    vysvetleni: 'Je to červený trpaslík vzdálený asi 4,2 světelného roku a pouhým okem ji nevidíme.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Proxima_Centauri'
+  - id: vesmir-veda-010
+    otazka: 'Jak dlouho zhruba trvá, než světlo ze Slunce doletí na Zemi?'
+    odpovedi: ['Asi 8 minut', 'Asi 8 sekund', 'Asi 1 hodinu', 'Asi 1 den']
+    obtiznost: 2
+    vysvetleni: 'Slunce je od nás vzdálené asi 149,6 milionu km, tedy přibližně 8,3 světelné minuty.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Slunce'
+  - id: vesmir-veda-011
+    otazka: 'Na které planetě leží Olympus Mons, nejvyšší známá hora Sluneční soustavy?'
+    odpovedi: ['Na Marsu', 'Na Venuši', 'Na Merkuru', 'Na Zemi']
+    obtiznost: 2
+    vysvetleni: 'Tato sopka je zhruba třikrát vyšší než Mount Everest.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Olympus_Mons'
+  - id: vesmir-veda-012
+    otazka: 'Kdo v roce 1928 objevil penicilin?'
+    odpovedi: ['Alexander Fleming', 'Louis Pasteur', 'Robert Koch', 'Edward Jenner']
+    obtiznost: 2
+    vysvetleni: 'Objev byl zčásti náhodný: Fleming si všiml plísně na staré Petriho misce. Nobelovu cenu za něj dostal v roce 1945.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Alexander_Fleming'
+  - id: vesmir-veda-013
+    otazka: 'Ve kterém městě dělal Gregor Johann Mendel své pokusy s hrachem, kterými založil genetiku?'
+    odpovedi: ['V Brně', 'V Olomouci', 'V Praze', 'Ve Vídni']
+    obtiznost: 2
+    vysvetleni: 'Mendel byl augustiniánským mnichem a později opatem kláštera na Starém Brně.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Gregor_Mendel'
+  - id: vesmir-veda-014
+    otazka: 'Který vynález proslavil českého chemika Otto Wichterleho?'
+    odpovedi: ['Měkké kontaktní čočky', 'Silon', 'Semtex', 'Polarograf']
+    obtiznost: 2
+    vysvetleni: 'První čočky odléval na aparatuře, kterou si doma sestavil ze stavebnice Merkur.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Otto_Wichterle'
+  - id: vesmir-veda-015
+    otazka: 'Kterého plynu je v zemské atmosféře nejvíce?'
+    odpovedi: ['Dusíku', 'Kyslíku', 'Oxidu uhličitého', 'Argonu']
+    obtiznost: 2
+    vysvetleni: 'Vzduch tvoří asi ze 78 % dusík a z 21 % kyslík.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Atmosféra_Země'
+  - id: vesmir-veda-016
+    otazka: 'Který orgán v lidském těle tvoří hormon inzulin?'
+    odpovedi: ['Slinivka břišní', 'Játra', 'Štítná žláza', 'Ledviny']
+    obtiznost: 2
+    vysvetleni: 'Inzulin vytvářejí B buňky Langerhansových ostrůvků ve slinivce.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Inzulin'
+  - id: vesmir-veda-017
+    otazka: 'Kdo v roce 1869 zveřejnil periodický zákon, na kterém stojí periodická tabulka prvků?'
+    odpovedi: ['Dmitrij Mendělejev', 'Antoine Lavoisier', 'John Dalton', 'Niels Bohr']
+    obtiznost: 2
+    vysvetleni: 'Mendělejev podle svého zákona předpověděl prvky, které tehdy ještě nikdo neznal; jejich pozdější objev ho proslavil.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Dmitrij_Ivanovič_Mendělejev'
+  - id: vesmir-veda-018
+    otazka: 'Kdo je autorem heliocentrické teorie, podle které Země obíhá kolem Slunce?'
+    odpovedi: ['Mikuláš Koperník', 'Klaudios Ptolemaios', 'Galileo Galilei', 'Isaac Newton']
+    obtiznost: 2
+    vysvetleni: 'Koperník byl kromě astronoma také lékařem, právníkem a duchovním; jeho myšlenka vstoupila do dějin jako „koperníkovský obrat“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mikuláš_Koperník'
+  - id: vesmir-veda-019
+    otazka: 'Ve kterém roce byl Pluto přeřazen mezi trpasličí planety?'
+    odpovedi: ['2006', '1996', '2011', '2001']
+    obtiznost: 3
+    vysvetleni: 'Ke změně definice planety přispěl objev tělesa Eris, které je jen o málo menší než Pluto, ale hmotnější.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Sluneční_soustava'
+  - id: vesmir-veda-020
+    otazka: 'Jak se jmenuje největší měsíc ve Sluneční soustavě?'
+    odpovedi: ['Ganymedes', 'Titan', 'Měsíc', 'Europa']
+    obtiznost: 3
+    vysvetleni: 'Ganymedes obíhá kolem Jupiteru.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Ganymedes_(měsíc)'
+  - id: vesmir-veda-021
+    otazka: 'Který měsíc jako jediný ve Sluneční soustavě má hustou atmosféru?'
+    odpovedi: ['Titan', 'Io', 'Europa', 'Phobos']
+    obtiznost: 3
+    vysvetleni: 'Titan je kromě Země jediné známé místo, kde na povrchu stále leží kapaliny: jezera a moře metanu.'
+    zdroj: 'https://science.nasa.gov/saturn/moons/titan/'
+  - id: vesmir-veda-022
+    otazka: 'Za jaký objev získal Jaroslav Heyrovský v roce 1959 Nobelovu cenu za chemii?'
+    odpovedi: ['Polarografii', 'Kontaktní čočky', 'Krevní skupiny', 'Radioaktivitu']
+    obtiznost: 3
+    vysvetleni: 'Polarografii objevil už v roce 1922 a Nobelovu cenu dostal až při osmnácté nominaci.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jaroslav_Heyrovský'
+  - id: vesmir-veda-023
+    otazka: 'Který vynález se připisuje faráři Prokopu Divišovi?'
+    odpovedi: ['Bleskosvod', 'Lodní šroub', 'Parní stroj', 'Žárovka']
+    obtiznost: 3
+    vysvetleni: 'Svůj „meteorologický stroj“ sestrojil v roce 1754 nezávisle na Benjaminu Franklinovi.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Prokop_Diviš'
+  - id: vesmir-veda-024
+    otazka: 'Co zkonstruoval lesník a vynálezce Josef Ressel?'
+    odpovedi: ['Lodní šroub', 'Bleskosvod', 'Telegraf', 'Dynamo']
+    obtiznost: 3
+    vysvetleni: 'Patent na šroub získal v roce 1827, když pracoval jako lesmistr v Terstu.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Josef_Ressel'
+  - id: vesmir-veda-025
+    otazka: 'Kdo podle Karla Čapka vymyslel slovo „robot“?'
+    odpovedi: ['Josef Čapek', 'Karel Čapek', 'Jaroslav Hašek', 'Karel Poláček']
+    obtiznost: 3
+    vysvetleni: 'Karel Čapek slovo poprvé použil ve hře R.U.R.; poradil mu ho bratr Josef.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Robot'
+  - id: vesmir-veda-026
+    otazka: 'Kdo popsal čtyři základní krevní skupiny?'
+    odpovedi: ['Jan Janský', 'Jan Evangelista Purkyně', 'Karl Landsteiner', 'Emil Holub']
+    obtiznost: 3
+    vysvetleni: 'Psychiatr Jan Janský na ně přišel spíš mimochodem, když zkoumal krev psychiatrických pacientů.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jan_Janský'
+  - id: vesmir-veda-027
+    otazka: 'Kolik chromozomů má běžná lidská tělní buňka?'
+    odpovedi: ['46', '23', '48', '44']
+    obtiznost: 3
+    vysvetleni: 'Chromozomy jsou ve 23 párech; pohlavní buňky mají jen polovinu, tedy 23.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Karyotyp'
+  - id: vesmir-veda-028
+    otazka: 'Kdo v roce 1953 představil model dvoušroubovice DNA?'
+    odpovedi:
+      [
+        'James Watson a Francis Crick',
+        'Pierre a Marie Curieovi',
+        'Louis Pasteur a Robert Koch',
+        'Gregor Mendel a Charles Darwin',
+      ]
+    obtiznost: 3
+    vysvetleni: 'Model vyšel v časopise Nature a stal se základem molekulární biologie.'
+    zdroj: 'https://cs.wikipedia.org/wiki/DNA'
+  - id: vesmir-veda-029
+    otazka: 'Jak se jmenují dva měsíce Marsu?'
+    odpovedi: ['Phobos a Deimos', 'Io a Europa', 'Titan a Rhea', 'Charon a Nix']
+    obtiznost: 4
+    vysvetleni: 'Oba objevil v srpnu 1877 americký astronom Asaph Hall.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Měsíce_Marsu'
+  - id: vesmir-veda-030
+    otazka: 'Ve kterém roce odstartovala sonda Voyager 1, která se dostala nejdál od Země?'
+    odpovedi: ['1977', '1969', '1986', '1990']
+    obtiznost: 4
+    vysvetleni: 'Původně měla prolétnout kolem Jupiteru a Saturnu; v srpnu 2012 jako první vstoupila do mezihvězdného prostoru.'
+    zdroj: 'https://science.nasa.gov/mission/voyager/voyager-1/'
+  - id: vesmir-veda-031
+    otazka: 'Jak se jmenoval modul sondy Rosetta, který v roce 2014 jako první přistál na kometě?'
+    odpovedi: ['Philae', 'Huygens', 'Beagle 2', 'Sojourner']
+    obtiznost: 4
+    vysvetleni: 'Na povrch komety 67P dosedl 12. listopadu 2014 po deseti letech cesty.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Philae_(sonda)'
+  - id: vesmir-veda-032
+    otazka: 'Na které planetě trvá jedna otočka kolem vlastní osy déle než oběh kolem Slunce?'
+    odpovedi: ['Na Venuši', 'Na Merkuru', 'Na Marsu', 'Na Neptunu']
+    obtiznost: 4
+    vysvetleni: 'Venuše se otočí jednou za 243 pozemských dní, ale Slunce oběhne za 224,7 dne.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Venuše_(planeta)'
+  - id: vesmir-veda-033
+    otazka: 'Jakou chemickou značku má wolfram?'
+    odpovedi: ['W', 'Wo', 'Tu', 'Wf']
+    obtiznost: 4
+    vysvetleni: 'Wolfram má nejvyšší teplotu tání ze všech kovů, 3 422 °C.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Wolfram'
+  - id: vesmir-veda-034
+    otazka: 'Na léčbu jaké nemoci se dnes hlavně používají antivirotika českého chemika Antonína Holého?'
+    odpovedi: ['Infekce virem HIV', 'Malárie', 'Tuberkulózy', 'Cukrovky']
+    obtiznost: 4
+    vysvetleni: 'Jeho léky se používají také proti hepatitidě B a oparům a léčí se jimi stovky milionů lidí.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Antonín_Holý'
+  - id: vesmir-veda-035
+    otazka: 'Ve kterém pražském kostele je pohřben astronom Tycho Brahe?'
+    odpovedi:
+      [
+        'V kostele Panny Marie před Týnem',
+        'V katedrále sv. Víta',
+        'V kostele sv. Mikuláše na Malé Straně',
+        'V Betlémské kapli',
+      ]
+    obtiznost: 4
+    vysvetleni: 'Do Prahy ho jako císařského astronoma povolal Rudolf II.; zemřel tu v roce 1601 a jeho nástupcem se stal Kepler.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Tycho_Brahe'
+  - id: vesmir-veda-036
+    otazka: 'Který astronom formuloval v Praze dva ze tří zákonů o pohybu planet?'
+    odpovedi: ['Johannes Kepler', 'Tycho Brahe', 'Galileo Galilei', 'Mikuláš Koperník']
+    obtiznost: 4
+    vysvetleni: 'Kepler zjistil, že Mars obíhá po elipse, a výsledky vydal v roce 1609 v díle Astronomia nova.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Johannes_Kepler'
+  - id: vesmir-veda-037
+    otazka: 'Kdo velel lodi Sojuz 28, se kterou letěl Vladimír Remek?'
+    odpovedi: ['Alexej Gubarev', 'Jurij Gagarin', 'Alexej Leonov', 'Valerij Bykovskij']
+    obtiznost: 5
+    vysvetleni: 'Ve druhé připravené posádce byl Remkův náhradník Oldřich Pelčák spolu s Nikolajem Rukavišnikovem.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Sojuz_28'
+  - id: vesmir-veda-038
+    otazka: 'Jak se jmenovala první československá družice, vypuštěná v roce 1978?'
+    odpovedi: ['Magion', 'Mimosa', 'Interkosmos', 'Lucky 7']
+    obtiznost: 5
+    vysvetleni: 'Magion 1 odstartoval 24. října 1978 z kosmodromu Pleseck v rámci programu Interkosmos.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Magion'
+  - id: vesmir-veda-039
+    otazka: 'Na palubě které vzducholodi letěl v roce 1928 český fyzik František Běhounek k severnímu pólu?'
+    odpovedi: ['Italia', 'Norge', 'Hindenburg', 'Graf Zeppelin']
+    obtiznost: 5
+    vysvetleni: 'Vzducholoď Umberta Nobileho ztroskotala; Běhounek zážitek popsal v knize Trosečníci polárního moře.'
+    zdroj: 'https://cs.wikipedia.org/wiki/František_Běhounek'
+  - id: vesmir-veda-040
+    otazka: 'Ve kterém roce byl vynesen na oběžnou dráhu Hubbleův vesmírný dalekohled?'
+    odpovedi: ['1990', '1981', '1998', '2003']
+    obtiznost: 5
+    vysvetleni: 'Hubble odstartoval 24. dubna 1990.'
+    zdroj: 'https://science.nasa.gov/mission/hubble/'

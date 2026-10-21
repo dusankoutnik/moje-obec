@@ -1,0 +1,283 @@
+kategorie: cestina
+nazev: 'Čeština'
+ikona: '📝'
+otazky:
+  - id: cestina-001
+    otazka: 'Ve které větě je čárka napsaná správně?'
+    odpovedi: ['Myslím, že přijde.', 'Myslím že, přijde.', 'Myslím že přijde.', 'Myslím, že, přijde.']
+    obtiznost: 1
+    vysvetleni: 'Vedlejší větu uvozenou spojkou „že“ oddělujeme od věty hlavní čárkou, kterou píšeme před spojku.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=150'
+  - id: cestina-002
+    otazka: 'Které z těchto slov patří mezi vyjmenovaná slova po M?'
+    odpovedi: ['myslet', 'milovat', 'mírný', 'minout']
+    obtiznost: 1
+    vysvetleni: 'Patří sem i příbuzná slova jako mysl, myšlenka, úmysl nebo průmysl; spisovně je správně „myslet“ i „myslit“.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=100'
+  - id: cestina-003
+    otazka: 'Kolik pádů má čeština?'
+    odpovedi: ['sedm', 'šest', 'pět', 'osm']
+    obtiznost: 1
+    vysvetleni: 'Pády se v české škole označují pořadovými čísly, v mluvnicích i latinskými názvy (nominativ, genitiv, dativ, akuzativ, vokativ, lokál, instrumentál).'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mluvnick%C3%BD_p%C3%A1d'
+  - id: cestina-004
+    otazka: 'Který pád používáme při oslovení („Pane učiteli!“)?'
+    odpovedi: ['5. pád', '1. pád', '4. pád', '7. pád']
+    obtiznost: 1
+    vysvetleni: 'Pátý pád se latinsky jmenuje vokativ; spolu s 1. pádem je to jediný pád, který se nikdy nepojí s předložkou.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vokativ'
+  - id: cestina-005
+    otazka: 'Jak se nazývají slova se stejným nebo velmi podobným významem (např. hoch – chlapec)?'
+    odpovedi: ['synonyma', 'antonyma', 'homonyma', 'archaismy']
+    obtiznost: 1
+    vysvetleni: 'Česky se jim říká slova souznačná; slova opačného významu jsou antonyma.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=synonymum'
+  - id: cestina-006
+    otazka: 'Co znamená „chodit kolem něčeho jako kočka kolem horké kaše“?'
+    odpovedi:
+      [
+        'vyhýbat se řešení něčeho nebo mluvení o tom',
+        'dlouho na něco čekat',
+        'být mlsný a vybíravý',
+        'něco opatrně ochutnávat',
+      ]
+    obtiznost: 1
+    vysvetleni: 'Kočka by kaši ráda, ale bojí se, že se spálí – tak jen obchází kolem.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=ka%C5%A1e'
+  - id: cestina-007
+    otazka: 'Jak pokračuje přísloví „Kdo jinému jámu kopá, …“?'
+    odpovedi: ['sám do ní padá', 'ten se dlouho nadře', 'ten najde poklad', 'ten se nenudí']
+    obtiznost: 1
+    vysvetleni: 'Slovník spisovné češtiny ho vykládá tak, že strůjce úkladů bývá sám jejich obětí.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=j%C3%A1ma'
+  - id: cestina-008
+    otazka: 'Jak pokračuje pořekadlo „Sejde z očí, …“?'
+    odpovedi: ['sejde z mysli', 'zůstane v srdci', 'nezmizí z paměti', 'sejde z cesty']
+    obtiznost: 1
+    vysvetleni: 'Na koho dlouho nevidíme, na toho snadno zapomeneme; podobně „co oči nevidí, to srdce neželí“.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=oko'
+  - id: cestina-009
+    otazka: 'Které slovo správně doplníte: „Půjč to ___, prosím.“'
+    odpovedi: ['mně', 'mě', 'mne', 'mňe']
+    obtiznost: 2
+    vysvetleni: 'Ve 3. a 6. pádě se píše „mně“, ve 2. a 4. pádě „mě“ (knižně „mne“). Pomůcka: kde jde říct „mne“, píše se „mě“.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=650'
+  - id: cestina-010
+    otazka: 'Jak správně napíšete: „Vezmi si deštník ___.“?'
+    odpovedi: ['s sebou', 'sebou', 'ssebou', 'zsebou']
+    obtiznost: 2
+    vysvetleni: '„S sebou“ píšeme po slovesech jako brát, vzít, nést; samotné „sebou“ jen u pohybů těla – „mrsknout sebou“, „škubnout sebou“.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=111'
+  - id: cestina-011
+    otazka: 'Které slovo znamená „sdělení, informace“ (např. v novinách)?'
+    odpovedi: ['zpráva', 'správa', 'zprávca', 'sprava']
+    obtiznost: 2
+    vysvetleni: '„Správa“ s písmenem s znamená řízení něčeho (správa domu); novinová „zpráva“ se píše se z.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=110'
+  - id: cestina-012
+    otazka: 'Které slovo je napsané správně?'
+    odpovedi: ['neúspěch', 'neůspěch', 'neuspěch', 'neúspech']
+    obtiznost: 2
+    vysvetleni: 'Po předponě se píše ú, když základové slovo začíná na ú (úspěch → neúspěch, úcta → neúcta).'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=127'
+  - id: cestina-013
+    otazka: 'Které z těchto slov patří mezi vyjmenovaná slova po V?'
+    odpovedi: ['vydra', 'vidle', 'vítr', 'vina']
+    obtiznost: 2
+    vysvetleni: 'Mezi vyjmenovaná slova po V patří i výr (pták), vyžle, povyk nebo zvykat.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=100'
+  - id: cestina-014
+    otazka: 'Co znamená slovo „empatie“?'
+    odpovedi:
+      [
+        'schopnost vcítit se do druhého člověka',
+        'lhostejnost k okolí',
+        'přehnaná sebedůvěra',
+        'nechuť ke změnám',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Česky se jí říká vcítění – schopnost pochopit city a situaci jiného člověka.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Empatie'
+  - id: cestina-015
+    otazka: 'O kom se říká, že „má máslo na hlavě“?'
+    odpovedi:
+      [
+        'o tom, kdo má něco na svědomí',
+        'o tom, kdo je velmi bohatý',
+        'o tom, kdo je líný',
+        'o tom, kdo se rád chlubí',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Rčení se podle slovníku užívá o člověku, kterého lze postihnout za nějaké minulé provinění.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=m%C3%A1slo'
+  - id: cestina-016
+    otazka: 'Co znamená, když je něco „jako když hrách na stěnu hází“?'
+    odpovedi: ['marné, zbytečné domlouvání', 'velký hluk', 'rychlá a pečlivá práce', 'plýtvání jídlem']
+    obtiznost: 2
+    vysvetleni: 'Hrách se od stěny odrazí a nic na ní nezůstane – stejně jako domluvy u někoho, kdo neposlouchá.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=hr%C3%A1ch'
+  - id: cestina-017
+    otazka: 'Co znamená „hodit flintu do žita“?'
+    odpovedi:
+      ['vzdát se, ztratit odvahu pokračovat', 'začít novou práci', 'prozradit tajemství', 'jít na lov']
+    obtiznost: 2
+    vysvetleni: 'Rčení se užívá hlavně po neúspěchu – kdo hodí flintu do žita, přestane se snažit.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=flinta'
+  - id: cestina-018
+    otazka: 'Co znamená pořekadlo „Jablko nepadá daleko od stromu“?'
+    odpovedi:
+      [
+        'dítě bývá stejné jako rodiče',
+        'kdo šetří, má za tři',
+        'dobré věci chtějí čas',
+        'nikdo není doma prorokem',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Užívá se, když se potomek podobá rodičům povahou nebo jednáním – v dobrém i ve zlém.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=jablko'
+  - id: cestina-019
+    otazka: 'Jak správně napsat čárku ve spojení „a proto“?'
+    odpovedi:
+      [
+        'Nedostali jsme zprávu včas, a proto jsme nemohli přijít.',
+        'Nedostali jsme zprávu včas a, proto jsme nemohli přijít.',
+        'Nedostali jsme zprávu včas a proto, jsme nemohli přijít.',
+        'Nedostali jsme, zprávu včas a proto jsme nemohli přijít.',
+      ]
+    obtiznost: 3
+    vysvetleni: 'Před „a“ se čárka obvykle nepíše, ale v poměru důsledkovém („a proto“, „a tak“, „a tudíž“) ano.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=153'
+  - id: cestina-020
+    otazka: 'Doplňte správnou koncovku: „Děti si celé odpoledne hrál_ na zahradě.“'
+    odpovedi: ['hrály', 'hráli', 'hrála', 'hrálo']
+    obtiznost: 3
+    vysvetleni: '„Dítě“ je v jednotném čísle středního rodu, ale „děti“ se v množném čísle skloňují jako ženský rod (vzor kost) – proto „děti hrály“.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=d%C4%9Bti'
+  - id: cestina-021
+    otazka: 'Doplňte správnou koncovku: „Ženy a muži se sešl_ na návsi.“'
+    odpovedi: ['sešli', 'sešly', 'sešla', 'sešlo']
+    obtiznost: 3
+    vysvetleni: 'Je-li v několikanásobném podmětu aspoň jedno jméno rodu mužského životného, má přednost a v přísudku se píše měkké -i.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=601'
+  - id: cestina-022
+    otazka: 'Jak se podle pravidel správně píše název ulice?'
+    odpovedi: ['Pod Kaštany', 'Pod kaštany', 'pod Kaštany', 'pod kaštany']
+    obtiznost: 3
+    vysvetleni: 'V předložkových názvech ulic se píše velkým písmenem předložka i následující podstatné jméno (Na Můstku, U Průhonu, Za Potokem).'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=186'
+  - id: cestina-023
+    otazka: 'Které z těchto slov patří mezi vyjmenovaná slova po Z?'
+    odpovedi: ['brzy', 'zima', 'zítra', 'zinek']
+    obtiznost: 3
+    vysvetleni: 'Po Z jsou vyjmenovaná jen slova brzy, jazyk a nazývat (se) a k tomu místní jméno Ruzyně.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=100'
+  - id: cestina-024
+    otazka: 'Jak spisovně zní 7. pád množného čísla slova „oko“ (lidské oko)?'
+    odpovedi: ['očima', 'oky', 'očama', 'očimi']
+    obtiznost: 3
+    vysvetleni: 'Oči jako orgán mají v množném čísle zvláštní tvary (očí, očím, očima); „oky“ je tvar od oka na punčoše či síti.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=oko'
+  - id: cestina-025
+    otazka: 'Jak zní 2. pád množného čísla slova „píseň“ (bez …)?'
+    odpovedi: ['písní', 'písňů', 'písen', 'písňí']
+    obtiznost: 3
+    vysvetleni: 'Píseň je vzorem ženského rodu; stejný tvar „písní“ má i 7. pád jednotného čísla.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=p%C3%ADse%C5%88'
+  - id: cestina-026
+    otazka: 'Co znamená „nosit dříví do lesa“?'
+    odpovedi: ['dělat něco zbytečného', 'tvrdě pracovat', 'vracet ukradené věci', 'připravovat se na zimu']
+    obtiznost: 3
+    vysvetleni: 'Dříví je v lese dost – kdo ho tam nosí, dělá zbytečnou práci.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=d%C5%99%C3%ADv%C3%AD'
+  - id: cestina-027
+    otazka: 'Jaký je člověk, o kterém se říká, že „má za ušima“?'
+    odpovedi: ['vychytralý', 'nedoslýchavý', 'zvědavý', 'nemytý']
+    obtiznost: 3
+    vysvetleni: 'Pozor na záměnu s rčením „zapsat si něco za uši“, které znamená dobře si něco zapamatovat.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=ucho'
+  - id: cestina-028
+    otazka: 'Jak pokračuje přísloví „Čí chleba jíš, …“?'
+    odpovedi: ['toho píseň zpívej', 'tomu buď vděčný', 'toho poslouchej', 'tomu nekřivdi']
+    obtiznost: 3
+    vysvetleni: 'Slovník spisovné češtiny ho uvádí přímo u hesla „jíst“; říká, že člověk bývá loajální k tomu, kdo ho živí.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=j%C3%ADst'
+  - id: cestina-029
+    otazka: 'Jak se spisovně napíše sloveso ve spojení „___ nový film“ (podívat se na něj)?'
+    odpovedi: ['zhlédnout', 'shlédnout', 'zhlednout', 'shlednout']
+    obtiznost: 4
+    vysvetleni: '„Zhlédnout“ představení či film znamená podívat se na ně; „shlédnout“ znamená podívat se shora dolů, třeba z rozhledny.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=110'
+  - id: cestina-030
+    otazka: 'Před kterým spojením se v souvětí čárka zpravidla NEpíše?'
+    odpovedi: ['a potom', 'a proto', 'a přesto', 'a dokonce']
+    obtiznost: 4
+    vysvetleni: '„A potom“ (stejně jako „a pak“, „a také“) vyjadřuje prosté slučování nebo časovou následnost; ostatní spojení vyjadřují jiný poměr a čárku vyžadují.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=153'
+  - id: cestina-031
+    otazka: 'Jak zní rozkazovací způsob slovesa „jíst“ pro 2. osobu množného čísla (vy)?'
+    odpovedi: ['jezte', 'jězte', 'jíste', 'jeďte']
+    obtiznost: 4
+    vysvetleni: 'Sloveso jíst je nepravidelné: jím, jíš, jedí, rozkazovací způsob jez – jezte. „Jeďte“ patří ke slovesu jet.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=j%C3%ADst'
+  - id: cestina-032
+    otazka: 'Jak se nazývá výraz, který zmírňuje něco nepříjemného (např. „usnout navěky“ místo „zemřít“)?'
+    odpovedi: ['eufemismus', 'vulgarismus', 'neologismus', 'archaismus']
+    obtiznost: 4
+    vysvetleni: 'Slovo pochází z řečtiny – „eu“ znamená dobře a „fémi“ mluvím.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=eufemismus'
+  - id: cestina-033
+    otazka: 'Jak se nazývá spojení slov, jejichž významy se navzájem vylučují (např. „ohlušující ticho“)?'
+    odpovedi: ['oxymóron', 'pleonasmus', 'eufemismus', 'hyperbola']
+    obtiznost: 4
+    vysvetleni: 'Řecké oxymóron vzniklo spojením slov „ostrý“ a „tupý“, takže je samo protimluvem; básnickým příkladem je Březinovo „svítání na západě“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Oxym%C3%B3ron'
+  - id: cestina-034
+    otazka: 'Co znamená, když má někdo „oči navrch hlavy“?'
+    odpovedi: ['velmi se diví', 'je velmi ospalý', 'pozorně hlídá', 'je zamilovaný']
+    obtiznost: 4
+    vysvetleni: 'Stejný význam má i rčení „nevěřit svým očím“.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?id=oko'
+  - id: cestina-035
+    otazka: 'Co znamená „lovit v kalných vodách“?'
+    odpovedi:
+      ['zištně využívat zmatků', 'dělat marnou práci', 'pátrat po ztracených věcech', 'riskovat bez rozmyslu']
+    obtiznost: 4
+    vysvetleni: 'V kalné vodě nikdo nevidí, co se děje – a to je výhodné pro toho, kdo si chce nepozorovaně přijít na své.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=voda'
+  - id: cestina-036
+    otazka: 'Jak se nazývá slovo, které zní nebo se píše stejně jako jiné, ale má zcela jiný význam (např. „box“ jako sport i jako přihrádka)?'
+    odpovedi: ['homonymum', 'synonymum', 'antonymum', 'neologismus']
+    obtiznost: 4
+    vysvetleni: 'Česky se mu říká slovo souzvučné; název je z řeckého „homos“ (stejný) a „onoma“ (jméno).'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=homonymum'
+  - id: cestina-037
+    otazka: 'Co je pleonasmus (např. „vidět na vlastní oči“)?'
+    odpovedi:
+      [
+        'hromadění slov stejného nebo blízkého významu',
+        'spojení slov protikladného významu',
+        'zjemňující náhradní výraz',
+        'přenesení pojmenování na základě podobnosti',
+      ]
+    obtiznost: 5
+    vysvetleni: 'Jako slohový prostředek dodává důraz, jinak bývá považován za chybu – třeba „největší maximum“.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=pleonasmus'
+  - id: cestina-038
+    otazka: 'Co je to „sinekura“?'
+    odpovedi:
+      ['výnosná funkce bez povinností', 'lék proti horečce', 'druh církevního zpěvu', 'smlouva bez podpisu']
+    obtiznost: 5
+    vysvetleni: 'Slovo pochází z latinského „sine cura (animarum)“ – bez duchovní správy; původně šlo o církevní obročí bez povinností.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=sinekura'
+  - id: cestina-039
+    otazka: 'Jaký je člověk, o kterém se říká, že „jedl vtipnou kaši“?'
+    odpovedi: ['vtipný, chytrý', 'hloupý, naivní', 'mlsný, vybíravý', 'hladový, chudý']
+    obtiznost: 5
+    vysvetleni: 'Slovník uvádí i podobu „jídal vtipnou, chytrou kaši“.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=ka%C5%A1e'
+  - id: cestina-040
+    otazka: 'Co znamená rčení „těšínská jablka“?'
+    odpovedi: ['plané sliby', 'nečekané bohatství', 'zakázané ovoce', 'sladké nicnedělání']
+    obtiznost: 5
+    vysvetleni: 'Slovník spisovné češtiny je vykládá jako plané sliby a útěchy, z nichž nic nebude.'
+    zdroj: 'https://prirucka.ujc.cas.cz/?slovo=jablko'

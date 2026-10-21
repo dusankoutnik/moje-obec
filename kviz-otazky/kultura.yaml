@@ -1,0 +1,202 @@
+kategorie: kultura
+nazev: 'Kultura'
+ikona: '🎭'
+otazky:
+  - id: kultura-001
+    otazka: 'Kdo napsal knihu Babička?'
+    odpovedi: ['Božena Němcová', 'Karolina Světlá', 'Magdalena Dobromila Rettigová', 'Teréza Nováková']
+    obtiznost: 1
+    vysvetleni: 'Němcová v ní idealizovaně vzpomíná na dětství v Ratibořickém údolí u České Skalice; kniha poprvé vyšla roku 1855.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Babi%C4%8Dka_(kniha)'
+  - id: kultura-002
+    otazka: 'Kdo je autorem románu Osudy dobrého vojáka Švejka za světové války?'
+    odpovedi: ['Jaroslav Hašek', 'Karel Čapek', 'Vladislav Vančura', 'Jaroslav Seifert']
+    obtiznost: 1
+    vysvetleni: 'Čtyřdílný protiválečný humoristický román zůstal nedokončený; nejznámější ilustrace k němu nakreslil Josef Lada.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Osudy_dobr%C3%A9ho_voj%C3%A1ka_%C5%A0vejka_za_sv%C4%9Btov%C3%A9_v%C3%A1lky'
+  - id: kultura-003
+    otazka: 'Který skladatel složil cyklus symfonických básní Má vlast?'
+    odpovedi: ['Bedřich Smetana', 'Antonín Dvořák', 'Leoš Janáček', 'Zdeněk Fibich']
+    obtiznost: 1
+    vysvetleni: 'Cyklus má šest částí: Vyšehrad, Vltava, Šárka, Z českých luhů a hájů, Tábor a Blaník.'
+    zdroj: 'https://cs.wikipedia.org/wiki/M%C3%A1_vlast'
+  - id: kultura-004
+    otazka: 'Které slovo poprvé použil Karel Čapek ve hře R.U.R.?'
+    odpovedi: ['robot', 'android', 'kyborg', 'automat']
+    obtiznost: 1
+    vysvetleni: 'Slovo mu poradil bratr Josef Čapek; původně zamýšlený „labor“ zněl Karlovi příliš papírově.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Robot'
+  - id: kultura-005
+    otazka: 'Kdo namaloval obraz Mona Lisa?'
+    odpovedi: ['Leonardo da Vinci', 'Michelangelo Buonarroti', 'Rafael Santi', 'Sandro Botticelli']
+    obtiznost: 1
+    vysvetleni: 'Obraz je dnes v pařížském Louvru a patří k nejznámějším malbám světa.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mona_Lisa'
+  - id: kultura-006
+    otazka: 'Kdo napsal drama Romeo a Julie?'
+    odpovedi: ['William Shakespeare', 'Christopher Marlowe', 'Molière', 'Friedrich Schiller']
+    obtiznost: 1
+    vysvetleni: 'Tragédie vypráví o lásce Romea Monteka a Julie Kapuletové ze dvou znepřátelených veronských rodin.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Romeo_a_Julie'
+  - id: kultura-007
+    otazka: 'Který český spisovatel získal Nobelovu cenu za literaturu?'
+    odpovedi: ['Jaroslav Seifert', 'Karel Čapek', 'Bohumil Hrabal', 'Václav Havel']
+    obtiznost: 2
+    vysvetleni: 'Básník Jaroslav Seifert ji převzal 10. prosince 1984 za poezii, která podle odůvodnění podává „osvobozující obraz lidské nezdolnosti a mnohotvárnosti“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jaroslav_Seifert'
+  - id: kultura-008
+    otazka: 'Kdo složil operu Rusalka?'
+    odpovedi: ['Antonín Dvořák', 'Bedřich Smetana', 'Leoš Janáček', 'Zdeněk Fibich']
+    obtiznost: 2
+    vysvetleni: 'Libreto napsal Jaroslav Kvapil podle motivů Andersenovy Malé mořské víly; premiéra byla v Národním divadle v roce 1901.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Rusalka_(Dvo%C5%99%C3%A1k)'
+  - id: kultura-009
+    otazka: 'Kdo jsou autoři her Divadla Járy Cimrmana?'
+    odpovedi:
+      [
+        'Zdeněk Svěrák a Ladislav Smoljak',
+        'Jiří Voskovec a Jan Werich',
+        'Jiří Suchý a Jiří Šlitr',
+        'Miroslav Horníček a Jan Werich',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Soubor hraje od konce 60. let komedie o fiktivním českém géniovi Járu Cimrmanovi.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Divadlo_J%C3%A1ry_Cimrmana'
+  - id: kultura-010
+    otazka: 'Který film režiséra Jiřího Menzela získal Oscara za nejlepší cizojazyčný film?'
+    odpovedi: ['Ostře sledované vlaky', 'Rozmarné léto', 'Postřižiny', 'Slavnosti sněženek']
+    obtiznost: 2
+    vysvetleni: 'Film natočený podle novely Bohumila Hrabala získal Oscara v roce 1968.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Ost%C5%99e_sledovan%C3%A9_vlaky'
+  - id: kultura-011
+    otazka: 'Kdo složil operu Kouzelná flétna?'
+    odpovedi: ['Wolfgang Amadeus Mozart', 'Ludwig van Beethoven', 'Giuseppe Verdi', 'Joseph Haydn']
+    obtiznost: 2
+    vysvetleni: 'Opera měla premiéru ve Vídni 30. září 1791; libreto napsal Emanuel Schikaneder.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kouzeln%C3%A1_fl%C3%A9tna'
+  - id: kultura-012
+    otazka: 'Kdo napsal román o rytíři Donu Quijotovi?'
+    odpovedi: ['Miguel de Cervantes', 'Lope de Vega', 'Federico García Lorca', 'Gabriel García Márquez']
+    obtiznost: 2
+    vysvetleni: 'Celý název zní Důmyslný rytíř Don Quijote de la Mancha; do češtiny ho přeložil mj. Václav Černý.'
+    zdroj: 'https://cs.wikipedia.org/wiki/D%C5%AFmysln%C3%BD_ryt%C3%AD%C5%99_Don_Quijote_de_la_Mancha'
+  - id: kultura-013
+    otazka: 'Kdo namaloval obraz Hvězdná noc?'
+    odpovedi: ['Vincent van Gogh', 'Claude Monet', 'Paul Cézanne', 'Edvard Munch']
+    obtiznost: 2
+    vysvetleni: 'Obraz vznikl v červnu 1889.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Hv%C4%9Bzdn%C3%A1_noc'
+  - id: kultura-014
+    otazka: 'Kdo vytvořil fresky na stropě Sixtinské kaple ve Vatikánu?'
+    odpovedi: ['Michelangelo Buonarroti', 'Leonardo da Vinci', 'Rafael Santi', 'Tizian']
+    obtiznost: 2
+    vysvetleni: 'Michelangelo zde namaloval i výjev Posledního soudu; v kapli se dodnes koná konkláve.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Sixtinsk%C3%A1_kaple'
+  - id: kultura-015
+    otazka: 'Z kolika obrazů se skládá Muchova Slovanská epopej?'
+    odpovedi: ['z 20', 'z 12', 'z 24', 'z 30']
+    obtiznost: 3
+    vysvetleni: 'Alfons Mucha maloval velkoformátová plátna o dějinách Slovanů v letech 1910–1928 na zámku ve Zbiroze.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Slovansk%C3%A1_epopej'
+  - id: kultura-016
+    otazka: 'Ve kterém městě měla premiéru Dvořákova Symfonie č. 9 „Z Nového světa“?'
+    odpovedi: ['New York', 'Praha', 'Londýn', 'Vídeň']
+    obtiznost: 3
+    vysvetleni: 'Premiéra se konala 16. prosince 1893 v newyorské Carnegie Hall, kde Dvořák tehdy působil.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Symfonie_%C4%8D._9_(Dvo%C5%99%C3%A1k)'
+  - id: kultura-017
+    otazka: 'Jak se jmenuje hlavní cena Mezinárodního filmového festivalu Karlovy Vary?'
+    odpovedi: ['Křišťálový glóbus', 'Zlatý lev', 'Zlatý medvěd', 'Český lev']
+    obtiznost: 3
+    vysvetleni: 'Festival vznikl v roce 1946, Křišťálový glóbus se poprvé uděloval na třetím, už soutěžním ročníku v roce 1948.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mezin%C3%A1rodn%C3%AD_filmov%C3%BD_festival_Karlovy_Vary'
+  - id: kultura-018
+    otazka: 'Ve které Beethovenově symfonii zní Óda na radost?'
+    odpovedi: ['v Deváté', 'v Páté', 'v Šesté', 've Třetí']
+    obtiznost: 3
+    vysvetleni: 'Beethoven v ní jako novinku použil sborový zpěv na text Schillerovy básně; melodie je od roku 1985 hymnou dnešní Evropské unie.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Symfonie_%C4%8D._9_(Beethoven)'
+  - id: kultura-019
+    otazka: 'Kdo namaloval obraz Guernica?'
+    odpovedi: ['Pablo Picasso', 'Salvador Dalí', 'Joan Miró', 'Francisco Goya']
+    obtiznost: 3
+    vysvetleni: 'Obraz vznikl v roce 1937 pro světovou výstavu v Paříži jako reakce na vybombardování města Guernica.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Guernica_(obraz)'
+  - id: kultura-020
+    otazka: 'Který architekt navrhl barcelonský chrám Sagrada Família?'
+    odpovedi: ['Antoni Gaudí', 'Le Corbusier', 'Santiago Calatrava', 'Ludwig Mies van der Rohe']
+    obtiznost: 3
+    vysvetleni: 'Stavba začala v roce 1882 a chrám vysvětil papež Benedikt XVI. v roce 2010, ještě před dokončením.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia'
+  - id: kultura-021
+    otazka: 'Kdo napsal drama Faust?'
+    odpovedi: ['Johann Wolfgang von Goethe', 'Friedrich Schiller', 'Heinrich Heine', 'Thomas Mann']
+    obtiznost: 3
+    vysvetleni: 'První díl vyšel v roce 1808.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Faust_(Goethe)'
+  - id: kultura-022
+    otazka: 'Pod jakým názvem původně vyšla Erbenova sbírka Kytice?'
+    odpovedi:
+      [
+        'Kytice z pověstí národních',
+        'Kytice z básní lidových',
+        'Kytice českých balad',
+        'Kytice z národních písní',
+      ]
+    obtiznost: 4
+    vysvetleni: 'První vydání vyšlo v roce 1853 a je to Erbenovo stěžejní básnické dílo.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kytice_(sb%C3%ADrka)'
+  - id: kultura-023
+    otazka: 'Pro kterou světovou výstavu vznikl program Laterna magika?'
+    odpovedi: ['Expo 58 v Bruselu', 'Expo 67 v Montrealu', 'Expo 70 v Ósace', 'Expo 2000 v Hannoveru']
+    obtiznost: 4
+    vysvetleni: 'Spojení filmu a živého divadla vzniklo jako reprezentativní program Československa pro výstavu v roce 1958.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Laterna_magika'
+  - id: kultura-024
+    otazka: 'Který film jako první československý snímek získal Oscara za nejlepší cizojazyčný film?'
+    odpovedi: ['Obchod na korze', 'Ostře sledované vlaky', 'Lásky jedné plavovlásky', 'Hoří, má panenko']
+    obtiznost: 4
+    vysvetleni: 'Film Jána Kadára a Elmara Klose získal Oscara roku 1966; Ostře sledované vlaky jej následovaly o dva roky později.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Obchod_na_korze'
+  - id: kultura-025
+    otazka: 'Ve kterém filmu poprvé zazněly zvukové dialogy?'
+    odpovedi: ['Jazzový zpěvák', 'Občan Kane', 'Metropolis', 'Světla velkoměsta']
+    obtiznost: 4
+    vysvetleni: 'Americký film s Alem Jolsonem měl premiéru v říjnu 1927.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jazzov%C3%BD_zp%C4%9Bv%C3%A1k'
+  - id: kultura-026
+    otazka: 'Kdo namaloval obraz Dívka s perlou?'
+    odpovedi: ['Jan Vermeer', 'Rembrandt van Rijn', 'Frans Hals', 'Peter Paul Rubens']
+    obtiznost: 4
+    vysvetleni: 'Obraz z doby kolem roku 1665 visí v haagském muzeu Mauritshuis; říká se mu také Dívka s perlovou náušnicí.'
+    zdroj: 'https://cs.wikipedia.org/wiki/D%C3%ADvka_s_perlou'
+  - id: kultura-027
+    otazka: 'U příležitosti které události byla postavena Eiffelova věž?'
+    odpovedi:
+      [
+        'Světové výstavy v Paříži 1889',
+        'olympijských her v Paříži 1900',
+        'konce první světové války',
+        'korunovace Napoleona III.',
+      ]
+    obtiznost: 4
+    vysvetleni: 'Výstava připomínala sté výročí velké francouzské revoluce; věž tu měla původně stát jen 20 let.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Eiffelova_v%C4%9B%C5%BE'
+  - id: kultura-028
+    otazka: 'Premiérou které opery bylo v roce 1881 poprvé otevřeno Národní divadlo?'
+    odpovedi: ['Libuše', 'Dalibor', 'Prodaná nevěsta', 'Rusalka']
+    obtiznost: 5
+    vysvetleni: 'Smetanova Libuše zazněla při otevření v roce 1881; krátce nato divadlo poničil rozsáhlý požár.'
+    zdroj: 'https://cs.wikipedia.org/wiki/N%C3%A1rodn%C3%AD_divadlo'
+  - id: kultura-029
+    otazka: 'Kterého dne tradičně začíná hudební festival Pražské jaro?'
+    odpovedi: ['12. května', '1. května', '21. března', '9. května']
+    obtiznost: 5
+    vysvetleni: 'Zahajuje se Smetanovou Mou vlastí v den výročí skladatelova úmrtí; festival vznikl v roce 1946.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Pra%C5%BEsk%C3%A9_jaro_(festival)'
+  - id: kultura-030
+    otazka: 'Ve kterém roce se poprvé udílely Oscary?'
+    odpovedi: ['1929', '1925', '1933', '1939']
+    obtiznost: 5
+    vysvetleni: 'První ceremoniál se konal 16. května 1929 a ocenil filmy sezóny 1927/1928.'
+    zdroj: 'https://cs.wikipedia.org/wiki/1._ro%C4%8Dn%C3%ADk_ud%C3%ADlen%C3%AD_Oscar%C5%AF'

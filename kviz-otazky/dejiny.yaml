@@ -1,0 +1,220 @@
+kategorie: dejiny
+nazev: Dějiny
+ikona: '📜'
+otazky:
+  - id: dejiny-001
+    otazka: 'Kterou zemi vládl babylonský král Chammurapi, autor jednoho z nejstarších dochovaných zákoníků?'
+    odpovedi: ['Babylonii', 'Egypt', 'Asýrii', 'Persii']
+    obtiznost: 4
+    vysvetleni: 'Zákoník je vytesán na dioritové stéle, kterou dnes vystavuje pařížský Louvre. Obsahuje nejstarší doklad zásady „oko za oko, zub za zub“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Chammurapiho_zákoník'
+  - id: dejiny-002
+    otazka: 'Koho porazili Athéňané roku 490 př. n. l. v bitvě u Marathónu?'
+    odpovedi: ['Peršany', 'Sparťany', 'Makedonce', 'Římany']
+    obtiznost: 4
+    vysvetleni: 'Athénskému vojsku posílenému asi tisícovkou Platajských velel Miltiadés. Hlavním pramenem o bitvě je Hérodotos.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Bitva_u_Marathónu'
+  - id: dejiny-003
+    otazka: 'Který římský vojevůdce a politik byl zavražděn o březnových idách roku 44 př. n. l.?'
+    odpovedi: ['Gaius Iulius Caesar', 'Gnaeus Pompeius', 'Marcus Antonius', 'Octavianus Augustus']
+    obtiznost: 2
+    vysvetleni: 'Mezi spiklenci byli Brutus a Cassius. O pět let dříve Caesar překročením řeky Rubikon zahájil občanskou válku.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Gaius_Iulius_Caesar'
+  - id: dejiny-004
+    otazka: 'Který císař vydal spolu s Liciniem roku 313 tzv. edikt milánský, který zaručil svobodu vyznání i křesťanům?'
+    odpovedi: ['Konstantin I. Veliký', 'Nero', 'Diokletianus', 'Theodosius I.']
+    obtiznost: 4
+    vysvetleni: 'Historici upozorňují, že nešlo o edikt platný v celé říši, ale spíš o ujednání obou císařů. Přesnější je tedy název „milánské ujednání“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Edikt_milánský'
+  - id: dejiny-005
+    otazka: 'Kdo roku 476 sesadil západořímského císaře Romula Augustula?'
+    odpovedi: ['Odoaker', 'Attila', 'Alarich', 'Theodorich Veliký']
+    obtiznost: 5
+    vysvetleni: 'Sesazení Romula Augustula se často považuje za konec západořímské říše. Odoaker mladého císaře ušetřil a poslal do vyhnanství v Kampánii.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Romulus_Augustulus'
+  - id: dejiny-006
+    otazka: 'Nad kým zvítězilo vojsko Sámovy říše v bitvě u Wogastisburgu?'
+    odpovedi: ['Nad Franky krále Dagoberta I.', 'Nad Avary', 'Nad Byzantinci', 'Nad Maďary']
+    obtiznost: 5
+    vysvetleni: 'Bitva se odehrála roku 631. Franský kupec Sámo předtím sjednotil slovanské kmeny proti Avarům a stal se jejich vládcem.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Sámova_říše'
+  - id: dejiny-007
+    otazka: 'Ve kterém roce byl franský král Karel Veliký v Římě korunován na císaře?'
+    odpovedi: ['800', '768', '843', '962']
+    obtiznost: 3
+    vysvetleni: 'Korunoval ho papež Lev III. o Vánocích. Říše neměla stálé hlavní město, ale Karel nejraději pobýval v Cáchách, kde je i pohřben.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Karel_Veliký'
+  - id: dejiny-008
+    otazka: 'Ve kterém roce přišli na Velkou Moravu Konstantin (Cyril) a Metoděj?'
+    odpovedi: ['863', '907', '845', '973']
+    obtiznost: 3
+    vysvetleni: 'Bratři ze Soluně dorazili na jaře 863 na žádost knížete Rostislava. Konstantin pro slovanský jazyk sestavil nové písmo – hlaholici.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Cyril_a_Metoděj'
+  - id: dejiny-009
+    otazka: 'Kde byl podle legend zavražděn kníže Václav?'
+    odpovedi: ['Ve Staré Boleslavi', 'Na Tetíně', 'Na Levém Hradci', 'Na Vyšehradě']
+    obtiznost: 2
+    vysvetleni: 'Stalo se to 28. září, nejčastěji se uvádí rok 935. Vraždu spáchali družiníci jeho bratra Boleslava.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Svatý_Václav'
+  - id: dejiny-010
+    otazka: 'Kdo zvítězil roku 1066 v bitvě u Hastingsu?'
+    odpovedi: ['Vilém, vévoda normandský', 'Harold II., anglický král', 'Knut Veliký', 'Richard Lví srdce']
+    obtiznost: 3
+    vysvetleni: 'Harold II. v bitvě padl, podle tradice po zásahu šípem do oka. Vilém se stal anglickým králem a dostal přízvisko Dobyvatel.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Bitva_u_Hastingsu'
+  - id: dejiny-011
+    otazka: 'Kterému českému panovníkovi potvrdila Zlatá bula sicilská z roku 1212 dědičný královský titul?'
+    odpovedi: ['Přemyslu Otakarovi I.', 'Vladislavu II.', 'Přemyslu Otakarovi II.', 'Václavu I.']
+    obtiznost: 3
+    vysvetleni: 'Listinu vydal v Basileji budoucí římský král Fridrich II. jako odměnu za Přemyslovu podporu při své volbě.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Zlatá_bula_sicilská'
+  - id: dejiny-012
+    otazka: 'V které bitvě stoleté války padl roku 1346 slepý český král Jan Lucemburský?'
+    odpovedi: ['U Kresčaku', 'U Azincourtu', 'U Poitiers', 'U Moháče']
+    obtiznost: 4
+    vysvetleni: 'Jan bojoval na straně Francie proti Angličanům Eduarda III. Byl zcela slepý nejpozději od roku 1339.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Bitva_u_Kresčaku'
+  - id: dejiny-013
+    otazka: 'Ve kterém městě byl roku 1415 upálen mistr Jan Hus?'
+    odpovedi: ['V Kostnici', 'V Basileji', 'V Řezně', 'V Praze']
+    obtiznost: 1
+    vysvetleni: 'Upálen byl 6. července 1415. V Praze předtím kázal v Betlémské kapli.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jan_Hus'
+  - id: dejiny-014
+    otazka: 'Který husitský vůdce padl v bitvě u Lipan roku 1434?'
+    odpovedi: ['Prokop Holý', 'Jan Žižka z Trocnova', 'Jan Želivský', 'Jan Roháč z Dubé']
+    obtiznost: 4
+    vysvetleni: 'U Lipan porazila utrakvisticko-katolická aliance polní vojska táboritů a sirotků. Žižka zemřel už roku 1424.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Bitva_u_Lipan'
+  - id: dejiny-015
+    otazka: 'Ve kterém roce dobyli Osmané pod vedením sultána Mehmeda II. Konstantinopol?'
+    odpovedi: ['1453', '1204', '1389', '1526']
+    obtiznost: 3
+    vysvetleni: 'Obléhání trvalo od 2. dubna do 29. května. Císař Konstantin XI. padl v bojích uvnitř města a Byzantská říše tím definitivně zanikla.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Pád_Konstantinopole'
+  - id: dejiny-016
+    otazka: 'Ve kterém roce doplul Kryštof Kolumbus poprvé k americkým ostrovům?'
+    odpovedi: ['1492', '1498', '1488', '1519']
+    obtiznost: 1
+    vysvetleni: 'Rodák z Janova plul ve službách španělských Katolických králů. 12. října přistál na ostrově Guanahaní, který pojmenoval San Salvador.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kryštof_Kolumbus'
+  - id: dejiny-017
+    otazka: 'Ve kterém roce sepsal Martin Luther 95 tezí proti odpustkům, které jsou považovány za počátek reformace?'
+    odpovedi: ['1517', '1415', '1555', '1492']
+    obtiznost: 3
+    vysvetleni: '31. října 1517 je poslal arcibiskupu Albrechtovi. Zda je ten den skutečně přibil na dveře kostela ve Wittenbergu, historici zpochybňují.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Devadesát_pět_tezí'
+  - id: dejiny-018
+    otazka: 'Čí výprava jako první obeplula Zemi (1519–1522)?'
+    odpovedi: ['Fernão de Magalhães', 'Vasco da Gama', 'Kryštof Kolumbus', 'James Cook']
+    obtiznost: 2
+    vysvetleni: 'Magalhães sám cestu nedokončil – zahynul roku 1521 na ostrově Mactan. Loď Victoria přivedl zpět do Španělska Juan Sebastián Elcano.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Fernão_de_Magalhães'
+  - id: dejiny-019
+    otazka: 'Ve kterém roce se odehrála bitva na Bílé hoře?'
+    odpovedi: ['1620', '1618', '1621', '1648']
+    obtiznost: 1
+    vysvetleni: 'Bitva 8. listopadu 1620 trvala jen jednu až dvě hodiny. Císařská a ligistická vojska v ní porazila vojsko českých stavů.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Bitva_na_Bílé_hoře'
+  - id: dejiny-020
+    otazka: 'Ve kterých městech byl roku 1648 uzavřen vestfálský mír, který ukončil třicetiletou válku?'
+    odpovedi: ['V Münsteru a Osnabrücku', 'V Praze a Vídni', 'V Augsburgu a Řezně', 'V Utrechtu a Haagu']
+    obtiznost: 4
+    vysvetleni: 'Jednalo se ve dvou městech kvůli vyznání: Švédsko chtělo protestantský Osnabrück, Francie katolický Münster. Mír ukončil i osmdesátiletou válku.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vestfálský_mír'
+  - id: dejiny-021
+    otazka: 'Ve kterém nizozemském městě je pohřben Jan Amos Komenský?'
+    odpovedi: ['V Naardenu', 'V Amsterdamu', 'V Leidenu', 'V Haagu']
+    obtiznost: 3
+    vysvetleni: '„Učitel národů“ zemřel roku 1670 v Amsterdamu, pohřben byl v kostelíku v nedalekém Naardenu.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jan_Amos_Komenský'
+  - id: dejiny-022
+    otazka: 'Které události z 14. července 1789 se připisuje začátek Velké francouzské revoluce?'
+    odpovedi: ['Dobytí Bastily', 'Popravě Ludvíka XVI.', 'Korunovaci Napoleona', 'Útoku na Versailles']
+    obtiznost: 1
+    vysvetleni: 'Od roku 1880 je 14. červenec ve Francii státním svátkem.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Dobytí_Bastily'
+  - id: dejiny-023
+    otazka: 'Kdo byl zavražděn 28. června 1914 v Sarajevu, což se stalo jednou z příčin první světové války?'
+    odpovedi:
+      [
+        "Arcivévoda František Ferdinand d'Este",
+        'Císař František Josef I.',
+        'Korunní princ Rudolf',
+        'Císařovna Alžběta',
+      ]
+    obtiznost: 2
+    vysvetleni: 'Spolu s ním zemřela jeho manželka Žofie Chotková. Atentátník Gavrilo Princip zemřel roku 1918 ve věznici v Terezíně.'
+    zdroj: "https://cs.wikipedia.org/wiki/Atentát_na_Františka_Ferdinanda_d'Este"
+  - id: dejiny-024
+    otazka: 'Kterého dne roku 1918 byl vyhlášen samostatný československý stát?'
+    odpovedi: ['28. října', '30. října', '14. listopadu', '18. října']
+    obtiznost: 1
+    vysvetleni: 'Slovenští představitelé se k novému státu přihlásili Martinskou deklarací 30. října. Prezidentem byl T. G. Masaryk zvolen 14. listopadu.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vznik_Československa'
+  - id: dejiny-025
+    otazka: 'Který z těchto politiků patřil k tzv. mužům 28. října, kteří podepsali první zákon nového státu?'
+    odpovedi: ['Alois Rašín', 'Edvard Beneš', 'Karel Kramář', 'Milan Rastislav Štefánik']
+    obtiznost: 5
+    vysvetleni: 'Muži 28. října byli Švehla, Rašín, Stříbrný, Šrobár a Soukup. Kramář a Beneš v ten den jednali v Ženevě.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vznik_Československa'
+  - id: dejiny-026
+    otazka: 'Který z těchto státníků NEpodepsal Mnichovskou dohodu z roku 1938?'
+    odpovedi: ['Edvard Beneš', 'Neville Chamberlain', 'Édouard Daladier', 'Benito Mussolini']
+    obtiznost: 2
+    vysvetleni: 'Dohodu podepsali po půlnoci 30. září 1938 Hitler, Mussolini, Chamberlain a Daladier. Českoslovenští zástupci byli v Mnichově, ale k jednání přizváni nebyli.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mnichovská_dohoda'
+  - id: dejiny-027
+    otazka: 'Napadením kterého státu zahájilo 1. září 1939 Německo druhou světovou válku v Evropě?'
+    odpovedi: ['Polska', 'Francie', 'Belgie', 'Dánska']
+    obtiznost: 1
+    vysvetleni: 'Útok přišel týden po podpisu paktu Molotov–Ribbentrop. Jako první pozemní cíl byla napadena polská základna Westerplatte u Gdaňsku.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Invaze_do_Polska_(1939)'
+  - id: dejiny-028
+    otazka: 'Kde se 6. června 1944, v tzv. Den D, vylodila spojenecká vojska?'
+    odpovedi: ['V Normandii', 'Na Sicílii', 'V Provence', 'V Bretani']
+    obtiznost: 2
+    vysvetleni: 'Vylodění zahájilo operaci Overlord. Původně bylo naplánováno na 5. června, ale generál Eisenhower ho kvůli počasí o den odložil.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Den_D'
+  - id: dejiny-029
+    otazka: 'Který prezident přijal 25. února 1948 demisi nekomunistických ministrů, čímž vyvrcholil komunistický převrat?'
+    odpovedi: ['Edvard Beneš', 'Klement Gottwald', 'Antonín Zápotocký', 'Ludvík Svoboda']
+    obtiznost: 2
+    vysvetleni: 'Demisi podalo 20. února 12 ministrů. Gottwald byl v únoru předsedou vlády, prezidentem se stal až v červnu 1948.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Únor_1948'
+  - id: dejiny-030
+    otazka: 'Který stát Varšavské smlouvy se v srpnu 1968 invaze do Československa NEzúčastnil?'
+    odpovedi: ['Rumunsko', 'Polsko', 'Maďarsko', 'Bulharsko']
+    obtiznost: 4
+    vysvetleni: 'Vojska vpadla v noci z 20. na 21. srpna 1968. Rumunsko odmítlo vyslat své jednotky.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Invaze_vojsk_Varšavské_smlouvy_do_Československa'
+  - id: dejiny-031
+    otazka: 'Kterého dne se roku 1969 na Václavském náměstí zapálil student Jan Palach?'
+    odpovedi: ['16. ledna', '21. srpna', '17. listopadu', '28. října']
+    obtiznost: 2
+    vysvetleni: 'Zemřel o tři dny později. Na jeho výročí navázal v lednu 1989 Palachův týden protestů.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jan_Palach'
+  - id: dejiny-032
+    otazka: 'Který filozof byl jedním ze tří prvních mluvčích Charty 77?'
+    odpovedi: ['Jan Patočka', 'Karel Kosík', 'Ivan Sviták', 'Egon Bondy']
+    obtiznost: 3
+    vysvetleni: 'Charta upozorňovala, že stát porušuje lidská práva, k nimž se zavázal i Helsinským závěrečným aktem z roku 1975.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Charta_77'
+  - id: dejiny-033
+    otazka: 'Kterého dne roku 1989 padla Berlínská zeď?'
+    odpovedi: ['9. listopadu', '17. listopadu', '13. srpna', '3. října']
+    obtiznost: 1
+    vysvetleni: 'Zeď, kterou začala NDR stavět 13. srpna 1961, obklopovala Západní Berlín. Padla poté, co vláda NDR oznámila, že občané smějí cestovat na Západ.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Berlínská_zeď'
+  - id: dejiny-034
+    otazka: 'Ve které brněnské vile se v roce 1992 představitelé české a slovenské vlády dohodli na rozdělení federace?'
+    odpovedi: ['Ve vile Tugendhat', 'Ve vile Löw-Beer', 'Ve vile Stiassni', 'Ve vile Jurkovič']
+    obtiznost: 3
+    vysvetleni: 'Československo zaniklo uplynutím 31. prosince 1992 podle ústavního zákona č. 542/1992 Sb., bez referenda.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Rozdělení_Československa'
+  - id: dejiny-035
+    otazka: 'Ve kterém roce vstoupila Česká republika do NATO?'
+    odpovedi: ['1999', '1993', '2004', '1997']
+    obtiznost: 2
+    vysvetleni: 'Stalo se tak 12. března 1999 spolu s Polskem a Maďarskem – jako první země bývalého východního bloku.'
+    zdroj: 'https://mzv.gov.cz/riga/cz/zpravy_a_udalosti/cr_si_pripomina_25_vyroci_vstupu_do_nato.html'

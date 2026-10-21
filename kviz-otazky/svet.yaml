@@ -1,0 +1,244 @@
+kategorie: svet
+nazev: 'Svět'
+ikona: '🌍'
+otazky:
+  - id: svet-001
+    otazka: 'Která hora je nejvyšší horou světa (měřeno od hladiny moře)?'
+    odpovedi: ['Mount Everest', 'K2', 'Mont Blanc', 'Kilimandžáro']
+    obtiznost: 1
+    vysvetleni: 'Podle měření z roku 2020 má Everest 8 848,86 m; od své základny na mořském dně je ale vyšší havajská Mauna Kea.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mount_Everest'
+  - id: svet-002
+    otazka: 'Který oceán je největší?'
+    odpovedi: ['Tichý oceán', 'Atlantský oceán', 'Indický oceán', 'Severní ledový oceán']
+    obtiznost: 1
+    vysvetleni: 'Tichý oceán má rozlohu přes 165 milionů km², takže je větší než všechna pevnina Země dohromady.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Tichý_oceán'
+  - id: svet-003
+    otazka: 'Která řeka je nejdelší v Africe?'
+    odpovedi: ['Nil', 'Kongo', 'Niger', 'Zambezi']
+    obtiznost: 1
+    vysvetleni: 'Nil protéká jedenácti státy a ústí do Středozemního moře; dlouho byl považován i za nejdelší řeku světa, dnes se o prvenství přetahuje s Amazonkou.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Nil'
+  - id: svet-004
+    otazka: 'Jak se jmenuje měna Japonska?'
+    odpovedi: ['Jen', 'Jüan', 'Won', 'Rupie']
+    obtiznost: 1
+    vysvetleni: 'Japonský znak 円 pro jen znamená „kulatý předmět“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Japonský_jen'
+  - id: svet-005
+    otazka: 'Který stát je rozlohou největší na světě?'
+    odpovedi: ['Rusko', 'Kanada', 'Čína', 'Spojené státy americké']
+    obtiznost: 1
+    vysvetleni: 'Rusko se rozkládá v jedenácti časových pásmech a hraničí po souši se čtrnácti státy.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Rusko'
+  - id: svet-006
+    otazka: 'Který stát je nejmenší na světě?'
+    odpovedi: ['Vatikán', 'Monako', 'San Marino', 'Lichtenštejnsko']
+    obtiznost: 1
+    vysvetleni: 'Vatikán má rozlohu jen 49 hektarů a přibližně 900 obyvatel.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vatikán'
+  - id: svet-007
+    otazka: 'Vlajka kterého státu má uprostřed červený javorový list?'
+    odpovedi: ['Kanada', 'Spojené státy americké', 'Austrálie', 'Nový Zéland']
+    obtiznost: 1
+    vysvetleni: 'Současnou vlajku s jedenácticípým javorovým listem přijal kanadský parlament v roce 1964 a platí od roku 1965.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kanadská_vlajka'
+  - id: svet-008
+    otazka: 'Která řeka protéká Londýnem?'
+    odpovedi: ['Temže', 'Seina', 'Dunaj', 'Rýn']
+    obtiznost: 1
+    vysvetleni: 'Temže je dlouhá 346 km a spojuje Londýn se Severním mořem.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Temže'
+  - id: svet-009
+    otazka: 'Které město je hlavním městem Austrálie?'
+    odpovedi: ['Canberra', 'Sydney', 'Melbourne', 'Perth']
+    obtiznost: 2
+    vysvetleni: 'Canberra byla vybrána v roce 1908 jako kompromis mezi soupeřícími Sydney a Melbourne.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Canberra'
+  - id: svet-010
+    otazka: 'Které město je hlavním městem Kanady?'
+    odpovedi: ['Ottawa', 'Toronto', 'Montréal', 'Vancouver']
+    obtiznost: 2
+    vysvetleni: 'Ottawa byla vybrána mimo jiné proto, že ležela daleko od hranice s USA a dala se lépe bránit.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Ottawa'
+  - id: svet-011
+    otazka: 'Které město je hlavním městem Brazílie?'
+    odpovedi: ['Brasília', 'Rio de Janeiro', 'São Paulo', 'Salvador']
+    obtiznost: 2
+    vysvetleni: 'Brasília vznikla jako nově postavená metropole ve vnitrozemí; předtím bylo hlavním městem Rio de Janeiro.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Brasília'
+  - id: svet-012
+    otazka: 'Které město je hlavním městem Turecka?'
+    odpovedi: ['Ankara', 'Istanbul', 'Izmir', 'Antalya']
+    obtiznost: 2
+    vysvetleni: 'Ankara je hlavním městem od roku 1923; leží zhruba uprostřed Anatolské plošiny.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Ankara'
+  - id: svet-013
+    otazka: 'Která hora je nejvyšší horou Afriky?'
+    odpovedi: ['Kilimandžáro', 'Mount Kenya', 'Toubkal', 'Ras Dašen']
+    obtiznost: 2
+    vysvetleni: 'Spící sopka Kilimandžáro v Tanzanii měří 5 895 m a je nejvyšší samostatně stojící horou světa.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kilimandžáro'
+  - id: svet-014
+    otazka: 'Ve kterém státě leží incké město Machu Picchu?'
+    odpovedi: ['Peru', 'Bolívie', 'Chile', 'Ekvádor']
+    obtiznost: 2
+    vysvetleni: 'Město postavené kolem roku 1450 leží v Andách 400 m nad řekou Urubamba a je na seznamu UNESCO od roku 1983.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Machu_Picchu'
+  - id: svet-015
+    otazka: 'Nad kterým městem se na kopci Corcovado tyčí socha Krista Spasitele?'
+    odpovedi: ['Rio de Janeiro', 'São Paulo', 'Buenos Aires', 'Lima']
+    obtiznost: 2
+    vysvetleni: 'Socha byla odhalena v roce 1931 jako památník brazilské nezávislosti na Portugalsku.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Socha_Krista_Spasitele_(Rio_de_Janeiro)'
+  - id: svet-016
+    otazka: 'Který ze sedmi divů starověkého světa se jako jediný dochoval dodnes?'
+    odpovedi: ['Pyramidy v Gíze', 'Maják na ostrově Faros', 'Visuté zahrady Semiramidiny', 'Rhodský kolos']
+    obtiznost: 2
+    vysvetleni: 'Seznam sedmi divů sestavovali převážně starověcí řečtí cestovatelé; ostatní divy zničil čas, požáry a zemětřesení.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Sedm_divů_světa'
+  - id: svet-017
+    otazka: 'Který průliv odděluje Evropu od Afriky?'
+    odpovedi: ['Gibraltarský průliv', 'Bospor', 'Dardanely', 'La Manche']
+    obtiznost: 2
+    vysvetleni: 'Průliv je široký jen asi 15 až 45 km a spojuje Atlantský oceán se Středozemním mořem.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Gibraltarský_průliv'
+  - id: svet-018
+    otazka: 'Které dva oceány spojuje Panamský průplav?'
+    odpovedi: ['Atlantský a Tichý', 'Atlantský a Indický', 'Tichý a Indický', 'Atlantský a Severní ledový']
+    obtiznost: 2
+    vysvetleni: 'Průplav začali stavět Francouzi v letech 1880–1889, dokončili ho Američané.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Panamský_průplav'
+  - id: svet-019
+    otazka: 'Ve kterém městě sídlí švýcarská vláda a parlament?'
+    odpovedi: ['Bern', 'Curych', 'Ženeva', 'Basilej']
+    obtiznost: 3
+    vysvetleni: 'Bern je de facto hlavním městem Švýcarska, ačkoli tento status není v zákonech výslovně zakotven.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Bern'
+  - id: svet-020
+    otazka: 'Které město je hlavním městem Nového Zélandu?'
+    odpovedi: ['Wellington', 'Auckland', 'Christchurch', 'Queenstown']
+    obtiznost: 3
+    vysvetleni: 'Wellington je nejjižněji položeným hlavním městem světa.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Wellington'
+  - id: svet-021
+    otazka: 'Které jezero je nejhlubší na světě?'
+    odpovedi: ['Bajkal', 'Tanganika', 'Kaspické moře', 'Titicaca']
+    obtiznost: 3
+    vysvetleni: 'Bajkal je hluboký až 1 642 m a je zároveň nejstarším jezerem světa – jeho stáří se odhaduje na 25 až 30 milionů let.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Bajkal'
+  - id: svet-022
+    otazka: 'Která hora je nejvyšší horou Ameriky?'
+    odpovedi: ['Aconcagua', 'Chimborazo', 'Denali', 'Huascarán']
+    obtiznost: 3
+    vysvetleni: 'Aconcagua (6 961 m) v argentinských Andách je nejvyšší horou mimo Asii.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Aconcagua'
+  - id: svet-023
+    otazka: 'Která řeka je nejdelší v Evropě?'
+    odpovedi: ['Volha', 'Dunaj', 'Dněpr', 'Rýn']
+    obtiznost: 3
+    vysvetleni: 'Volha je dlouhá 3 534 km a ústí do Kaspického moře – je to největší řeka světa bez odtoku do oceánu.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Volha'
+  - id: svet-024
+    otazka: 'Ve kterém státě leží skalní město Petra?'
+    odpovedi: ['Jordánsko', 'Egypt', 'Sýrie', 'Libanon']
+    obtiznost: 3
+    vysvetleni: 'Petra byla hlavním městem Nabatejců a její stavby jsou vytesány přímo do pískovce.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Petra_(město)'
+  - id: svet-025
+    otazka: 'Ve kterém státě stojí chrámový komplex Angkor Vat?'
+    odpovedi: ['Kambodža', 'Thajsko', 'Vietnam', 'Laos']
+    obtiznost: 3
+    vysvetleni: 'Chrám ze 12. století je symbolem Kambodže a je zobrazen i na její státní vlajce.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Angkor_Vat'
+  - id: svet-026
+    otazka: 'Jaký je úřední jazyk Brazílie?'
+    odpovedi: ['Portugalština', 'Španělština', 'Francouzština', 'Angličtina']
+    obtiznost: 3
+    vysvetleni: 'Brazílie je jedinou zemí Jižní Ameriky, kde se úředně mluví portugalsky – je to dědictví portugalské kolonizace.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Portugalština'
+  - id: svet-027
+    otazka: 'Které město leží na dvou kontinentech po obou březích průlivu Bospor?'
+    odpovedi: ['Istanbul', 'Atény', 'Káhira', 'Ankara']
+    obtiznost: 3
+    vysvetleni: 'Město v minulosti neslo jména Byzantion, Konstantinopol a česky též Cařihrad.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Istanbul'
+  - id: svet-028
+    otazka: 'Vlajka kterého státu má tři svislé pruhy – zelený, bílý a oranžový (zelený u žerdi)?'
+    odpovedi: ['Irsko', 'Itálie', 'Indie', 'Maďarsko']
+    obtiznost: 3
+    vysvetleni: 'Zelená připomíná katolíky, oranžová protestanty a bílý pruh mezi nimi mír a dorozumění obou skupin.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Irská_vlajka'
+  - id: svet-029
+    otazka: 'Které město je hlavním městem Kazachstánu?'
+    odpovedi: ['Astana', 'Almaty', 'Taškent', 'Biškek']
+    obtiznost: 4
+    vysvetleni: 'Astana je hlavním městem od roku 1997 a během historie se jmenovala i Akmola, Celinograd či Nur-Sultan.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Astana'
+  - id: svet-030
+    otazka: 'Které město je hlavním městem Maroka?'
+    odpovedi: ['Rabat', 'Casablanca', 'Marrákeš', 'Fes']
+    obtiznost: 4
+    vysvetleni: 'Rabat leží na pobřeží Atlantského oceánu a patří mezi marocká „královská města“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Rabat'
+  - id: svet-031
+    otazka: 'Kterou řekou protéká irácké hlavní město Bagdád?'
+    odpovedi: ['Tigris', 'Eufrat', 'Jordán', 'Nil']
+    obtiznost: 4
+    vysvetleni: 'Tigris se nakonec spojuje s Eufratem v řeku Šatt al-Arab.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Tigris'
+  - id: svet-032
+    otazka: 'Ve kterém státě leží vodopád Salto Ángel s nejvyšším volným pádem vody na světě?'
+    odpovedi: ['Venezuela', 'Brazílie', 'Kolumbie', 'Peru']
+    obtiznost: 4
+    vysvetleni: 'Volný pád vody měří 807 m; podle celkové výšky je druhý po jihoafrickém vodopádu Tugela.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Salto_Angel'
+  - id: svet-033
+    otazka: 'Na které řece jsou Viktoriiny vodopády?'
+    odpovedi: ['Zambezi', 'Kongo', 'Limpopo', 'Nil']
+    obtiznost: 4
+    vysvetleni: 'Vodopády leží na hranici Zambie a Zimbabwe a jsou zapsány na seznamu světového dědictví UNESCO.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Viktoriiny_vodopády'
+  - id: svet-034
+    otazka: 'Jak se jmenuje nejsušší teplá poušť na Zemi, ležící v Jižní Americe?'
+    odpovedi: ['Atacama', 'Gobi', 'Kalahari', 'Namib']
+    obtiznost: 4
+    vysvetleni: 'Atacama se táhne asi 1 000 km podél Tichého oceánu od jihu Peru do středního Chile.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Atacama'
+  - id: svet-035
+    otazka: 'Hladina kterého jezera je nejníže položeným odkrytým místem zemského povrchu?'
+    odpovedi: ['Mrtvé moře', 'Kaspické moře', 'Aralské jezero', 'Titicaca']
+    obtiznost: 4
+    vysvetleni: 'Hladina Mrtvého moře leží asi 430 m pod úrovní moře.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Mrtvé_moře'
+  - id: svet-036
+    otazka: 'Ve kterém indickém městě stojí Tádž Mahal?'
+    odpovedi: ['Ágra', 'Dillí', 'Bombaj', 'Džajpur']
+    obtiznost: 4
+    vysvetleni: 'Mughalský vládce Šáhdžahán ho dal postavit v letech 1631–1648 jako hrobku své ženy Mumtáz Mahal.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Tádž_Mahal'
+  - id: svet-037
+    otazka: 'Které město je hlavním městem Myanmaru (Barmy)?'
+    odpovedi: ['Neipyijto', 'Rangún', 'Mandalaj', 'Bago']
+    obtiznost: 5
+    vysvetleni: 'Hlavním městem je od roku 2005; předtím jím byl Rangún. Název znamená „Královské město“.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Neipyijto'
+  - id: svet-038
+    otazka: 'Jak se jmenuje měna Vietnamu?'
+    odpovedi: ['Dong', 'Kip', 'Riel', 'Baht']
+    obtiznost: 5
+    vysvetleni: 'Dong se používá od roku 1978; kip je měnou Laosu, riel Kambodže a baht Thajska.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vietnamský_dong'
+  - id: svet-039
+    otazka: 'Ve kterém státě leží legendární město Timbuktu?'
+    odpovedi: ['Mali', 'Niger', 'Mauritánie', 'Burkina Faso']
+    obtiznost: 5
+    vysvetleni: 'Město na řece Niger zažilo zlatou éru za Malijské říše ve 13. a 14. století jako centrum islámské vzdělanosti.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Timbuktu'
+  - id: svet-040
+    otazka: 'Které město je hlavním městem Nigérie?'
+    odpovedi: ['Abuja', 'Lagos', 'Akkra', 'Kano']
+    obtiznost: 5
+    vysvetleni: 'V roce 1976 bylo rozhodnuto přesunout hlavní město z Lagosu do nově budované Abuji ve středu země.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Abuja'

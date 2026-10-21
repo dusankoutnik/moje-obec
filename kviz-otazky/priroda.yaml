@@ -1,0 +1,197 @@
+kategorie: priroda
+nazev: 'Příroda'
+ikona: '🌳'
+otazky:
+  - id: priroda-001
+    otazka: 'Který národní park je rozlohou největší v Česku?'
+    odpovedi: ['Šumava', 'Krkonoše', 'České Švýcarsko', 'Podyjí']
+    obtiznost: 1
+    vysvetleni: 'NP Šumava byl vyhlášen v roce 1991 a má rozlohu asi 685 km².'
+    zdroj: 'https://cs.wikipedia.org/wiki/Národní_park_Šumava'
+  - id: priroda-002
+    otazka: 'Ve kterém národním parku stojí Pravčická brána?'
+    odpovedi: ['České Švýcarsko', 'Krkonoše', 'Šumava', 'Podyjí']
+    obtiznost: 1
+    vysvetleni: 'Pravčická brána je považována za největší pískovcovou skalní bránu v Evropě.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Pravčická_brána'
+  - id: priroda-003
+    otazka: 'Který strom Češi považují za svůj národní strom?'
+    odpovedi: ['Lípa', 'Dub', 'Buk', 'Smrk']
+    obtiznost: 1
+    vysvetleni: 'Lípu za národní strom považují také Slováci, Slovinci a Lotyši.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Lípa_(rod)'
+  - id: priroda-004
+    otazka: 'Který živočich je nejtěžším žijícím živočichem na Zemi?'
+    odpovedi: ['Plejtvák obrovský', 'Slon africký', 'Žralok obrovský', 'Vorvaň obrovský']
+    obtiznost: 1
+    vysvetleni: 'Obvykle váží 72–135 tun, výjimečně až kolem 200 tun, a měří přes 20 metrů.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Plejtvák_obrovský'
+  - id: priroda-005
+    otazka: 'Co tvoří většinu potravy pandy velké?'
+    odpovedi: ['Bambus', 'Ryby', 'Med', 'Eukalyptové listy']
+    obtiznost: 1
+    vysvetleni: 'Bambusové listy, stonky a výhonky tvoří přes 99 % jejího jídelníčku. Ve volné přírodě žije už jen v horách Číny.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Panda_velká'
+  - id: priroda-006
+    otazka: 'Které suchozemské zvíře je nejvyšší?'
+    odpovedi: ['Žirafa', 'Slon africký', 'Pštros dvouprstý', 'Velbloud dvouhrbý']
+    obtiznost: 1
+    vysvetleni: 'Žirafy patří mezi sudokopytníky; jejich nejbližším žijícím příbuzným je okapi.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Žirafa'
+  - id: priroda-007
+    otazka: 'Který národní park je v Česku nejstarší?'
+    odpovedi:
+      [
+        'Krkonošský národní park',
+        'Národní park Šumava',
+        'Národní park Podyjí',
+        'Národní park České Švýcarsko',
+      ]
+    obtiznost: 2
+    vysvetleni: 'KRNAP vznikl v roce 1963, ostatní národní parky přibyly až po roce 1990.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Krkonošský_národní_park'
+  - id: priroda-008
+    otazka: 'Podél hranice se kterým státem se táhne Národní park Podyjí?'
+    odpovedi: ['S Rakouskem', 'Se Slovenskem', 'S Německem', 'S Polskem']
+    obtiznost: 2
+    vysvetleni: 'Podyjí je nejmenší český národní park a za hranicí na něj navazuje rakouský Národní park Thayatal.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Národní_park_Podyjí'
+  - id: priroda-009
+    otazka: 'Která houba je považována za nejjedovatější?'
+    odpovedi: ['Muchomůrka zelená', 'Muchomůrka červená', 'Hřib satan', 'Čirůvka tygrovaná']
+    obtiznost: 2
+    vysvetleni: 'Muchomůrka zelená má na svědomí většinu smrtelných otrav houbami.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Muchomůrka_zelená'
+  - id: priroda-010
+    otazka: 'Do kterých hor se v Česku od 70. let 20. století vrací medvěd hnědý ze Slovenska?'
+    odpovedi: ['Do Beskyd', 'Do Krkonoš', 'Na Šumavu', 'Do Krušných hor']
+    obtiznost: 2
+    vysvetleni: 'Jeden z posledních původních medvědů byl na Moravě uloven v Beskydech v roce 1885.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Medvěd_hnědý'
+  - id: priroda-011
+    otazka: 'Pozorování zvířat na kterých ostrovech pomohlo Charlesi Darwinovi k jeho evoluční teorii?'
+    odpovedi: ['Na Galapágách', 'Na Havajských ostrovech', 'Na Kanárských ostrovech', 'Na Azorech']
+    obtiznost: 2
+    vysvetleni: 'Darwin tu strávil v roce 1835 pět týdnů s lodí HMS Beagle; knihu O původu druhů vydal v roce 1859.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Galapágy'
+  - id: priroda-012
+    otazka: 'Jak se jmenuje největší korálový útes světa?'
+    odpovedi: ['Velký bariérový útes', 'Belizský bariérový útes', 'Rudomořský útes', 'Novokaledonský útes']
+    obtiznost: 2
+    vysvetleni: 'Leží u pobřeží Austrálie a od roku 1981 je zapsán na seznamu světového dědictví UNESCO.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Velký_bariérový_útes'
+  - id: priroda-013
+    otazka: 'Na listy kterých stromů je potravně specializovaná koala?'
+    odpovedi: ['Blahovičníků (eukalyptů)', 'Bambusů', 'Akácií', 'Baobabů']
+    obtiznost: 2
+    vysvetleni: 'Tato specializace vznikla, když v ochlazujícím se klimatu Austrálie nahradily deštné pralesy blahovičníkové lesy.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Koala_medvídkovitý'
+  - id: priroda-014
+    otazka: 'Který pták dosahuje při střemhlavém letu nejvyšší rychlosti?'
+    odpovedi: ['Sokol stěhovavý', 'Orel skalní', 'Rorýs obecný', 'Albatros stěhovavý']
+    obtiznost: 2
+    vysvetleni: 'Při střemhlavém útoku s přitaženými křídly může přesáhnout 300 km/h.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Sokol_stěhovavý'
+  - id: priroda-015
+    otazka: 'Která česká propast je nejhlubší zatopenou sladkovodní jeskyní na světě?'
+    odpovedi: ['Hranická propast', 'Macocha', 'Amatérská jeskyně', 'Koněpruské jeskyně']
+    obtiznost: 3
+    vysvetleni: 'Potvrzená hloubka přesahuje 519 m, a dna se přesto zatím nikdo nedobral.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Hranická_propast'
+  - id: priroda-016
+    otazka: 'Která chráněná krajinná oblast je v Česku nejstarší?'
+    odpovedi: ['Český ráj', 'Šumava', 'Jizerské hory', 'Moravský kras']
+    obtiznost: 3
+    vysvetleni: 'CHKO Český ráj byla vyhlášena 1. března 1955.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Chráněná_krajinná_oblast_Český_ráj'
+  - id: priroda-017
+    otazka: 'Jak se odborně jmenuje nerost, kterému říkáme český granát?'
+    odpovedi: ['Pyrop', 'Almandin', 'Rubín', 'Turmalín']
+    obtiznost: 3
+    vysvetleni: 'Název pochází z řeckého „pyropos“ – podobný ohni; Muzeum českého granátu je v Třebenicích.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Pyrop'
+  - id: priroda-018
+    otazka: 'Které jeskyně jsou nejdelším jeskynním systémem v Čechách?'
+    odpovedi:
+      ['Koněpruské jeskyně', 'Chýnovská jeskyně', 'Bozkovské dolomitové jeskyně', 'Jeskyně Na Turoldu']
+    obtiznost: 3
+    vysvetleni: 'Leží v CHKO Český kras uvnitř vrchu Zlatý kůň nedaleko Berouna a mají tři patra.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Koněpruské_jeskyně'
+  - id: priroda-019
+    otazka: 'Ve kterém národním parku probíhá „Velká migrace“, při níž putuje přes milion pakoňů?'
+    odpovedi: ['Serengeti', 'Yellowstone', 'Kruger', 'Banff']
+    obtiznost: 3
+    vysvetleni: 'Park leží v Tanzanii; pakoně při migraci přebíhají řeky v obrovských stádech, aby se ubránili krokodýlům.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Serengeti'
+  - id: priroda-020
+    otazka: 'Na kterém ostrově žijí ve volné přírodě lemuři?'
+    odpovedi: ['Na Madagaskaru', 'Na Borneu', 'Na Srí Lance', 'Na Nové Guineji']
+    obtiznost: 3
+    vysvetleni: 'Madagaskar je čtvrtý největší ostrov světa; od Afriky se oddělil už ve druhohorách.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Lemuři'
+  - id: priroda-021
+    otazka: 'Ve kterém státě žije ve volné přírodě varan komodský?'
+    odpovedi: ['V Indonésii', 'V Austrálii', 'Na Filipínách', 'V Thajsku']
+    obtiznost: 3
+    vysvetleni: 'Je to nejmohutnější žijící ještěr; největší změřený exemplář měřil 3,13 m.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Varan_komodský'
+  - id: priroda-022
+    otazka: 'Který strom roste na celém světě jen v Krkonoších?'
+    odpovedi: ['Jeřáb sudetský', 'Borovice kleč', 'Smrk ztepilý', 'Bříza karpatská']
+    obtiznost: 4
+    vysvetleni: 'Je to kriticky ohrožený kříženec jeřábu muku a jeřábu mišpulky, který vznikl po poslední době ledové.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Jeřáb_sudetský'
+  - id: priroda-023
+    otazka: 'Z čeho podle nejpravděpodobnější teorie vznikly vltavíny?'
+    odpovedi:
+      [
+        'Z dopadu planetky v oblasti Ries v Německu',
+        'Ze sopečné činnosti v Českém středohoří',
+        'Z ledovcových usazenin na Šumavě',
+        'Z prastarého mořského dna',
+      ]
+    obtiznost: 4
+    vysvetleni: 'Rieský kráter u bavorského Nördlingenu má průměr 24 km; meteorit, který ho vytvořil, měřil asi 1 km.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Vltavín'
+  - id: priroda-024
+    otazka: 'Ve které národní přírodní rezervaci u Františkových Lázní jsou chráněny mofety a minerální prameny?'
+    odpovedi: ['Soos', 'Žofínský prales', 'Kladská rašeliniště', 'Velká kotlina']
+    obtiznost: 4
+    vysvetleni: 'Kromě mofet se tu chrání vrstvy křemeliny a vzácní živočichové, třeba motýl hnědásek chrastavcový.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Soos'
+  - id: priroda-025
+    otazka: 'Která parazitická rostlina z jihovýchodní Asie má největší samostatný květ na světě?'
+    odpovedi: ['Raflézie Arnoldova', 'Zmijovec titánský', 'Viktorie královská', 'Lotos ořechonosný']
+    obtiznost: 4
+    vysvetleni: 'Její květ může mít průměr až jeden metr a vážit téměř 11 kg; roste na Sumatře a na Borneu.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Raflézie_Arnoldova'
+  - id: priroda-026
+    otazka: 'Které zvíře z konžských deštných pralesů je nejbližším příbuzným žiraf?'
+    odpovedi: ['Okapi', 'Zebra', 'Antilopa bongo', 'Tapír']
+    obtiznost: 4
+    vysvetleni: 'Až do roku 1901 o něm věděli jen místní obyvatelé.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Okapi'
+  - id: priroda-027
+    otazka: 'Ve kterém národním parku tryská známý gejzír Old Faithful?'
+    odpovedi: ['Yellowstone', 'Yosemite', 'Grand Canyon', 'Death Valley']
+    obtiznost: 4
+    vysvetleni: 'Vytryskuje v průměru jednou za 64,5 minuty do výšky asi 40 m; nejvyšším gejzírem parku je ale Steamboat.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Yellowstonský_národní_park'
+  - id: priroda-028
+    otazka: 'Ve kterém roce vznikl Žofínský prales v Novohradských horách, nejstarší rezervace v pevninské Evropě?'
+    odpovedi: ['1838', '1858', '1898', '1918']
+    obtiznost: 5
+    vysvetleni: 'Rezervace byla vyhlášena 28. srpna 1838. Starší je jen rezervace na ostrově Vilm v Baltském moři.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Žofínský_prales'
+  - id: priroda-029
+    otazka: 'Jak se jmenuje největší a nejtěžší papoušek světa, který neumí létat?'
+    odpovedi: ['Kakapo soví', 'Ara hyacintový', 'Kea horský', 'Kakadu palmový']
+    obtiznost: 5
+    vysvetleni: 'Přežívá jen na několika novozélandských ostrovech bez zavlečených savčích predátorů a je aktivní v noci jako sova.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Kakapo_soví'
+  - id: priroda-030
+    otazka: 'Který druh stromu patří mezi nejstarší žijící organismy – některé jedince odhadují na téměř 5 000 let?'
+    odpovedi: ['Borovice osinatá', 'Sekvojovec obrovský', 'Baobab prstnatý', 'Tis červený']
+    obtiznost: 5
+    vysvetleni: 'Nejstarší jedinci poddruhu longaeva rostou v pohoří White Mountains v Kalifornii, při horní hranici lesa.'
+    zdroj: 'https://cs.wikipedia.org/wiki/Borovice_osinatá'
