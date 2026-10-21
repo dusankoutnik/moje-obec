@@ -78,8 +78,8 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       popisek: t('web.stat_aktuality'),
       odkaz: '/aktuality',
     });
-    // pět nejbližších akcí (web + rezervace sálu a hřišť + předprodej)
-    vsechnyAkce.slice(0, 5).forEach((a, i) => {
+    // čtyři nejbližší akce (web + rezervace sálu a hřišť + předprodej)
+    vsechnyAkce.slice(0, 4).forEach((a, i) => {
       if (!a.datum) return;
       statistiky.push({
         hodnota: a.datum.toLocaleDateString('cs-CZ', {
