@@ -44,7 +44,8 @@ export const OtazkaSchema = z.object({
   odpovedi: z
     .array(odpoved)
     .length(4, 'otázka musí mít právě 4 odpovědi (první je správná)')
-    .refine((o) => new Set(o.map((x) => x.toLocaleLowerCase('cs'))).size === o.length, 'odpovědi se opakují'),
+    // přesná shoda — otázky na pravopis se smí lišit jen velikostí písmen („Pod Kaštany“ × „Pod kaštany“)
+    .refine((o) => new Set(o).size === o.length, 'odpovědi se opakují'),
   obtiznost: z.number().int().min(1, 'obtížnost 1–5').max(5, 'obtížnost 1–5'),
   vysvetleni: text(2000).default(''),
   zdroj: text(500).default(''),

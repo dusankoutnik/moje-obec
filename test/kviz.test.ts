@@ -159,11 +159,17 @@ describe('ověření balíku (zod)', () => {
     expect('balik' in r && r.balik.otazky[0]!.zdroj).toBe('');
   });
 
+  it('odpovědi lišící se jen velikostí písmen jsou dovolené (pravopis)', () => {
+    expect(
+      overBalik(zaklad({ odpovedi: ['Pod Kaštany', 'Pod kaštany', 'pod Kaštany', 'pod kaštany'] })),
+    ).toHaveProperty('balik');
+  });
+
   it('chyby: počet odpovědí, opakování, obtížnost, YAML, prázdný balík', () => {
     expect(overBalik(zaklad({ odpovedi: ['a', 'b', 'c'] }))).toMatchObject({
       chyba: expect.stringContaining('právě 4 odpovědi'),
     });
-    expect(overBalik(zaklad({ odpovedi: ['Praha', 'praha', 'x', 'y'] }))).toMatchObject({
+    expect(overBalik(zaklad({ odpovedi: ['Praha', 'Praha', 'x', 'y'] }))).toMatchObject({
       chyba: expect.stringContaining('opakují'),
     });
     expect(overBalik(zaklad({ obtiznost: 6 }))).toMatchObject({
