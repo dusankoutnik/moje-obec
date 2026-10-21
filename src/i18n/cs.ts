@@ -504,6 +504,7 @@ export const cs = {
     stat_odberatele: 'odběratelů zpráv obce',
     stat_aktuality: 'zpráv za poslední měsíc',
     stat_akce: 'nejbližší akce: {nazev}',
+    stat_akce_dalsi: 'další akce: {nazev}',
     statistiky: 'Obec v číslech',
     velikost_pisma: 'Velikost písma',
     velikost_normalni: 'Normální písmo',

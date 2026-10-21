@@ -1799,12 +1799,17 @@ body.zakladni .panel-hlavni {
   }
 }
 .statistiky dl {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(128px, 100%), 1fr));
+  /* flex místo gridu: neúplný poslední řádek se vycentruje */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1.1rem 1.2rem;
   margin: 0;
 }
 .stat {
+  flex: 0 1 148px;
+  min-width: min(128px, 100%);
+  text-align: center;
   display: flex;
   flex-direction: column-reverse;
   /* u column-reverse je flex-end nahoře → čísla v jedné řadě i při dvouřádkovém popisku */

@@ -77,16 +77,19 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       popisek: t('web.stat_aktuality'),
       odkaz: '/aktuality',
     });
-    if (akce[0]?.datum)
+    // tři nejbližší akce (web + rezervace sálu a hřišť + předprodej)
+    akce.forEach((a, i) => {
+      if (!a.datum) return;
       statistiky.push({
-        hodnota: akce[0].datum.toLocaleDateString('cs-CZ', {
+        hodnota: a.datum.toLocaleDateString('cs-CZ', {
           day: 'numeric',
           month: 'numeric',
           timeZone: 'Europe/Prague',
         }),
-        popisek: t('web.stat_akce', { nazev: zkrat(akce[0].titulek, 40) }),
-        odkaz: odkazAkce(akce[0]) ?? '/akce',
+        popisek: t(i === 0 ? 'web.stat_akce' : 'web.stat_akce_dalsi', { nazev: zkrat(a.titulek, 40) }),
+        odkaz: odkazAkce(a) ?? '/akce',
       });
+    });
     return reply.view('web/uvod', {
       titulek: '',
       aktuality: aktuality.radky,
