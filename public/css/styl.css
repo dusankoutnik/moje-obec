@@ -2741,15 +2741,19 @@ button.kviz-odpoved:active {
   width: 100%;
   height: 10px;
 }
+/* odkazy pod skóre v jednom řádku; na úzkém displeji se zalomí, ale zůstanou zarovnané vlevo a stejně vysoké */
 .kviz-skore-odkazy {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 20px;
-  margin-top: 6px;
+  align-items: center;
+  gap: 0 24px;
+  margin: 6px 0 0;
+  line-height: 1.3;
 }
-.kviz-skore-odkazy .odkaz-tlacitko,
 .kviz-skore-odkazy a {
-  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 .kviz-kategorie {
   list-style: none;
@@ -2791,6 +2795,47 @@ button.kviz-odpoved:active {
 }
 .kviz-sprava-tabulka td:first-child {
   white-space: nowrap;
+}
+.kviz-hraci .vpravo {
+  text-align: right;
+}
+.kviz-hraci th a {
+  white-space: nowrap;
+}
+.kviz-souhrn {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 20px;
+}
+.kviz-souhrn div {
+  flex: 1 1 140px;
+  padding: 10px 14px;
+  border: 1px solid var(--linka);
+  border-radius: var(--radius);
+}
+.kviz-souhrn dt {
+  font-size: 0.92rem;
+}
+.kviz-souhrn dd {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.kviz-rucni-odpovedi {
+  margin: 12px 0;
+}
+.kviz-rucni-spravna {
+  padding: 8px 12px;
+  border-left: 4px solid var(--zelena);
+  margin-bottom: 12px;
+}
+.kviz-rucni-spatne {
+  padding: 8px 12px;
+  border-left: 4px solid var(--linka);
+}
+.kviz-nova-kategorie {
+  margin-top: 12px;
 }
 @media (prefers-reduced-motion: reduce) {
   button.kviz-odpoved {

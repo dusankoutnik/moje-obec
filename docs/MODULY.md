@@ -115,7 +115,18 @@ Obdoba hospodských kvízů pro občany: `/kviz` (úvod s výběrem oblastí), `
 - **Skóre:** průběžné = od posledního resetu (`kviz_hraci.reset_at`); reset nic nemaže, jen posune počátek.
 - **Kalibrace:** ve správě „správně napoprvé“ = podíl hráčů, kteří otázku trefili při prvním setkání; od 10 hráčů
   návrh obtížnosti (≥ 85 % → 1, ≥ 70 % → 2, ≥ 50 % → 3, ≥ 30 % → 4, jinak 5). Obtížnost se mění v YAML.
-- Tabulky `kviz_kategorie`, `kviz_otazky`, `kviz_hraci`, `kviz_odpovedi` (migrace 0011, také přidává roli `kviz`).
+- **Ruční otázky** (jen `spravce`/admin): formulář ve správě (kategorie ze seznamu nebo nová — slug, název, ikona;
+  otázka, správná + 3 špatné odpovědi, obtížnost, vysvětlení, zdroj), ověření stejným zod schématem jako YAML.
+  Uloží se s `rucne = true`, `balik = 'rucne'` a id `<kategorie>-r<číslo>` (číslo = maximum v kategorii + 1, pod
+  advisory zámkem). **Import YAML ruční otázky nikdy nevyřadí ani nepřepíše**; otázka z balíku se stejným id se
+  přeskočí a ve správě se vypíše jako kolize. Ruční otázky jde upravit (audit `kviz.otazka_upravena`), vypnout jako
+  ostatní a stáhnout jako YAML (`/sprava/kviz/<kategorie>/rucne.yml`) pro přenos do balíku obce (před vložením
+  změnit id). Audit `kviz.otazka_pridana`, `kviz.kategorie_pridana`. Vyhrazené slugy: hraci, nova, otazka, import, rucne.
+- **Statistiky hráčů** (jen `spravce`/admin, `/sprava/kviz/hraci`): souhrn (celkem, s účtem, anonymní, aktivní za
+  7 a 30 dní podle `posledni_at`) a tabulka hráčů s přezdívkou účtu nebo „anonymní hráč #`cislo`“ (krátké pořadové
+  číslo, nikoli id z cookie), skóre celkem a od resetu, nejčastější oblast a nejsilnější oblast (od 3 odpovědí),
+  řazení serverově `?radit=hrac|odpovedi|skore|reset|posledni&smer=asc|desc`, stránkování po 50. Žádné kontakty.
+- Tabulky `kviz_kategorie`, `kviz_otazky`, `kviz_hraci`, `kviz_odpovedi` (migrace 0011, také přidává roli `kviz`; 0012 přidává `rucne` a `cislo`).
 - Zbývá: úklid dlouho neaktivních anonymních hráčů (např. po roce), hraní ve skupině / soutěž, výsledkové tabulky.
 
 ## Rezervace + platby (P1)

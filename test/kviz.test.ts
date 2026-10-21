@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { importujBaliky, overBalik, poradiKategorie } from '../src/moduly/kviz/import.js';
+import { nactiRazeni } from '../src/moduly/kviz/statistiky.js';
 import { navrhObtiznosti, skoreZ } from '../src/moduly/kviz/sluzba.js';
 import {
   cilovaObtiznost,
@@ -363,7 +364,10 @@ describe('hra (anonymní hráč)', () => {
     expect(o.text).toContain('Průběžné skóre');
     expect(o.text).toContain('zatím bez odpovědi');
     expect(o.text).toContain('href="/kviz/skore"');
-    expect(o.text).toContain('action="/kviz/reset"');
+    // oba odkazy pod skóre v jednom řádku (flex), reset je obyčejný odkaz na potvrzovací stránku
+    expect(o.text).toMatch(
+      /<p class="kviz-skore-odkazy">\s*<a href="\/kviz\/skore">Skóre po oblastech<\/a>\s*<a href="\/kviz\/reset">Resetovat skóre<\/a>\s*<\/p>/,
+    );
     expect(o.text).toContain('/static/js/kviz.js');
     expect(tlacitka(o.text).map((b) => b.pozice)).toEqual(['0', '1', '2', '3']);
 
@@ -687,5 +691,315 @@ describe('správa kvízu', () => {
       .executeTakeFirstOrThrow();
     const d = await admin.get(`/sprava/uzivatele/${u.id}`);
     expect(d.text).toContain('value="kviz"');
+  });
+});
+
+describe('statistiky hráčů (jen správce)', () => {
+  it('práva: správce a admin ano; role kviz, web a občan ne; odkazy jen pro správce', async () => {
+    const spravce = await prihlasSRoli(t, '777888030', ['spravce']);
+    const admin = await prihlasSRoli(t, '777888031', ['admin']);
+    const kviz = await prihlasSRoli(t, '777888032', ['kviz']);
+    const web = await prihlasSRoli(t, '777888033', ['web']);
+    const obcan = await prihlasSRoli(t, '777888034', []);
+    for (const u of ['/sprava/kviz/hraci', '/sprava/kviz/nova']) {
+      expect((await spravce.get(u)).res.status).toBe(200);
+      expect((await admin.get(u)).res.status).toBe(200);
+      for (const p of [kviz, web, obcan]) expect((await p.get(u)).res.status).toBe(403);
+    }
+    const prehledKviz = await kviz.get('/sprava/kviz');
+    expect(prehledKviz.text).not.toContain('href="/sprava/kviz/hraci"');
+    expect(prehledKviz.text).not.toContain('href="/sprava/kviz/nova"');
+    // POST bez práv neprojde ani s platným CSRF tokenem
+    const r = await kviz.post(
+      '/sprava/kviz/nova',
+      { _csrf: csrfZ(prehledKviz.text), kategorie: 'cr', otazka: 'Neprojde?' },
+      false,
+    );
+    expect(r.res.status).toBe(403);
+    const prehled = await spravce.get('/sprava/kviz');
+    expect(prehled.text).toContain('href="/sprava/kviz/hraci"');
+    expect(prehled.text).toContain('href="/sprava/kviz/nova"');
+  });
+
+  it('počty, přihlášení a anonymní hráči, skóre, oblasti — bez telefonů a e-mailů', async () => {
+    await t.db.deleteFrom('kviz_odpovedi').execute();
+    await t.db.deleteFrom('kviz_hraci').execute();
+    // přihlášený hráč s přezdívkou a e-mailem: 3 odpovědi v Česku (2 správně), 1 ve Světě
+    const pepa = await prihlasSRoli(t, '777888040', []);
+    await t.db
+      .updateTable('uzivatele')
+      .set({ prezdivka: 'Pepa', email: 'pepa@example.org' })
+      .where('telefon', '=', '+420777888040')
+      .execute();
+    await zacni(pepa, ['cr']);
+    for (const ok of [true, true, false]) {
+      const r = await odpovez(pepa, ok);
+      await dalsi(pepa, r.vysledek.text);
+    }
+    // anonymní hráč: 1 špatně
+    const anon = new Prohlizec(t.base);
+    await zacni(anon, ['svet']);
+    await odpovez(anon, false);
+    const anonHrac = await hracZ(anon);
+    // anonymní hráč hrál naposledy před 10 dny
+    await t.db
+      .updateTable('kviz_hraci')
+      .set({ posledni_at: new Date(Date.now() - 10 * 86400_000) })
+      .where('id', '=', anonHrac.id)
+      .execute();
+
+    const spravce = await prihlasSRoli(t, '777888035', ['spravce']);
+    const s = await spravce.get('/sprava/kviz/hraci');
+    const dd = [...s.text.matchAll(/<dt>([^<]+)<\/dt><dd>(\d+)<\/dd>/g)].map((m) => [m[1], Number(m[2])]);
+    expect(Object.fromEntries(dd)).toEqual({
+      'Hráčů celkem': 2,
+      'S účtem': 1,
+      Anonymních: 1,
+      'Aktivních za 7 dní': 1,
+      'Aktivních za 30 dní': 2,
+    });
+    expect(s.text).toMatch(
+      /<th scope="row">Pepa <span class="stitek">účet<\/span><\/th>\s*<td class="vpravo">3<\/td>\s*<td class="vpravo">67 %<br><small>2 ✓ \/ 1 ✗<\/small>/,
+    );
+    expect(s.text).toContain(`anonymní hráč #${anonHrac.cislo}`);
+    expect(s.text).toMatch(/Česko <small>\(67 %\)<\/small>/); // nejsilnější oblast od 3 odpovědí
+    // žádné kontakty ani identifikátor z cookie
+    expect(s.text).not.toContain('777888040');
+    expect(s.text).not.toContain('777 888 040');
+    expect(s.text).not.toContain('pepa@example.org');
+    expect(s.text).not.toContain(anonHrac.id);
+    // výchozí řazení: naposledy hrál, sestupně (Pepa první)
+    expect(s.text).toMatch(
+      /aria-sort="descending"><a href="\/sprava\/kviz\/hraci\?radit=posledni&amp;smer=asc">/,
+    );
+    expect(s.text.indexOf('Pepa')).toBeLessThan(s.text.indexOf('anonymní hráč #'));
+    // řazení podle počtu odpovědí vzestupně: anonymní první
+    const vzestupne = await spravce.get('/sprava/kviz/hraci?radit=odpovedi&smer=asc');
+    expect(vzestupne.text).toMatch(/aria-sort="ascending"/);
+    expect(vzestupne.text.indexOf('anonymní hráč #')).toBeLessThan(vzestupne.text.indexOf('>Pepa '));
+    // nesmyslné řazení = výchozí
+    expect(nactiRazeni('DROP TABLE', 'x')).toEqual({ radit: 'posledni', smer: 'desc' });
+    expect(nactiRazeni('hrac')).toEqual({ radit: 'hrac', smer: 'asc' });
+    expect((await spravce.get('/sprava/kviz/hraci?radit=;--&strana=abc')).res.status).toBe(200);
+  });
+
+  it('stránkování po 50 hráčích', async () => {
+    await t.db
+      .insertInto('kviz_hraci')
+      .values(Array.from({ length: 60 }, () => ({ otazka_id: null, poradi: null })))
+      .execute();
+    const spravce = await prihlasSRoli(t, '777888036', ['spravce']);
+    const s1 = await spravce.get('/sprava/kviz/hraci');
+    expect(s1.text).toContain('Strana 1 z 2');
+    expect((s1.text.match(/<th scope="row">/g) ?? []).length).toBe(50);
+    expect(s1.text).toContain('href="/sprava/kviz/hraci?radit=posledni&amp;smer=desc&amp;strana=2"');
+    const s2 = await spravce.get('/sprava/kviz/hraci?strana=2');
+    expect(s2.text).toContain('Strana 2 z 2');
+    expect((s2.text.match(/<th scope="row">/g) ?? []).length).toBe(12);
+    expect((await spravce.get('/sprava/kviz/hraci?strana=99')).text).toContain('Strana 2 z 2');
+  });
+});
+
+describe('ruční otázky (jen správce)', () => {
+  const pole = (o: Record<string, string> = {}) => ({
+    kategorie: 'cr',
+    otazka: 'Ručně přidaná otázka o Česku?',
+    spravna: 'Správně ručně',
+    spatna1: 'Vedle ručně 1',
+    spatna2: 'Vedle ručně 2',
+    spatna3: 'Vedle ručně 3',
+    obtiznost: '1',
+    vysvetleni: 'Ruční vysvětlení.',
+    zdroj: 'https://example.org/rucne',
+    ...o,
+  });
+
+  it('validace jako u YAML: 4 různé odpovědi, obtížnost 1–5, kategorie; vyplněné hodnoty zůstanou', async () => {
+    const spravce = await prihlasSRoli(t, '777888037', ['spravce']);
+    const f = await spravce.get('/sprava/kviz/nova');
+    expect(f.text).toContain('✓ Správná odpověď');
+    expect(f.text).toContain('3 špatné odpovědi');
+    expect(f.text).toMatch(/<option value="__nova"[^>]*>\+ Nová kategorie/);
+    const csrf = csrfZ(f.text);
+    let r = await spravce.post(
+      '/sprava/kviz/nova',
+      { _csrf: csrf, ...pole({ spatna2: 'Správně ručně' }) },
+      false,
+    );
+    expect(r.res.status).toBe(400);
+    expect(r.text).toContain('Odpovědi: odpovědi se opakují');
+    expect(r.text).toContain('value="Vedle ručně 1"'); // vyplněné hodnoty zůstaly
+    r = await spravce.post(
+      '/sprava/kviz/nova',
+      { _csrf: csrf, ...pole({ obtiznost: '9', spatna3: '' }) },
+      false,
+    );
+    expect(r.text).toContain('Obtížnost: obtížnost 1–5');
+    expect(r.text).toContain('3. špatná odpověď: prázdná odpověď');
+    r = await spravce.post('/sprava/kviz/nova', { _csrf: csrf, ...pole({ kategorie: 'neni' }) }, false);
+    expect(r.text).toContain('Kategorie: vyberte kategorii');
+    r = await spravce.post(
+      '/sprava/kviz/nova',
+      { _csrf: csrf, ...pole({ kategorie: '__nova', nova_slug: 'hraci', nova_nazev: 'X' }) },
+      false,
+    );
+    expect(r.text).toContain('je vyhrazená');
+    r = await spravce.post(
+      '/sprava/kviz/nova',
+      { _csrf: csrf, ...pole({ kategorie: '__nova', nova_slug: 'cr', nova_nazev: 'X' }) },
+      false,
+    );
+    expect(r.text).toContain('už existuje');
+    r = await spravce.post(
+      '/sprava/kviz/nova',
+      { _csrf: csrf, ...pole({ kategorie: '__nova', nova_slug: 'Hasiči', nova_nazev: '' }) },
+      false,
+    );
+    expect(r.text).toContain('Zkratka nové kategorie:');
+    expect(await t.db.selectFrom('kviz_otazky').select('id').where('rucne', '=', true).execute()).toEqual([]);
+    // bez CSRF tokenu nic
+    expect((await spravce.post('/sprava/kviz/nova', pole(), false)).res.status).toBe(403);
+  });
+
+  it('uložení (id <kategorie>-r<n>, audit), nová kategorie, otázka ve hře, úprava a export YAML', async () => {
+    const spravce = await prihlasSRoli(t, '777888038', ['spravce']);
+    const csrf = csrfZ((await spravce.get('/sprava/kviz/nova')).text);
+    let r = await spravce.post('/sprava/kviz/nova', { _csrf: csrf, ...pole() });
+    expect(r.url).toMatch(/\/sprava\/kviz\/cr#o-cr-r1$/);
+    expect(r.text).toContain('Otázka cr-r1 je uložená');
+    expect(r.text).toMatch(/id="o-cr-r1"/);
+    expect(r.text).toContain('href="/sprava/kviz/otazka/cr-r1/upravit"');
+    expect(r.text).toContain('href="/sprava/kviz/cr/rucne.yml"');
+    r = await spravce.post('/sprava/kviz/nova', {
+      _csrf: csrf,
+      ...pole({ otazka: 'Druhá ruční?', obtiznost: '5' }),
+    });
+    expect(r.text).toContain('Otázka cr-r2 je uložená');
+    r = await spravce.post('/sprava/kviz/nova', {
+      _csrf: csrf,
+      ...pole({
+        kategorie: '__nova',
+        nova_slug: 'hasici',
+        nova_nazev: 'Hasiči',
+        nova_ikona: '🚒',
+        otazka: 'Kolik má hasičská stříkačka hadic?',
+        zdroj: '',
+      }),
+    });
+    expect(r.url).toMatch(/\/sprava\/kviz\/hasici#o-hasici-r1$/);
+    expect(r.text).toContain('Otázka hasici-r1 je uložená');
+    const o = await t.db
+      .selectFrom('kviz_otazky')
+      .selectAll()
+      .where('id', '=', 'hasici-r1')
+      .executeTakeFirstOrThrow();
+    expect(o).toMatchObject({ rucne: true, v_baliku: true, balik: 'rucne', obtiznost: 1, zdroj: '' });
+    expect(o.odpovedi).toEqual(['Správně ručně', 'Vedle ručně 1', 'Vedle ručně 2', 'Vedle ručně 3']);
+    const audit = await t.db
+      .selectFrom('audit_log')
+      .select(['akce', 'detail'])
+      .where('akce', 'in', ['kviz.otazka_pridana', 'kviz.kategorie_pridana'])
+      .orderBy('id')
+      .execute();
+    expect(audit.map((a) => a.akce)).toEqual([
+      'kviz.otazka_pridana',
+      'kviz.otazka_pridana',
+      'kviz.kategorie_pridana',
+      'kviz.otazka_pridana',
+    ]);
+
+    // otázka se hned nabízí ve hře (kategorie Hasiči se objeví na úvodu)
+    const p = new Prohlizec(t.base);
+    expect((await p.get('/kviz')).text).toContain('value="hasici"');
+    await zacni(p, ['hasici']);
+    const hra = await p.get('/kviz/otazka');
+    expect(hra.text).toContain('Kolik má hasičská stříkačka hadic?');
+    expect(idOtazky(hra.text)).toBe('hasici-r1');
+
+    // úprava: jen ruční otázky (YAML ne), audit
+    expect((await spravce.get('/sprava/kviz/otazka/cr-001/upravit')).res.status).toBe(404);
+    const u = await spravce.get('/sprava/kviz/otazka/cr-r1/upravit');
+    expect(u.text).toContain('Upravit otázku cr-r1');
+    expect(u.text).toContain('value="Správně ručně"');
+    r = await spravce.post('/sprava/kviz/otazka/cr-r1/upravit', {
+      _csrf: csrfZ(u.text),
+      ...pole({ otazka: 'Upravená ruční otázka?', obtiznost: '3' }),
+    });
+    expect(r.text).toContain('Otázka cr-r1 je upravená');
+    expect(r.text).toContain('Upravená ruční otázka?');
+    const chybna = await spravce.post(
+      '/sprava/kviz/otazka/cr-r1/upravit',
+      { _csrf: csrfZ(u.text), ...pole({ otazka: '' }) },
+      false,
+    );
+    expect(chybna.res.status).toBe(400);
+    expect(
+      await t.db.selectFrom('audit_log').select('id').where('akce', '=', 'kviz.otazka_upravena').execute(),
+    ).toHaveLength(1);
+
+    // export YAML = platný balík s ručními otázkami
+    const res = await fetch(t.base + '/sprava/kviz/cr/rucne.yml', {
+      headers: {
+        cookie: [...(spravce as unknown as { cookies: Map<string, string> }).cookies]
+          .map(([a, b]) => `${a}=${b}`)
+          .join('; '),
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toMatch(/yaml/);
+    expect(res.headers.get('content-disposition')).toContain('cr-rucne.yml');
+    const balik = overBalik(await res.text());
+    expect('balik' in balik && balik.balik.otazky.map((x) => x.id)).toEqual(['cr-r1', 'cr-r2']);
+    expect((await spravce.get('/sprava/kviz/svet/rucne.yml')).res.status).toBe(404);
+    const kviz = await prihlasSRoli(t, '777888032', ['kviz']);
+    expect((await kviz.get('/sprava/kviz/cr/rucne.yml')).res.status).toBe(403);
+    expect((await kviz.get('/sprava/kviz/otazka/cr-r1/upravit')).res.status).toBe(403);
+    // role kviz vidí ruční otázky se štítkem, ale bez úprav; vypnout je může
+    const kat = await kviz.get('/sprava/kviz/cr');
+    expect(kat.text).toContain('<span class="stitek">ruční</span>');
+    expect(kat.text).not.toContain('/upravit');
+    const vyp = await kviz.post('/sprava/kviz/otazka/cr-r2', { _csrf: csrfZ(kat.text), akce: 'vypnout' });
+    expect(vyp.text).toContain('Otázka cr-r2 je vypnutá');
+  });
+
+  it('import YAML ruční otázky nevyřadí ani nepřepíše; kolize id se jen ohlásí', async () => {
+    const pred = await t.db
+      .selectFrom('kviz_otazky')
+      .select(['id', 'otazka', 'v_baliku'])
+      .where('rucne', '=', true)
+      .orderBy('id')
+      .execute();
+    expect(pred.map((o) => o.id)).toEqual(['cr-r1', 'cr-r2', 'hasici-r1']);
+    const znovu = await t.app.kvizImport();
+    expect(znovu).toMatchObject({ otazky: 27, deaktivovane: 0, kolize: [] });
+    const dir = await mkdtemp(path.join(tmpdir(), 'kviz-rucne-'));
+    try {
+      await writeFile(
+        path.join(dir, 'kolize.yml'),
+        'kategorie: cr\nnazev: Česko\notazky:\n  - id: cr-r1\n    otazka: Přepsat ruční?\n    odpovedi: [a, b, c, d]\n    obtiznost: 2\n',
+      );
+      const r = await importujBaliky(t.db, [
+        ...adresareBaliku({
+          KVIZ_VEREJNE: new URL('./fixtures/kviz', import.meta.url).pathname,
+          KVIZ_BALIKY: '',
+        }),
+        { cesta: dir, stitek: 'test' },
+      ]);
+      expect(r.kolize).toEqual([{ soubor: 'test/kolize.yml', id: 'cr-r1' }]);
+      expect(r.chyby).toEqual([]);
+      // jen balíky obce (bez veřejných): ruční otázky stejně zůstanou v balíku
+      await importujBaliky(t.db, [{ cesta: dir, stitek: 'test' }]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+    const po = await t.db
+      .selectFrom('kviz_otazky')
+      .select(['id', 'otazka', 'v_baliku'])
+      .where('rucne', '=', true)
+      .orderBy('id')
+      .execute();
+    expect(po).toEqual(pred);
+    expect(po.every((o) => o.v_baliku)).toBe(true);
+    await t.app.kvizImport();
   });
 });

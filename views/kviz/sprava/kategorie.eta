@@ -2,6 +2,10 @@
 <p><a href="/sprava/kviz">← <%= it.t('kviz.zpet_na_prehled') %></a></p>
 <h1><span aria-hidden="true"><%= it.kategorie.ikona %></span> <%= it.kategorie.nazev %></h1>
 <p class="napoveda"><%= it.t('kviz.sprava_kalibrace') %></p>
+<% if (it.jeSpravce) { %>
+<p class="kviz-tlacitka"><a class="tlacitko sekundarni" href="/sprava/kviz/nova?kategorie=<%= encodeURIComponent(it.kategorie.slug) %>">➕ <%= it.t('kviz.pridat_otazku') %></a><% if (it.maRucne) { %> <a class="tlacitko sekundarni" href="/sprava/kviz/<%= encodeURIComponent(it.kategorie.slug) %>/rucne.yml" download aria-describedby="kviz-export-n">⬇ <%= it.t('kviz.rucni_export') %></a><% } %></p>
+<% if (it.maRucne) { %><p class="napoveda" id="kviz-export-n"><%= it.t('kviz.rucni_export_napoveda') %></p><% } %>
+<% } %>
 <div class="tabulka-obal">
 <table class="tabulka kompaktni kviz-sprava-tabulka">
   <thead><tr>
@@ -17,7 +21,7 @@
   <% it.otazky.forEach(function (o) { %>
     <tr id="o-<%= o.id %>" class="<%= o.stav !== 'aktivni' ? 'blokovan' : '' %>">
       <td><code><%= o.id %></code></td>
-      <td><%= o.otazka %><br><small>✓ <%= o.odpovedi[0] %> · <%= it.t('kviz.balik', { b: o.balik }) %></small></td>
+      <td><%= o.otazka %><br><small>✓ <%= o.odpovedi[0] %> · <% if (o.rucne) { %><span class="stitek"><%= it.t('kviz.rucni_stitek') %></span><% } else { %><%= it.t('kviz.balik', { b: o.balik }) %><% } %></small><% if (o.rucne && it.jeSpravce) { %> <a href="/sprava/kviz/otazka/<%= encodeURIComponent(o.id) %>/upravit" aria-label="<%= it.t('kviz.upravit_otazku', { id: o.id }) %>"><%= it.t('kviz.upravit') %></a><% } %></td>
       <td><%= o.obtiznost %></td>
       <td><%= o.hracu %></td>
       <td><%= o.napoprve === null ? '—' : o.napoprve + ' %' %></td>

@@ -3,6 +3,13 @@
 <h1>🧠 <%= it.t('kviz.sprava_titulek') %></h1>
 <p class="perex"><%= it.t('kviz.sprava_perex') %></p>
 <p><%= it.t('kviz.sprava_hraci', { n: it.hracu, u: it.hracuSUctem }) %> <a href="/kviz"><%= it.t('kviz.hrat') %> →</a></p>
+<% if (it.jeSpravce) { %>
+<section class="karta kviz-spravce" aria-labelledby="kviz-spravce-h">
+  <h2 id="kviz-spravce-h"><%= it.t('kviz.sprava_spravce_nadpis') %></h2>
+  <p><%= it.t('kviz.sprava_spravce_text') %></p>
+  <p class="kviz-tlacitka"><a class="tlacitko" href="/sprava/kviz/hraci">📊 <%= it.t('kviz.hraci_odkaz') %></a> <a class="tlacitko sekundarni" href="/sprava/kviz/nova">➕ <%= it.t('kviz.pridat_otazku') %></a></p>
+</section>
+<% } %>
 <% if (!it.kategorie.length) { %>
 <p class="flash flash-info" role="status"><%= it.t('kviz.sprava_zadne') %></p>
 <% } else { %>
@@ -37,6 +44,12 @@
   <div class="flash flash-chyba" role="status">
     <p><%= it.t('kviz.sprava_chyby_import') %></p>
     <ul><% it.posledniImport.chyby.forEach(function (c) { %><li><strong><%= c.soubor %></strong>: <%= c.zprava %></li><% }) %></ul>
+  </div>
+  <% } %>
+  <% if (it.posledniImport.kolize && it.posledniImport.kolize.length) { %>
+  <div class="flash flash-info" role="status">
+    <p><%= it.t('kviz.sprava_kolize') %></p>
+    <ul><% it.posledniImport.kolize.forEach(function (c) { %><li><strong><%= c.soubor %></strong>: <code><%= c.id %></code></li><% }) %></ul>
   </div>
   <% } %>
   <% } %>

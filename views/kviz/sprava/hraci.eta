@@ -1,0 +1,63 @@
+<% layout('/layout') %>
+<%
+  var procento = function (s) { return s.procento === null ? '—' : s.procento + ' %'; };
+  var url = function (radit, smer, strana) { return '/sprava/kviz/hraci?radit=' + radit + '&smer=' + smer + (strana > 1 ? '&strana=' + strana : ''); };
+  var popisky = { hrac: 'kviz.sloupec_hrac', odpovedi: 'kviz.sloupec_odpovedi', skore: 'kviz.sloupec_skore', reset: 'kviz.sloupec_reset', posledni: 'kviz.sloupec_posledni' };
+  var zahlavi = function (sloupec, cislo) {
+    var aktivni = it.radit === sloupec;
+    var smer = aktivni ? (it.smer === 'asc' ? 'desc' : 'asc') : it.vychoziSmer[sloupec];
+    var aria = aktivni ? ' aria-sort="' + (it.smer === 'asc' ? 'ascending' : 'descending') + '"' : '';
+    var sipka = aktivni ? (it.smer === 'asc' ? ' ▲' : ' ▼') : '';
+    var vh = aktivni ? '<span class="vh"> (' + it.t(it.smer === 'asc' ? 'kviz.razeno_vzestupne' : 'kviz.razeno_sestupne') + ')</span>' : '';
+    return '<th scope="col"' + aria + (cislo ? ' class="vpravo"' : '') + '><a href="' + url(sloupec, smer, 1).replace(/&/g, '&amp;') + '">' + it.t(popisky[sloupec]) + '<span aria-hidden="true">' + sipka + '</span>' + vh + '</a></th>';
+  };
+%>
+<p><a href="/sprava/kviz">← <%= it.t('kviz.zpet_na_prehled') %></a></p>
+<h1>📊 <%= it.t('kviz.hraci_titulek') %></h1>
+<p class="perex"><%= it.t('kviz.hraci_perex') %></p>
+<dl class="kviz-souhrn">
+  <div><dt><%= it.t('kviz.hraci_celkem') %></dt><dd><%= it.souhrn.vsichni %></dd></div>
+  <div><dt><%= it.t('kviz.hraci_prihlaseni') %></dt><dd><%= it.souhrn.prihlaseni %></dd></div>
+  <div><dt><%= it.t('kviz.hraci_anonymni') %></dt><dd><%= it.souhrn.anonymni %></dd></div>
+  <div><dt><%= it.t('kviz.hraci_7') %></dt><dd><%= it.souhrn.aktivni7 %></dd></div>
+  <div><dt><%= it.t('kviz.hraci_30') %></dt><dd><%= it.souhrn.aktivni30 %></dd></div>
+</dl>
+<% if (!it.hraci.length) { %>
+<p class="flash flash-info" role="status"><%= it.t('kviz.hraci_zadni') %></p>
+<% } else { %>
+<p class="napoveda"><%= it.t('kviz.hraci_razeni_napoveda') %> <%= it.t('kviz.hraci_nejsilnejsi_napoveda', { n: it.minOblast }) %></p>
+<div class="tabulka-obal">
+<table class="tabulka kompaktni kviz-hraci">
+  <caption class="vh"><%= it.t('kviz.hraci_tabulka') %></caption>
+  <thead><tr>
+    <%~ zahlavi('hrac') %>
+    <%~ zahlavi('odpovedi', true) %>
+    <%~ zahlavi('skore', true) %>
+    <%~ zahlavi('reset', true) %>
+    <th scope="col"><%= it.t('kviz.sloupec_oblibena') %></th>
+    <th scope="col"><%= it.t('kviz.sloupec_nejsilnejsi') %></th>
+    <%~ zahlavi('posledni') %>
+  </tr></thead>
+  <tbody>
+  <% it.hraci.forEach(function (h) { %>
+    <tr>
+      <th scope="row"><% if (h.prihlaseny) { %><%= h.prezdivka || it.t('kviz.hrac_s_uctem', { n: h.cislo }) %> <span class="stitek"><%= it.t('kviz.stitek_ucet') %></span><% } else { %><%= it.t('kviz.anonymni_hrac', { n: h.cislo }) %><% } %></th>
+      <td class="vpravo"><%= h.odpovedi %></td>
+      <td class="vpravo"><%= procento(h.celkem) %><% if (h.odpovedi) { %><br><small><%= h.celkem.spravne %> ✓ / <%= h.celkem.spatne %> ✗</small><% } %></td>
+      <td class="vpravo"><%= procento(h.odResetu) %><% if (h.odResetu.procento !== null) { %><br><small><%= h.odResetu.spravne %> ✓ / <%= h.odResetu.spatne %> ✗</small><% } %></td>
+      <td><% if (h.oblibena) { %><span aria-hidden="true"><%= h.oblibena.ikona %></span> <%= h.oblibena.nazev %><% } else { %>—<% } %></td>
+      <td><% if (h.nejsilnejsi) { %><span aria-hidden="true"><%= h.nejsilnejsi.ikona %></span> <%= h.nejsilnejsi.nazev %> <small>(<%= h.nejsilnejsi.skore.procento %> %)</small><% } else { %>—<% } %></td>
+      <td><%= it.fmtDatum(h.posledni) %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% if (it.stran > 1) { %>
+<nav class="strankovani" aria-label="<%= it.t('kviz.strankovani') %>">
+  <% if (it.strana > 1) { %><a href="<%= url(it.radit, it.smer, it.strana - 1) %>">← <%= it.t('kviz.predchozi') %></a><% } else { %><span></span><% } %>
+  <span><%= it.t('kviz.strana_z', { n: it.strana, z: it.stran }) %></span>
+  <% if (it.strana < it.stran) { %><a href="<%= url(it.radit, it.smer, it.strana + 1) %>"><%= it.t('kviz.dalsi_strana') %> →</a><% } else { %><span></span><% } %>
+</nav>
+<% } %>
+<% } %>

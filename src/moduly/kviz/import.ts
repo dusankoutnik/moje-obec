@@ -2,6 +2,8 @@
 // Veřejné balíky leží v repozitáři (kviz-otazky/*.yml), balíky konkrétní obce mimo repozitář (KVIZ_BALIKY).
 // Změny textu se propíší, otázky, které z balíku zmizely, se jen označí v_baliku = false (historie odpovědí zůstává).
 // Soubor s chybou se přeskočí celý a jeho otázky se NEdeaktivují (překlep nesmí vyřadit polovinu banky).
+// Otázky přidané ručně ve správě (rucne = true) import nikdy nevyřadí ani nepřepíše; otázka z balíku se stejným id
+// se přeskočí a vypíše jako kolize.
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { parse } from 'yaml';
@@ -69,6 +71,8 @@ export interface VysledekImportu {
   zmenene: number;
   deaktivovane: number;
   chyby: { soubor: string; zprava: string }[];
+  /** otázky z balíků přeskočené proto, že stejné id má ručně přidaná otázka */
+  kolize: { soubor: string; id: string }[];
 }
 
 export function poradiKategorie(slug: string): number {
@@ -121,6 +125,7 @@ export async function importujBaliky(
     zmenene: 0,
     deaktivovane: 0,
     chyby: [],
+    kolize: [],
   };
   const nactene: { balik: Balik; nazev: string }[] = [];
   const chybne = new Set<string>();
@@ -192,6 +197,7 @@ export async function importujBaliky(
             'vysvetleni',
             'zdroj',
             'v_baliku',
+            'rucne',
           ])
           .execute()
       ).map((o) => [o.id, o]),
@@ -199,8 +205,12 @@ export async function importujBaliky(
     for (const { balik, nazev } of nactene) {
       const katId = kategorieId.get(balik.kategorie)!;
       for (const o of balik.otazky) {
-        vysledek.otazky++;
         const s = stare.get(o.id);
+        if (s?.rucne) {
+          vysledek.kolize.push({ soubor: nazev, id: o.id });
+          continue;
+        }
+        vysledek.otazky++;
         const hodnoty = {
           kategorie_id: katId,
           otazka: o.otazka,
@@ -243,7 +253,8 @@ export async function importujBaliky(
     let deaktivace = trx
       .updateTable('kviz_otazky')
       .set({ v_baliku: false, aktualizovano_at: new Date() })
-      .where('v_baliku', '=', true);
+      .where('v_baliku', '=', true)
+      .where('rucne', '=', false);
     if (videnaId.size) deaktivace = deaktivace.where('id', 'not in', [...videnaId.keys()]);
     if (chybne.size) deaktivace = deaktivace.where('balik', 'not in', [...chybne]);
     const r = await deaktivace.executeTakeFirst();

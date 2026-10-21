@@ -465,6 +465,7 @@ export class KvizSluzba {
       zdroj: string;
       balik: string;
       v_baliku: boolean;
+      rucne: boolean;
       vypnuta_at: Date | null;
       pocet: string;
       spravne: string;
@@ -476,7 +477,7 @@ export class KvizSluzba {
       ), prvni AS (
         SELECT DISTINCT ON (hrac_id, otazka_id) otazka_id, spravne FROM a ORDER BY hrac_id, otazka_id, ts
       )
-      SELECT o.id, o.otazka, o.odpovedi, o.obtiznost, o.zdroj, o.balik, o.v_baliku, o.vypnuta_at,
+      SELECT o.id, o.otazka, o.odpovedi, o.obtiznost, o.zdroj, o.balik, o.v_baliku, o.rucne, o.vypnuta_at,
              coalesce(st.pocet, 0) AS pocet, coalesce(st.spravne, 0) AS spravne,
              coalesce(p.hracu, 0) AS hracu, coalesce(p.napoprve, 0) AS napoprve
         FROM kviz_otazky o
@@ -485,7 +486,7 @@ export class KvizSluzba {
         LEFT JOIN (SELECT otazka_id, count(*) AS hracu, count(*) FILTER (WHERE spravne) AS napoprve
                      FROM prvni GROUP BY otazka_id) p ON p.otazka_id = o.id
        WHERE o.kategorie_id = ${k.id}
-       ORDER BY o.v_baliku DESC, o.obtiznost, o.id`.execute(this.db);
+       ORDER BY o.v_baliku DESC, o.rucne DESC, o.obtiznost, o.id`.execute(this.db);
     return {
       kategorie: k,
       otazky: r.rows.map((o) => {

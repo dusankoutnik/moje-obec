@@ -1,0 +1,65 @@
+<% layout('/layout') %>
+<p><a href="/sprava/kviz">← <%= it.t('kviz.zpet_na_prehled') %></a></p>
+<h1><%= it.titulek %></h1>
+<p class="perex"><%= it.t('kviz.rucni_perex') %></p>
+<% if (it.chyby.length) { %>
+<div class="flash flash-chyba" role="alert">
+  <p><%= it.t('kviz.rucni_chyby') %></p>
+  <ul><% it.chyby.forEach(function (c) { %><li><%= c %></li><% }) %></ul>
+</div>
+<% } %>
+<form method="post" action="<%= it.id ? '/sprava/kviz/otazka/' + encodeURIComponent(it.id) + '/upravit' : '/sprava/kviz/nova' %>" class="formular siroky kviz-rucni">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <fieldset>
+    <legend><span class="krok">1</span> <%= it.t('kviz.rucni_kategorie') %></legend>
+    <label for="kategorie"><%= it.t('kviz.rucni_kategorie') %> <small>(<%= it.t('app.povinne') %>)</small></label>
+    <select id="kategorie" name="kategorie" required>
+      <% it.kategorie.forEach(function (k) { %><option value="<%= k.slug %>"<%= it.f.kategorie === k.slug ? ' selected' : '' %>><%= k.ikona %> <%= k.nazev %></option><% }) %>
+      <option value="<%= it.nova %>"<%= it.f.kategorie === it.nova || !it.kategorie.length ? ' selected' : '' %>><%= it.t('kviz.rucni_kategorie_nova') %></option>
+    </select>
+    <fieldset class="kviz-nova-kategorie">
+      <legend><%= it.t('kviz.rucni_nova_legenda') %></legend>
+      <div class="radek">
+        <div><label for="nova_slug"><%= it.t('kviz.rucni_nova_slug') %></label><input id="nova_slug" name="nova_slug" maxlength="40" pattern="[a-z0-9\-]{1,40}" value="<%= it.f.nova_slug || '' %>" aria-describedby="nova-slug-n"><p class="napoveda" id="nova-slug-n"><%= it.t('kviz.rucni_nova_slug_napoveda') %></p></div>
+        <div><label for="nova_nazev"><%= it.t('kviz.rucni_nova_nazev') %></label><input id="nova_nazev" name="nova_nazev" maxlength="100" value="<%= it.f.nova_nazev || '' %>"></div>
+        <div><label for="nova_ikona"><%= it.t('kviz.rucni_nova_ikona') %></label><input id="nova_ikona" name="nova_ikona" maxlength="16" value="<%= it.f.nova_ikona || '' %>"></div>
+      </div>
+    </fieldset>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="krok">2</span> <%= it.t('kviz.rucni_otazka') %></legend>
+    <label for="otazka"><%= it.t('kviz.rucni_otazka') %> <small>(<%= it.t('app.povinne') %>)</small></label>
+    <textarea id="otazka" name="otazka" rows="2" required minlength="3" maxlength="600"><%= it.f.otazka || '' %></textarea>
+    <fieldset class="kviz-rucni-odpovedi">
+      <legend><%= it.t('kviz.rucni_odpovedi_legenda') %></legend>
+      <div class="kviz-rucni-spravna">
+        <label for="spravna">✓ <%= it.t('kviz.rucni_spravna') %> <small>(<%= it.t('app.povinne') %>)</small></label>
+        <input id="spravna" name="spravna" required maxlength="300" value="<%= it.f.spravna || '' %>">
+      </div>
+      <div class="kviz-rucni-spatne">
+        <p class="napoveda" id="spatne-n">✗ <%= it.t('kviz.rucni_spatne_napoveda') %></p>
+        <% ;[1, 2, 3].forEach(function (i) { %>
+        <label for="spatna<%= i %>"><%= it.t('kviz.rucni_spatna', { n: i }) %> <small>(<%= it.t('app.povinne') %>)</small></label>
+        <input id="spatna<%= i %>" name="spatna<%= i %>" required maxlength="300" value="<%= it.f['spatna' + i] || '' %>" aria-describedby="spatne-n">
+        <% }) %>
+      </div>
+    </fieldset>
+    <label for="obtiznost"><%= it.t('kviz.rucni_obtiznost') %></label>
+    <select id="obtiznost" name="obtiznost">
+      <% ;[1, 2, 3, 4, 5].forEach(function (i) { %><option value="<%= i %>"<%= String(it.f.obtiznost) === String(i) ? ' selected' : '' %>><%= it.t('kviz.rucni_obtiznost_' + i) %></option><% }) %>
+    </select>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="krok">3</span> <%= it.t('kviz.rucni_vysvetleni') %></legend>
+    <label for="vysvetleni"><%= it.t('kviz.rucni_vysvetleni') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+    <textarea id="vysvetleni" name="vysvetleni" rows="3" maxlength="2000" aria-describedby="vysvetleni-n"><%= it.f.vysvetleni || '' %></textarea>
+    <p class="napoveda" id="vysvetleni-n"><%= it.t('kviz.rucni_vysvetleni_napoveda') %></p>
+    <label for="zdroj"><%= it.t('kviz.rucni_zdroj') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+    <input id="zdroj" name="zdroj" maxlength="500" inputmode="url" value="<%= it.f.zdroj || '' %>" aria-describedby="zdroj-n">
+    <p class="napoveda" id="zdroj-n"><%= it.t('kviz.rucni_zdroj_napoveda') %></p>
+  </fieldset>
+
+  <p class="kviz-tlacitka"><button class="tlacitko" type="submit"><%= it.t('kviz.rucni_ulozit') %></button> <a class="tlacitko sekundarni" href="/sprava/kviz"><%= it.t('kviz.rucni_zrusit') %></a></p>
+</form>

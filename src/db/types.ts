@@ -403,6 +403,8 @@ export interface KvizOtazkyTable {
   zdroj: Generated<string>;
   balik: Generated<string>;
   v_baliku: Generated<boolean>;
+  /** přidaná ručně ve správě — import YAML ji nevyřadí ani nepřepíše */
+  rucne: Generated<boolean>;
   vypnuta_at: TimestampNullable;
   vytvoreno_at: TimestampGenerated;
   aktualizovano_at: TimestampGenerated;
@@ -410,6 +412,8 @@ export interface KvizOtazkyTable {
 
 export interface KvizHraciTable {
   id: Generated<string>;
+  /** krátké pořadové číslo (jen pro statistiky správy) */
+  cislo: Generated<number>;
   uzivatel_id: string | null;
   reset_at: TimestampNullable;
   kategorie: Generated<string[]>;

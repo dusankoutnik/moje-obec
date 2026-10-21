@@ -2,6 +2,14 @@
 
 ## Kvíz (21. 10. 2026)
 
+- **Doplněno 21. 10. 2026 odpoledne:** odkazy „Skóre po oblastech“ a „Resetovat skóre“ v boxu skóre v jednom řádku
+  (flex; reset je obyčejný odkaz na potvrzovací stránku). Jen pro **správce obce** (role `spravce`, admin; ne `kviz`
+  ani `web`): `/sprava/kviz/hraci` — počty hráčů (celkem, s účtem, anonymní, aktivní za 7/30 dní) a tabulka hráčů
+  (přezdívka účtu / „anonymní hráč #číslo“, odpovědi, skóre celkem a od resetu, nejčastější a nejsilnější oblast,
+  naposledy hrál; řazení `?radit=&smer=`, stránkování po 50; žádné kontakty) a **ruční otázky** `/sprava/kviz/nova`,
+  `/sprava/kviz/otazka/<id>/upravit`, export `/sprava/kviz/<kategorie>/rucne.yml` (migrace 0012: `kviz_otazky.rucne`,
+  `kviz_hraci.cislo`). Testy `test/kviz.test.ts` 35, celkem 299; axe 0 porušení na 10 stránkách kvízu a správy.
+
 - Nový modul `kviz` (zapíná se `moduly.kviz` v `obec.yml`), popis a algoritmus řazení otázek v `docs/MODULY.md`.
   Veřejně `/kviz` (výběr oblastí, otázka s oblastí a průběžným skóre, výsledek s vysvětlením a zdrojem, skóre po
   oblastech celkem i od resetu, reset s potvrzením), správa `/sprava/kviz` (nová role `kviz`, nebo `web`).
