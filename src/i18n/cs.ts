@@ -1235,6 +1235,27 @@ export const cs = {
     mapa_ucet: 'Můj účet',
     zasady_cookies: 'Zásady cookies',
   },
+  odstavky: {
+    titulek: 'Plánované odstávky elektřiny',
+    uvod: 'Plánovaná přerušení dodávky elektřiny v obci podle údajů ČEZ Distribuce. Přesný rozsah a podmínky jsou vždy v oznámení ČEZ (PDF).',
+    planovane: 'Nadcházející a probíhající odstávky',
+    historie: 'Posledních 30 dní',
+    historie_prazdna: 'Za posledních 30 dní žádná odstávka nebyla.',
+    zadne: 'Žádné plánované odstávky elektřiny.',
+    nenacteno:
+      'Údaje ČEZ Distribuce se zatím nepodařilo načíst. Zkuste to později, nebo se podívejte přímo na web ČEZ Distribuce.',
+    probiha: 'probíhá',
+    zrusena: 'zrušena',
+    zrusena_text: 'ČEZ Distribuce tuto odstávku zrušila — elektřina v tu dobu poteče normálně.',
+    vsechna_mista: 'Všechna odběrná místa ({n})',
+    parcely: 'pozemky v k. ú. {katastr}:',
+    pdf: 'Oznámení ČEZ (PDF)',
+    web_cez: 'Další informace na webu ČEZ Distribuce',
+    podrobnosti: 'Podrobnosti a historie',
+    zdroj: 'Údaje ČEZ Distribuce ověřeny {kdy}.',
+    zdroj_popis: 'Zdroj: ČEZ Distribuce (portál Bez šťávy), stahuje se automaticky jednou za hodinu.',
+    zdroj_chyba: 'Poslední pokus o aktualizaci se nepovedl, zobrazují se poslední známé údaje.',
+  },
 } as const;
 
 export type Slovnik = typeof cs;

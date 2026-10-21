@@ -1,0 +1,19 @@
+<% /* jedna odstávka: termín, stav, stručně místa, rozbalení všech odběrných míst, odkazy na PDF a web ČEZ.
+   Parametry: o (odstávka), t, h (úroveň nadpisu termínu), terminOdstavky, datumOdstavky, souhrnMist, popisUlice, pocetMist */ %>
+<% const o = it.o; const kdy = it.terminOdstavky(o.od, o.do); const n = it.pocetMist(o) %>
+<li class="odst-polozka<%= o.zruseno ? ' odst-zrusena' : '' %>">
+  <<%= it.h %> class="odst-kdy"><time datetime="<%= o.od.toISOString() %>"><%= kdy %></time><% if (o.zruseno) { %> <span class="stav-stitek stav-chybi"><%= it.t('odstavky.zrusena') %></span><% } else if (o.probiha) { %> <span class="stav-stitek stav-vychozi"><%= it.t('odstavky.probiha') %></span><% } %></<%= it.h %>>
+  <% if (o.zruseno) { %><p class="odst-pozn"><%= it.t('odstavky.zrusena_text') %></p><% } %>
+  <% const souhrn = it.souhrnMist(o) %>
+  <% if (souhrn) { %><p class="odst-mista"><%= souhrn %></p><% } %>
+  <% if (n > 0) { %>
+  <details class="odst-vse">
+    <summary><%= it.t('odstavky.vsechna_mista', { n: n }) %><span class="vh"> — <%= it.datumOdstavky(o.od) %></span></summary>
+    <ul>
+      <% o.casti.forEach(function (c) { c.ulice.forEach(function (u) { const p = it.popisUlice(u) %><li><%= c.nazev %><%= p ? ': ' + p : '' %></li><% }) }) %>
+      <% o.parcely.forEach(function (p) { %><li><%= it.t('odstavky.parcely', { katastr: p.katastr }) %> <%= p.parcely.join(', ') %></li><% }) %>
+    </ul>
+  </details>
+  <% } %>
+  <% if (o.pdf) { %><p class="odst-odkazy"><a href="<%= o.pdf %>" rel="noopener noreferrer"><%= it.t('odstavky.pdf') %><span class="vh"> — <%= it.datumOdstavky(o.od) %></span></a></p><% } %>
+</li>

@@ -99,6 +99,8 @@ export const ObecSchema = z.object({
       web: z.boolean().default(false),
       kviz: z.boolean().default(false),
       podatelna: z.boolean().default(false),
+      // plánované odstávky elektřiny ČEZ Distribuce na titulce a /odstavky (jen obce na území ČEZ Distribuce)
+      odstavky: z.boolean().default(false),
     })
     .prefault({}),
   // elektronická podatelna — formulář pro podání bez elektronického podpisu (modul podatelna)
@@ -108,6 +110,23 @@ export const ObecSchema = z.object({
       email: z.string().default(''),
       // doba uchování podání v aplikaci (roky) podle spisového a skartačního plánu obce; nic se nemaže samo
       uchovani_let: z.number().int().min(1).max(100).default(5),
+    })
+    .prefault({}),
+  // plánované odstávky elektřiny (modul odstavky) — jen ČEZ Distribuce; obce v území EG.D nebo PREdistribuce
+  // modul nezapínají (tito distributoři nemají obdobné API)
+  odstavky: z
+    .object({
+      cez: z
+        .object({
+          // kód obce RÚIAN/ČSÚ; prázdné = obec.kod_obce
+          kod_obce: z.string().regex(/^\d*$/, 'kód obce jsou jen číslice').default(''),
+          // stránka ČEZ Distribuce pro obec (odkaz „redirect“ z banneru ČEZ pro obce); prázdné = obecná stránka ČEZ
+          odkaz: z
+            .string()
+            .regex(/^(https:\/\/\S+)?$/, 'odkaz musí začínat https://')
+            .default(''),
+        })
+        .prefault({}),
     })
     .prefault({}),
   texty: z

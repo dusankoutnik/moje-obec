@@ -1,0 +1,26 @@
+<% layout('/layout') %>
+<% const s = it.odstavky %>
+<h1><%= it.t('odstavky.titulek') %></h1>
+<p><%= it.t('odstavky.uvod') %></p>
+<section class="panel odstavky-stranka" aria-labelledby="h-planovane">
+  <h2 id="h-planovane"><%= it.t('odstavky.planovane') %></h2>
+  <% if (!s.posledniUspech) { %>
+  <p class="prazdne"><%= it.t('odstavky.nenacteno') %></p>
+  <% } else if (!s.aktualni.length) { %>
+  <p class="prazdne"><%= it.t('odstavky.zadne') %></p>
+  <% } else { %>
+  <ul class="odst-seznam">
+    <% s.aktualni.forEach(function (o) { %><%~ include('/odstavky/_polozka', Object.assign({}, it, { o: o, h: 'h3' })) %><% }) %>
+  </ul>
+  <% } %>
+</section>
+<section class="panel odstavky-stranka" aria-labelledby="h-historie">
+  <h2 id="h-historie"><%= it.t('odstavky.historie') %></h2>
+  <% if (!s.historie.length) { %><p class="prazdne"><%= it.t('odstavky.historie_prazdna') %></p><% } else { %>
+  <ul class="odst-seznam">
+    <% s.historie.forEach(function (o) { %><%~ include('/odstavky/_polozka', Object.assign({}, it, { o: Object.assign({}, o, { probiha: false }), h: 'h3' })) %><% }) %>
+  </ul>
+  <% } %>
+</section>
+<p class="odst-dal"><a href="<%= s.odkazCez %>" rel="noopener noreferrer"><%= it.t('odstavky.web_cez') %></a></p>
+<p class="odst-zdroj"><%= it.t('odstavky.zdroj_popis') %><% if (s.posledniUspech) { %> <%= it.t('odstavky.zdroj', { kdy: it.fmtDatum(s.posledniUspech) }) %><% } %><% if (s.chyba) { %> <%= it.t('odstavky.zdroj_chyba') %><% } %></p>

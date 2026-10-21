@@ -1,0 +1,102 @@
+{
+  "outages": null,
+  "outages_in_town": [
+    {
+      "id": "110061126633",
+      "announcement_key": "pdf/301317712-db8tncdct0gcmo4g6k60.pdf",
+      "opened_at": "2026-11-06T08:00:00Z",
+      "fix_expected_at": "2026-11-06T14:30:00Z",
+      "addresses": {
+        "towns": [
+          {
+            "name": "Vlastibořice",
+            "code": 564516,
+            "district": "Liberec",
+            "cadastral_territories": [
+              {
+                "name": "Vlastibořice",
+                "code": 783463,
+                "plots": [
+                  { "cadastral_code": "783463", "plot": "177/2" },
+                  { "cadastral_code": "783463", "plot": "181/3" }
+                ]
+              }
+            ],
+            "town_districts": [
+              {
+                "name": "",
+                "code": 0,
+                "town_parts": [
+                  {
+                    "name": "Vlastibořice",
+                    "streets": [
+                      {
+                        "name": "",
+                        "house_nums": "1, 2, 3, 11, 13, 30, 32, 36, 37, 42, 44, 63",
+                        "ev_nums": "6",
+                        "street_nums": ""
+                      }
+                    ],
+                    "cadastral_territory": null
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "orphan_territories": null
+    },
+    {
+      "id": "110061126700",
+      "announcement_key": "pdf/zruseno-test.pdf",
+      "opened_at": "2026-07-14T05:30:00Z",
+      "fix_expected_at": "2026-07-14T12:00:00Z",
+      "cancelled_at": "2026-07-10T09:12:00Z",
+      "addresses": {
+        "towns": [
+          {
+            "name": "Vlastibořice",
+            "code": 564516,
+            "town_districts": [
+              {
+                "town_parts": [
+                  {
+                    "name": "Sedlíšťka",
+                    "streets": [{ "name": "", "house_nums": "5, 7", "ev_nums": "", "street_nums": "" }]
+                  }
+                ]
+              }
+            ],
+            "cadastral_territories": []
+          },
+          {
+            "name": "Sousedov",
+            "code": 999001,
+            "town_districts": [
+              {
+                "town_parts": [
+                  {
+                    "name": "Sousedov",
+                    "streets": [{ "name": "Hlavní", "house_nums": "100", "ev_nums": "", "street_nums": "" }]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "outages_in_town_district": [
+    {
+      "id": "110061126633",
+      "opened_at": "2026-11-06T08:00:00Z",
+      "fix_expected_at": "2026-11-06T14:30:00Z"
+    },
+    {
+      "id": "bez-zacatku",
+      "opened_at": null
+    }
+  ]
+}

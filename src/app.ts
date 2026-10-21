@@ -37,6 +37,7 @@ import webModul from './moduly/web/index.js';
 import webMapa from './moduly/web/mapa.js';
 import kvizModul from './moduly/kviz/index.js';
 import podatelnaModul from './moduly/podatelna/index.js';
+import odstavkyModul from './moduly/odstavky/index.js';
 
 /** vrátí true, pokud požadavek obsloužil (odpověď odeslána) */
 export type Zachytavac404 = (req: FastifyRequest, reply: FastifyReply) => Promise<boolean>;
@@ -263,6 +264,7 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   }
   if (obec.moduly.kviz) await app.register(kvizModul);
   if (obec.moduly.podatelna) await app.register(podatelnaModul);
+  if (obec.moduly.odstavky) await app.register(odstavkyModul, { planovac: volby.planovac !== false });
 
   app.addHook('onClose', async () => {
     if (!volby.db) await db.destroy();

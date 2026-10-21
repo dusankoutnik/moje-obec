@@ -1,5 +1,15 @@
 # Stav projektu — etapa 1 (18. 10. 2026)
 
+## Odstávky elektřiny ČEZ na titulce (21. 10. 2026)
+
+- Nový modul `odstavky` (`moduly.odstavky`, `odstavky.cez.kod_obce`/`odkaz` v `obec.yml`), popis v `docs/MODULY.md`:
+  karta s plánovanými odstávkami pod rychlými odkazy titulky (bez odstávky nic) a stránka `/odstavky` s historií
+  30 dní. Text místo obrázkového banneru ČEZ, nic z cizích domén v prohlížeči; data stahuje server 1× za hodinu,
+  po 429 pauza 3 h, při výpadku poslední známá data s časem ověření.
+- Ověření: `test/odstavky.test.ts` (9 testů: převod API z reálné odpovědi, souhrn míst, pražský čas vč. konce letního
+  času, keš/429/chyba/restart, historie, titulka s odstávkou a bez ní, `/odstavky`), celkem 325; axe-core 0 porušení
+  na `/` a `/odstavky` (dev, s reálnou odstávkou 6. 11. 2026).
+
 ## Kvíz (21. 10. 2026)
 
 - **Doplněno 21. 10. 2026 odpoledne:** odkazy „Skóre po oblastech“ a „Resetovat skóre“ v boxu skóre v jednom řádku

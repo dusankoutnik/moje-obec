@@ -33,6 +33,8 @@
     </ul>
   </nav>
 
+  <% if (it.odstavky) { %><%~ include('/odstavky/_pruh', it) %><% } %>
+
   <section class="sekce" aria-labelledby="h-aktuality">
     <div class="sekce-hlavicka">
       <h2 id="h-aktuality"><%= it.t('web.nejnovejsi') %></h2>

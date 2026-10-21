@@ -10,6 +10,7 @@ import { urlSouboru } from '../../web/soubory.js';
 import type { WebSluzby } from './index.js';
 import { rozdelPodleVidei } from './videa.js';
 import { odkazAkce } from './akce-externi.js';
+import { pomocniciOdstavek } from '../odstavky/index.js';
 
 /** akce webu + akce z rezervací, seřazené podle začátku */
 function sloucAkce<T extends { datum: Date | null }, U extends { datum: Date }>(
@@ -91,8 +92,12 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
         odkaz: odkazAkce(a) ?? '/akce',
       });
     });
+    // plánované odstávky elektřiny (modul odstavky) — jen budoucí a probíhající; žádná = na titulce nic
+    const odstavky = app.odstavky ? await app.odstavky.stav() : null;
     return reply.view('web/uvod', {
       titulek: '',
+      odstavky: odstavky?.aktualni.length ? odstavky : null,
+      ...pomocniciOdstavek,
       aktuality: aktuality.radky,
       akce,
       deska,

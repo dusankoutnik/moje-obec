@@ -155,6 +155,32 @@ Form 7 na starých webech obcí). Zapíná se `moduly.podatelna: true`.
   uchování“) a vyřazuje ho úřad ve skartačním řízení (zák. č. 499/2004 Sb.). Podání z formuláře je zároveň
   doručené e-mailem do spisové služby úřadu; aplikace spisovou službu nenahrazuje.
 
+## Odstávky elektřiny ČEZ na webu (hotovo 21. 10. 2026)
+
+Modul `odstavky` (`src/moduly/odstavky/`, zapíná se `moduly.odstavky`): plánované odstávky elektřiny ČEZ Distribuce
+jako **přístupný text** místo obrázkového banneru `ppo.cezdistribuce.cz/ovm/<klíč>/b/728`, který obce dávají na web
+(text v obrázku čtečka nepřečte a obrázek z cizího serveru prozrazuje ČEZ každého návštěvníka).
+
+- **Data:** stejný neoficiální zdroj jako výstrahy výše (`api.bezstavy.cz/cezd/api/inspecttown/<kód obce>`). Stahuje
+  **server** nejvýš jednou za hodinu (cron :11 + po startu, jsou-li data starší než hodina); po **HTTP 429** pauza 3 h
+  (nebo `Retry-After`), při chybě/neznámém tvaru odpovědi zůstávají poslední známá data. Stav (poslední úspěch, chyba,
+  odstávky) je v `nastaveni.odstavky_cez` — přežije restart, žádná migrace. Časy API jsou skutečné UTC (ověřeno proti
+  PDF: `08:00Z` = „od 9:00“), zobrazují se v pražském čase.
+- **Titulka:** karta „⚡ Plánované odstávky elektřiny“ hned pod rychlými odkazy, nad aktualitami (na mobilu tedy také
+  nad nimi): termín od–do, stav (probíhá / zrušena + vysvětlení), stručně části obce a č. p. (max. 8, „a dalších N“),
+  `<details>` „Všechna odběrná místa“ (č. p., č. ev., parcely), odkaz „Oznámení ČEZ (PDF)“ (jen odkaz na
+  `cdn.bezstavy.cz`, nic se nenačítá předem), „Další informace na webu ČEZ Distribuce“, „Podrobnosti a historie“ a čas
+  ověření údajů. **Bez odstávky se na titulce nezobrazuje nic** — prázdný řádek by na každé návštěvě ubíral místo nad
+  zprávami a informace „nic se neděje“ nemá hodnotu; stav je vždy na `/odstavky`.
+- **Stránka `/odstavky`:** nadcházející a probíhající, historie posledních 30 dní (proběhlé a zrušené), zdroj a čas
+  ověření, upozornění na nepovedenou aktualizaci.
+- **Konfigurace (`obec.yml`):** `odstavky.cez.kod_obce` (prázdné = `obec.kod_obce`), `odstavky.cez.odkaz` = stránka ČEZ
+  pro obec — odkaz `…/ovm/<klíč obce>/redirect` z banneru ČEZ (klíč patří jen do `obec.yml` instalace, ne do repa);
+  prázdné = obecná `https://www.cezdistribuce.cz/odstavky`.
+- **Obce mimo ČEZ Distribuce** (EG.D — jižní Morava a jižní Čechy; PREdistribuce — Praha) modul nezapínají: API
+  bezstavy.cz pokrývá jen ČEZ. Jiný distributor = nový převodník v `cez.ts`-stylu, pokud bude mít použitelný zdroj.
+- **Navazuje:** automatické rozesílání odstávek infokanálem (P1 výše) může použít stejný převod `prevedOdpoved()`.
+
 ## Rezervace + platby (P1)
 
 Z Rezervací Vlastibořic (nejrozsáhlejší modul): zdroje (sál, posilovna, hřiště, štěpkovač) s kalendářem denním/týdenním, kapacita > 1 (posilovna, počet osob), celý den vs. čas, opakování (série), schvalování úřadem (karty), ceník rezident/nerezident (rezervace úřadu = 0), ruční sleva; **měsíční vyúčtování** = „Výzva k úhradě“ (obec není plátce DPH, žádné faktury), PDF, QR platba (SPD), VS, veřejná stránka platby tokenem, potvrzení o zaplacení, splatnost 14 dní, cron 1. den měsíce, SMS fallback bez e-mailu; report pro účetní (rozpočtová skladba, pohledávky, CSV/PDF); předprodej vstupenek bez registrace (QR, storno 96 h, platba na místě, VIP, pokladní listina); evidence přístupů k zámkům (TTLock: PIN/otisk/čip/eKlíč) a proces aktivace posilovny; spolujízda (jízdy, poptávky, odběry, počítadlo); klimatizace/SMS připomínky topení. Zákon: 128/2000 Sb. (záměry), účetnictví obce. Doporučené pořadí: kalendář + schvalování → ceník → vyúčtování/QR → zámky → předprodej → spolujízda.

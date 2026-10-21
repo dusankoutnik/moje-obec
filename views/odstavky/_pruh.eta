@@ -1,0 +1,13 @@
+<% /* karta na titulce — vykresluje se jen, když je nějaká budoucí nebo probíhající odstávka */ %>
+<% const s = it.odstavky %>
+<section class="panel odstavky-pruh" aria-labelledby="h-odstavky">
+  <h2 id="h-odstavky"><span aria-hidden="true">⚡ </span><%= it.t('odstavky.titulek') %></h2>
+  <ul class="odst-seznam">
+    <% s.aktualni.forEach(function (o) { %><%~ include('/odstavky/_polozka', Object.assign({}, it, { o: o, h: 'h3' })) %><% }) %>
+  </ul>
+  <p class="odst-dal">
+    <a href="<%= s.odkazCez %>" rel="noopener noreferrer"><%= it.t('odstavky.web_cez') %></a>
+    <a href="/odstavky"><%= it.t('odstavky.podrobnosti') %> ›</a>
+  </p>
+  <% if (s.posledniUspech) { %><p class="odst-zdroj"><%= it.t('odstavky.zdroj', { kdy: it.fmtDatum(s.posledniUspech) }) %></p><% } %>
+</section>

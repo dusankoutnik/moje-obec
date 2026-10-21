@@ -75,6 +75,8 @@ moduly:
   kviz: false
   # elektronická podatelna: formulář /podatelna (podání bez el. podpisu → e-mail na podatelnu + evidence ve správě)
   podatelna: false
+  # plánované odstávky elektřiny ČEZ Distribuce na titulce a /odstavky (jen obce v území ČEZ Distribuce)
+  odstavky: false
   rezervace: false
   knihovna: false
 
@@ -84,6 +86,16 @@ podatelna:
   email: ''
   # doba uchování podání v aplikaci (roky) podle spisového a skartačního plánu obce — nic se nemaže samo
   uchovani_let: 5
+
+# Plánované odstávky elektřiny (modul odstavky). Data: neoficiální API portálu Bez šťávy (ČEZ Distribuce), server je
+# stahuje jednou za hodinu, návštěvníkův prohlížeč nic od ČEZ nenačítá. Jen území ČEZ Distribuce — obce v území
+# EG.D (jižní Morava, jižní Čechy) a PREdistribuce (Praha) modul nechávají vypnutý.
+odstavky:
+  cez:
+    # kód obce (RÚIAN/ČSÚ); prázdné = obec.kod_obce
+    kod_obce: ''
+    # stránka ČEZ pro obec = odkaz „…/ovm/<klíč obce>/redirect“ z banneru ČEZ pro obce; prázdné = obecná stránka ČEZ
+    odkaz: ''
 
 texty:
   nazev_infokanalu: Infokanál

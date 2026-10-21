@@ -33,7 +33,16 @@ export const testovaciObec = obecZObjektu({
     casti: ['Testov', 'Dolní Testov'],
     kontakt: { email: 'obec@testov.cz' },
   },
-  moduly: { ucty: true, infokanal: true, deska: true, web: true, kviz: true, podatelna: true },
+  moduly: {
+    ucty: true,
+    infokanal: true,
+    deska: true,
+    web: true,
+    kviz: true,
+    podatelna: true,
+    odstavky: true,
+  },
+  odstavky: { cez: { kod_obce: '564516' } }, // odstávky ČEZ: bez plánovače se nic nestahuje (test/odstavky.test.ts)
   texty: { nazev_infokanalu: 'TestKanál', sms_prefix: 'TESTOV: ' },
 });
 
