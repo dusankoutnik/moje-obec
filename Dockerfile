@@ -17,6 +17,8 @@ COPY --from=build --chown=node:node /app/dist ./dist
 COPY --chown=node:node package.json ./
 COPY --chown=node:node views ./views
 COPY --chown=node:node public ./public
+# veřejné balíky otázek kvízu (balíky obce se připojují zvenku, viz KVIZ_BALIKY)
+COPY --chown=node:node kviz-otazky ./kviz-otazky
 COPY --chown=node:node obec.example.yml ./obec.example.yml
 # data obce (nahrané soubory) — pojmenovaný volume převezme vlastníka této složky
 RUN mkdir -p /app/data && chown node:node /app/data

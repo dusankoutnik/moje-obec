@@ -1,0 +1,28 @@
+<% layout('/layout') %>
+<div class="kviz">
+<% if (!it.otazka) { %>
+  <h1>🧠 <%= it.t('kviz.titulek') %></h1>
+  <p class="flash flash-info" role="status"><%= it.t('kviz.zadne_ve_vyberu') %></p>
+  <p><a class="tlacitko" href="/kviz"><%= it.t('kviz.zpet_na_uvod') %></a></p>
+<% } else { %>
+  <div class="kviz-lista">
+    <span class="stitek kviz-oblast"><span class="vh"><%= it.t('kviz.oblast') %>: </span><span aria-hidden="true"><%= it.otazka.kategorie_ikona %></span> <%= it.otazka.kategorie_nazev %></span>
+    <span class="kviz-postup"><%= it.t('kviz.v_kole', { n: it.krok, z: it.delkaKola, kolo: it.kolo }) %></span>
+    <span class="kviz-obtiznost" title="<%= it.t('kviz.obtiznost', { n: it.otazka.obtiznost }) %>"><span class="vh"><%= it.t('kviz.obtiznost', { n: it.otazka.obtiznost }) %></span><span aria-hidden="true"><%= '●'.repeat(it.otazka.obtiznost) %><%= '○'.repeat(5 - it.otazka.obtiznost) %></span></span>
+  </div>
+  <form method="post" action="/kviz/odpoved" class="kviz-otazka" id="kviz-otazka">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <input type="hidden" name="otazka" value="<%= it.otazka.id %>">
+    <fieldset>
+      <legend><h1 class="kviz-text-otazky" id="kviz-text" tabindex="-1"><%= it.otazka.otazka %></h1></legend>
+      <div class="kviz-odpovedi">
+      <% it.otazka.nabidka.forEach(function (o) { %>
+        <button class="kviz-odpoved" type="submit" name="odpoved" value="<%= o.pozice %>" data-klavesa="<%= o.pismeno.toLowerCase() %>"><span class="kviz-pismeno"><%= o.pismeno %></span><span class="kviz-odpoved-text"><%= o.text %></span></button>
+      <% }) %>
+      </div>
+    </fieldset>
+    <p class="napoveda kviz-klavesy"><%= it.t('kviz.klavesy') %></p>
+  </form>
+  <%~ include('/kviz/_skore', { skore: it.skore, t: it.t }) %>
+<% } %>
+</div>

@@ -63,6 +63,10 @@ const EnvSchema = z.object({
   OTP_COOLDOWN_S: z.coerce.number().int().min(0).default(60),
   SMS_POVOLENE_PREDVOLBY: z.string().default('+420,+421'),
   SMS_DENNI_LIMIT_KODU: z.coerce.number().int().min(0).default(300),
+  // kvíz: adresář veřejných balíků otázek (výchozí kviz-otazky/ v repozitáři) a balíky obce mimo repozitář
+  // (adresáře oddělené čárkou, např. /app/kviz-instance)
+  KVIZ_VEREJNE: z.string().optional(),
+  KVIZ_BALIKY: z.string().default(''),
   IK_SMS_INTERVAL_MIN_MS: z.coerce.number().default(1000),
   IK_SMS_INTERVAL_MAX_MS: z.coerce.number().default(3000),
   IK_EMAIL_INTERVAL_MS: z.coerce.number().default(500),

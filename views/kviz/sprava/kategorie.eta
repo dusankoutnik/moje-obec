@@ -1,0 +1,39 @@
+<% layout('/layout') %>
+<p><a href="/sprava/kviz">← <%= it.t('kviz.zpet_na_prehled') %></a></p>
+<h1><span aria-hidden="true"><%= it.kategorie.ikona %></span> <%= it.kategorie.nazev %></h1>
+<p class="napoveda"><%= it.t('kviz.sprava_kalibrace') %></p>
+<div class="tabulka-obal">
+<table class="tabulka kompaktni kviz-sprava-tabulka">
+  <thead><tr>
+    <th scope="col"><%= it.t('kviz.sprava_id') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_otazka') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_obtiznost') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_hracu') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_napoprve') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_navrh') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_stav') %></th>
+  </tr></thead>
+  <tbody>
+  <% it.otazky.forEach(function (o) { %>
+    <tr id="o-<%= o.id %>" class="<%= o.stav !== 'aktivni' ? 'blokovan' : '' %>">
+      <td><code><%= o.id %></code></td>
+      <td><%= o.otazka %><br><small>✓ <%= o.odpovedi[0] %> · <%= it.t('kviz.balik', { b: o.balik }) %></small></td>
+      <td><%= o.obtiznost %></td>
+      <td><%= o.hracu %></td>
+      <td><%= o.napoprve === null ? '—' : o.napoprve + ' %' %></td>
+      <td><%= o.navrh === null ? '—' : (o.navrh === o.obtiznost ? '✓ ' + o.navrh : '→ ' + o.navrh) %></td>
+      <td>
+        <span class="stitek"><%= it.t('kviz.stav_' + o.stav) %></span>
+        <% if (o.stav !== 'mimo') { %>
+        <form method="post" action="/sprava/kviz/otazka/<%= encodeURIComponent(o.id) %>" class="inline">
+          <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+          <input type="hidden" name="akce" value="<%= o.stav === 'vypnuta' ? 'zapnout' : 'vypnout' %>">
+          <button class="tlacitko male <%= o.stav === 'vypnuta' ? '' : 'sekundarni' %>" type="submit" aria-label="<%= it.t(o.stav === 'vypnuta' ? 'kviz.zapnout_otazku' : 'kviz.vypnout_otazku', { id: o.id }) %>"><%= it.t(o.stav === 'vypnuta' ? 'kviz.zapnout' : 'kviz.vypnout') %></button>
+        </form>
+        <% } %>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>

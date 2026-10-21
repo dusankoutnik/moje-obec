@@ -55,6 +55,13 @@ docker compose exec app node -e "import('./dist/moduly/infokanal/index.js').then
 
 Název, IČO, adresa, kontakty, bankovní účet, části obce, kód obce (ČSÚ) a ORP (pro výstrahy), pověřenec GDPR, zapnuté moduly, texty (název infokanálu, SMS prefix), odkazy v patičce. Soubor je komentovaný; chybná hodnota zastaví start s českou chybou.
 
+### Kvíz — vlastní otázky obce
+
+Modul zapnete v `obec.yml` (`moduly.kviz: true`). Veřejné otázky jsou v obrazu (`kviz-otazky/`), vlastní balíky obce
+(místní otázky) dejte do adresáře mimo repozitář, připojte ho do kontejneru jen pro čtení a nastavte `KVIZ_BALIKY`
+(např. volume `./kviz:/app/kviz-instance:ro` + `KVIZ_BALIKY=/app/kviz-instance`). Balíky se načítají při startu;
+po úpravě souboru stačí Správa → Kvíz → „Načíst balíky znovu“.
+
 ## 3. Spuštění
 
 ```bash

@@ -15,8 +15,11 @@ services:
       OBEC_YML: /app/obec.yml
       # vývojová instalace: X-Robots-Tag noindex a robots.txt „Disallow: /“ (NPM robots.txt přebíjí také)
       ROBOTS_NOINDEX: '1'
+      # vlastní otázky kvízu obce (mimo veřejný repozitář)
+      KVIZ_BALIKY: /app/kviz-instance
     volumes:
       - ./obec.yml:/app/obec.yml:ro
+      - ../platforma-instance/kviz:/app/kviz-instance:ro
       - platforma_data:/app/data # nahrané soubory obce — přežijí rebuild
     # zpracování fotek (sharp) a import potřebují víc než původních 384 MB
     mem_limit: 640m

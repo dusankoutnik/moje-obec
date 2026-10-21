@@ -11,6 +11,7 @@
 <% if (it.editor) { %><link rel="stylesheet" href="/static/vendor/quill/quill.snow.css"><% } %>
 <script src="/static/js/app.js?v=<%= it.v %>" defer></script>
 <% if (it.vzhled) { %><script src="/static/js/web.js?v=<%= it.v %>" defer></script><% } %>
+<% if (it.skriptKviz) { %><script src="/static/js/kviz.js?v=<%= it.v %>" defer></script><% } %>
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/ikona-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -72,6 +73,7 @@
     if (!it.menu) {
       if (it.obec.moduly.deska) polozky.push({ titulek: it.t('deska.titulek'), url: '/uredni-deska', deti: [] });
       if (it.obec.moduly.infokanal) polozky.push({ titulek: it.obec.texty.nazev_infokanalu, url: '/infokanal', deti: [] });
+      if (it.obec.moduly.kviz) polozky.push({ titulek: it.t('kviz.titulek'), url: '/kviz', deti: [] });
     }
     var aktivni = function (m) { return m.url !== '/' && (it.cesta === m.url || it.cesta.indexOf(m.url + '/') === 0 || m.deti.some(function (d) { return it.cesta === d.url; })); };
   %>

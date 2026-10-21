@@ -33,7 +33,7 @@ export const testovaciObec = obecZObjektu({
     casti: ['Testov', 'Dolní Testov'],
     kontakt: { email: 'obec@testov.cz' },
   },
-  moduly: { ucty: true, infokanal: true, deska: true, web: true },
+  moduly: { ucty: true, infokanal: true, deska: true, web: true, kviz: true },
   texty: { nazev_infokanalu: 'TestKanál', sms_prefix: 'TESTOV: ' },
 });
 
@@ -86,6 +86,8 @@ export async function spustTestApp(volby: { vycistit?: boolean } = {}): Promise<
     IK_SMS_INTERVAL_MIN_MS: '1',
     IK_SMS_INTERVAL_MAX_MS: '2',
     IK_EMAIL_INTERVAL_MS: '1',
+    // kvíz: malý testovací balík (vymyšlená data), ne skutečná banka z kviz-otazky/
+    KVIZ_VEREJNE: new URL('./fixtures/kviz', import.meta.url).pathname,
   });
   const db = vytvorDb(TEST_DB_URL, 4);
   if (volby.vycistit !== false) await vycistiDb(db);

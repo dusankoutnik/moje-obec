@@ -1,0 +1,48 @@
+<% layout('/layout') %>
+<p><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<h1>🧠 <%= it.t('kviz.sprava_titulek') %></h1>
+<p class="perex"><%= it.t('kviz.sprava_perex') %></p>
+<p><%= it.t('kviz.sprava_hraci', { n: it.hracu, u: it.hracuSUctem }) %> <a href="/kviz"><%= it.t('kviz.hrat') %> →</a></p>
+<% if (!it.kategorie.length) { %>
+<p class="flash flash-info" role="status"><%= it.t('kviz.sprava_zadne') %></p>
+<% } else { %>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr>
+    <th scope="col"><%= it.t('kviz.oblast') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_aktivni') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_vypnute') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_mimo') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_hracu') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_odpovedi') %></th>
+    <th scope="col"><%= it.t('kviz.sprava_uspesnost') %></th>
+  </tr></thead>
+  <tbody>
+  <% it.kategorie.forEach(function (k) { %>
+    <tr>
+      <th scope="row"><a href="/sprava/kviz/<%= k.slug %>"><span aria-hidden="true"><%= k.ikona %></span> <%= k.nazev %></a></th>
+      <td><%= k.aktivni %></td><td><%= k.vypnute %></td><td><%= k.mimo %></td><td><%= k.hracu %></td><td><%= k.odpovedi %></td>
+      <td><%= k.skore.procento === null ? '—' : k.skore.procento + ' %' %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+<section class="karta">
+  <h2><%= it.t('kviz.sprava_import') %></h2>
+  <% if (it.posledniImport) { %>
+  <p><%= it.t('kviz.sprava_posledni_import', { datum: it.fmtDatum(it.posledniImport.at), s: it.posledniImport.soubory, n: it.posledniImport.otazky, nove: it.posledniImport.nove, zmenene: it.posledniImport.zmenene, deakt: it.posledniImport.deaktivovane }) %></p>
+  <% if (it.posledniImport.chyby && it.posledniImport.chyby.length) { %>
+  <div class="flash flash-chyba" role="status">
+    <p><%= it.t('kviz.sprava_chyby_import') %></p>
+    <ul><% it.posledniImport.chyby.forEach(function (c) { %><li><strong><%= c.soubor %></strong>: <%= c.zprava %></li><% }) %></ul>
+  </div>
+  <% } %>
+  <% } %>
+  <p class="napoveda" id="kviz-import-napoveda"><%= it.t('kviz.sprava_import_napoveda') %></p>
+  <form method="post" action="/sprava/kviz/import">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <button class="tlacitko sekundarni" type="submit" aria-describedby="kviz-import-napoveda"><%= it.t('kviz.sprava_import') %></button>
+  </form>
+</section>

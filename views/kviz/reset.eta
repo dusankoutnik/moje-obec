@@ -1,0 +1,11 @@
+<% layout('/layout') %>
+<div class="kviz">
+<h1><%= it.t('kviz.reset_titulek') %></h1>
+<% if (it.skore.procento !== null) { %><p><%= it.t('kviz.skore') %>: <strong><%= it.t('kviz.skore_hodnota', { p: it.skore.procento, s: it.skore.spravne, x: it.skore.spatne }) %></strong></p><% } %>
+<p><%= it.t('kviz.reset_text') %></p>
+<form method="post" action="/kviz/reset" class="kviz-tlacitka">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <button class="tlacitko nebezpecne" type="submit"><%= it.t('kviz.reset_ano') %></button>
+  <a class="tlacitko sekundarni" href="/kviz/otazka"><%= it.t('kviz.reset_ne') %></a>
+</form>
+</div>

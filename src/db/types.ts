@@ -7,12 +7,13 @@ type TimestampGenerated = ColumnType<Date, Date | string | undefined, Date | str
 type TimestampNullable = ColumnType<Date | null, Date | string | null | undefined, Date | string | null>;
 
 // web = obsah webu · deska = úřední deska a rozpočet · redaktor = hlášení infokanálu (jako v MůjÚčtu)
-// vstupne = kontrola vstupenek (připraveno) · spravce = vše obsahové + vzhled a účty · admin = vše
-export type Role = 'web' | 'deska' | 'redaktor' | 'ucetni' | 'vstupne' | 'spravce' | 'admin';
+// vstupne = kontrola vstupenek (připraveno) · kviz = správa kvízu · spravce = vše obsahové + vzhled a účty · admin = vše
+export type Role = 'web' | 'deska' | 'redaktor' | 'kviz' | 'ucetni' | 'vstupne' | 'spravce' | 'admin';
 export const ROLE: readonly Role[] = [
   'web',
   'deska',
   'redaktor',
+  'kviz',
   'ucetni',
   'vstupne',
   'spravce',
@@ -383,7 +384,61 @@ export interface PrihlaseniZamkyTable {
   zamceno_do: TimestampNullable;
 }
 
+export interface KvizKategorieTable {
+  id: Generated<number>;
+  slug: string;
+  nazev: string;
+  ikona: Generated<string>;
+  poradi: Generated<number>;
+  aktualizovano_at: TimestampGenerated;
+}
+
+export interface KvizOtazkyTable {
+  id: string;
+  kategorie_id: number;
+  otazka: string;
+  odpovedi: string[];
+  obtiznost: number;
+  vysvetleni: Generated<string>;
+  zdroj: Generated<string>;
+  balik: Generated<string>;
+  v_baliku: Generated<boolean>;
+  vypnuta_at: TimestampNullable;
+  vytvoreno_at: TimestampGenerated;
+  aktualizovano_at: TimestampGenerated;
+}
+
+export interface KvizHraciTable {
+  id: Generated<string>;
+  uzivatel_id: string | null;
+  reset_at: TimestampNullable;
+  kategorie: Generated<string[]>;
+  otazka_id: string | null;
+  poradi: number[] | null;
+  odpoved_id: ColumnType<string | null, string | number | null | undefined, string | number | null>;
+  kolo: Generated<number>;
+  kolo_od: TimestampGenerated;
+  krok: Generated<number>;
+  kolo_spravne: Generated<number>;
+  posun: Generated<number>;
+  vytvoren_at: TimestampGenerated;
+  posledni_at: TimestampGenerated;
+}
+
+export interface KvizOdpovediTable {
+  id: Generated<string>;
+  hrac_id: string;
+  otazka_id: string;
+  zvolena: number;
+  spravne: boolean;
+  ts: TimestampGenerated;
+}
+
 export interface Database {
+  kviz_kategorie: KvizKategorieTable;
+  kviz_otazky: KvizOtazkyTable;
+  kviz_hraci: KvizHraciTable;
+  kviz_odpovedi: KvizOdpovediTable;
   prihlaseni_zamky: PrihlaseniZamkyTable;
   web_kategorie: WebKategorieTable;
   web_obsah: WebObsahTable;

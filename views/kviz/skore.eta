@@ -1,0 +1,34 @@
+<% layout('/layout') %>
+<%
+  var bunky = function (s) {
+    return '<td>' + s.spravne + '</td><td>' + s.spatne + '</td><td>' + (s.procento === null ? '—' : s.procento + ' %') + '</td>';
+  };
+%>
+<div class="kviz">
+<p><a href="/kviz/otazka">← <%= it.t('kviz.zpet_ke_kvizu') %></a></p>
+<h1><%= it.t('kviz.skore_titulek') %></h1>
+<p class="perex"><%= it.t('kviz.skore_perex') %></p>
+<p><%= it.resetAt ? it.t('kviz.skore_reset_od', { datum: it.fmtDatum(it.resetAt) }) : it.t('kviz.skore_bez_resetu') %></p>
+<div class="tabulka-obal">
+<table class="tabulka kviz-tabulka">
+  <caption class="vh"><%= it.t('kviz.skore_titulek') %></caption>
+  <colgroup><col><col span="3"><col span="3"></colgroup>
+  <thead>
+    <tr><th scope="col" rowspan="2"><%= it.t('kviz.oblast') %></th><th scope="colgroup" colspan="3"><%= it.t('kviz.sloupec_celkem') %></th><th scope="colgroup" colspan="3"><%= it.t('kviz.sloupec_od_resetu') %></th></tr>
+    <tr>
+      <th scope="col"><%= it.t('kviz.sloupec_spravne') %></th><th scope="col"><%= it.t('kviz.sloupec_spatne') %></th><th scope="col"><%= it.t('kviz.sloupec_procento') %></th>
+      <th scope="col"><%= it.t('kviz.sloupec_spravne') %></th><th scope="col"><%= it.t('kviz.sloupec_spatne') %></th><th scope="col"><%= it.t('kviz.sloupec_procento') %></th>
+    </tr>
+  </thead>
+  <tbody>
+  <% it.prehled.radky.forEach(function (k) { %>
+    <tr><th scope="row"><span aria-hidden="true"><%= k.ikona %></span> <%= k.nazev %></th><%~ bunky(k.celkem) %><%~ bunky(k.odResetu) %></tr>
+  <% }) %>
+  </tbody>
+  <tfoot>
+    <tr><th scope="row"><%= it.t('kviz.soucet') %></th><%~ bunky(it.prehled.celkem) %><%~ bunky(it.prehled.odResetu) %></tr>
+  </tfoot>
+</table>
+</div>
+<p><a class="tlacitko" href="/kviz/otazka"><%= it.t('kviz.zpet_ke_kvizu') %></a></p>
+</div>

@@ -1,0 +1,35 @@
+# Testovací balík pro Vitest — vymyšlená data, ne skutečná banka otázek
+kategorie: vlastni-temata
+nazev: Vlastní témata
+ikona: 🎲
+otazky:
+  - id: vlastni-temata-001
+    otazka: Testovací otázka 1 z oblasti Vlastní témata?
+    odpovedi:
+      - Správně vlastni-temata 1
+      - Vedle A vlastni-temata 1
+      - Vedle B vlastni-temata 1
+      - Vedle C vlastni-temata 1
+    obtiznost: 2
+    vysvetleni: Vysvětlení k otázce vlastni-temata-001.
+    zdroj: https://example.org/zdroj
+  - id: vlastni-temata-002
+    otazka: Testovací otázka 2 z oblasti Vlastní témata?
+    odpovedi:
+      - Správně vlastni-temata 2
+      - Vedle A vlastni-temata 2
+      - Vedle B vlastni-temata 2
+      - Vedle C vlastni-temata 2
+    obtiznost: 4
+    vysvetleni: Vysvětlení k otázce vlastni-temata-002.
+    zdroj: Učebnice testování
+  - id: vlastni-temata-003
+    otazka: Testovací otázka 3 z oblasti Vlastní témata?
+    odpovedi:
+      - Správně vlastni-temata 3
+      - Vedle A vlastni-temata 3
+      - Vedle B vlastni-temata 3
+      - Vedle C vlastni-temata 3
+    obtiznost: 2
+    vysvetleni: Vysvětlení k otázce vlastni-temata-003.
+    zdroj: https://example.org/zdroj

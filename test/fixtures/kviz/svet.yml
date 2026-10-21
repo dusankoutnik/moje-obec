@@ -1,0 +1,85 @@
+# Testovací balík pro Vitest — vymyšlená data, ne skutečná banka otázek
+kategorie: svet
+nazev: Svět
+ikona: 🌍
+otazky:
+  - id: svet-001
+    otazka: Testovací otázka 1 z oblasti Svět?
+    odpovedi:
+      - Správně svet 1
+      - Vedle A svet 1
+      - Vedle B svet 1
+      - Vedle C svet 1
+    obtiznost: 1
+    vysvetleni: Vysvětlení k otázce svet-001.
+    zdroj: https://example.org/zdroj
+  - id: svet-002
+    otazka: Testovací otázka 2 z oblasti Svět?
+    odpovedi:
+      - Správně svet 2
+      - Vedle A svet 2
+      - Vedle B svet 2
+      - Vedle C svet 2
+    obtiznost: 2
+    vysvetleni: Vysvětlení k otázce svet-002.
+    zdroj: Učebnice testování
+  - id: svet-003
+    otazka: Testovací otázka 3 z oblasti Svět?
+    odpovedi:
+      - Správně svet 3
+      - Vedle A svet 3
+      - Vedle B svet 3
+      - Vedle C svet 3
+    obtiznost: 3
+    vysvetleni: Vysvětlení k otázce svet-003.
+    zdroj: https://example.org/zdroj
+  - id: svet-004
+    otazka: Testovací otázka 4 z oblasti Svět?
+    odpovedi:
+      - Správně svet 4
+      - Vedle A svet 4
+      - Vedle B svet 4
+      - Vedle C svet 4
+    obtiznost: 4
+    vysvetleni: Vysvětlení k otázce svet-004.
+    zdroj: Učebnice testování
+  - id: svet-005
+    otazka: Testovací otázka 5 z oblasti Svět?
+    odpovedi:
+      - Správně svet 5
+      - Vedle A svet 5
+      - Vedle B svet 5
+      - Vedle C svet 5
+    obtiznost: 5
+    vysvetleni: Vysvětlení k otázce svet-005.
+    zdroj: https://example.org/zdroj
+  - id: svet-006
+    otazka: Testovací otázka 6 z oblasti Svět?
+    odpovedi:
+      - Správně svet 6
+      - Vedle A svet 6
+      - Vedle B svet 6
+      - Vedle C svet 6
+    obtiznost: 1
+    vysvetleni: Vysvětlení k otázce svet-006.
+    zdroj: Učebnice testování
+  - id: svet-007
+    otazka: Testovací otázka 7 z oblasti Svět?
+    odpovedi:
+      - Správně svet 7
+      - Vedle A svet 7
+      - Vedle B svet 7
+      - Vedle C svet 7
+    obtiznost: 2
+    vysvetleni: Vysvětlení k otázce svet-007.
+    zdroj: https://example.org/zdroj
+  - id: svet-008
+    otazka: Testovací otázka 8 z oblasti Svět?
+    odpovedi:
+      - Správně svet 8
+      - Vedle A svet 8
+      - Vedle B svet 8
+      - Vedle C svet 8
+    obtiznost: 3
+    vysvetleni: Vysvětlení k otázce svet-008.
+    zdroj: Učebnice testování

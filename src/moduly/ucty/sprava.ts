@@ -15,7 +15,7 @@ export function smiBlokovat(aktor: Uzivatel, cil: Pick<Uzivatel, 'id' | 'role'>)
 export default async function spravaRoutes(app: FastifyInstance, z: { ucty: UctySluzba }) {
   const { ucty } = z;
   const t = app.t;
-  const urad = vyzadujRoli('spravce', 'ucetni', 'redaktor', 'web', 'deska', 'vstupne');
+  const urad = vyzadujRoli('spravce', 'ucetni', 'redaktor', 'web', 'deska', 'kviz', 'vstupne');
   const spravce = vyzadujRoli('spravce');
 
   app.get('/sprava', { preHandler: urad }, async (req, reply) => {
@@ -32,6 +32,7 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
       jeRedaktor: maRoli(u, 'redaktor'),
       jeWeb: maRoli(u, 'web'),
       jeDeska: maRoli(u, 'deska'),
+      jeKviz: maRoli(u, 'kviz', 'web'),
     });
   });
 

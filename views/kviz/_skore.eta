@@ -1,0 +1,9 @@
+<section class="kviz-skore" aria-labelledby="kviz-skore-h">
+  <h2 id="kviz-skore-h" class="kviz-skore-nadpis"><%= it.t('kviz.skore') %></h2>
+  <p class="kviz-skore-hodnota"><% if (it.skore.procento === null) { %><%= it.t('kviz.skore_zatim') %><% } else { %><strong><%= it.skore.procento %> %</strong> <span>(<%= it.skore.spravne %> <%= it.t('kviz.sloupec_spravne').toLowerCase() %> / <%= it.skore.spatne %> <%= it.t('kviz.sloupec_spatne').toLowerCase() %>)</span><% } %></p>
+  <% if (it.skore.procento !== null) { %><meter class="kviz-meter" min="0" max="100" value="<%= it.skore.procento %>" aria-label="<%= it.t('kviz.skore') %>"></meter><% } %>
+  <div class="kviz-skore-odkazy">
+    <a href="/kviz/skore"><%= it.t('kviz.skore_po_oblastech') %></a>
+    <form method="get" action="/kviz/reset" class="inline"><button class="odkaz-tlacitko" type="submit"><%= it.t('kviz.resetovat') %></button></form>
+  </div>
+</section>

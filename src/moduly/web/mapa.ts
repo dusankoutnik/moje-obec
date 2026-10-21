@@ -120,6 +120,7 @@ async function webMapa(app: FastifyInstance) {
       polozky.push(...deska.map((d) => ({ url: `/uredni-deska/${d.id}`, lastmod: d.upraveno_at })));
     }
     if (m.infokanal) polozky.push({ url: '/infokanal' });
+    if (m.kviz) polozky.push({ url: '/kviz' });
     polozky.push(
       { url: '/kontakt' },
       { url: app.obec.patika.ochrana_osobnich_udaju },
@@ -159,6 +160,7 @@ async function webMapa(app: FastifyInstance) {
           ]
         : []),
       ...(m.infokanal ? [{ titulek: app.obec.texty.nazev_infokanalu, url: '/infokanal' }] : []),
+      ...(m.kviz ? [{ titulek: t('kviz.titulek'), url: '/kviz' }] : []),
       ...(m.ucty ? [{ titulek: t('staticke.mapa_ucet'), url: '/ucet' }] : []),
       { titulek: t('staticke.kontakt_titulek'), url: '/kontakt' },
       { titulek: t('staticke.gdpr_titulek'), url: app.obec.patika.ochrana_osobnich_udaju },

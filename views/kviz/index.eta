@@ -1,0 +1,31 @@
+<% layout('/layout') %>
+<div class="kviz">
+<h1>🧠 <%= it.t('kviz.titulek') %></h1>
+<p class="perex"><%= it.t('kviz.perex') %></p>
+<% if (!it.kategorie.length) { %>
+  <p class="flash flash-info" role="status"><%= it.t('kviz.zadne_otazky') %></p>
+<% } else { %>
+  <% if (it.rozehrano) { %>
+  <p><a class="tlacitko velke" href="/kviz/otazka"><%= it.t('kviz.pokracovat') %> →</a></p>
+  <% } %>
+  <% if (it.skore) { %><%~ include('/kviz/_skore', { skore: it.skore, t: it.t }) %><% } %>
+  <form method="post" action="/kviz/start" class="formular kviz-start">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <fieldset>
+      <legend><%= it.t('kviz.kategorie_legenda') %></legend>
+      <p class="napoveda" id="kviz-kat-napoveda"><%= it.t('kviz.kategorie_napoveda') %></p>
+      <ul class="kviz-kategorie">
+      <% it.kategorie.forEach(function (k) { %>
+        <li><label class="zatrzitko"><input type="checkbox" name="kategorie" value="<%= k.slug %>" aria-describedby="kviz-kat-napoveda"<% if (k.zvolena) { %> checked<% } %>> <span class="kviz-kat-ikona" aria-hidden="true"><%= k.ikona %></span> <span><%= k.nazev %> <small>(<%= it.t('kviz.pocet_otazek', { n: k.pocet }) %>)</small></span></label></li>
+      <% }) %>
+      </ul>
+    </fieldset>
+    <button class="tlacitko velke" type="submit"><%= it.rozehrano ? it.t('kviz.zacit_znovu') : it.t('kviz.zacit') %></button>
+  </form>
+  <p class="napoveda kviz-soukromi"><%= it.uzivatel ? it.t('kviz.prihlaseny') : it.t('kviz.anonymni') %><% if (!it.uzivatel && it.obec.patika.zasady_cookies) { %> <a href="<%= it.obec.patika.zasady_cookies %>"><%= it.t('staticke.zasady_cookies') %></a><% } %></p>
+  <details class="kviz-jak">
+    <summary><%= it.t('kviz.jak_to_funguje') %></summary>
+    <p><%= it.t('kviz.jak_to_funguje_text', { n: 10 }) %></p>
+  </details>
+<% } %>
+</div>

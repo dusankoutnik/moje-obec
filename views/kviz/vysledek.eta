@@ -1,0 +1,35 @@
+<% layout('/layout') %>
+<div class="kviz">
+  <div class="kviz-lista">
+    <span class="stitek kviz-oblast"><span class="vh"><%= it.t('kviz.oblast') %>: </span><span aria-hidden="true"><%= it.v.kategorie_ikona %></span> <%= it.v.kategorie_nazev %></span>
+  </div>
+  <div class="kviz-vysledek <%= it.v.spravne ? 'je-spravne' : 'je-spatne' %>" role="status" aria-live="polite">
+    <h1 id="kviz-vysledek-h" tabindex="-1"><span aria-hidden="true"><%= it.v.spravne ? '✓' : '✗' %></span> <%= it.v.spravne ? it.t('kviz.spravne') : it.t('kviz.spatne') %></h1>
+    <% if (!it.v.spravne) { %><p class="kviz-spravna"><%= it.t('kviz.spravna_odpoved', { o: it.v.odpovedi[0] }) %></p><% } %>
+  </div>
+  <p class="kviz-text-otazky kviz-text-maly"><%= it.v.otazka %></p>
+  <ul class="kviz-odpovedi kviz-odpovedi-vysledek">
+  <% it.v.nabidka.forEach(function (o) { %>
+    <li class="kviz-odpoved<%= o.spravna ? ' je-spravna' : '' %><%= o.zvolena && !o.spravna ? ' je-chybna' : '' %>"><span class="kviz-pismeno"><%= o.pismeno %></span><span class="kviz-odpoved-text"><%= o.text %><% if (o.spravna) { %> <strong class="kviz-znacka">✓ <%= it.t('kviz.oznaceni_spravna') %></strong><% } %><% if (o.zvolena && !o.spravna) { %> <strong class="kviz-znacka">✗ <%= it.t('kviz.vase_odpoved') %></strong><% } %></span></li>
+  <% }) %>
+  </ul>
+  <% if (it.v.vysvetleni) { %>
+  <div class="kviz-vysvetleni">
+    <h2><%= it.t('kviz.vysvetleni') %></h2>
+    <p><%= it.v.vysvetleni %></p>
+  </div>
+  <% } %>
+  <% if (it.v.zdroj) { %><p class="kviz-zdroj"><%= it.t('kviz.zdroj') %>: <% if (it.zdrojOdkaz) { %><a href="<%= it.v.zdroj %>" rel="noopener noreferrer"><%= it.v.zdroj %></a><% } else { %><%= it.v.zdroj %><% } %></p><% } %>
+  <% if (it.v.konecKola) { %>
+  <div class="kviz-konec-kola">
+    <p><strong><%= it.t('kviz.konec_kola', { kolo: it.v.kolo, s: it.v.koloSpravne, z: it.delkaKola }) %></strong>
+    <%= it.v.dalsiPosun > 0 ? it.t('kviz.kolo_tezsi') : it.v.dalsiPosun < 0 ? it.t('kviz.kolo_lehci') : it.t('kviz.kolo_stejne') %></p>
+  </div>
+  <% } %>
+  <form method="post" action="/kviz/dalsi" class="kviz-dalsi" id="kviz-dalsi">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <button class="tlacitko velke" type="submit"><%= it.t('kviz.dalsi') %> →</button>
+    <span class="napoveda kviz-klavesy"><%= it.t('kviz.dalsi_klavesa') %></span>
+  </form>
+  <%~ include('/kviz/_skore', { skore: it.skore, t: it.t }) %>
+</div>

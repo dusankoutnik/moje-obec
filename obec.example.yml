@@ -67,6 +67,8 @@ moduly:
   infokanal: true
   deska: true
   web: true
+  # kvíz pro občany (otázky z kviz-otazky/ + vlastní balíky obce, viz KVIZ_BALIKY v .env)
+  kviz: false
   rezervace: false
   knihovna: false
 

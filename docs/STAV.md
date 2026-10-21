@@ -1,5 +1,18 @@
 # Stav projektu — etapa 1 (18. 10. 2026)
 
+## Kvíz (21. 10. 2026)
+
+- Nový modul `kviz` (zapíná se `moduly.kviz` v `obec.yml`), popis a algoritmus řazení otázek v `docs/MODULY.md`.
+  Veřejně `/kviz` (výběr oblastí, otázka s oblastí a průběžným skóre, výsledek s vysvětlením a zdrojem, skóre po
+  oblastech celkem i od resetu, reset s potvrzením), správa `/sprava/kviz` (nová role `kviz`, nebo `web`).
+- Hrát může i nepřihlášený (cookie `mo_kviz` až po „Začít kvíz“); po přihlášení se anonymní skóre připojí k účtu.
+- Otázky z YAML: `kviz-otazky/` (veřejné) + `KVIZ_BALIKY` (obec, na devu `/opt/vlastiborice/platforma-instance/kviz`
+  → `/app/kviz-instance`). Testy používají vlastní malý balík `test/fixtures/kviz/` (vymyšlená data).
+- Ověření: `test/kviz.test.ts` (28 testů), celkem 292; axe-core 0 porušení na 10 stránkách (úvod, otázka, výsledek,
+  skóre, reset, A++ na mobilu, přihlášený úvod, správa). Na titulku se dlaždice nepřidala (rychlé odkazy mají
+  přesně 6 sloupců) — kvíz je v menu Moje obec.
+- Zbývá: úklid starých anonymních hráčů, soutěž/žebříček (záměrně ne), vlastní balík obce (místní otázky).
+
 ## Dokončení code review (19. 10. 2026)
 
 Zbylé body externího code review (předchozí opravy jsou v CHANGELOG.md):

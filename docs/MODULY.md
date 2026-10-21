@@ -79,6 +79,45 @@ Převzaté chování z VlastiKanálu (v provozu od 10/2026): zdroj se polluje cr
 
 Z WordPressu Vlastibořic: úřední deska je shortcode se seznamem dokumentů (vyvěšeno od–do, kategorie, PDF); „Obecní úřad informuje“ = články; stránka povinných informací v 14bodové struktuře; prohlášení o přístupnosti a zásady GDPR (platforma má). Požadavky: dokumenty s dobou vyvěšení (min. 15 dní u vyhlášek), archiv sejmutých, kategorie (vyhlášky, rozpočet, záměry, zápisy ZO, veřejné vyhlášky), přístupné PDF (štítek), RSS, odkaz na registr smluv, rozpočtová dokumentace (250/2000 Sb.) s lhůtami, export pro archiv. Redaktor píše, správce schvaluje (P2). Integrace s infokanálem: „vyvěsit + rozeslat“.
 
+## Kvíz (hotovo 21. 10. 2026)
+
+Obdoba hospodských kvízů pro občany: `/kviz` (úvod s výběrem oblastí), `/kviz/otazka`, `/kviz/vysledek`,
+`/kviz/skore` (skóre po oblastech celkem i od posledního resetu), `/kviz/reset` (potvrzení). Správa `/sprava/kviz`
+(role `kviz` nebo `web`, admin vše): kategorie a otázky s úspěšností hráčů, vypnutí/zapnutí otázky, ruční načtení balíků.
+
+- **Banka otázek v YAML:** veřejné balíky `kviz-otazky/*.yml|yaml` v repozitáři, balíky obce mimo repozitář
+  (`KVIZ_BALIKY=/cesta[,/další]`). Formát: `kategorie` (slug), `nazev`, `ikona`, `otazky: [{id, otazka, odpovedi: 4×
+(první správná), obtiznost 1–5, vysvetleni, zdroj}]` (popis v `kviz-otazky/README.md`). Ověření zodem (právě 4
+  různé odpovědi, obtížnost 1–5, id jedinečné napříč balíky). Import při každém startu a tlačítkem ve správě,
+  idempotentně podle `id`: změny se propíší, otázka chybějící v balíku dostane `v_baliku = false` (historie odpovědí
+  zůstává); **soubor s chybou se přeskočí celý a jeho otázky se nedeaktivují**. Výsledek posledního importu (vč.
+  chyb) je ve správě. Pořadí kategorií: obec, region, okres, kraj, cr, eu, svet, priroda, dejiny, vesmir-veda, cestina,
+  kultura, sport, pak ostatní podle názvu (jediné, co je v kódu natvrdo — kategorie samy přicházejí z YAML; kategorie,
+  která z balíků zmizí, se hráčům přestane nabízet, její historie zůstává).
+- **Hráč:** přihlášený = skóre u účtu (`kviz_hraci.uzivatel_id`); nepřihlášený = náhodné UUID v cookie `mo_kviz`
+  (HttpOnly, Path=/kviz, 1 rok), která vzniká až odesláním „Začít kvíz“ (nezbytná cookie pro funkci, o kterou si
+  návštěvník řekl — uvést v zásadách cookies). Má-li přihlášený v prohlížeči anonymní cookie, odpovědi se přesunou
+  k účtu (účet bez rozehrané otázky převezme i ji) a cookie se smaže. Zakládání anonymních hráčů je omezené na
+  30 / 15 min z jedné IP.
+- **Odpovědi se míchají** při každém výběru otázky (`kviz_hraci.poradi`, stejné při obnovení stránky); server
+  dostává pozici tlačítka a sám ji převede. Odpověď na jinou než rozehranou otázku (stará záložka, dvojklik) se
+  nezapočítá. Bez JS vše funguje (POST → 303 → GET); `public/js/kviz.js` přidává klávesy A–D / Enter a fokus.
+- **Řazení otázek** (`src/moduly/kviz/vyber.ts`, čistá funkce s testy):
+  1. Kola po 10 otázkách. Cílová obtížnost kroku = profil `[1,1,2,2,2,3,3,4,4,5]` + posun z předchozího kola
+     (≥ 80 % správně → +1, ≤ 40 % → −1, jinak 0; omezeno na 1–5). První dvě otázky kola mají cíl nejvýš 2 —
+     nikdy se nezačíná těžkou, ani po výborném kole.
+  2. Otázky zodpovězené v tomto kole a právě zobrazená se neopakují, dokud je z čeho brát.
+  3. Přednost: neviděné → naposledy zodpovězené špatně → naposledy správně. V každé skupině nejdřív přesná
+     obtížnost, pak ±1 (na začátku kola max. 2); když nic, celá banka s nejbližší obtížností.
+  4. Ve vybrané množině se střídají kategorie (ne stejná dvakrát za sebou, je-li výběr) a vybírá se náhodně;
+     u „správně zodpovězených“ jen z nejdéle neviděných (čtvrtina, aspoň 3).
+     Hráč může na úvodu zvolit jen některé oblasti; nové „Začít“ zahájí nové kolo.
+- **Skóre:** průběžné = od posledního resetu (`kviz_hraci.reset_at`); reset nic nemaže, jen posune počátek.
+- **Kalibrace:** ve správě „správně napoprvé“ = podíl hráčů, kteří otázku trefili při prvním setkání; od 10 hráčů
+  návrh obtížnosti (≥ 85 % → 1, ≥ 70 % → 2, ≥ 50 % → 3, ≥ 30 % → 4, jinak 5). Obtížnost se mění v YAML.
+- Tabulky `kviz_kategorie`, `kviz_otazky`, `kviz_hraci`, `kviz_odpovedi` (migrace 0011, také přidává roli `kviz`).
+- Zbývá: úklid dlouho neaktivních anonymních hráčů (např. po roce), hraní ve skupině / soutěž, výsledkové tabulky.
+
 ## Rezervace + platby (P1)
 
 Z Rezervací Vlastibořic (nejrozsáhlejší modul): zdroje (sál, posilovna, hřiště, štěpkovač) s kalendářem denním/týdenním, kapacita > 1 (posilovna, počet osob), celý den vs. čas, opakování (série), schvalování úřadem (karty), ceník rezident/nerezident (rezervace úřadu = 0), ruční sleva; **měsíční vyúčtování** = „Výzva k úhradě“ (obec není plátce DPH, žádné faktury), PDF, QR platba (SPD), VS, veřejná stránka platby tokenem, potvrzení o zaplacení, splatnost 14 dní, cron 1. den měsíce, SMS fallback bez e-mailu; report pro účetní (rozpočtová skladba, pohledávky, CSV/PDF); předprodej vstupenek bez registrace (QR, storno 96 h, platba na místě, VIP, pokladní listina); evidence přístupů k zámkům (TTLock: PIN/otisk/čip/eKlíč) a proces aktivace posilovny; spolujízda (jízdy, poptávky, odběry, počítadlo); klimatizace/SMS připomínky topení. Zákon: 128/2000 Sb. (záměry), účetnictví obce. Doporučené pořadí: kalendář + schvalování → ceník → vyúčtování/QR → zámky → předprodej → spolujízda.

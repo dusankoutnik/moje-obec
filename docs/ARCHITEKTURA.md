@@ -148,6 +148,8 @@ src/
                dotace, přesměrování), vzhled.ts, verejne.ts (titulka, stránky, hledání, 404 → stránka/přesměrování),
                sprava.ts (editor), sprava-dalsi.ts (galerie, dokumenty, dotace, vzhled), udrzba.ts (cron),
                import/ (typy.ts rozhraní, importer.ts, stahovac.ts, wordpress.ts, galileo.ts, html-pomoc.ts)
+    kviz/      vyber.ts (algoritmus výběru otázek, bez DB), import.ts (YAML balíky → DB, zod), sluzba.ts (hráči, hra,
+               skóre, správa), routes.ts (/kviz/*), sprava.ts (/sprava/kviz)
   lib/     … + soubory.ts (úložiště souborů), html.ts (sanitizace), barvy.ts (kontrast), datum.ts (Praha), hledani.ts, slug.ts
   web/     … + nahravani.ts (multipart na disk), soubory.ts (/soubory/:id)
 views/   Eta šablony (layout.eta + složky dle modulů)     public/  CSS, favicon, robots

@@ -89,6 +89,7 @@ export const ObecSchema = z.object({
       rezervace: z.boolean().default(false),
       knihovna: z.boolean().default(false),
       web: z.boolean().default(false),
+      kviz: z.boolean().default(false),
     })
     .prefault({}),
   texty: z

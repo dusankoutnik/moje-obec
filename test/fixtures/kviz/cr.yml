@@ -1,0 +1,105 @@
+# Testovací balík pro Vitest — vymyšlená data, ne skutečná banka otázek
+kategorie: cr
+nazev: Česko
+ikona: 🇨🇿
+otazky:
+  - id: cr-001
+    otazka: Testovací otázka 1 z oblasti Česko?
+    odpovedi:
+      - Správně cr 1
+      - Vedle A cr 1
+      - Vedle B cr 1
+      - Vedle C cr 1
+    obtiznost: 1
+    vysvetleni: Vysvětlení k otázce cr-001.
+    zdroj: https://example.org/zdroj
+  - id: cr-002
+    otazka: Testovací otázka 2 z oblasti Česko?
+    odpovedi:
+      - Správně cr 2
+      - Vedle A cr 2
+      - Vedle B cr 2
+      - Vedle C cr 2
+    obtiznost: 2
+    vysvetleni: Vysvětlení k otázce cr-002.
+    zdroj: Učebnice testování
+  - id: cr-003
+    otazka: Testovací otázka 3 z oblasti Česko?
+    odpovedi:
+      - Správně cr 3
+      - Vedle A cr 3
+      - Vedle B cr 3
+      - Vedle C cr 3
+    obtiznost: 3
+    vysvetleni: Vysvětlení k otázce cr-003.
+    zdroj: https://example.org/zdroj
+  - id: cr-004
+    otazka: Testovací otázka 4 z oblasti Česko?
+    odpovedi:
+      - Správně cr 4
+      - Vedle A cr 4
+      - Vedle B cr 4
+      - Vedle C cr 4
+    obtiznost: 4
+    vysvetleni: Vysvětlení k otázce cr-004.
+    zdroj: Učebnice testování
+  - id: cr-005
+    otazka: Testovací otázka 5 z oblasti Česko?
+    odpovedi:
+      - Správně cr 5
+      - Vedle A cr 5
+      - Vedle B cr 5
+      - Vedle C cr 5
+    obtiznost: 5
+    vysvetleni: Vysvětlení k otázce cr-005.
+    zdroj: https://example.org/zdroj
+  - id: cr-006
+    otazka: Testovací otázka 6 z oblasti Česko?
+    odpovedi:
+      - Správně cr 6
+      - Vedle A cr 6
+      - Vedle B cr 6
+      - Vedle C cr 6
+    obtiznost: 1
+    vysvetleni: Vysvětlení k otázce cr-006.
+    zdroj: Učebnice testování
+  - id: cr-007
+    otazka: Testovací otázka 7 z oblasti Česko?
+    odpovedi:
+      - Správně cr 7
+      - Vedle A cr 7
+      - Vedle B cr 7
+      - Vedle C cr 7
+    obtiznost: 2
+    vysvetleni: Vysvětlení k otázce cr-007.
+    zdroj: https://example.org/zdroj
+  - id: cr-008
+    otazka: Testovací otázka 8 z oblasti Česko?
+    odpovedi:
+      - Správně cr 8
+      - Vedle A cr 8
+      - Vedle B cr 8
+      - Vedle C cr 8
+    obtiznost: 3
+    vysvetleni: Vysvětlení k otázce cr-008.
+    zdroj: Učebnice testování
+  - id: cr-009
+    otazka: Testovací otázka 9 z oblasti Česko?
+    odpovedi:
+      - Správně cr 9
+      - Vedle A cr 9
+      - Vedle B cr 9
+      - Vedle C cr 9
+    obtiznost: 4
+    vysvetleni: Vysvětlení k otázce cr-009.
+    zdroj: https://example.org/zdroj
+  - id: cr-010
+    otazka: Testovací otázka 10 z oblasti Česko?
+    odpovedi:
+      - Správně cr 10
+      - Vedle A cr 10
+      - Vedle B cr 10
+      - Vedle C cr 10
+    obtiznost: 5
+    vysvetleni: Vysvětlení k otázce cr-010.
+    zdroj: Učebnice testování
