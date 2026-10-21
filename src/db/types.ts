@@ -438,7 +438,34 @@ export interface KvizOdpovediTable {
   ts: TimestampGenerated;
 }
 
+// ---- elektronická podatelna ----
+export interface PodPodaniTable {
+  id: Generated<string>;
+  rok: number;
+  poradi: number;
+  cislo: string;
+  jmeno: string;
+  ulice: Generated<string>;
+  obec: Generated<string>;
+  psc: Generated<string>;
+  telefon: Generated<string>;
+  email: Generated<string>;
+  predmet: string;
+  text: string;
+  prijato_at: TimestampGenerated;
+  /** datum YYYY-MM-DD (pg vrací date jako řetězec) */
+  uchovat_do: string;
+  odeslano_uradu_at: TimestampNullable;
+  potvrzeni_at: TimestampNullable;
+  chyba_odeslani: Generated<string>;
+  vyrizeno_at: TimestampNullable;
+  vyridil_id: string | null;
+  poznamka: Generated<string>;
+}
+export type Podani = Selectable<PodPodaniTable>;
+
 export interface Database {
+  pod_podani: PodPodaniTable;
   kviz_kategorie: KvizKategorieTable;
   kviz_otazky: KvizOtazkyTable;
   kviz_hraci: KvizHraciTable;

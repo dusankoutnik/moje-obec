@@ -31,6 +31,13 @@ const adresa = (o: ObecProfil) =>
     .filter((x) => x.trim())
     .map(e)
     .join('<br>');
+/** „Zastupitelstvo: volební období 2026–2030. …“ (prázdné, když profil obce období ani poznámku nemá) */
+export function zastupitelstvoText(o: ObecProfil): string {
+  const z = o.obec.zastupitelstvo;
+  if (!z.volebni_obdobi && !z.poznamka) return '';
+  const obdobi = z.volebni_obdobi ? `Zastupitelstvo obce, volební období ${e(z.volebni_obdobi)}.` : '';
+  return odst([obdobi, e(z.poznamka)].filter(Boolean).join(' '));
+}
 const mail = (a: string) => `<a href="mailto:${e(a)}">${e(a)}</a>`;
 
 /** adresa obce ve Sbírce právních předpisů územních samosprávných celků (sbirkapp.gov.cz) */
@@ -68,12 +75,15 @@ export const STRUKTURA_PI: BodPi[] = [
       if (!o.obec.lide.length) return null;
       const skupiny = new Map<string, typeof o.obec.lide>();
       for (const c of o.obec.lide) skupiny.set(c.skupina, [...(skupiny.get(c.skupina) ?? []), c]);
-      return [...skupiny.entries()]
-        .map(
-          ([s, lide]) =>
-            `<h3>${e(s)}</h3><ul>${lide.map((c) => `<li>${e(c.funkce)}: ${e(c.jmeno)}</li>`).join('')}</ul>`,
-        )
-        .join('');
+      return (
+        zastupitelstvoText(o) +
+        [...skupiny.entries()]
+          .map(
+            ([s, lide]) =>
+              `<h3>${e(s)}</h3><ul>${lide.map((c) => `<li>${e(c.funkce)}: ${e(c.jmeno)}</li>`).join('')}</ul>`,
+          )
+          .join('')
+      );
     },
   },
   { klic: '4', nazev: 'Kontaktní spojení', uroven: 1, skupina: true },

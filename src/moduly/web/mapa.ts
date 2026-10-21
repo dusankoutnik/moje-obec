@@ -160,6 +160,7 @@ async function webMapa(app: FastifyInstance) {
           ]
         : []),
       ...(m.infokanal ? [{ titulek: app.obec.texty.nazev_infokanalu, url: '/infokanal' }] : []),
+      ...(m.podatelna ? [{ titulek: t('podatelna.titulek'), url: '/podatelna' }] : []),
       ...(m.kviz ? [{ titulek: t('kviz.titulek'), url: '/kviz' }] : []),
       ...(m.ucty ? [{ titulek: t('staticke.mapa_ucet'), url: '/ucet' }] : []),
       { titulek: t('staticke.kontakt_titulek'), url: '/kontakt' },

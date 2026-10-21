@@ -1,0 +1,12 @@
+<% layout('/layout') %>
+<h1><%= it.titulek %></h1>
+<div class="flash" role="status">
+  <% if (it.prijato.cislo) { %>
+  <p><%= it.t('podatelna.prijato_cislo') %> <strong class="cislo-podani"><%= it.prijato.cislo %></strong>.</p>
+  <% } else { %>
+  <p><%= it.t('podatelna.prijato_bez_cisla') %></p>
+  <% } %>
+  <p><%= it.t('podatelna.prijato_potvrzeni') %></p>
+  <% if (it.prijato.cislo) { %><p><%= it.t(it.prijato.email ? 'podatelna.prijato_email' : 'podatelna.prijato_bez_emailu') %></p><% } %>
+</div>
+<p><a href="/podatelna"><%= it.t('podatelna.prijato_dalsi') %></a> · <a href="/"><%= it.t('app.domu') %></a></p>

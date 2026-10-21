@@ -16,6 +16,9 @@
   <% if (it.jeDeska && it.obec.moduly.deska) { %>
   <article class="karta"><h2><a href="/sprava/deska"><%= it.t('deska.titulek') %></a></h2><p><%= it.t('sprava.deska_text') %></p><a class="tlacitko" href="/sprava/deska/novy"><%= it.t('deska.novy') %></a><% if (it.jeSpravce) { %> <a href="/sprava/povinne-informace"><%= it.t('pi.titulek') %></a><% } %></article>
   <% } %>
+  <% if (it.podatelnaNevyrizene !== null && it.podatelnaNevyrizene !== undefined) { %>
+  <article class="karta"><h2><a href="/sprava/podatelna">📨 <%= it.t('podatelna.titulek') %></a></h2><p><%= it.t('sprava.podatelna_text') %></p><p class="cislo"><%= it.t('sprava.podatelna_nevyrizene', { n: it.podatelnaNevyrizene }) %></p></article>
+  <% } %>
   <% if (it.jeKviz && it.obec.moduly.kviz) { %>
   <article class="karta"><h2><a href="/sprava/kviz">🧠 <%= it.t('kviz.sprava_titulek') %></a></h2><p><%= it.t('kviz.sprava_karta') %></p><a class="tlacitko" href="/kviz"><%= it.t('kviz.hrat') %></a></article>
   <% } %>

@@ -36,6 +36,7 @@ import deskaModul from './moduly/deska/index.js';
 import webModul from './moduly/web/index.js';
 import webMapa from './moduly/web/mapa.js';
 import kvizModul from './moduly/kviz/index.js';
+import podatelnaModul from './moduly/podatelna/index.js';
 
 /** vrátí true, pokud požadavek obsloužil (odpověď odeslána) */
 export type Zachytavac404 = (req: FastifyRequest, reply: FastifyReply) => Promise<boolean>;
@@ -62,8 +63,8 @@ declare module 'fastify' {
     sms: SmsPoskytovatel;
     mail: MailPoskytovatel;
     otp: OtpSluzba;
-    /** limity požadavků podle IP: odeslání kódu, ověření kódu, přihlášení heslem */
-    limity: { poslat: Limit; overit: Limit; heslo: Limit };
+    /** limity požadavků podle IP: odeslání kódu, ověření kódu, přihlášení heslem, podání přes podatelnu */
+    limity: { poslat: Limit; overit: Limit; heslo: Limit; podani: Limit };
     sessionStore: PostgresSessionStore;
     soubory: SouboroveUloziste;
     /** moduly sem přidávají hledání obsahu pro neznámé adresy (stránky webu, přesměrování starých URL) */
@@ -126,6 +127,7 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
     poslat: vytvorLimit(10, 15),
     overit: vytvorLimit(20, 15),
     heslo: vytvorLimit(20, 15),
+    podani: vytvorLimit(5, 15),
   });
   const store = new PostgresSessionStore(db);
   app.decorate('sessionStore', store);
@@ -260,6 +262,7 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
     await app.register(webMapa);
   }
   if (obec.moduly.kviz) await app.register(kvizModul);
+  if (obec.moduly.podatelna) await app.register(podatelnaModul);
 
   app.addHook('onClose', async () => {
     if (!volby.db) await db.destroy();

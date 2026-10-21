@@ -20,6 +20,8 @@
 </section>
 <% if (o.lide.length) { %>
 <section class="karta">
+  <% var zo = o.zastupitelstvo; %>
+  <% if (zo.volebni_obdobi || zo.poznamka) { %><p class="poznamka zastupitelstvo-obdobi"><% if (zo.volebni_obdobi) { %><%= it.t('staticke.volebni_obdobi', { obdobi: zo.volebni_obdobi }) %><% } %><% if (zo.volebni_obdobi && zo.poznamka) { %> <% } %><%= zo.poznamka %></p><% } %>
   <% var skupiny = []; o.lide.forEach(function (c) { if (skupiny.indexOf(c.skupina) < 0) skupiny.push(c.skupina); }); %>
   <% skupiny.forEach(function (s) { %>
   <h2><%= s %></h2>

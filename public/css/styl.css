@@ -2842,3 +2842,39 @@ button.kviz-odpoved:active {
     transition: none;
   }
 }
+
+/* ---------- elektronická podatelna ---------- */
+.chyba-pole {
+  color: var(--chyba);
+  font-weight: 600;
+  margin: 4px 0 0;
+}
+.formular [aria-invalid='true'] {
+  border-color: var(--chyba);
+  border-width: 2px;
+}
+/* past na roboty: člověk pole nevidí (ani čtečka — aria-hidden, tabindex -1) */
+.past {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.stitek.stitek-varovani {
+  background: var(--chyba-pozadi);
+  color: var(--chyba);
+}
+.text-podani {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 520px) {
+  dl.podani-udaje {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  dl.podani-udaje dd {
+    margin-bottom: 8px;
+  }
+}

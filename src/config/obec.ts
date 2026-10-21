@@ -50,6 +50,14 @@ export const ObecSchema = z.object({
     zpracovatele: z.array(z.object({ nazev: z.string().min(1), ucel: z.string().default('') })).default([]),
     // fakta do úvodu webu (statistiky): např. { hodnota: '357', popisek: 'obyvatel' }
     fakta: z.array(z.object({ hodnota: z.string().min(1), popisek: z.string().min(1) })).default([]),
+    // zastupitelstvo: volební období a poznámka (např. termín ustavujícího zasedání) — u seznamu lidí na stránce
+    // kontaktů a v bodě 3 povinných informací; prázdné = nezobrazí se
+    zastupitelstvo: z
+      .object({
+        volebni_obdobi: z.string().default(''), // např. „2026–2030“
+        poznamka: z.string().default(''),
+      })
+      .prefault({}),
     // obecní úřad a zastupitelstvo — organizační struktura (povinné informace bod 3) a stránka kontaktů
     lide: z
       .array(
@@ -90,6 +98,16 @@ export const ObecSchema = z.object({
       knihovna: z.boolean().default(false),
       web: z.boolean().default(false),
       kviz: z.boolean().default(false),
+      podatelna: z.boolean().default(false),
+    })
+    .prefault({}),
+  // elektronická podatelna — formulář pro podání bez elektronického podpisu (modul podatelna)
+  podatelna: z
+    .object({
+      // kam se podání posílá e-mailem; prázdné = obec.kontakt.epodatelna, jinak obec.kontakt.email
+      email: z.string().default(''),
+      // doba uchování podání v aplikaci (roky) podle spisového a skartačního plánu obce; nic se nemaže samo
+      uchovani_let: z.number().int().min(1).max(100).default(5),
     })
     .prefault({}),
   texty: z

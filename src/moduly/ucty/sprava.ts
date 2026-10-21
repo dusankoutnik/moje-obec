@@ -33,6 +33,9 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
       jeWeb: maRoli(u, 'web'),
       jeDeska: maRoli(u, 'deska'),
       jeKviz: maRoli(u, 'kviz', 'web'),
+      // podání obsahují osobní údaje — jen správce obce (admin má vše)
+      podatelnaNevyrizene:
+        app.obec.moduly.podatelna && maRoli(u, 'spravce') ? await app.podatelna.pocetNevyrizenych() : null,
     });
   });
 

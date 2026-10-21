@@ -19,6 +19,10 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 - Dashboard správy: rozpočet SMS s kódy a stav fronty infokanálu.
 - CI: pokrytí testy s prahy, `npm audit --audit-level=high`, Playwright smoke test (`e2e/`).
 
+### Přidáno (elektronická podatelna)
+
+- Modul **podatelna** (`moduly.podatelna`): veřejný formulář `/podatelna` pro podání bez elektronického podpisu (CSRF, limit podle IP, past na roboty, funguje bez JS), uložení s číslem `EP-<rok>-<pořadí>`, e-mail na adresu podatelny s Reply-To na podatele, automatická zpráva o doručení podateli, správa `/sprava/podatelna` pro správce obce (vyřízení, poznámka, audit), doba uchování `podatelna.uchovani_let` (výchozí 5 let, nic se nemaže samo).
+
 ### Přidáno (etapa 1c — vzhled)
 
 - 9 barevných schémat v OKLCH s testem kontrastu, 8 dvojic písem (@fontsource, vč. Ubuntu), přepínač velikosti písma pro návštěvníky, fotky pozadí se střídáním, hero se statistikami, plovoucí menu, náhled a vrácení vzhledu ve správě, favicon a ikony ze znaku obce. Seznam licencí: `docs/LICENCE-TRETICH-STRAN.md`.

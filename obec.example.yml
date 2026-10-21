@@ -44,6 +44,10 @@ obec:
   # Fakta do úvodu webu (statistiky), např.:
   fakta:
     - { hodnota: '500', popisek: 'obyvatel' }
+  # Zastupitelstvo: volební období a poznámka (zobrazí se u seznamu lidí na stránce Kontakt a v bodě 3), např.:
+  zastupitelstvo:
+    volebni_obdobi: ''
+    poznamka: ''
   # Obecní úřad a zastupitelstvo — organizační struktura (povinné informace bod 3) a kontakty
   lide:
     - { skupina: Vedení obce, funkce: Starosta, jmeno: Jan Novák, telefon: '', email: '' }
@@ -69,8 +73,17 @@ moduly:
   web: true
   # kvíz pro občany (otázky z kviz-otazky/ + vlastní balíky obce, viz KVIZ_BALIKY v .env)
   kviz: false
+  # elektronická podatelna: formulář /podatelna (podání bez el. podpisu → e-mail na podatelnu + evidence ve správě)
+  podatelna: false
   rezervace: false
   knihovna: false
+
+# Elektronická podatelna (modul podatelna)
+podatelna:
+  # adresa, kam podání odcházejí; prázdné = obec.kontakt.epodatelna, jinak obec.kontakt.email
+  email: ''
+  # doba uchování podání v aplikaci (roky) podle spisového a skartačního plánu obce — nic se nemaže samo
+  uchovani_let: 5
 
 texty:
   nazev_infokanalu: Infokanál

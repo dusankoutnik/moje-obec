@@ -1,0 +1,48 @@
+<% layout('/layout') %>
+<% var url = function (vse, strana) { return '/sprava/podatelna' + (vse ? '?vse=1' : '') + (strana > 1 ? (vse ? '&' : '?') + 'strana=' + strana : ''); }; %>
+<p><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<h1><%= it.titulek %></h1>
+<p class="perex"><%= it.t('podatelna.sprava_perex', { let: it.uchovaniLet }) %></p>
+<nav class="zalozky" aria-label="<%= it.t('podatelna.filtr_popis') %>">
+  <a href="<%= url(false, 1) %>"<%~ it.jenNevyrizene ? ' aria-current="page"' : '' %>><%= it.t('podatelna.filtr_nevyrizene') %></a>
+  <a href="<%= url(true, 1) %>"<%~ !it.jenNevyrizene ? ' aria-current="page"' : '' %>><%= it.t('podatelna.filtr_vse') %></a>
+</nav>
+<% if (!it.radky.length) { %>
+<p class="flash flash-info" role="status"><%= it.t('podatelna.zadna') %></p>
+<% } else { %>
+<p class="napoveda"><%= it.t('podatelna.pocet', { n: it.pocet }) %></p>
+<div class="tabulka-obal">
+<table class="tabulka kompaktni">
+  <caption class="vh"><%= it.t('podatelna.tabulka') %></caption>
+  <thead><tr>
+    <th scope="col"><%= it.t('podatelna.sloupec_cislo') %></th>
+    <th scope="col"><%= it.t('podatelna.sloupec_prijato') %></th>
+    <th scope="col"><%= it.t('podatelna.sloupec_podatel') %></th>
+    <th scope="col"><%= it.t('podatelna.sloupec_predmet') %></th>
+    <th scope="col"><%= it.t('podatelna.sloupec_stav') %></th>
+  </tr></thead>
+  <tbody>
+  <% it.radky.forEach(function (p) { %>
+    <tr>
+      <th scope="row"><a href="/sprava/podatelna/<%= p.id %>"><%= p.cislo %></a></th>
+      <td><%= it.fmtDatum(p.prijato_at) %></td>
+      <td><%= p.jmeno %></td>
+      <td><%= p.predmet %></td>
+      <td>
+        <span class="stitek"><%= it.t(p.vyrizeno_at ? 'podatelna.stav_vyrizeno' : 'podatelna.stav_nevyrizeno') %></span>
+        <% if (p.chyba_odeslani) { %> <span class="stitek stitek-varovani"><%= it.t('podatelna.stav_chyba') %></span><% } %>
+        <% if (p.uchovat_do < it.dnes) { %> <span class="stitek stitek-varovani"><%= it.t('podatelna.stav_po_lhute') %></span><% } %>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% if (it.stran > 1) { %>
+<nav class="strankovani" aria-label="<%= it.t('podatelna.strankovani') %>">
+  <% if (it.strana > 1) { %><a href="<%= url(!it.jenNevyrizene, it.strana - 1) %>">← <%= it.t('podatelna.predchozi') %></a><% } else { %><span></span><% } %>
+  <span><%= it.t('podatelna.strana_z', { n: it.strana, z: it.stran }) %></span>
+  <% if (it.strana < it.stran) { %><a href="<%= url(!it.jenNevyrizene, it.strana + 1) %>"><%= it.t('podatelna.dalsi') %> →</a><% } else { %><span></span><% } %>
+</nav>
+<% } %>
+<% } %>

@@ -33,7 +33,7 @@ export const testovaciObec = obecZObjektu({
     casti: ['Testov', 'Dolní Testov'],
     kontakt: { email: 'obec@testov.cz' },
   },
-  moduly: { ucty: true, infokanal: true, deska: true, web: true, kviz: true },
+  moduly: { ucty: true, infokanal: true, deska: true, web: true, kviz: true, podatelna: true },
   texty: { nazev_infokanalu: 'TestKanál', sms_prefix: 'TESTOV: ' },
 });
 

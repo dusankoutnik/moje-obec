@@ -1,0 +1,40 @@
+<% layout('/layout') %>
+<% var p = it.p; %>
+<p><a href="/sprava/podatelna">← <%= it.t('podatelna.zpet') %></a></p>
+<h1><%= it.titulek %>: <%= p.predmet %></h1>
+<% if (p.chyba_odeslani) { %><p class="flash flash-chyba" role="alert"><%= it.t('podatelna.chyba_odeslani', { co: p.chyba_odeslani }) %></p><% } %>
+<% if (p.uchovat_do < it.dnes) { %><p class="flash flash-info" role="status"><%= it.t('podatelna.po_lhute') %></p><% } %>
+<div class="sloupce">
+<section class="karta">
+  <dl class="seznam podani-udaje">
+    <dt><%= it.t('podatelna.sloupec_prijato') %></dt><dd><%= it.fmtDatum(p.prijato_at) %></dd>
+    <dt><%= it.t('podatelna.jmeno') %></dt><dd><%= p.jmeno %></dd>
+    <dt><%= it.t('podatelna.adresa') %></dt><dd><%= p.ulice %>, <%= p.psc %> <%= p.obec %></dd>
+    <dt><%= it.t('podatelna.telefon') %></dt><dd><% if (p.telefon) { %><a href="tel:<%= p.telefon %>"><%= it.fmtTelefon(p.telefon) %></a><% } else { %>—<% } %></dd>
+    <dt><%= it.t('podatelna.email') %></dt><dd><% if (p.email) { %><a href="mailto:<%= p.email %>"><%= p.email %></a><% } else { %>—<% } %></dd>
+    <dt><%= it.t('podatelna.odeslano_uradu') %></dt><dd><%= p.odeslano_uradu_at ? it.fmtDatum(p.odeslano_uradu_at) : it.t('podatelna.ne') %></dd>
+    <dt><%= it.t('podatelna.potvrzeni') %></dt><dd><%= p.potvrzeni_at ? it.fmtDatum(p.potvrzeni_at) : it.t('podatelna.ne') %></dd>
+    <dt><%= it.t('podatelna.uchovat_do') %></dt><dd><%= it.fmtDatum(p.uchovat_do + 'T12:00:00Z', false) %></dd>
+    <% if (p.vyrizeno_at) { %>
+    <dt><%= it.t('podatelna.vyrizeno') %></dt><dd><%= it.fmtDatum(p.vyrizeno_at) %></dd>
+    <dt><%= it.t('podatelna.vyridil') %></dt><dd><%= ((p.vyridil_jmeno || '') + ' ' + (p.vyridil_prijmeni || '')).trim() || it.fmtTelefon(p.vyridil_telefon) || '—' %></dd>
+    <% } %>
+  </dl>
+</section>
+<section class="karta">
+  <h2><%= it.t('podatelna.text') %></h2>
+  <div class="text-podani"><%= p.text %></div>
+</section>
+</div>
+<form method="post" action="/sprava/podatelna/<%= p.id %>" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <label for="poznamka"><%= it.t('podatelna.poznamka') %></label>
+  <textarea id="poznamka" name="poznamka" rows="3" maxlength="2000"><%= p.poznamka %></textarea>
+  <% if (p.vyrizeno_at) { %>
+  <button class="tlacitko" type="submit" name="akce" value="poznamka"><%= it.t('podatelna.ulozit_poznamku') %></button>
+  <button class="tlacitko sekundarni" type="submit" name="akce" value="otevrit"><%= it.t('podatelna.znovu_otevrit') %></button>
+  <% } else { %>
+  <button class="tlacitko" type="submit" name="akce" value="vyrizeno"><%= it.t('podatelna.oznacit_vyrizeno') %></button>
+  <button class="tlacitko sekundarni" type="submit" name="akce" value="poznamka"><%= it.t('podatelna.ulozit_poznamku') %></button>
+  <% } %>
+</form>

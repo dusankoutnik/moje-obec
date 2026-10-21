@@ -129,6 +129,32 @@ Obdoba hospodských kvízů pro občany: `/kviz` (úvod s výběrem oblastí), `
 - Tabulky `kviz_kategorie`, `kviz_otazky`, `kviz_hraci`, `kviz_odpovedi` (migrace 0011, také přidává roli `kviz`; 0012 přidává `rucne` a `cislo`).
 - Zbývá: úklid dlouho neaktivních anonymních hráčů (např. po roce), hraní ve skupině / soutěž, výsledkové tabulky.
 
+## Elektronická podatelna (hotovo 21. 10. 2026)
+
+Veřejný formulář `/podatelna` pro podání bez elektronického podpisu a bez přílohy (náhrada formulářů typu Contact
+Form 7 na starých webech obcí). Zapíná se `moduly.podatelna: true`.
+
+- **Formulář:** jméno a příjmení, doručovací adresa (ulice, obec, PSČ — povinné), telefon a e-mail (nepovinné),
+  předmět, text, potvrzení pravdivosti a informace o zpracování údajů s odkazem na zásady (právní základ čl. 6 odst. 1
+  písm. c) a e) GDPR, ne souhlas). Obyčejný POST → přesměrování → GET, funguje bez JavaScriptu; chyby u polí přes
+  `aria-invalid` + `aria-describedby` a souhrn s odkazy na pole. Stránka připomíná § 37 odst. 4 správního řádu
+  (podání bez podpisu, které je úkonem v řízení, je nutné do 5 dnů potvrdit) a datovou schránku obce.
+- **Ochrana:** CSRF (globálně), limit 5 podání / 15 min z jedné IP (`app.limity.podani`), past na roboty (skryté pole
+  `web`; vyplněné = stejná odpověď jako člověku, ale nic se neuloží ani neodešle). Předmět se vždy převede na jeden
+  řádek (jde do hlavičky e-mailu).
+- **Zpracování:** podání se nejdřív uloží (`pod_podani`, číslo `EP-<rok>-<pořadí>` po pražském roce, pořadí pod
+  transakčním zámkem), teprve pak odejdou e-maily: na adresu podatelny (`podatelna.email` → `obec.kontakt.epodatelna`
+  → `obec.kontakt.email`) s Reply-To na podatele a podateli automatická zpráva o doručení s číslem podání („přijetí
+  potvrdí úřad následující úřední den podatelny“). Selhání pošty podání neztratí — zapíše se k němu a správa ho ukáže.
+- **Správa** `/sprava/podatelna` (jen `spravce` a `admin` — osobní údaje): nevyřízená / všechna, detail, interní
+  poznámka (např. č. j. ve spisové službě), označit vyřízené / vrátit; vše do auditu. Dlaždice na `/sprava` s počtem
+  nevyřízených.
+- **Doba uchování:** `podatelna.uchovani_let` (výchozí 5 let — častá skartační lhůta pro podněty a žádosti
+  občanů ve spisových plánech obcí, ověřit; obec ji má nastavit podle svého spisového a skartačního plánu). Ke každému
+  podání se uloží `uchovat_do`; **nic se nemaže automaticky** — po lhůtě se podání ve správě jen označí („po době
+  uchování“) a vyřazuje ho úřad ve skartačním řízení (zák. č. 499/2004 Sb.). Podání z formuláře je zároveň
+  doručené e-mailem do spisové služby úřadu; aplikace spisovou službu nenahrazuje.
+
 ## Rezervace + platby (P1)
 
 Z Rezervací Vlastibořic (nejrozsáhlejší modul): zdroje (sál, posilovna, hřiště, štěpkovač) s kalendářem denním/týdenním, kapacita > 1 (posilovna, počet osob), celý den vs. čas, opakování (série), schvalování úřadem (karty), ceník rezident/nerezident (rezervace úřadu = 0), ruční sleva; **měsíční vyúčtování** = „Výzva k úhradě“ (obec není plátce DPH, žádné faktury), PDF, QR platba (SPD), VS, veřejná stránka platby tokenem, potvrzení o zaplacení, splatnost 14 dní, cron 1. den měsíce, SMS fallback bez e-mailu; report pro účetní (rozpočtová skladba, pohledávky, CSV/PDF); předprodej vstupenek bez registrace (QR, storno 96 h, platba na místě, VIP, pokladní listina); evidence přístupů k zámkům (TTLock: PIN/otisk/čip/eKlíč) a proces aktivace posilovny; spolujízda (jízdy, poptávky, odběry, počítadlo); klimatizace/SMS připomínky topení. Zákon: 128/2000 Sb. (záměry), účetnictví obce. Doporučené pořadí: kalendář + schvalování → ceník → vyúčtování/QR → zámky → předprodej → spolujízda.

@@ -1,0 +1,87 @@
+<% layout('/layout') %>
+<% var o = it.obec.obec; var f = it.f || {}; var ch = it.chyby || {}; %>
+<%
+  // atributy pole s chybou: aria-invalid + odkaz na text chyby (čtečka ho přečte u pole)
+  var pole = function (jmeno, napoveda) {
+    var popis = [];
+    if (napoveda) popis.push(jmeno + '-napoveda');
+    if (ch[jmeno]) popis.push(jmeno + '-chyba');
+    return (ch[jmeno] ? ' aria-invalid="true"' : '') + (popis.length ? ' aria-describedby="' + popis.join(' ') + '"' : '');
+  };
+  var chyba = function (jmeno) {
+    return ch[jmeno] ? '<p class="chyba-pole" id="' + jmeno + '-chyba">' + it.t('podatelna.' + ch[jmeno]) + '</p>' : '';
+  };
+  var hodnota = function (jmeno) { return typeof f[jmeno] === 'string' ? f[jmeno] : ''; };
+%>
+<h1><%= it.titulek %></h1>
+<p class="perex"><%= it.t('podatelna.perex') %></p>
+<section class="karta">
+  <h2><%= it.t('podatelna.podminky_nadpis') %></h2>
+  <ul>
+    <li><%= it.t('podatelna.podminky_kdy') %></li>
+    <li><%= it.t('podatelna.podminky_potvrzeni') %></li>
+    <% if (o.kontakt.uredni_hodiny) { %><li><%= it.t('podatelna.podminky_uredni_hodiny') %><br><% o.kontakt.uredni_hodiny.split('\n').forEach(function (r, i) { %><%= i ? ', ' : '' %><%= r %><% }) %></li><% } %>
+  </ul>
+  <p class="napoveda"><%= it.t('podatelna.podminky_podpis') %><% if (o.kontakt.datova_schranka) { %> <%= it.t('podatelna.datova_schranka', { id: o.kontakt.datova_schranka }) %>.<% } %></p>
+</section>
+<section class="karta">
+<h2 id="formular-nadpis"><%= it.t('podatelna.formular_nadpis') %></h2>
+<% var klice = Object.keys(ch); %>
+<% if (klice.length) { %>
+<div class="flash flash-chyba" role="alert" tabindex="-1" id="chyby">
+  <p><strong><%= it.t('podatelna.chyby_nadpis') %></strong></p>
+  <ul><% klice.forEach(function (k) { %><li><a href="#<%= k %>"><%= it.t('podatelna.' + ch[k]) %></a></li><% }) %></ul>
+</div>
+<% } %>
+<form method="post" action="/podatelna" class="formular" aria-labelledby="formular-nadpis" novalidate>
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <p class="napoveda"><%= it.t('podatelna.povinne') %>: <span aria-hidden="true">*</span></p>
+  <label for="jmeno"><%= it.t('podatelna.jmeno') %> <span aria-hidden="true">*</span></label>
+  <input id="jmeno" name="jmeno" autocomplete="name" maxlength="<%= it.delky.jmeno %>" required value="<%= hodnota('jmeno') %>"<%~ pole('jmeno') %>>
+  <%~ chyba('jmeno') %>
+  <fieldset>
+    <legend><%= it.t('podatelna.adresa_legenda') %></legend>
+    <label for="ulice"><%= it.t('podatelna.ulice') %> <span aria-hidden="true">*</span></label>
+    <input id="ulice" name="ulice" autocomplete="street-address" maxlength="<%= it.delky.ulice %>" required value="<%= hodnota('ulice') %>"<%~ pole('ulice') %>>
+    <%~ chyba('ulice') %>
+    <div class="radek">
+      <div>
+        <label for="obec"><%= it.t('podatelna.obec') %> <span aria-hidden="true">*</span></label>
+        <input id="obec" name="obec" autocomplete="address-level2" maxlength="<%= it.delky.obec %>" required value="<%= hodnota('obec') %>"<%~ pole('obec') %>>
+        <%~ chyba('obec') %>
+      </div>
+      <div>
+        <label for="psc"><%= it.t('podatelna.psc') %> <span aria-hidden="true">*</span></label>
+        <input id="psc" name="psc" autocomplete="postal-code" inputmode="numeric" maxlength="20" required value="<%= hodnota('psc') %>"<%~ pole('psc') %>>
+        <%~ chyba('psc') %>
+      </div>
+    </div>
+  </fieldset>
+  <div class="radek">
+    <div>
+      <label for="telefon"><%= it.t('podatelna.telefon') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+      <input id="telefon" name="telefon" type="tel" inputmode="tel" autocomplete="tel" maxlength="<%= it.delky.telefon %>" value="<%= hodnota('telefon') %>"<%~ pole('telefon') %>>
+      <%~ chyba('telefon') %>
+    </div>
+    <div>
+      <label for="email"><%= it.t('podatelna.email') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+      <input id="email" name="email" type="email" autocomplete="email" maxlength="<%= it.delky.email %>" value="<%= hodnota('email') %>"<%~ pole('email', true) %>>
+      <p class="napoveda" id="email-napoveda"><%= it.t('podatelna.email_napoveda') %></p>
+      <%~ chyba('email') %>
+    </div>
+  </div>
+  <label for="predmet"><%= it.t('podatelna.predmet') %> <span aria-hidden="true">*</span></label>
+  <input id="predmet" name="predmet" maxlength="<%= it.delky.predmet %>" required value="<%= hodnota('predmet') %>"<%~ pole('predmet') %>>
+  <%~ chyba('predmet') %>
+  <label for="text"><%= it.t('podatelna.text') %> <span aria-hidden="true">*</span></label>
+  <textarea id="text" name="text" rows="10" maxlength="<%= it.delky.text %>" required<%~ pole('text') %>><%= hodnota('text') %></textarea>
+  <%~ chyba('text') %>
+  <div class="past" aria-hidden="true">
+    <label for="web"><%= it.t('podatelna.past') %></label>
+    <input id="web" name="web" tabindex="-1" autocomplete="off" value="">
+  </div>
+  <label class="zatrzitko" for="beru_na_vedomi"><input type="checkbox" id="beru_na_vedomi" name="beru_na_vedomi" value="ano" required<%= f.beru_na_vedomi === 'ano' ? ' checked' : '' %><%~ pole('beru_na_vedomi') %>> <span><%= it.t('podatelna.beru_na_vedomi') %> <a href="<%= it.obec.patika.ochrana_osobnich_udaju %>"><%= it.t('podatelna.zasady') %></a></span></label>
+  <%~ chyba('beru_na_vedomi') %>
+  <button class="tlacitko" type="submit"><%= it.t('podatelna.odeslat') %></button>
+</form>
+</section>
