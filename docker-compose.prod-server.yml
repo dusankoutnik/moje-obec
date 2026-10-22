@@ -1,0 +1,70 @@
+# Produkční instance platformy na serveru obce (stejná architektura jako dev, docker-compose.dev-server.yml):
+# TLS řeší Nginx Proxy Manager na externí síti `web`, žádný veřejný port, Postgres jen na vnitřní síti.
+# Vlastní projekt (name), kontejnery, volumes i síť — s dev instancí se nic nesdílí.
+# Konfigurace: .env.prod (tajné údaje, APLIKACE_*_URL) a obec.prod.yml (profil obce) — obojí mimo git.
+# Spuštění (--env-file kvůli POSTGRES_PASSWORD v proměnných níže):
+#   docker compose --env-file .env.prod -f docker-compose.prod-server.yml up -d --build
+name: platforma_prod
+services:
+  platforma_prod:
+    build: .
+    container_name: platforma_prod
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgres://platforma:${POSTGRES_PASSWORD:?Nastavte POSTGRES_PASSWORD v .env.prod}@platforma_prod_db:5432/platforma
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: '3000'
+      INTERNAL_BASE_URL: http://127.0.0.1:3000
+      OBEC_YML: /app/obec.yml
+      # vlastní otázky kvízu obce (mimo veřejný repozitář)
+      KVIZ_BALIKY: /app/kviz-instance
+      # soubory starého WordPressu na původní adrese /wp-content/uploads/ (pevné odkazy z e-mailů, PDF, vyhledávačů)
+      STARY_WEB_SOUBORY: /app/stary-web-uploads
+      # service workery pluginu pwa-for-wp ze starého WordPressu — prohlížeče je dostanou jako „uklízeče“
+      STARE_SERVICE_WORKERY: /pwa-sw.js,/pwa-amp-sw.js
+    volumes:
+      - ./obec.prod.yml:/app/obec.yml:ro
+      - ../platforma-instance/kviz:/app/kviz-instance:ro
+      - ../platforma-instance/stary-web-uploads:/app/stary-web-uploads:ro
+      - platforma_prod_data:/app/data # nahrané soubory obce — přežijí rebuild
+    mem_limit: 768m
+    depends_on:
+      platforma_prod_db:
+        condition: service_healthy
+    networks:
+      - default
+      - web
+
+  platforma_prod_db:
+    image: postgres:16-alpine
+    container_name: platforma_prod_db
+    restart: unless-stopped
+    command: -c shared_buffers=64MB -c max_connections=30
+    environment:
+      POSTGRES_DB: platforma
+      POSTGRES_USER: platforma
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Nastavte POSTGRES_PASSWORD v .env.prod}
+    volumes:
+      - platforma_prod_db_data:/var/lib/postgresql/data
+    mem_limit: 256m
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U platforma -d platforma']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - default
+
+volumes:
+  platforma_prod_data:
+    name: platforma_prod_data
+  platforma_prod_db_data:
+    name: platforma_prod_db_data
+
+networks:
+  default:
+    name: platforma_prod_default
+  web:
+    external: true

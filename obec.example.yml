@@ -77,7 +77,14 @@ moduly:
   podatelna: false
   # plánované odstávky elektřiny ČEZ Distribuce na titulce a /odstavky (jen obce v území ČEZ Distribuce)
   odstavky: false
+  # aplikace za proxy platformy (/rezervace, /eknihy) — jen s APLIKACE_REZERVACE_URL / APLIKACE_EKNIHY_URL v .env;
+  # tady je výchozí stav, za běhu se zapínají ve Správě → Moduly obce
   rezervace: false
+  # části rezervací: předprodej vstupenek (/rezervace/predprodej) a spolujízda (/rezervace/spolujizda)
+  predprodej: true
+  spolujizda: true
+  eknihy: false
+  # starší název eKnih (bere se jako eknihy)
   knihovna: false
 
 # Obecní web (modul web)
