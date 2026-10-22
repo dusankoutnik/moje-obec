@@ -39,6 +39,28 @@
     <% } %>
   </article>
   <% } %>
+  <% const A = it.aplikace; if (A) { const S = A.souhrn; %>
+  <% if (A.ucty) { %>
+  <article class="karta" id="schvalovani"><h2><a href="/sprava/schvalovani">🕐 Schvalování</a></h2><p>Žádosti o rezervace a posilovnu, nové účty k posouzení rezidenta, účty bez jména.</p>
+    <p class="cislo"><% if (S) { %><%= S.pending %> rezervací · <%= S.gymRequested %> posilovna · <% } %><%= A.ucty.kPosouzeni %> k posouzení · <%= A.ucty.bezJmena %> bez jména</p></article>
+  <article class="karta"><h2><a href="/sprava/statistiky">📈 Statistiky</a></h2><p>Souhrnná čísla účtů a aplikací — jen agregáty, bez jmen.</p></article>
+  <% } %>
+  <% if (A.rezervace) { %>
+  <% if (A.spravce) { %>
+  <article class="karta"><h2><a href="/rezervace/admin/rezervace">📅 Rezervace</a></h2><p>Přehled a úpravy rezervací.</p><% if (S) { %><p class="cislo"><%= S.future %> nadcházejících</p><% } %></article>
+  <article class="karta"><h2><a href="/rezervace/admin/uzivatele">👥 Uživatelé rezervací</a></h2><p>Rezidenti, posilovna, zámky a čipy.</p><% if (S) { %><p class="cislo"><%= S.users %> účtů</p><% } %></article>
+  <% if (A.spolujizda) { %><article class="karta"><h2><a href="/rezervace/admin/spolujizda">🚗 Spolujízda</a></h2><p>Jízdy a poptávky.</p><% if (S) { %><p class="cislo"><%= S.trips %> nadcházejících jízd</p><% } %></article><% } %>
+  <% } %>
+  <% if (A.spravce || A.ucetni) { %>
+  <article class="karta"><h2><a href="/rezervace/admin/vyuctovani">💰 Vyúčtování</a></h2><p>Výzvy k úhradě a platby.</p><% if (S) { %><p class="cislo"><%= S.unpaid.c %> nezaplaceno (<%= Math.round(S.unpaid.s).toLocaleString('cs-CZ') %> Kč)</p><% } %></article>
+  <% if (A.predprodej) { %><article class="karta"><h2><a href="/rezervace/admin/predprodej">🎫 Předprodej</a></h2><p>Vstupenky a potvrzování plateb.</p><% if (S) { %><p class="cislo"><%= S.tickets.paid %> prodáno · <%= S.tickets.held %> čeká na platbu</p><% } %></article><% } %>
+  <article class="karta"><h2><a href="/rezervace/admin/report">📊 Report</a></h2><p>Výnosy, rozpočtová skladba, pohledávky.</p></article>
+  <article class="karta"><h2><a href="/rezervace/admin/cenik">🏷️ Ceník</a></h2><p>Ceny a rozpočtové kódy.</p></article>
+  <% if (!A.spravce) { %><article class="karta"><h2><a href="/rezervace/admin/uzivatele">👥 Uživatelé rezervací</a></h2><p>Evidence zámků a čipů.</p></article><% } %>
+  <% } %>
+  <% if (!S) { %><p class="napoveda" role="status">Rezervace teď neodpovídají — počty se ukážou, až zase poběží.</p><% } %>
+  <% } %>
+  <% } %>
   <% if (it.jeSpravce) { %>
   <article class="karta"><h2><a href="/sprava/audit"><%= it.t('sprava.audit') %></a></h2><p><%= it.t('sprava.audit_text') %></p></article>
   <% } %>

@@ -44,6 +44,10 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
       // podání obsahují osobní údaje — jen správce obce (admin má vše)
       podatelnaNevyrizene:
         app.obec.moduly.podatelna && maRoli(u, 'spravce') ? await app.podatelna.pocetNevyrizenych() : null,
+      // dlaždice aplikací (rezervace…) a úřední agenda účtů — modul administrace
+      aplikace: app.hasDecorator('administrace')
+        ? await app.administrace.dlazdice(u).catch(() => null)
+        : null,
     });
   });
 

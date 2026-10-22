@@ -137,6 +137,17 @@ const EnvSchema = z.object({
     .transform((v) => v === undefined || v === '' || v === '1' || v === 'true'),
   // další adresy (čárkami) pro e-maily o výstrahách vedle správců (role admin a spravce s e-mailem)
   VYSTRAHY_NOTIFY: z.string().default(''),
+  // Správa → Schvalování/Statistiky: klíč x-api-secret pro admin API aplikací (rezervace /api/admin/*, eKnihy
+  // /api/statistiky); prázdné = INTERNI_API_SECRET (rezervace v režimu IDENTITA=platforma ho přijímají)
+  APLIKACE_API_SECRET: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined),
+  // avízo správcům „posuďte, zda je rezident“ u nových účtů se jménem (0 = vypnuto)
+  REZIDENT_AVIZO: z
+    .string()
+    .optional()
+    .transform((v) => v === undefined || v === '' || v === '1' || v === 'true'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

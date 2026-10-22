@@ -1678,7 +1678,7 @@ body.sila-vyrazna {
 .pilulka li ul a {
   display: block;
   padding: 0.45em 0.75em;
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   color: #fff;
   text-decoration: none;
 }
@@ -2314,7 +2314,7 @@ a.stat-in:hover .stat-hodnota {
   gap: 6px;
   height: 120px;
   padding: 0 10px 10px;
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   overflow: hidden;
 }
 .mini-pruh {
@@ -2351,7 +2351,7 @@ a.stat-in:hover .stat-hodnota {
   min-height: 110px;
   padding: 8px 10px;
   background: var(--svetla);
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   color: #1a1a1a;
 }
 .ukazka-nadpis {
@@ -3177,4 +3177,33 @@ button.kviz-odpoved:active {
   flex-wrap: wrap;
   gap: 8px 12px;
   margin: 8px 0;
+}
+
+/* Správa → Schvalování a Statistiky (modul administrace, 2026-10-22) */
+.radek-tlacitek {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+}
+.sprava-cisla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.8rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sprava-cisla li {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--linka);
+  border-radius: var(--radius);
+}
+.sprava-cisla strong {
+  display: block;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+.sprava-cisla small {
+  display: block;
 }

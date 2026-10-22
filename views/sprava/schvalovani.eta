@@ -1,0 +1,106 @@
+<% layout('/layout') %>
+<p><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<h1>🕐 Schvalování</h1>
+<p class="napoveda">Všechno, co čeká na úřad: žádosti z rezervací, nové účty k posouzení rezidenta a účty bez jména.</p>
+
+<% const Z = it.zadosti; %>
+<% if (it.rezervaceZapnute) { %>
+<h2>📅 Žádosti o rezervace</h2>
+<% if (!Z) { %>
+  <p class="flash flash-chyba" role="status">Rezervace teď neodpovídají — žádosti se ukážou, až zase poběží.</p>
+<% } else if (!Z.reservations.length) { %>
+  <p>Žádná čekající žádost.</p>
+<% } else { %>
+<div class="karty">
+<% Z.reservations.forEach(function (r) { %>
+  <article class="karta">
+    <h3><%= r.heading %><% if (r.series) { %> <span class="stitek">opakovaná</span><% } %></h3>
+    <p><%= r.detail %></p>
+    <form method="post" action="/sprava/schvalovani/rezervace/<%= r.id %>" class="formular">
+      <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+      <% if (r.series) { %><input type="hidden" name="cela_serie" value="1"><% } %>
+      <label for="pozn-<%= r.id %>">Poznámka (nepovinné, pošle se žadateli)</label>
+      <input type="text" id="pozn-<%= r.id %>" name="pozn" maxlength="200">
+      <button class="tlacitko" name="akce" value="potvrdit" type="submit">✓ Potvrdit<% if (r.series) { %> celou sérii<% } %></button>
+      <button class="tlacitko nebezpecne" name="akce" value="zamitnout" type="submit">✕ Zamítnout</button>
+    </form>
+  </article>
+<% }) %>
+</div>
+<% } %>
+
+<h2>🏋️ Žádosti o posilovnu</h2>
+<% if (Z && !Z.gym.length) { %>
+  <p>Žádná čekající žádost.</p>
+<% } else if (Z) { %>
+<p class="napoveda">Nejdřív fyzicky naprogramovat zámek a zapsat evidenci v detailu uživatele rezervací, teprve pak aktivovat.</p>
+<div class="karty">
+<% Z.gym.forEach(function (g) { %>
+  <article class="karta">
+    <h3><%= g.heading %></h3>
+    <p><%= g.detail %></p>
+    <p><a href="/rezervace/admin/uzivatele/<%= g.id %>">🔑 Detail a evidence zámků</a></p>
+    <% if (it.jeAdmin) { %>
+    <form method="post" action="/sprava/schvalovani/posilovna/<%= g.id %>" class="formular">
+      <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+      <button class="tlacitko" type="submit">Aktivovat posilovnu</button>
+    </form>
+    <% } else { %><p class="napoveda">Aktivaci provádí admin.</p><% } %>
+  </article>
+<% }) %>
+</div>
+<% } %>
+<% } %>
+
+<h2>🏠 Nové účty — posoudit, zda je rezident</h2>
+<% if (!it.kPosouzeni.length) { %>
+  <p>Nic k posouzení.</p>
+<% } else { %>
+<p class="napoveda">Rezident ovlivňuje ceny rezervací a přístup do posilovny. Obec v profilu si lidé vyplňují sami.</p>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th>Jméno</th><th>Telefon</th><th>E-mail</th><th>Část obce</th><th>Založen</th><th>Posouzení</th></tr></thead>
+  <tbody>
+  <% it.kPosouzeni.forEach(function (u) { %>
+    <tr>
+      <td><a href="/sprava/uzivatele/<%= u.id %>"><%= (u.jmeno + ' ' + u.prijmeni).trim() %></a></td>
+      <td><%= it.fmtTelefon(u.telefon) %></td>
+      <td><%= u.email || '—' %></td>
+      <td><%= u.cast_obce || '—' %></td>
+      <td><%= it.fmtDatum(u.vytvoren_at) %></td>
+      <td>
+        <form method="post" action="/sprava/schvalovani/rezident/<%= u.id %>" class="radek-tlacitek">
+          <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+          <button class="tlacitko" name="rezident" value="1" type="submit">✓ Rezident</button>
+          <button class="tlacitko sekundarni" name="rezident" value="0" type="submit">Posouzeno — není rezident</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+
+<h2>❓ Účty bez jména</h2>
+<% if (!it.bezJmena.length) { %>
+  <p>Žádný účet bez jména.</p>
+<% } else { %>
+<p class="napoveda">Účet vznikl přihlášením kódem; při dalším přihlášení si jméno vyplní sám. Pokud člověka znáte, doplňte ho tady.</p>
+<div class="karty">
+<% it.bezJmena.forEach(function (u) { %>
+  <article class="karta">
+    <h3><a href="/sprava/uzivatele/<%= u.id %>"><%= it.fmtTelefon(u.telefon) %></a></h3>
+    <p>Založen <%= it.fmtDatum(u.vytvoren_at) %><% if (u.email) { %> · <%= u.email %><% } %></p>
+    <form method="post" action="/sprava/schvalovani/jmeno/<%= u.id %>" class="formular">
+      <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+      <label for="jmeno-<%= u.id %>">Jméno</label>
+      <input type="text" id="jmeno-<%= u.id %>" name="jmeno" maxlength="80" required autocomplete="off">
+      <label for="prijmeni-<%= u.id %>">Příjmení</label>
+      <input type="text" id="prijmeni-<%= u.id %>" name="prijmeni" maxlength="80" required autocomplete="off">
+      <button class="tlacitko" type="submit">Uložit jméno</button>
+    </form>
+  </article>
+<% }) %>
+</div>
+<% } %>

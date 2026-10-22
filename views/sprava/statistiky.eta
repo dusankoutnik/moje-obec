@@ -1,0 +1,86 @@
+<% layout('/layout') %>
+<p><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<h1>📈 Statistiky</h1>
+<p class="napoveda">Souhrnná čísla účtů a aplikací — jen agregáty, žádná jména. „30 d“ = posledních 30 dní. Hodí se do zprávy pro zastupitelstvo.</p>
+<% const n = function (v) { return v === null || v === undefined ? '—' : v; }; %>
+
+<section class="karta">
+  <h2>👤 Účty občanů</h2>
+  <ul class="sprava-cisla">
+    <% ;[
+      ['účtů', it.ucty.celkem, it.ucty.blokovanych + ' blokovaných mimo'],
+      ['s ověřeným telefonem', it.ucty.overenych, ''],
+      ['rezidentů', it.ucty.rezidentu, ''],
+      ['s e-mailem', it.ucty.sEmailem, ''],
+      ['s heslem', it.ucty.sHeslem, 'ostatní se hlásí kódem'],
+      ['se souhlasem GDPR', it.ucty.gdpr, ''],
+      ['nových účtů · 30 d', it.ucty.novych30d, ''],
+      ['přihlášení · 30 d', it.ucty.prihlaseni30d, it.ucty.aktivnich30d + ' různých lidí'],
+    ].forEach(function (x) { %><li><strong><%= n(x[1]) %></strong> <%= x[0] %><% if (x[2]) { %><small><%= x[2] %></small><% } %></li><% }) %>
+  </ul>
+</section>
+
+<% if (it.infokanal) { const k = it.infokanal; %>
+<section class="karta">
+  <h2>📢 <%= it.infokanalNazev %> <a href="/infokanal/sprava">správa →</a></h2>
+  <ul class="sprava-cisla">
+    <% ;[
+      ['odběratelů', k.odberatelu, k.overenych + ' ověřených · ' + k.sUctem + ' s účtem'],
+      ['vše SMSkou', k.kanalSms, ''],
+      ['SMS + pozvánky e-mailem', k.kanalSmisene, ''],
+      ['nových · 30 d', k.novych30d, k.odhlasenych30d + ' odhlášených'],
+      ['hlášení · 30 d', k.hlaseni30d, k.krizovych30d + ' krizových · celkem ' + k.hlaseniCelkem],
+      ['SMS tento měsíc', k.smsHlaseniMesic + k.smsOstatniMesic, k.smsHlaseniMesic + ' z hlášení · ' + k.smsOstatniMesic + ' z aplikací'],
+    ].forEach(function (x) { %><li><strong><%= n(x[1]) %></strong> <%= x[0] %><% if (x[2]) { %><small><%= x[2] %></small><% } %></li><% }) %>
+  </ul>
+</section>
+<% } %>
+
+<% if (it.rezervaceZapnute) { const r = it.rezervace; %>
+<section class="karta">
+  <h2>📅 Rezervace a předprodej <a href="/rezervace/admin/report">podrobný report →</a></h2>
+  <% if (r) { %>
+  <ul class="sprava-cisla">
+    <% ;[
+      ['nadcházejících rezervací', r.future, ''],
+      ['čeká na schválení', r.pending, ''],
+      ['žádostí o posilovnu', r.gymRequested, ''],
+      ['nezaplacených výzev', r.unpaid && r.unpaid.c, r.unpaid ? it.kc(r.unpaid.s) : ''],
+      ['vstupenek prodáno', r.tickets && r.tickets.paid, r.tickets ? r.tickets.held + ' čeká na platbu' : ''],
+      ['aktivních jízd spolujízdy', r.trips, ''],
+    ].forEach(function (x) { %><li><strong><%= n(x[1]) %></strong> <%= x[0] %><% if (x[2]) { %><small><%= x[2] %></small><% } %></li><% }) %>
+  </ul>
+  <% } else { %><p class="flash flash-chyba" role="status">Rezervace se nepodařilo oslovit.</p><% } %>
+</section>
+<% } %>
+
+<% if (it.eknihyZapnute) { const e = it.eknihy; %>
+<section class="karta">
+  <h2>📚 eKnihy <a href="/eknihy/">katalog →</a></h2>
+  <% if (e) { %>
+  <ul class="sprava-cisla">
+    <% ;[
+      ['knih v katalogu', e.knih, n(e.knih_cs) + ' česky a slovensky'],
+      ['stažení celkem', e.stazeni_celkem, ''],
+      ['stažení · 30 d', e.stazeni_30d, n(e.stahujicich_30d) + ' různých lidí'],
+      ['čte v prohlížeči', e.ctenaru_online, n(e.rozectenych) + ' rozečtených knih'],
+      ['oblíbených', e.oblibenych, ''],
+      ['předčítání · 30 d', (e.predcitani_min_30d || 0) + ' min', (e.predcitajicich_30d || 0) + ' lidí'],
+    ].forEach(function (x) { %><li><strong><%= n(x[1]) %></strong> <%= x[0] %><% if (x[2]) { %><small><%= x[2] %></small><% } %></li><% }) %>
+  </ul>
+  <% if (e.top_30d && e.top_30d.length) { %>
+  <h3>Nejstahovanější za 30 dní</h3>
+  <div class="tabulka-obal">
+  <table class="tabulka">
+    <thead><tr><th>#</th><th>Kniha</th><th>Autor</th><th>Stažení</th></tr></thead>
+    <tbody>
+    <% e.top_30d.forEach(function (b, i) { %><tr><td><%= i + 1 %></td><td><a href="/eknihy/kniha/<%= b.id %>"><%= b.title %></a></td><td><%= b.author || '' %></td><td><%= b.n %></td></tr><% }) %>
+    </tbody>
+  </table>
+  </div>
+  <% } %>
+  <% } else { %><p class="flash flash-chyba" role="status">eKnihy se nepodařilo oslovit.</p><% } %>
+</section>
+<% } %>
+
+<p class="napoveda">Návštěvnost webu a aplikací (z logů serveru) zatím ve Správě není — doplní se později.</p>
