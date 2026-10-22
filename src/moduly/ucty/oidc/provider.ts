@@ -130,7 +130,7 @@ export async function zajistiKlientyAplikaci(db: Db, env: Env): Promise<string[]
 }
 
 function htmlStranka(nadpis: string, telo: string, obec: string): string {
-  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${nadpis} — ${obec}</title><link rel="stylesheet" href="/static/css/styl.css"></head><body><header class="hlavicka"><div class="obal"><a class="znacka" href="/">${obec}</a></div></header><main id="obsah" class="obal"><h1>${nadpis}</h1>${telo}</main></body></html>`;
+  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${nadpis} — ${obec}</title><link rel="stylesheet" href="/static/css/ramec.css"><link rel="stylesheet" href="/static/css/styl.css"></head><body><header class="hlavicka"><div class="obal"><a class="znacka" href="/">${obec}</a></div></header><main id="obsah" class="obal"><h1>${nadpis}</h1>${telo}</main></body></html>`;
 }
 
 export async function vytvorProvider(db: Db, env: Env, obec: ObecProfil): Promise<Provider> {

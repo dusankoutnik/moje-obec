@@ -2,7 +2,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { Eta } from 'eta';
-import type { FastifyInstance, FastifyReply } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import { formatujTelefon } from '../lib/kontakty.js';
 import { filtrujMenu, type PolozkaMenu } from '../moduly/sluzby/sluzba.js';
@@ -42,16 +42,27 @@ export default fp(async function sablony(app: FastifyInstance) {
     useWith: false,
   });
 
-  app.decorateReply(
-    'view',
-    async function (this: FastifyReply, sablona: string, data: Record<string, unknown> = {}) {
-      const req = this.request;
+  /**
+   * Vykreslí šablonu v layoutu se společnými daty (t, obec, uzivatel, csrf, menu, vzhled…) a vrátí HTML.
+   * Jediné místo, kde se skládají data layoutu — používá ho reply.view i shell hlavičky pro aplikace
+   * (`/api/interni/hlavicka`, src/moduly/sluzby/hlavicka.ts). `volby.flash`: vypsat hlášku ze sezení (reply.view ji
+   * pak spotřebuje; shell ji nechává na stránku webu).
+   */
+  app.decorate(
+    'vykresli',
+    async function (
+      req: FastifyRequest,
+      reply: FastifyReply,
+      sablona: string,
+      data: Record<string, unknown> = {},
+      volby: { flash?: boolean } = {},
+    ): Promise<string> {
       // CSRF token se vytvoří až ve chvíli, kdy ho šablona opravdu vypíše (formulář s polem _csrf). Vytvoření tokenu
       // zakládá sezení (cookie mo_sezeni) — anonymní návštěvník stránky bez formuláře tak žádnou cookie nedostane.
       // Objekt s toString(): Eta při vypsání volá String(), layout si data kopíruje (spread) bez vyvolání.
       let token: string | null = null;
       const csrf = {
-        toString: () => (token ??= req.session ? this.generateCsrf() : ''),
+        toString: () => (token ??= req.session ? reply.generateCsrf() : ''),
       };
       const layout: Record<string, unknown> = {};
       for (const f of app.dataLayoutu) Object.assign(layout, await f(req).catch(() => ({})));
@@ -70,7 +81,7 @@ export default fp(async function sablony(app: FastifyInstance) {
             );
         }
       }
-      const html = await eta.renderAsync(sablona, {
+      return eta.renderAsync(sablona, {
         t: app.t,
         obec,
         obecStaticka: app.obec,
@@ -81,13 +92,21 @@ export default fp(async function sablony(app: FastifyInstance) {
         csrf,
         cesta: req.url.split('?')[0],
         cestaSDotazem: req.url.slice(0, 300),
-        flash: req.session?.flash ?? null,
+        flash: volby.flash === false ? null : (req.session?.flash ?? null),
         fmtDatum: formatujDatum,
         fmtTelefon: formatujTelefon,
         v: VERZE_STATIKY,
         ...layout,
         ...data,
       });
+    },
+  );
+
+  app.decorateReply(
+    'view',
+    async function (this: FastifyReply, sablona: string, data: Record<string, unknown> = {}) {
+      const req = this.request;
+      const html = await app.vykresli(req, this, sablona, data);
       if (req.session?.flash) delete req.session.flash;
       if (!this.statusCode || this.statusCode === 200) this.code((data.status as number | undefined) ?? 200);
       return this.type('text/html; charset=utf-8').send(html);
@@ -96,6 +115,16 @@ export default fp(async function sablony(app: FastifyInstance) {
 });
 
 declare module 'fastify' {
+  interface FastifyInstance {
+    /** vykreslí šablonu v layoutu se společnými daty a vrátí HTML (reply.view ho odešle) */
+    vykresli(
+      req: FastifyRequest,
+      reply: FastifyReply,
+      sablona: string,
+      data?: Record<string, unknown>,
+      volby?: { flash?: boolean },
+    ): Promise<string>;
+  }
   interface FastifyReply {
     view(sablona: string, data?: Record<string, unknown>): Promise<FastifyReply>;
   }

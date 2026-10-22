@@ -1,8 +1,10 @@
-// Moduly obce: služba zapnutí (app.moduly), hlídání vypnutých platformních modulů, Správa → Moduly obce,
-// veřejné GET /api/moduly a proxy aplikací (/rezervace, /eknihy). Registruje se vždy (jádro platformy).
+// Moduly obce: služba zapnutí (app.moduly), hlídání vypnutých platformních modulů, Administrace → Moduly obce,
+// veřejné GET /api/moduly, proxy aplikací (/rezervace, /eknihy) a hlavička webu pro aplikace (/api/interni/hlavicka).
+// Registruje se vždy (jádro platformy).
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import { vyzadujRoli } from '../ucty/opravneni.js';
+import { zaregistrujHlavicku } from './hlavicka.js';
 import { prihlasenyZeSezeni, zaregistrujProxy } from './proxy.js';
 import { KLICE_MODULU, MODULY, ModulySluzba, podCestou, type KlicModulu, type StavModulu } from './sluzba.js';
 
@@ -88,6 +90,9 @@ async function sluzbyModul(app: FastifyInstance) {
       return strankaVypnuto(app, req, reply);
     });
   }
+
+  // hlavička, menu a patička webu pro aplikace za proxy (jednotný vzhled) — interní API s x-api-secret
+  zaregistrujHlavicku(app);
 
   // veřejný přehled modulů pro aplikace (horní lišta) — jen názvy, adresy a stav
   app.get('/api/moduly', async (_req, reply) => {

@@ -3,9 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<% /* it.shell = hlavička pro aplikace za proxy (GET /api/interni/hlavicka): stránka bez obsahu se zástupnými komentáři
+      <!--HEAD-->, <!--PODMENU-->, <!--OBSAH-->; titulek, popis a styly obsahu si doplní aplikace (docs/HLAVICKA-APLIKACI.md) */ %>
+<% if (!it.shell) { %>
 <title><%= it.titulek ? it.titulek + ' — ' : '' %><%= it.obec.obec.nazev %></title>
 <meta name="description" content="<%= it.popis || (it.vzhled && it.vzhled.motto) || it.t('uvod.perex') %>">
-<link rel="stylesheet" href="/static/css/styl.css?v=<%= it.v %>">
+<% } %>
+<link rel="stylesheet" href="/static/css/ramec.css?v=<%= it.v %>">
+<% if (!it.shell) { %><link rel="stylesheet" href="/static/css/styl.css?v=<%= it.v %>"><% } %>
 <% if (it.vzhled) { %><style><%~ it.vzhled.css %></style><% } %>
 <% if (it.fontyNavic) { %><style><%~ it.fontyNavic %></style><% } %>
 <% if (it.editor) { %><link rel="stylesheet" href="/static/vendor/quill/quill.snow.css"><% } %>
@@ -18,9 +23,14 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <% if (it.obec.moduly.web) { %><link rel="alternate" type="application/rss+xml" title="<%= it.t('web.aktuality') %>" href="/aktuality/rss.xml"><% } %>
 <% if (it.noindex) { %><meta name="robots" content="noindex"><% } %>
+<% if (it.shell) { %><!--HEAD--><% } %>
 </head>
-<% var jeSprava = it.cesta.startsWith('/sprava') || it.cesta.startsWith('/infokanal/sprava'); %>
-<body class="<%= it.vzhled ? 'web efekt-' + it.vzhled.efektMenu + ' sila-' + it.vzhled.efektSila : 'zakladni' %><%= jeSprava ? ' je-sprava' : '' %><%= it.plnaSirka ? ' je-uvod' : '' %>">
+<%
+  var jeSprava = !it.shell && (it.cesta.startsWith('/sprava') || it.cesta.startsWith('/infokanal/sprava'));
+  // tlačítko „A“ (Administrace) v hlavním menu: kdokoliv s jakoukoli správcovskou rolí
+  var jeSpravce = !!(it.uzivatel && it.uzivatel.role && it.uzivatel.role.length);
+%>
+<body class="<%= it.vzhled ? 'web efekt-' + it.vzhled.efektMenu + ' sila-' + it.vzhled.efektSila : 'zakladni' %><%= jeSprava ? ' je-sprava' : '' %><%= it.plnaSirka ? ' je-uvod' : '' %><%= it.shell ? ' je-aplikace' : '' %>">
 <% if (it.vzhled) { %>
 <div class="pozadi" aria-hidden="true" <% if (it.pozadiStridat && it.pozadiStridat.length) { %>data-fotky="<%= JSON.stringify(it.pozadiStridat) %>"<% } %>>
   <div class="pozadi-vrstva viditelna"<% if (it.pozadiPrvni) { %> style="background-image:url('<%= it.pozadiPrvni %>')"<% } %>></div>
@@ -51,7 +61,7 @@
           <button type="submit"><span class="vh"><%= it.t('web.hledat') %></span><span aria-hidden="true">⌕</span></button>
         </form>
         <form class="velikost-pisma" method="get" action="/velikost" aria-label="<%= it.t('web.velikost_pisma') %>">
-          <input type="hidden" name="zpet" value="<%= it.cestaSDotazem || it.cesta %>">
+          <input type="hidden" name="zpet" value="<%= it.shell ? '__ZPET__' : (it.cestaSDotazem || it.cesta) %>">
           <% ;[['normalni', 'A'], ['velke', 'A+'], ['extra', 'A++']].forEach(function (v) { %><button type="submit" name="v" value="<%= v[0] %>" aria-pressed="<%= (it.velikost || 'normalni') === v[0] ? 'true' : 'false' %>" title="<%= it.t('web.velikost_' + v[0]) %>"><span aria-hidden="true"><%= v[1] %></span><span class="vh"><%= it.t('web.velikost_' + v[0]) %></span></button><% }) %>
         </form>
         <% } %>
@@ -60,7 +70,7 @@
             <a href="/ucet" <%= it.cesta === '/ucet' ? 'aria-current=page' : '' %>><%= it.t('app.ucet') %></a>
             <form method="post" action="/odhlaseni" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="odkaz-tlacitko" type="submit"><%= it.t('app.odhlasit') %></button></form>
           <% } else { %>
-            <a href="/prihlaseni"><%= it.t('app.prihlasit') %></a>
+            <a href="/prihlaseni<%= it.shell ? '?zpet=__ZPET__' : '' %>"><%= it.t('app.prihlasit') %></a>
           <% } %>
         </nav>
       </div>
@@ -74,7 +84,18 @@
       if (it.obec.moduly.infokanal) polozky.push({ titulek: it.obec.texty.nazev_infokanalu, url: '/infokanal', deti: [] });
       if (it.obec.moduly.kviz) polozky.push({ titulek: it.t('kviz.titulek'), url: '/kviz', deti: [] });
     }
-    var aktivni = function (m) { return m.url !== '/' && (it.cesta === m.url || it.cesta.indexOf(m.url + '/') === 0 || m.deti.some(function (d) { return it.cesta === d.url; })); };
+    var zacina = function (c, u) { u = (u || '').replace(/\/$/, ''); c = (c || '').replace(/\/$/, ''); return !!u && (c === u || c.indexOf(u + '/') === 0); };
+    // aktivní podřízená položka: na webu přesná shoda; v hlavičce pro aplikace nejdelší shoda s cestou aplikace
+    // (/rezervace/spolujizda/… zvýrazní Spolujízdu, ne Rezervace), jinak první položka pod kořenem modulu
+    var aktivniDite = function (m) {
+      var nej = null;
+      m.deti.forEach(function (d) { if (it.cesta === d.url) nej = d; });
+      if (nej || !it.shell) return nej;
+      m.deti.forEach(function (d) { if (zacina(it.cesta, d.url) && (!nej || d.url.length > nej.url.length)) nej = d; });
+      if (!nej) m.deti.forEach(function (d) { if (!nej && zacina(d.url, it.shell.koren)) nej = d; });
+      return nej;
+    };
+    var aktivni = function (m) { return m.url !== '/' && (it.cesta === m.url || it.cesta.indexOf(m.url + '/') === 0 || aktivniDite(m) !== null); };
   %>
   <details class="menu-mobil">
     <summary><span aria-hidden="true">☰</span> <%= it.t('web.menu') %></summary>
@@ -90,9 +111,10 @@
         <li><a href="/"><%= it.t('app.domu') %></a></li>
         <% polozky.forEach(function (m) { %>
         <li><a href="<%= m.url %>" <%= aktivni(m) ? 'aria-current=page' : '' %>><%= m.titulek %></a>
-          <% if (m.deti.length) { %><ul><% m.deti.forEach(function (d) { %><li><a href="<%= d.url %>"><%= d.titulek %></a></li><% }) %></ul><% } %>
+          <% if (m.deti.length) { %><ul><% m.deti.forEach(function (d) { %><li><a href="<%= d.url %>" <%= aktivniDite(m) === d ? 'aria-current=page' : '' %>><%= d.titulek %></a></li><% }) %></ul><% } %>
         </li>
         <% }) %>
+        <% if (jeSpravce) { %><li><a class="menu-admin" href="/sprava" <%= jeSprava ? 'aria-current=page' : '' %>><%= it.t('app.sprava') %></a></li><% } %>
       </ul>
     </nav>
   </details>
@@ -103,11 +125,16 @@
       <% polozky.forEach(function (m, i) { %>
       <li class="<%= m.deti.length ? 'ma-deti' : '' %>">
         <a href="<%= m.url %>" class="<%= aktivni(m) ? 'je-aktivni' : '' %>" style="--d:<%= (6 + (i * 1.7) % 5).toFixed(1) %>s;--o:<%= ((i * 1.3) % 4).toFixed(1) %>s" <%= aktivni(m) ? 'aria-current=page' : '' %>><%= m.titulek %></a>
-        <% if (m.deti.length) { %><ul><% m.deti.forEach(function (d) { %><li><a href="<%= d.url %>" <%= it.cesta === d.url ? 'aria-current=page' : '' %>><%= d.titulek %></a></li><% }) %></ul><% } %>
+        <% if (m.deti.length) { %><ul><% m.deti.forEach(function (d) { %><li><a href="<%= d.url %>" <%= aktivniDite(m) === d ? 'aria-current=page' : '' %>><%= d.titulek %></a></li><% }) %></ul><% } %>
       </li>
       <% }) %>
+      <% if (jeSpravce) { %><li class="je-admin"><a class="menu-admin" href="/sprava" title="<%= it.t('app.sprava') %>" aria-label="<%= it.t('app.sprava') %>" <%= jeSprava ? 'aria-current=page' : '' %>>A</a></li><% } %>
     </ul>
   </nav>
+<% if (it.shell) { %>
+<!--PODMENU-->
+<main id="obsah" tabindex="-1" class="obal aplikace"><div class="panel-hlavni"><!--OBSAH--></div></main>
+<% } else { %>
 <main id="obsah" tabindex="-1" class="<%= it.plnaSirka ? 'plna' : 'obal' %>">
   <% if (it.plnaSirka) { %>
     <% if (it.flash) { %><div class="obal"><div class="flash flash-<%= it.flash.typ %>" role="<%= it.flash.typ === 'chyba' ? 'alert' : 'status' %>"><%= it.flash.text %><% if (it.flash.odkaz) { %> <a href="<%= it.flash.odkaz.url %>"><%= it.flash.odkaz.text %> →</a><% } %></div></div><% } %>
@@ -119,6 +146,7 @@
   </div>
   <% } %>
 </main>
+<% } %>
 <% if (it.dotacePaticka && it.dotacePaticka.length && !jeSprava && !it.plnaSirka) { %>
 <section class="dotace-paticka obal" aria-labelledby="dotace-paticka-h">
   <h2 id="dotace-paticka-h" class="vh"><%= it.t('web.podporili_nas') %></h2>

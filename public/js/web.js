@@ -128,3 +128,22 @@
     });
   });
 })();
+
+// Výška plovoucího hlavního menu → proměnná --vyska-menu na <html>: podmenu aplikací (.podmenu) se přilepí přesně
+// pod ně i při jiném písmu, velikosti A+/A++ nebo zalomení do dvou řádků. Bez JS platí odhad z CSS.
+(function () {
+  'use strict';
+  var pilulka = document.querySelector('.pilulka > ul');
+  if (!pilulka) return;
+  var zmer = function () {
+    var v = pilulka.getBoundingClientRect().height;
+    if (v > 0) document.documentElement.style.setProperty('--vyska-menu', Math.round(v) + 'px');
+  };
+  var cekani;
+  window.addEventListener('resize', function () {
+    clearTimeout(cekani);
+    cekani = setTimeout(zmer, 100);
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(zmer);
+  zmer();
+})();
