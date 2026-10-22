@@ -4,6 +4,10 @@ Přehled změn platformy Web od Voltu 2.0 pro pilotní obec, nejnovější naho�
 
 ## 22. 10. 2026
 
+- **Rezervace a eKnihy vypadají jako web obce:** aplikace dostávají od webu hotovou hlavičku se znakem, hledáním, velikostí písma a účtem, stejné plovoucí menu, patičku, fotky obce v pozadí i bílou kartu obsahu. Pod hlavním menu mají své podmenu (na telefonu se posouvá do strany). Odhlášení v hlavičce odhlásí ze všeho najednou. Tmavá lišta „Moje obec“ nad aplikacemi tím končí — odkazy na služby jsou v hlavním menu pod položkou Moje obec.
+- **Tlačítko A pro úřad:** kdo má v obci nějakou správcovskou roli, vidí v hlavním menu vpravo oranžové **A** — vede rovnou do Administrace (na webu i v aplikacích).
+- **„Správa“ se přejmenovala na „Administrace“** (nadpis, patička, odkazy zpět). Adresa zůstává stejná; stará `/administrace` přesměruje.
+- Rámec webu (hlavička, menu, patička, pozadí) je nově v samostatném souboru stylů, který sdílí web i aplikace — po změně vzhledu ve Správě → Vzhled se tedy přebarví i rezervace a eKnihy.
 - **Úřad má všechno ve Správě:** na úvodu Správy jsou nově i dlaždice rezervací (čekající žádosti, nezaplacená vyúčtování, předprodej, spolujízda) s aktuálními počty, stránka **Schvalování** (potvrzení rezervací a posilovny, posouzení, kdo je rezident, doplnění jména u účtů bez jména) a **Statistiky** se souhrnnými čísly pro zastupitelstvo. Správci dostanou e-mail, když vznikne nový účet, u kterého je potřeba posoudit rezidenta.
 - **Můj účet na jednom místě:** stránka Můj účet sdružuje všechna nastavení — osobní údaje, odběr hlášení obce (SMS nebo i e-mail a co chcete dostávat), rezervace a platby s výzvami k úhradě a QR platbou, přístupy do posilovny a eKlíč, spolujízdu i SMS o nových e-knihách. Změnu telefonu schvaluje úřad. Své údaje si můžete stáhnout a požádat o výmaz účtu.
 - **Služby obce jdou zapnout a vypnout:** ve Správě → Moduly obce správce jedním zatržítkem zapne nebo vypne Rezervace, Předprodej vstupenek, Spolujízdu, eKnihy, Infokanál a Kvíz. Vypnutá služba zmizí z menu i z úvodu a místo ní se ukáže „Tato služba není v obci zapnutá“; data zůstávají a po zapnutí je vše jako dřív.

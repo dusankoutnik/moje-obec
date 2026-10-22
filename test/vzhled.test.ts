@@ -190,7 +190,8 @@ describe('vzhled', () => {
     expect(web.text).toMatch(/class="znacka-nazev nazev-kapitalky">[^<&]+</); // prázdný název = výchozí z obec.yml, neplatný styl se ignoruje
     await ulozVzhled({ nazev_styl: 'verzalky' });
     expect((await new Prohlizec(t.base).get('/')).text).toContain('nazev-verzalky');
-    const css = await (await fetch(`${t.base}/static/css/styl.css`)).text();
+    // styl názvu obce patří do rámce webu (ramec.css — sdílí ho i hlavička aplikací)
+    const css = await (await fetch(`${t.base}/static/css/ramec.css`)).text();
     expect(css).toContain('font-variant-caps: small-caps');
   });
 });

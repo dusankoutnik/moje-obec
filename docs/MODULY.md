@@ -397,6 +397,48 @@ loga a videa se neindexují. Vše běží lokálně na serveru obce.
   (60 s) → 502 „Služba je dočasně nedostupná“. WebSockety (Upgrade) se neproxují.
 - Testy: `test/moduly-proxy.test.ts` (falešná aplikace na volném portu).
 
+## Hlavička webu pro aplikace za proxy (hotovo 22. 10. 2026 — `src/moduly/sluzby/hlavicka.ts`)
+
+Rezervace (vč. spolujízdy) a eKnihy vypadají jako stránky webu obce: stejná hlavička, hlavní plovoucí menu, patička,
+pozadí s fotkami i skleněná karta obsahu; pod hlavním menu mají vlastní **podmenu**. Rozhodnutí Dušana 22. 10. 2026,
+závazný kontrakt s aplikacemi v `/opt/vlastiborice/docs/HLAVICKA-APLIKACI.md` (mimo repozitář platformy).
+
+- **`GET /api/interni/hlavicka?modul=rezervace|spolujizda|eknihy[&aktivni=/cesta]`** — interní API jako ostatní
+  `/api/interni/*` (`x-api-secret: INTERNI_API_SECRET`, požadavek s `X-Forwarded-For` → 404). Aplikace přepošle
+  hlavičku `Cookie` prohlížeče 1:1: z ní platforma pozná přihlášeného (sezení `mo_sezeni` → `req.uzivatel`, běžným
+  háčkem jako u stránek) a velikost písma (`mo_velikost`). Odpověď `{ verze, html }`: `html` = celá stránka webu bez
+  obsahu (layout.eta v režimu `it.shell`) se zástupnými komentáři `<!--HEAD-->` (konec `<head>`; shell nemá
+  `<title>` ani `description`), `<!--PODMENU-->` (hned za hlavním menu) a `<!--OBSAH-->` (v `main.obal.aplikace >
+.panel-hlavni`). Odkaz Přihlásit a pole `zpet` formuláře velikosti písma obsahují `__ZPET__` (aplikace nahradí
+  všechny výskyty aktuální adresou). `verze` = otisk HTML. Keš 60 s podle (modul, cesta, uživatel, velikost písma),
+  z keše = hlavička `x-hlavicka-kes: 1`; `cache-control: no-store`.
+- **Jeden zdroj:** shell vykresluje tentýž `views/layout.eta` jako web přes `app.vykresli()` (`src/web/sablony.ts`,
+  skládání dat layoutu sdílí `reply.view`); flash hláška ze sezení se v shellu nevypisuje ani nespotřebuje.
+  Odhlášení v hlavičce = `POST /odhlaseni` s CSRF tokenem sezení z přeposlané cookie — token vzniká nad tímtéž sezením,
+  takže formulář odeslaný z aplikace (stejná doména) projde (test `hlavicka.test.ts`).
+- **Menu Moje obec:** položka webu (stránka s podřízenými odkazy na `/ucet`, `/rezervace/`, `/rezervace/spolujizda`,
+  `/eknihy/…`) se filtruje podle zapnutých modulů; v shellu je aktivní podřízená položka s nejdelší shodou s `aktivni`
+  (jinak první pod kořenem modulu).
+- **Tlačítko A** (`.menu-admin`, `/sprava`, popisek „Administrace“) vpravo od poslední položky menu pro přihlášeného
+  s jakoukoli správcovskou rolí (admin, spravce, web, deska, redaktor, ucetni, vstupne, kviz) — na webu i v shellu,
+  v mobilním menu jako položka „Administrace“. Pevná barva `--menu-admin` (#c2410c, bílý text 7,5 : 1, bílý vnitřní
+  rámeček, aby šla poznat i v oranžovém schématu).
+- **Podmenu** (`.podmenu`, `.podmenu-in`, `.podmenu-znacka`, `.podmenu-seznam`, `.ma-rozbal > button[aria-expanded]
+  - .podmenu-rozbal`, `.podmenu-vpravo`): světlý pruh `position: sticky`— na desktopu`top: calc(10px +
+    var(--vyska-menu) + 8px)`přesně pod plovoucí pilulkou (výšku měří`public/js/web.js`, bez JS odhad z písma),
+na mobilu `top: 0`a vodorovně posuvný řádek; rozbalené seznamy mají kontejner`.podmenu-in`mimo posuvný řádek,
+aby je`overflow-x: auto`neořízl. Chování`.ma-rozbal`dává`public/js/app.js`(klik, Esc + fokus zpět, klik mimo,
+odchod fokusu). Aktivní:`a[aria-current="page"]`i`button[aria-current]`.
+- **`public/css/ramec.css`** = rámec webu vyčleněný ze `styl.css` (proměnné, html/body/.obal, .skip, .vh,
+  .odkaz-tlacitko, pozadí, hlavička, pilulka vč. efektů, mobilní menu, .panel-hlavni, pás dárců, patička, podmenu,
+  tlačítko A, tisk — celý rámec `display: none`). Nesmí stylovat obecné prvky obsahu (table, input, button, form,
+  nadpisy, .karta, .tlacitko…). Web linkuje `ramec.css?v=` + `styl.css?v=` (dva `<link>`, oba s verzí v adrese),
+  shell jen `ramec.css` + inline proměnné vzhledu. Aliasy pro aplikace: `--pismo-nadpisy` (= `--pismo-nadpis`),
+  `--vyska-menu`, `--menu-admin`. Stránky OIDC provideru (odhlášení, chyba) linkují oba soubory.
+- **Administrace:** „Správa“ se v textech jmenuje **Administrace** (`app.sprava`, `sprava.titulek`, drobky `← Administrace`,
+  dokumentace API); adresa `/sprava` zůstává, `/administrace*` → 301 `/sprava*` (modul web).
+- Testy: `test/hlavicka.test.ts` (endpoint, role, keš, CSRF odhlášení, ramec.css, kontrast, přesměrování).
+
 ## API pro integrace (hotovo 22. 10. 2026)
 
 Obecné REST API `/api/v1` pro programy, které na web samy zapisují (sazba zpravodaje, kalendář, systémy úřadu).

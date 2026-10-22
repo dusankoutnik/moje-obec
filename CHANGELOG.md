@@ -4,6 +4,23 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (jednotná hlavička webu pro aplikace za proxy, 22. 10. 2026)
+
+- `GET /api/interni/hlavicka?modul=&aktivni=` (`INTERNI_API_SECRET`, bez `X-Forwarded-For`): celá stránka webu bez
+  obsahu se zástupnými komentáři `<!--HEAD-->`, `<!--PODMENU-->`, `<!--OBSAH-->` a `__ZPET__` v odkazu Přihlásit
+  i v poli `zpet` formuláře velikosti písma; přihlášený a velikost písma z přeposlané cookie prohlížeče; keš 60 s
+  (`x-hlavicka-kes`). Vykresluje se tentýž `layout.eta` přes nové `app.vykresli()` (`src/web/sablony.ts`).
+- `public/css/ramec.css`: rámec webu vyčleněný ze `styl.css` (proměnné, pozadí, hlavička, menu, patička, tisk) +
+  podmenu aplikací (`.podmenu*`, `.ma-rozbal`, sticky pod plovoucím menu přes `--vyska-menu` z `web.js`, mobil
+  posuvný řádek) + tlačítko **A** (`.menu-admin`, `/sprava`) v hlavním menu pro role; web linkuje `ramec.css` i
+  `styl.css`. Aliasy `--pismo-nadpisy`, `--menu-admin`. Rozbalení `.ma-rozbal` v `app.js` (klik, Esc, klik mimo).
+- Položky menu Moje obec aktivní podle modulu aplikace (nejdelší shoda cesty).
+
+### Změněno
+
+- „Správa“ → **„Administrace“** ve všech textech (nadpis, patička, drobky, dokumentace API); `/administrace*` → 301
+  `/sprava*`. Stránky OIDC provideru linkují i `ramec.css`.
+
 ### Přidáno (úřední administrace ve Správě, 22. 10. 2026)
 
 - Modul `administrace`: dlaždice rezervací na `/sprava` podle rolí (živé počty z `/api/admin/summary`),
