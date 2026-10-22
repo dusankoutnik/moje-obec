@@ -1927,12 +1927,18 @@ body.zakladni .panel-hlavni {
   letter-spacing: 0.12em;
   color: #fff;
 }
-/* telefon: statistiky v úvodu se nezobrazují — obsah je hned pod názvem obce (pokyn 22. 10. 2026) */
+/* telefon: úvod jen na půl obrazovky (pod názvem obce hned vykukuje obsah), bez statistik a bez šipky dolů
+   (pokyn 22. 10. 2026) */
 @media (max-width: 600px) {
+  .hero {
+    min-height: 0;
+    padding: 28px 16px 24px;
+  }
   .hero-in {
     padding: 12px;
   }
-  .statistiky {
+  .statistiky,
+  .hero-dolu {
     display: none;
   }
 }
