@@ -1,0 +1,50 @@
+<% layout('/layout') %>
+<p><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<h1>API a integrace</h1>
+<p>Tokeny pro programy, které na web obce samy zapisují (sazba zpravodaje, kalendář, jiné systémy úřadu). Každý token má jen
+  vybraná oprávnění a jde kdykoli zrušit. Popis rozhraní: <a href="/api">dokumentace API</a>.</p>
+
+<% if (it.novy) { %>
+<div class="flash flash-ok" role="status" id="novy-token">
+  <p><strong>Token „<%= it.novy.nazev %>“ je založený.</strong> Zkopírujte si ho teď — znovu ho už neuvidíte (ukládáme jen jeho otisk).</p>
+  <p><code class="api-token"><%= it.novy.token %></code></p>
+  <p>Použití: <code>Authorization: Bearer <%= it.novy.token.slice(0, 10) %>…</code></p>
+</div>
+<% } %>
+<% if (it.chyba) { %><p class="flash flash-chyba" role="alert"><%= it.chyba %></p><% } %>
+
+<h2>Nový token</h2>
+<form method="post" action="/sprava/api" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <p><label for="api-nazev">Název (k čemu token slouží)</label><br>
+    <input id="api-nazev" name="nazev" required maxlength="120" value="<%= it.f && it.f.nazev ? it.f.nazev : '' %>" placeholder="např. Sazba zpravodaje"></p>
+  <fieldset><legend>Oprávnění</legend>
+    <% it.rozsahy.forEach(function (r) { %>
+    <p><label><input type="checkbox" name="rozsahy" value="<%= r %>"> <code><%= r %></code> — <%= it.popis[r] %></label></p>
+    <% }) %>
+  </fieldset>
+  <p><button class="tlacitko" type="submit">Založit token</button></p>
+</form>
+
+<h2>Tokeny</h2>
+<% if (!it.tokeny.length) { %><p>Zatím žádný token.</p><% } else { %>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th scope="col">Název</th><th scope="col">Token</th><th scope="col">Oprávnění</th><th scope="col">Založil</th><th scope="col">Naposledy použit</th><th scope="col">Stav</th></tr></thead>
+  <tbody>
+  <% it.tokeny.forEach(function (t) { %>
+  <tr>
+    <td><%= t.nazev %></td>
+    <td><code><%= t.prefix %>…</code></td>
+    <td><%= t.rozsahy.join(', ') %></td>
+    <td><%= [t.zalozil_jmeno, t.zalozil_prijmeni].filter(Boolean).join(' ') || '—' %>, <%= it.fmtDatum(t.vytvoren_at, false) %></td>
+    <td><%= t.posledni_pouziti_at ? it.fmtDatum(t.posledni_pouziti_at) + ' (' + t.pouziti + '×)' : 'nikdy' %></td>
+    <td><% if (t.zruseno_at) { %>zrušen <%= it.fmtDatum(t.zruseno_at, false) %><% } else { %>
+      <form method="post" action="/sprava/api/<%= t.id %>/zrusit" data-confirm="Zrušit token „<%= t.nazev %>“? Integrace s ním přestane fungovat.">
+        <input type="hidden" name="_csrf" value="<%= it.csrf %>"><button type="submit" class="tlacitko nebezpecne">Zrušit</button></form><% } %></td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>

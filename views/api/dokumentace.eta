@@ -1,0 +1,108 @@
+<% layout('/layout') %>
+<article class="obsah-clanek api-dokumentace">
+<h1>API webu obce</h1>
+<p>Rozhraní pro programy, které na web obce samy zapisují: sazba obecního zpravodaje, kalendář akcí, systémy úřadu.
+  Všechno, co přes API vznikne, jde stejnou cestou jako ze správy — s revizemi, auditem, kontrolou HTML a zákonných
+  náležitostí (popisy obrázků, lhůty úřední desky). Strojový popis: <a href="/api/openapi.json"><code>/api/openapi.json</code></a> (OpenAPI 3.1).</p>
+
+<nav aria-label="Obsah stránky"><ul>
+  <li><a href="#autentizace">Autentizace a oprávnění</a></li>
+  <li><a href="#chyby">Chyby a limity</a></li>
+  <li><a href="#prispevky">Příspěvky (aktuality, akce, stránky)</a></li>
+  <li><a href="#idempotence">Idempotence</a></li>
+  <li><a href="#soubory">Soubory</a></li>
+  <li><a href="#deska">Úřední deska</a></li>
+  <li><a href="#rozeslat">Rozeslání infokanálem</a></li>
+  <li><a href="#zpravodaj">Zpravodaj</a></li>
+</ul></nav>
+
+<h2 id="autentizace">Autentizace a oprávnění</h2>
+<p>Token založí administrátor webu ve <strong>Správa → API a integrace</strong>; ukáže se jen jednou. Posílá se v hlavičce
+  <code>Authorization: Bearer wov_…</code>. Každý token má jen vybraná oprávnění:</p>
+<ul>
+  <% it.rozsahy.forEach(function (r) { %><li><code><%= r %></code> — <%= it.popis[r] %></li><% }) %>
+</ul>
+<p>Adresa API: <code><%= it.base %>/api/v1</code>. Data v JSON (UTF-8), soubory jako <code>multipart/form-data</code>
+  (textová pole se jmenují stejně jako v JSON). Časy: <code>YYYY-MM-DD</code>, <code>YYYY-MM-DDTHH:MM</code> (pražský čas)
+  nebo ISO 8601 se zónou.</p>
+<pre><code>curl -sS <%= it.base %>/api/v1/kategorie -H "Authorization: Bearer $TOKEN"</code></pre>
+
+<h2 id="chyby">Chyby a limity</h2>
+<p>Chyba vrací JSON <code>{"chyba": "popis česky", "pole": "nazev_pole"}</code> (pole jen když se chyba týká konkrétního
+  údaje). Stavy: <code>400</code> neplatná data, <code>401</code> chybí/neplatný token, <code>403</code> token nemá oprávnění,
+  <code>404</code> nenalezeno, <code>409</code> konflikt (např. potvrzení u desky), <code>413</code> moc velký soubor
+  (max. 30 MB na soubor), <code>429</code> limit — <%= it.limit %> požadavků na token za 15 minut.</p>
+
+<h2 id="prispevky">Příspěvky</h2>
+<p><code>POST /api/v1/prispevky</code> (oprávnění <code>obsah:zapis</code>) založí aktualitu, akci nebo stránku.
+  Bez <code>"zverejnit": true</code> vznikne <strong>koncept</strong>, který redaktor zkontroluje a zveřejní ve správě.</p>
+<table class="tabulka">
+  <thead><tr><th scope="col">Pole</th><th scope="col">Význam</th></tr></thead>
+  <tbody>
+    <tr><td><code>typ</code></td><td><code>aktualita</code> (výchozí), <code>akce</code>, <code>stranka</code></td></tr>
+    <tr><td><code>titulek</code></td><td>povinný</td></tr>
+    <tr><td><code>perex</code></td><td>krátký úvod (do 600 znaků)</td></tr>
+    <tr><td><code>html</code> / <code>markdown</code></td><td>text; HTML se pročistí (povolené značky jako v editoru), Markdown se převede</td></tr>
+    <tr><td><code>kategorie</code></td><td>slug nebo id kategorie (<code>GET /api/v1/kategorie</code>)</td></tr>
+    <tr><td><code>datum</code></td><td>aktualita: datum zveřejnění zprávy (výchozí teď)</td></tr>
+    <tr><td><code>akce_od</code>, <code>akce_do</code>, <code>akce_cely_den</code>, <code>misto</code></td><td>akce: termín a místo (jen datum = celý den)</td></tr>
+    <tr><td><code>v_aktualitach</code></td><td>akce se ukáže i v Aktualitách jako pozvánka</td></tr>
+    <tr><td><code>obrazek</code> (soubor) nebo <code>obrazek_id</code>, <code>obrazek_alt</code></td><td>úvodní obrázek; popis je před zveřejněním povinný (přístupnost)</td></tr>
+    <tr><td><code>prilohy</code> (soubory) nebo <code>prilohy_id</code></td><td>dokumenty ke stažení — připojí se na konec textu</td></tr>
+    <tr><td><code>zverejnit</code></td><td><code>true</code> = hned na web, <code>false</code> = koncept</td></tr>
+    <tr><td><code>zdroj</code>, <code>externi_id</code></td><td>viz <a href="#idempotence">idempotence</a></td></tr>
+  </tbody>
+</table>
+<pre><code>curl -sS <%= it.base %>/api/v1/prispevky -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{
+    "typ": "akce", "titulek": "Drakiáda", "akce_od": "2026-10-25T14:00", "misto": "hřiště",
+    "markdown": "Přijďte pouštět draky.\n\n- občerstvení\n- soutěže", "v_aktualitach": true,
+    "zdroj": "kalendar", "externi_id": "drakiada-2026", "zverejnit": false }'
+
+curl -sS <%= it.base %>/api/v1/prispevky -H "Authorization: Bearer $TOKEN" \
+  -F typ=aktualita -F titulek='Uzavírka silnice' -F html='&lt;p&gt;Od pondělí…&lt;/p&gt;' \
+  -F obrazek=@mapa.jpg -F obrazek_alt='Mapa objízdné trasy' -F prilohy=@rozhodnuti.pdf -F zverejnit=true</code></pre>
+<p>Odpověď <code>201</code> s <code>id</code>, <code>stav</code> (<code>koncept</code>/<code>zverejneno</code>), <code>url</code> a
+  <code>sprava_url</code>. <code>PATCH /api/v1/prispevky/:id</code> změní jen poslaná pole (jen u příspěvků založených přes API);
+  u zveřejněného příspěvku s <code>"zverejnit": false</code> se změna uloží jako rozpracovaná a web zůstane beze změny.
+  <code>GET /api/v1/prispevky?zdroj=…&amp;externi_id=…</code> a <code>GET /api/v1/prispevky/:id</code> čtou
+  (oprávnění <code>obsah:cteni</code> nebo <code>obsah:zapis</code>).</p>
+
+<h2 id="idempotence">Idempotence</h2>
+<p>Pošlete-li <code>zdroj</code> (jméno vašeho systému, malá písmena, výchozí <code>api</code>) a <code>externi_id</code>
+  (id záznamu u vás), opakované <code>POST</code> se stejnou dvojicí <strong>upraví</strong> existující příspěvek (odpověď
+  <code>200</code>, <code>"aktualizovano": true</code>, nová revize) místo založení duplicity. Zdroje <code>import</code>,
+  <code>rezervace</code>, <code>infokanal</code> a <code>zpravodaj</code> jsou vyhrazené.</p>
+
+<h2 id="soubory">Soubory</h2>
+<p><code>POST /api/v1/soubory</code> s polem <code>soubor</code> (PDF, Office, obrázky; do 30 MB) vrátí <code>id</code> a
+  <code>url</code>. Text dokumentu (i OCR skenů) se vyčte na pozadí a soubor pak najde hledání na webu.</p>
+<pre><code>curl -sS <%= it.base %>/api/v1/soubory -H "Authorization: Bearer $TOKEN" -F soubor=@vyhlaska.pdf</code></pre>
+
+<h2 id="deska">Úřední deska</h2>
+<p><code>POST /api/v1/deska</code> (oprávnění <code>deska:zapis</code>, multipart): <code>nazev</code>, <code>kategorie</code>
+  (slug/id kategorie desky), <code>vyveseno_od</code> (výchozí dnes, nikdy v minulosti), <code>vyveseno_do</code> nebo
+  <code>do_odvolani=true</code> (bez data se použije výchozí doba kategorie), <code>popis</code>, <code>cislo_jednaci</code>,
+  <code>puvodce</code>, u rozpočtových dokumentů <code>typ_rozpoctu</code> a <code>rok</code>, přílohy v <code>prilohy</code>.
+  Minimální doba vyvěšení kategorie se hlídá stejně jako ve správě. Když by dokument sejmul starší rozpočtové dokumenty,
+  vrátí se <code>409</code> se seznamem <code>sejme</code> — pošlete znovu s <code>potvrdit_nahrazeni=true</code>.</p>
+<pre><code>curl -sS <%= it.base %>/api/v1/deska -H "Authorization: Bearer $TOKEN" \
+  -F nazev='Oznámení o konání zasedání' -F kategorie=oznameni -F vyveseno_do=2026-11-10 -F prilohy=@pozvanka.pdf</code></pre>
+
+<h2 id="rozeslat">Rozeslání infokanálem</h2>
+<p><code>POST /api/v1/prispevky/:id/rozeslat</code> (oprávnění <code>infokanal:rozeslat</code>) rozešle zveřejněnou
+  aktualitu nebo akci odběratelům stejně jako tlačítko „Rozeslat infokanálem“ ve správě: e-mail s perexem a odkazem;
+  SMS jen s <code>{"sms": true}</code> (stojí peníze). Volitelně <code>kategorie</code> (slug kategorie infokanálu).
+  Odpověď <code>202 {"hlaseni_id", "prijemcu"}</code>.</p>
+
+<h2 id="zpravodaj">Zpravodaj</h2>
+<p><code>POST /api/v1/zpravodaj</code> (oprávnění <code>zpravodaj</code>, multipart): <code>metadata</code> (JSON jako
+  textové pole nebo soubor), <code>pdf</code> (webová verze), volitelně <code>pdf_tisk</code> a <code>obalka</code> (PNG/JPG).
+  Vznikne aktualita v kategorii <code>zpravodaj</code> s obsahem čísla, odkazy ke stažení, tabulkami „Z evidence obyvatel“
+  a „Hospodaření obce“ a tiráží. Stejný ročník a číslo = úprava. Počet obyvatel v úvodu webu se bere z posledního
+  zveřejněného čísla. Budoucí jednorázové akce z metadat se založí jako <strong>koncepty akcí</strong> (pokud ve stejný den
+  už podobná akce není). <code>"rozeslat": true</code> rozešle číslo e-mailem odběratelům (jen jednou a jen s oprávněním
+  <code>infokanal:rozeslat</code>). Schéma metadat je v <code>/api/openapi.json</code>.</p>
+<pre><code>curl -sS <%= it.base %>/api/v1/zpravodaj -H "Authorization: Bearer $TOKEN" \
+  -F metadata=@zpravodaj-2026-3.json -F pdf=@2026-03-web.pdf -F pdf_tisk=@2026-03-tisk.pdf -F obalka=@obalka.png</code></pre>
+</article>

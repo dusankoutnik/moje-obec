@@ -63,6 +63,10 @@ declare module 'fastify' {
     /** spojení skončilo (odpověď nebo přerušení) — další soubory se už neukládají */
     nahravaniUkonceno?: boolean;
   }
+  interface FastifyInstance {
+    /** API pro integrace (/api/v1): ověření tokenu ještě před čtením multipart těla (nastaví modul api) */
+    apiNahrani: { over: ((req: FastifyRequest) => Promise<boolean>) | null };
+  }
 }
 
 function chyba(status: number, zprava: string) {
@@ -104,10 +108,16 @@ export default fp(async function nahravani(app: FastifyInstance) {
   const casovac = setInterval(uklid, UKLID_KAZDYCH_MS);
   casovac.unref();
   app.addHook('onClose', async () => clearInterval(casovac));
+  app.decorate('apiNahrani', { over: null } as FastifyInstance['apiNahrani']);
 
   // Brána před čtením těla: multipart jen na povolených cestách, jen přihlášenému s rolí.
   app.addHook('preParsing', async (req, _reply, payload) => {
     if (!/^multipart\//i.test(req.headers['content-type'] ?? '')) return payload;
+    // API pro integrace: místo sezení a role platný token s oprávněním (ověří modul api)
+    if (/^\/api\/v1\//.test(req.url)) {
+      if (!app.apiNahrani.over || !(await app.apiNahrani.over(req))) throw chyba(401, 'neplatny_token');
+      return payload;
+    }
     const role = roleProNahrani(req.url);
     if (!role) throw chyba(415, 'multipart_nepovolen');
     if (req.headers['sec-fetch-site'] === 'cross-site') throw chyba(403, 'forbidden');
