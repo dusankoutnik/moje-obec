@@ -104,7 +104,8 @@ describe('odběr veřejně', () => {
       kanal: 'sms',
       souhlas: 'ano',
     });
-    expect(po.url).toContain('/infokanal/odber');
+    // odběr spárovaný s účtem se spravuje v Mém účtu (2026-10-22), ne na /infokanal/odber
+    expect(po.url).toContain('/ucet');
     expect(t.sms.odeslane.length).toBe(pocetSms);
     const o = await t.db
       .selectFrom('ik_odberatele')

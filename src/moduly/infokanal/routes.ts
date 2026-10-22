@@ -132,7 +132,7 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
           typ: emailObsazeny ? 'info' : 'ok',
           text: t(emailObsazeny ? 'infokanal.email_obsazeny' : 'infokanal.potvrzeno'),
         };
-        return reply.redirect('/infokanal/odber');
+        return reply.redirect('/ucet#odber'); // odběr z účtu se spravuje v Mém účtu
       }
       // Bez ověření kódem se v databázi nic nemění (ani u existujícího odběratele) — kdo zná cizí číslo,
       // nesmí odběr obnovit ani přesměrovat e-maily. Údaje počkají v sezení a uloží se po ověření kódu.
