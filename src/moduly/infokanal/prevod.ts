@@ -9,6 +9,7 @@ import { zapisAudit } from '../../lib/audit.js';
 import { casPraha } from '../../lib/datum.js';
 import { nahodnyToken } from '../../lib/krypto.js';
 import { normalizujEmail, normalizujTelefon } from '../../lib/kontakty.js';
+import { prevedOdpoved, type ApiOdpoved } from '../odstavky/cez.js';
 
 export interface VkOdberatel {
   id: number;
@@ -61,6 +62,30 @@ export interface VkData {
   optouty: { subscriber_id: number; category_id: number }[];
   hlaseni: VkHlaseni[];
   prijemci: { message_id: number; channel: string; status: string; n: number }[];
+  /** automatické výstrahy (tabulka vystrahy; starší VlastiKanál ji nemá) */
+  vystrahy?: VkVystraha[];
+  /** stav zdrojů výstrah z tabulky kv (chmu_last, chmu_ok, cez_ok, scvk_ok) */
+  kv?: Record<string, string>;
+}
+export interface VkVystraha {
+  id: number;
+  source: string;
+  ext_key: string;
+  level: string | null;
+  title: string;
+  valid_from: string | null;
+  valid_to: string | null;
+  sms_text: string | null;
+  email_subject: string | null;
+  email_body: string | null;
+  detail: string | null;
+  status: string;
+  message_id: number | null;
+  reminded_at: string | null;
+  cancelled_at: string | null;
+  decided_user_id: number | null; // admins.user_id rozhodujícího správce
+  decided_at: string | null;
+  created_at: string | null;
 }
 
 /** slug VlastiKanálu → slug infokanálu platformy (ostatní se převezmou, případně založí) */
@@ -111,6 +136,62 @@ export function casVk(s: string | null | undefined): Date | null {
 export interface VolbyPrevodu {
   nanecisto?: boolean;
   anonymizovat?: boolean;
+  /** kód obce (ČSÚ/RÚIAN) pro převod detailu odstávek ČEZ na části obce */
+  kodObce?: string;
+}
+
+const STAVY_VYSTRAH: Record<string, 'odeslano' | 'ceka' | 'zahozeno' | 'preskoceno'> = {
+  sent: 'odeslano',
+  pending: 'ceka',
+  deleted: 'zahozeno',
+  skipped: 'preskoceno',
+};
+
+/** detail výstrahy VlastiKanálu → tvar, se kterým pracuje modul výstrah platformy (data jako ISO řetězce) */
+export function detailVystrahy(v: VkVystraha, kodObce = ''): Record<string, unknown> {
+  let d: Record<string, unknown> = {};
+  try {
+    const x = JSON.parse(v.detail ?? '{}') as unknown;
+    if (x && typeof x === 'object') d = x as Record<string, unknown>;
+  } catch {
+    /* neplatný JSON */
+  }
+  const iso = (x: unknown) => casVk(typeof x === 'string' ? x : null)?.toISOString() ?? null;
+  if (v.source === 'cez') {
+    const o = kodObce
+      ? prevedOdpoved({ outages_in_town: [d] } as unknown as ApiOdpoved, kodObce)[0]
+      : undefined;
+    return {
+      ...(o ?? { id: String(d.id ?? v.ext_key), pdf: null, casti: [], parcely: [] }),
+      id: String(d.id ?? v.ext_key),
+      od: iso(d.opened_at) ?? iso(v.valid_from),
+      do: iso(d.fix_expected_at) ?? iso(v.valid_to),
+      zruseno: iso(d.cancelled_at) ?? (v.cancelled_at ? iso(v.cancelled_at) : null),
+    };
+  }
+  if (v.source === 'scvk')
+    return {
+      id: String(d.id ?? v.ext_key),
+      href: d.href ?? '',
+      typ: d.typ === 'havarie' ? 'havarie' : 'planovana',
+      titulek: d.title ?? v.title,
+      zverejneno: d.published ?? '',
+      od: iso(d.from) ?? iso(v.valid_from),
+      do: iso(d.to) ?? iso(v.valid_to),
+      text: d.text ?? '',
+      soubor: d.file ?? null,
+    };
+  if (v.source === 'chmu')
+    return {
+      jev: d.event ?? v.ext_key.split('|')[0],
+      stupen: d.level ?? v.level,
+      od: iso(d.from) ?? iso(v.valid_from),
+      do: iso(d.to) ?? iso(v.valid_to),
+      nadpis: d.headline ?? '',
+      popis: d.description ?? '',
+      pokyny: d.instruction ?? '',
+    };
+  return d;
 }
 
 export interface VysledekPrevodu {
@@ -126,6 +207,11 @@ export interface VysledekPrevodu {
   hlaseni: number;
   hlaseniNovych: number;
   hlaseniNedokoncenych: number;
+  vystrah: number;
+  vystrahNovych: number;
+  vystrahUzZnamych: number;
+  vystrahSHlasenim: number;
+  vystrahPodleStavu: Record<string, number>;
 }
 
 /** anonymní kontakty pro dev (deterministické podle id, vazby zůstávají) */
@@ -188,6 +274,11 @@ export async function prevedVlastikanal(
     hlaseni: 0,
     hlaseniNovych: 0,
     hlaseniNedokoncenych: 0,
+    vystrah: 0,
+    vystrahNovych: 0,
+    vystrahUzZnamych: 0,
+    vystrahSHlasenim: 0,
+    vystrahPodleStavu: {},
   };
   const ucty = await mapaUctu(db);
 
@@ -342,6 +433,7 @@ export async function prevedVlastikanal(
       if (stav === 'odeslano' || stav === 'doruceno') s.odeslano += Number(p.n);
       souhrny.set(p.message_id, s);
     }
+    const hlaseniVk = new Map<number, string>(); // id VK → id platformy
     for (const h of data.hlaseni) {
       const s = souhrny.get(h.id) ?? { prijemcu: 0, odeslano: 0, sms: {}, email: {} };
       s.web_url = h.wp_url ?? null;
@@ -385,12 +477,89 @@ export async function prevedVlastikanal(
         .select('id')
         .where('prevod_id', '=', h.id)
         .executeTakeFirst();
-      if (ex) await trx.updateTable('ik_hlaseni').set(hodnoty).where('id', '=', ex.id).execute();
-      else {
-        await trx.insertInto('ik_hlaseni').values(hodnoty).execute();
+      if (ex) {
+        await trx.updateTable('ik_hlaseni').set(hodnoty).where('id', '=', ex.id).execute();
+        hlaseniVk.set(h.id, ex.id);
+      } else {
+        const r = await trx
+          .insertInto('ik_hlaseni')
+          .values(hodnoty)
+          .returning('id')
+          .executeTakeFirstOrThrow();
+        hlaseniVk.set(h.id, r.id);
         v.hlaseniNovych++;
       }
       v.hlaseni++;
+    }
+
+    // ---- automatické výstrahy (aby automat po spuštění znovu neohlásil, co VlastiKanál už rozeslal) ----
+    // Idempotence přes detail.prevod_id (id ve VlastiKanálu). Událost, kterou už zapsal automat platformy
+    // (stejný zdroj + externí id, bez prevod_id), se nepřevádí — byla by dvakrát.
+    for (const w of data.vystrahy ?? []) {
+      const stav = STAVY_VYSTRAH[w.status] ?? 'zahozeno';
+      const hodnoty = {
+        zdroj: w.source as 'chmu' | 'cez' | 'scvk',
+        externi_id: w.ext_key,
+        stupen: w.level ?? null,
+        titulek: w.title,
+        plati_od: casVk(w.valid_from),
+        plati_do: casVk(w.valid_to),
+        sms_text: w.sms_text ?? null,
+        email_predmet: w.email_subject ?? null,
+        email_text: w.email_body ?? null,
+        detail: JSON.stringify({ ...detailVystrahy(w, volby.kodObce), prevod_id: w.id }),
+        stav,
+        hlaseni_id: w.message_id ? (hlaseniVk.get(w.message_id) ?? null) : null,
+        pripomenuto_at: casVk(w.reminded_at),
+        zruseno_at: casVk(w.cancelled_at),
+        rozhodl_id: w.decided_user_id ? (ucty.get(Number(w.decided_user_id)) ?? null) : null,
+        rozhodnuto_at: casVk(w.decided_at),
+        vytvoreno_at: casVk(w.created_at) ?? new Date(),
+      };
+      const ex = await trx
+        .selectFrom('ik_vystrahy')
+        .select(['id'])
+        .where('zdroj', '=', hodnoty.zdroj)
+        .where('externi_id', '=', w.ext_key)
+        .where(sql<boolean>`(detail->>'prevod_id') = ${String(w.id)}`)
+        .executeTakeFirst();
+      if (ex) {
+        await trx.updateTable('ik_vystrahy').set(hodnoty).where('id', '=', ex.id).execute();
+      } else {
+        const automat = await trx
+          .selectFrom('ik_vystrahy')
+          .select('id')
+          .where('zdroj', '=', hodnoty.zdroj)
+          .where('externi_id', '=', w.ext_key)
+          .where(sql<boolean>`detail->>'prevod_id' IS NULL`)
+          .executeTakeFirst();
+        if (automat) {
+          v.vystrahUzZnamych++;
+          continue;
+        }
+        await trx.insertInto('ik_vystrahy').values(hodnoty).execute();
+        v.vystrahNovych++;
+      }
+      v.vystrah++;
+      if (hodnoty.hlaseni_id) v.vystrahSHlasenim++;
+      v.vystrahPodleStavu[stav] = (v.vystrahPodleStavu[stav] ?? 0) + 1;
+    }
+    // stav zdrojů: poslední zpracovaný soubor ČHMÚ a poslední úspěchy (existující hodnoty platformy mají přednost)
+    const kv = data.kv ?? {};
+    for (const zdroj of ['chmu', 'cez', 'scvk']) {
+      const ok = casVk(kv[`${zdroj}_ok`]);
+      const razitko = zdroj === 'chmu' ? (kv.chmu_last ?? null) : null;
+      if (!ok && !razitko) continue;
+      await trx
+        .insertInto('ik_vystrahy_zdroje')
+        .values({ zdroj, posledni_ok: ok, razitko })
+        .onConflict((oc) =>
+          oc.column('zdroj').doUpdateSet({
+            posledni_ok: sql`COALESCE(ik_vystrahy_zdroje.posledni_ok, excluded.posledni_ok)`,
+            razitko: sql`COALESCE(ik_vystrahy_zdroje.razitko, excluded.razitko)`,
+          }),
+        )
+        .execute();
     }
     await zapisAudit(trx, {
       akce: 'infokanal.prevod_vlastikanal',

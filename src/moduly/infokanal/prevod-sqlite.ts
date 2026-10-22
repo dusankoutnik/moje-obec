@@ -13,6 +13,8 @@ export function nactiVlastikanal(cesta: string): VkData {
     const sel = (mnozina: Set<string>, s: string, nahrada = 'NULL') =>
       mnozina.has(s) ? s : `${nahrada} AS ${s}`;
     const all = <T>(q: string) => db.prepare(q).all() as unknown as T[];
+    const tabulka = (t: string) =>
+      !!db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?`).get(t);
     return {
       odberatele: all(`SELECT id, name, phone, email, village, token, verified_at, unsubscribed_at, source,
           consent_type, consent_at, note, created_at, ${sel(sub, 'user_id')}, ${sel(sub, 'channel_pref')}
@@ -26,6 +28,15 @@ export function nactiVlastikanal(cesta: string): VkData {
           m.scheduled_at, m.created_at, m.finished_at, ${sel(msg, 'auto_source')}
         FROM messages m LEFT JOIN admins a ON a.id = m.author_id ORDER BY m.id`),
       prijemci: all(`SELECT message_id, channel, status, count(*) AS n FROM recipients GROUP BY 1, 2, 3`),
+      vystrahy: tabulka('vystrahy')
+        ? all(`SELECT v.id, v.source, v.ext_key, v.level, v.title, v.valid_from, v.valid_to, v.sms_text,
+              v.email_subject, v.email_body, v.detail, v.status, v.message_id, v.reminded_at, v.cancelled_at,
+              ${adm.has('user_id') ? 'a.user_id' : 'NULL'} AS decided_user_id, v.decided_at, v.created_at
+            FROM vystrahy v LEFT JOIN admins a ON a.id = v.decided_by ORDER BY v.id`)
+        : [],
+      kv: tabulka('kv')
+        ? Object.fromEntries(all<{ k: string; v: string }>(`SELECT k, v FROM kv`).map((r) => [r.k, r.v]))
+        : {},
     };
   } finally {
     db.close();

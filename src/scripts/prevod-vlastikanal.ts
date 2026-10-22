@@ -5,9 +5,12 @@
 //
 //   --nanecisto     převod proběhne v transakci, která se vrátí — vypíše počty, nic nezapíše
 //   --anonymizovat  vývojová kopie: jména, telefony a e-maily nahrazené (stejné id a vazby), bez poznámek
+//   --kod-obce N    kód obce pro části obce v odstávkách ČEZ (jinak z obec.yml)
 //   --doparovat     jen dopáruje vazby odběratel → účet podle čísla účtu MujÚčtu (po převodu účtů)
 // Opakované spuštění je bezpečné (páruje podle id ve VlastiKanálu). Vypisuje jen počty, žádné osobní údaje.
+import { existsSync } from 'node:fs';
 import { nactiEnv } from '../config/env.js';
+import { nactiObec } from '../config/obec.js';
 import { vytvorDb, pockejNaDb } from '../db/index.js';
 import { migruj } from '../db/migrate.js';
 import { doparujUcty, prevedVlastikanal } from '../moduly/infokanal/prevod.js';
@@ -15,12 +18,22 @@ import { nactiVlastikanal } from '../moduly/infokanal/prevod-sqlite.js';
 
 const argv = process.argv.slice(2);
 const volby = new Set(argv.filter((a) => a.startsWith('--')));
-const cesta = argv.find((a) => !a.startsWith('--'));
+const cesta = argv.find((a, i) => !a.startsWith('--') && argv[i - 1] !== '--kod-obce');
 if (!cesta && !volby.has('--doparovat')) {
   console.error('Použití: prevod-vlastikanal <vlastikanal.db> [--nanecisto] [--anonymizovat] | --doparovat');
   process.exit(2);
 }
 const env = nactiEnv();
+function kodObce(): string {
+  const i = argv.indexOf('--kod-obce');
+  if (i >= 0 && argv[i + 1]) return argv[i + 1]!;
+  if (!existsSync(env.OBEC_YML)) return '';
+  const o = nactiObec(env.OBEC_YML) as unknown as {
+    obec?: { kod_obce?: string };
+    odstavky?: { cez?: { kod_obce?: string } };
+  };
+  return o.odstavky?.cez?.kod_obce || o.obec?.kod_obce || '';
+}
 const db = vytvorDb(env.DATABASE_URL, 2, { statementTimeoutMs: 0 });
 try {
   await pockejNaDb(db);
@@ -32,6 +45,8 @@ try {
     const v = await prevedVlastikanal(db, data, {
       nanecisto: volby.has('--nanecisto'),
       anonymizovat: volby.has('--anonymizovat'),
+      // kód obce kvůli částem obce v odstávkách ČEZ (obec.yml → obec.kod_obce, případně odstavky.cez.kod_obce)
+      kodObce: kodObce(),
     });
     console.log(
       (volby.has('--nanecisto') ? 'NANEČISTO (nic nezapsáno): ' : 'Převedeno: ') + JSON.stringify(v, null, 2),

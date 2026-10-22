@@ -221,6 +221,168 @@ describe('převod VlastiKanálu', () => {
     expect(await t.app.infokanalFronta.zpracujVse()).toBe(0);
   });
 
+  it('výstrahy: stavy, vazba na hlášení, detail pro automat, idempotence, stav zdrojů', async () => {
+    const d = vkData();
+    const zaklad = {
+      level: null,
+      sms_text: 'SMS',
+      email_subject: 'Předmět',
+      email_body: 'Text',
+      reminded_at: null,
+      cancelled_at: null,
+      decided_user_id: null,
+      decided_at: null,
+      created_at: '2026-10-16 15:05:00',
+    };
+    d.vystrahy = [
+      {
+        ...zaklad,
+        id: 1,
+        source: 'cez',
+        ext_key: '1100',
+        title: 'Odstávka elektřiny',
+        valid_from: '2026-11-06T08:00:00Z',
+        valid_to: '2026-11-06T14:30:00Z',
+        detail: JSON.stringify({
+          id: 1100,
+          announcement_key: 'abc.pdf',
+          opened_at: '2026-11-06T08:00:00Z',
+          fix_expected_at: '2026-11-06T14:30:00Z',
+          addresses: {
+            towns: [
+              {
+                code: '999',
+                name: 'Testov',
+                town_districts: [{ town_parts: [{ name: 'Dolní Testov', streets: [] }] }],
+              },
+            ],
+          },
+        }),
+        status: 'sent',
+        message_id: 1,
+        reminded_at: '2026-11-05 17:00:00',
+      },
+      {
+        ...zaklad,
+        id: 2,
+        source: 'scvk',
+        ext_key: '6939',
+        title: 'Odstávka vody',
+        valid_from: '2026-10-22T06:30:00.000Z',
+        valid_to: '2026-10-22T10:30:00.000Z',
+        detail: JSON.stringify({
+          id: '6939',
+          href: '/udalosti/x-6939',
+          typ: 'planovana',
+          title: 'T',
+          published: 'p',
+          from: '2026-10-22T06:30:00.000Z',
+          to: '2026-10-22T10:30:00.000Z',
+          text: 'plný text',
+          file: null,
+        }),
+        status: 'sent',
+        message_id: null,
+      },
+      {
+        ...zaklad,
+        id: 3,
+        source: 'chmu',
+        ext_key: 'Silný vítr|yellow',
+        level: 'yellow',
+        title: 'Silný vítr',
+        valid_from: '2026-10-20T10:00:00+02:00',
+        valid_to: null,
+        detail: JSON.stringify({
+          event: 'Silný vítr',
+          level: 'yellow',
+          from: '2026-10-20T10:00:00+02:00',
+          to: null,
+          headline: 'H',
+          description: 'D',
+          instruction: 'I',
+        }),
+        status: 'deleted',
+        message_id: null,
+      },
+      {
+        ...zaklad,
+        id: 4,
+        source: 'chmu',
+        ext_key: 'Bouřky|orange',
+        level: 'orange',
+        title: 'B',
+        valid_from: null,
+        valid_to: null,
+        detail: '{}',
+        status: 'pending',
+        message_id: null,
+      },
+    ];
+    d.kv = {
+      chmu_last: 'alert_cap_50_220808.xml 22-Oct-2026 08:08',
+      chmu_ok: '2026-10-22T15:00:00.442Z',
+      cez_ok: '2026-10-22T15:00:00.835Z',
+    };
+    // událost, kterou už mezitím zapsal automat platformy (bez prevod_id) — nepřevádí se
+    await t.db
+      .insertInto('ik_vystrahy')
+      .values({ zdroj: 'chmu', externi_id: 'Bouřky|orange', titulek: 'B', detail: '{}', stav: 'odeslano' })
+      .execute();
+    const v = await prevedVlastikanal(t.db, d, { kodObce: '999' });
+    expect(v).toMatchObject({
+      vystrah: 3,
+      vystrahNovych: 3,
+      vystrahUzZnamych: 1,
+      vystrahSHlasenim: 1,
+      vystrahPodleStavu: { odeslano: 2, zahozeno: 1 },
+    });
+    const radky = await t.db.selectFrom('ik_vystrahy').selectAll().orderBy('id').execute();
+    const cez = radky.find((r) => r.zdroj === 'cez')!;
+    const h1 = await t.db
+      .selectFrom('ik_hlaseni')
+      .select('id')
+      .where('prevod_id', '=', 1)
+      .executeTakeFirstOrThrow();
+    expect(cez).toMatchObject({ stav: 'odeslano', hlaseni_id: h1.id, externi_id: '1100' });
+    expect(cez.plati_od!.toISOString()).toBe('2026-11-06T08:00:00.000Z');
+    expect(cez.pripomenuto_at).not.toBeNull();
+    expect(cez.detail).toMatchObject({
+      id: '1100',
+      od: '2026-11-06T08:00:00.000Z',
+      casti: [{ nazev: 'Dolní Testov' }],
+      prevod_id: 1,
+    });
+    expect(radky.find((r) => r.zdroj === 'scvk')!.detail).toMatchObject({
+      titulek: 'T',
+      text: 'plný text',
+      od: '2026-10-22T06:30:00.000Z',
+    });
+    const chmu = radky.find((r) => r.externi_id === 'Silný vítr|yellow')!;
+    expect(chmu).toMatchObject({ stav: 'zahozeno', stupen: 'yellow' });
+    expect(chmu.detail).toMatchObject({
+      jev: 'Silný vítr',
+      stupen: 'yellow',
+      popis: 'D',
+      od: '2026-10-20T08:00:00.000Z',
+    });
+    const zdroje = await t.db.selectFrom('ik_vystrahy_zdroje').selectAll().orderBy('zdroj').execute();
+    expect(zdroje.map((z) => [z.zdroj, z.razitko])).toEqual([
+      ['cez', null],
+      ['chmu', 'alert_cap_50_220808.xml 22-Oct-2026 08:08'],
+    ]);
+    const znovu = await prevedVlastikanal(t.db, d, { kodObce: '999' });
+    expect(znovu).toMatchObject({ vystrah: 3, vystrahNovych: 0, vystrahUzZnamych: 1 });
+    expect(await t.db.selectFrom('ik_vystrahy').select('id').execute()).toHaveLength(4);
+    const na = await prevedVlastikanal(
+      t.db,
+      { ...d, vystrahy: [{ ...d.vystrahy[0]!, id: 50, ext_key: '5000' }] },
+      { nanecisto: true },
+    );
+    expect(na.vystrahNovych).toBe(1);
+    expect(await t.db.selectFrom('ik_vystrahy').select('id').execute()).toHaveLength(4);
+  });
+
   it('dopárování účtu podle čísla MujÚčtu (až existuje uzivatele.cislo)', async () => {
     expect(await doparujUcty(t.db)).toBe(0); // sloupec zatím neexistuje (přidává ho převod účtů)
   });
