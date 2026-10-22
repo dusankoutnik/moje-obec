@@ -16,6 +16,8 @@ export const cs = {
     patika_gdpr: 'Ochrana osobních údajů',
     patika_kontakt: 'Kontakt',
     patika_zdroj: 'Otevřený software Moje obec 2.0 (EUPL-1.2)',
+    patika_vyrobce: 'Web od Voltu 2.0',
+    patika_vyrobce_logo: 'Volt',
     chyba_404: 'Stránka nenalezena',
     chyba_404_text: 'Takovou stránku tu nemáme. Zkontrolujte adresu nebo se vraťte na úvod.',
     chyba_500: 'Něco se pokazilo',

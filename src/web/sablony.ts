@@ -1,4 +1,5 @@
 // Šablony Eta: reply.view('soubor', data) vykreslí šablonu v layoutu se společnými daty (t, obec, uzivatel, csrf).
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { Eta } from 'eta';
 import type { FastifyInstance, FastifyReply } from 'fastify';
@@ -6,6 +7,10 @@ import fp from 'fastify-plugin';
 import { formatujTelefon } from '../lib/kontakty.js';
 
 export const VIEWS_DIR = path.resolve(import.meta.dirname, '..', '..', 'views');
+// logo výrobce v patičce (Volt) — vykreslí se, jen když soubor existuje (public/img/volt-logo.svg nebo .png)
+const LOGO_VYROBCE = ['volt-logo.svg', 'volt-logo.png'].find((f) =>
+  existsSync(path.resolve(import.meta.dirname, '..', '..', 'public', 'img', f)),
+);
 
 export function formatujDatum(d: Date | string | null | undefined, sCasem = true): string {
   if (!d) return '';
@@ -52,6 +57,7 @@ export default fp(async function sablony(app: FastifyInstance) {
       const html = await eta.renderAsync(sablona, {
         t: app.t,
         obec: app.obec,
+        logoVyrobce: LOGO_VYROBCE ? `/static/img/${LOGO_VYROBCE}` : null,
         env: app.env.NODE_ENV,
         uzivatel: req.uzivatel ?? null,
         csrf,

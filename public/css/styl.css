@@ -2176,10 +2176,27 @@ body.zakladni .panel-hlavni {
   margin: 0 0 0.35em;
 }
 .paticka-zdroj {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
   font-size: 0.85rem;
   color: #cfcfcf;
   padding-bottom: 20px;
   margin: 0;
+}
+.paticka-zdroj a {
+  color: #e6e6e6;
+}
+.paticka-vyrobce {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+.paticka-vyrobce img {
+  height: 22px;
+  width: auto;
 }
 
 /* --- pohyb jen pro ty, kdo ho chtějí --- */
