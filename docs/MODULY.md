@@ -49,15 +49,40 @@ Platforma plní bod 2 (prohlášení, přístupný design), 6 (stránka zásad, 
 - **SMS brána:** řešení s telefonem na úřadě (SMSGate) se nedá obcím oficiálně nabízet → abstrakce poskytovatele (viz níže). Pozor na UCS-2: typografické pomlčky a uvozovky převádět na ASCII, jinak 70 znaků/SMS.
 - Statistiky jen jako agregáty (žádná jména) — P1 dashboard.
 
+### Přechod z VlastiKanálu (hotovo 22. 10. 2026)
+
+- **Převod dat:** `src/scripts/prevod-vlastikanal.ts` (návod v `docs/PREVOD.md`) — odběratelé, kategorie, opt-outy,
+  historie hlášení se souhrnem počtů příjemců (`ik_hlaseni.souhrn`; jednotliví příjemci se nepřevádějí).
+  Převedená hlášení jsou `hotovo`/`zruseno` a nikdy se znovu nerozesílají.
+- **Interní API** (aplikace obce po vnitřní síti, hlavička `x-api-secret` = `INTERNI_API_SECRET`, požadavek přes
+  proxy s `X-Forwarded-For` = 404, bez env vypnuto):
+  - `POST /api/interni/odeslat` `{prijemci:[{telefon?,email?}], sms?, email?:{predmet,text,html?}, zdroj, bezPrefixu?}`
+    → `202 {id, sms, email, zkraceno}`. Odchozí fronta `ik_odchozi` (vlastní worker, oddělený od hromadných hlášení):
+    až 5 pokusů s rostoucím odkladem, Retry-After brány, doručenky webhookem i pollingem. SMS dostane předponu obce
+    (`texty.sms_prefix`, pokud ji text nemá), bez diakritiky, nad 459 znaků se zkrátí (`zkraceno: true`). Audit
+    `infokanal.interni_odeslani`. Stav dávky: `GET /api/interni/odeslat/:id`.
+  - `GET /api/interni/odber?telefon=` → `{odebira, kanal:'sms'|'mixed'|'email', email?}`.
+- **Příchozí SMS** (webhook brány na `/webhook/sms/<tajemství>`, stejná adresa jako doručenky; SMSGate událost
+  `sms:received`): `START [jméno]` přihlásí (souhlas z registrační SMS, ověřeno číslem), `STOP` odhlásí, obojí
+  s odpovědní SMS; `ODVOZ <cíl>` se předá rezervacím (`POST APLIKACE_REZERVACE_URL/api/sms/prichozi`, nebo
+  `SPOLUJIZDA_HOOK_URL`, tělo `{phone, dest, text}`, hlavičky `x-hook-secret` = `SPOLUJIZDA_HOOK_SECRET`,
+  `x-api-secret`); bez cíle odpověď „napište i cíl“; při nedostupnosti rezervací e-mail správcům. Ostatní SMS
+  → e-mail správcům (role admin/spravce s e-mailem + `INFOKANAL_NOTIFY`).
+- **SMSGate ostře:** webhooky (`sms:received`, `sms:delivered`, `sms:failed`), volitelný podpis `X-Signature`
+  (`SMSGATE_WEBHOOK_KLIC`), registrace skriptem `src/scripts/smsgate-webhook.ts`.
+- **Hlídání brány** (`brana.ts`, cron à 10 min, jen při SMSGate): `lastSeen` telefonu > `BRANA_LIMIT_MIN` (60) →
+  e-mail `BRANA_NOTIFY` (jinak správci) s počtem čekajících SMS, připomínka à 12 h, po obnovení „zase funguje“;
+  cloud nedostupný > 2 h → jedno upozornění. Stav v `nastaveni.infokanal_brana`.
+
 ### SMS brány — abstrakce a adaptéry (P0)
 
-| Poskytovatel | Stav                                 | Auth                                  | Doručenky                                                      |
-| ------------ | ------------------------------------ | ------------------------------------- | -------------------------------------------------------------- |
-| `konzole`    | hotovo (vývoj, testy)                | —                                     | vždy „doručeno“                                                |
-| `smsgate`    | hotovo (vývoj; ověřeno v provozu VK) | Basic                                 | polling `GET …/message/<id>`                                   |
-| `smsbrana`   | podle dokumentace, naživo neověřeno  | login + time + salt + md5(auth)       | polling `action=inbox` (`stahniDorucenky()`), PUSH webhook     |
-| `gosms`      | podle OpenAPI, naživo neověřeno      | OAuth2 client_credentials (token 1 h) | `GET /api/v1/messages/{id}`, webhook (pole událostí)           |
-| `smsmanager` | podle dokumentace, naživo neověřeno  | hlavička `x-api-key` (JSON API v2)    | `GET rest-api…/v1/message?id=`, webhook s HMAC-SHA256 podpisem |
+| Poskytovatel | Stav                                | Auth                                  | Doručenky                                                      |
+| ------------ | ----------------------------------- | ------------------------------------- | -------------------------------------------------------------- |
+| `konzole`    | hotovo (vývoj, testy)               | —                                     | vždy „doručeno“                                                |
+| `smsgate`    | hotovo (ostře od přechodu VK)       | Basic                                 | polling `GET …/message/<id>` + webhook `sms:delivered/failed`  |
+| `smsbrana`   | podle dokumentace, naživo neověřeno | login + time + salt + md5(auth)       | polling `action=inbox` (`stahniDorucenky()`), PUSH webhook     |
+| `gosms`      | podle OpenAPI, naživo neověřeno     | OAuth2 client_credentials (token 1 h) | `GET /api/v1/messages/{id}`, webhook (pole událostí)           |
+| `smsmanager` | podle dokumentace, naživo neověřeno | hlavička `x-api-key` (JSON API v2)    | `GET rest-api…/v1/message?id=`, webhook s HMAC-SHA256 podpisem |
 
 Ceny (10/2026, bez DPH, orientačně): SMSbrána ~1,08 Kč (s bonusem ~0,89), GoSMS „od 0,41 Kč“ u velkých objemů, SMS Manager 0,89 Kč v pásmu 5–10 tis./měs. (vlastní textový odesílatel +500 Kč/měs.). Doporučení pro obce: začít SMS Managerem nebo SMSbránou (prepaid, bez paušálu). **Úkol P1:** s první obcí ověřit vybraný adaptér naživo, doplnit cron pro `stahniDorucenky()` u SMSbrány, SMS `START/STOP` přes příchozí zprávy.
 
