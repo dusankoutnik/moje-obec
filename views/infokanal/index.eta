@@ -1,6 +1,13 @@
 <% layout('/layout') %>
 <h1><%= it.obec.texty.nazev_infokanalu %></h1>
 <p class="perex"><%= it.t('infokanal.perex') %></p>
+<% if (it.maOdber) { %>
+<section class="karta">
+<h2><%= it.t('infokanal.odber_v_uctu_titulek') %></h2>
+<p><%= it.t('infokanal.odber_v_uctu_text', { telefon: it.telefon }) %></p>
+<p><a class="tlacitko" href="/ucet#odber"><%= it.t('infokanal.odber_v_uctu_odkaz') %></a> <a class="tlacitko sekundarni" href="/infokanal/vystrahy"><%= it.t('infokanal.odber_v_uctu_vystrahy') %></a></p>
+</section>
+<% } else { %>
 <div class="sloupce">
 <section class="karta">
 <h2><%= it.t('infokanal.prihlaseni_k_odberu') %></h2>
@@ -45,3 +52,4 @@
 </form>
 </section>
 </div>
+<% } %>

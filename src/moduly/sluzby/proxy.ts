@@ -5,8 +5,10 @@
 // Cesta se předává celá včetně předpony; aplikace o ní ví z X-Forwarded-Prefix (rezervace BASE_PATH, eKnihy ProxyFix).
 import http from 'node:http';
 import https from 'node:https';
+import fastifyCookie from '@fastify/cookie';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { podCestou, type KlicModulu, type ModulySluzba } from './sluzba.js';
+import type { Db } from '../../db/index.js';
 
 export interface CilProxy {
   /** modul (rezervace, eknihy) */
@@ -56,6 +58,54 @@ export function prepisLocation(loc: string, cil: URL): string {
   return loc;
 }
 
+/** číslo účtu přihlášeného na platformě (pro aplikace za proxy); null = nikdo */
+export type Prihlaseny = (req: FastifyRequest) => Promise<string | null>;
+
+// Jednotné přihlášení (2026-10-22): proxy běží před sezením platformy, cookie sezení si proto přečte sama (podpis
+// @fastify/cookie, tabulka sezeni) a aplikacím posílá u stránek hlavičku X-Platforma-Uzivatel — číslo účtu, nebo
+// prázdné (na webu nikdo přihlášen). Aplikace se podle ní tiše přihlásí přes OIDC, nebo naopak zruší své sezení.
+export function prihlasenyZeSezeni(db: Db, secret: string, cookieName = 'mo_sezeni'): Prihlaseny {
+  const signer = new fastifyCookie.Signer(secret);
+  const kes = new Map<string, { do: number; cislo: string | null }>();
+  return async (req) => {
+    const polozka = (req.headers.cookie ?? '')
+      .split(';')
+      .map((x) => x.trim())
+      .find((x) => x.startsWith(cookieName + '='));
+    if (!polozka) return null;
+    let hodnota = polozka.slice(cookieName.length + 1);
+    try {
+      hodnota = decodeURIComponent(hodnota);
+    } catch {
+      return null;
+    }
+    const u = signer.unsign(hodnota);
+    if (!u.valid || !u.value) return null;
+    const sid = u.value;
+    const k = kes.get(sid);
+    if (k && k.do > Date.now()) return k.cislo;
+    let cislo: string | null = null;
+    const r = await db
+      .selectFrom('sezeni')
+      .select(['data', 'expires_at'])
+      .where('sid', '=', sid)
+      .executeTakeFirst();
+    const id =
+      r && r.expires_at > new Date() ? (r.data as unknown as { uzivatelId?: string }).uzivatelId : undefined;
+    if (id) {
+      const uz = await db
+        .selectFrom('uzivatele')
+        .select(['cislo', 'blokovan_at'])
+        .where('id', '=', id)
+        .executeTakeFirst();
+      if (uz && !uz.blokovan_at && uz.cislo != null) cislo = String(uz.cislo);
+    }
+    if (kes.size > 1000) kes.clear();
+    kes.set(sid, { do: Date.now() + 15_000, cislo });
+    return cislo;
+  };
+}
+
 export function zaregistrujProxy(
   app: FastifyInstance,
   moduly: ModulySluzba,
@@ -63,6 +113,7 @@ export function zaregistrujProxy(
     vypnuto: (req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
     nedostupne: (req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
   },
+  prihlaseny?: Prihlaseny,
 ) {
   const cile = cileProxy(app.env);
   if (!cile.length) return;
@@ -89,7 +140,20 @@ export function zaregistrujProxy(
         .header('location', c.prefix + '/' + dotaz)
         .send();
     }
-    await predej(req, reply, c, url);
+    // jednotné přihlášení: u stránek (GET s Accept text/html) říct aplikaci, kdo je na platformě přihlášen
+    let prihlasen: string | undefined;
+    if (
+      prihlaseny &&
+      (req.method === 'GET' || req.method === 'HEAD') &&
+      /text\/html/i.test(String(req.headers.accept ?? ''))
+    ) {
+      try {
+        prihlasen = (await prihlaseny(req)) ?? '';
+      } catch (e) {
+        req.log.warn({ err: e }, 'proxy: sezení platformy se nepodařilo přečíst');
+      }
+    }
+    await predej(req, reply, c, url, prihlasen);
   });
 
   // trasy jen kvůli směrování (bez nich by Fastify požadavek poslal do 404); obslouží je háček výše
@@ -99,11 +163,18 @@ export function zaregistrujProxy(
     app.all(c.prefix + '/*', nic);
   }
 
-  function predej(req: FastifyRequest, reply: FastifyReply, c: CilProxy, url: string): Promise<unknown> {
+  function predej(
+    req: FastifyRequest,
+    reply: FastifyReply,
+    c: CilProxy,
+    url: string,
+    prihlasen?: string,
+  ): Promise<unknown> {
     return new Promise((hotovo) => {
       const hlavicky: http.OutgoingHttpHeaders = {};
       for (const [k, v] of Object.entries(req.headers)) {
-        if (v === undefined || HOP.has(k) || k.startsWith('x-forwarded-')) continue;
+        if (v === undefined || HOP.has(k) || k.startsWith('x-forwarded-') || k === 'x-platforma-uzivatel')
+          continue;
         hlavicky[k] = v;
       }
       const host = req.headers.host ?? new URL(app.env.BASE_URL).host;
@@ -113,6 +184,7 @@ export function zaregistrujProxy(
       // jen skutečná IP klienta (podle TRUST_PROXY_HOPS) — aplikace za jednou proxy si vezme poslední položku
       hlavicky['x-forwarded-for'] = req.ip;
       hlavicky['x-forwarded-prefix'] = c.prefix;
+      if (prihlasen !== undefined) hlavicky['x-platforma-uzivatel'] = prihlasen;
       const modul = c.cil.protocol === 'https:' ? https : http;
       let odeslano = false;
       const upstream = modul.request(

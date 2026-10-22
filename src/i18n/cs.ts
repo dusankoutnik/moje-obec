@@ -313,6 +313,11 @@ export const cs = {
     zdroj: 'Zdroj',
     vystrahy_titulek: 'Automatické výstrahy',
     vystrahy_text: 'ČHMÚ, odstávky elektřiny a vody — v etapě 0 jen návrh rozhraní (docs/MODULY.md).',
+    odber_v_uctu_titulek: 'Hlášení obce odebíráte',
+    odber_v_uctu_text:
+      'Zprávy obce vám chodí na telefon {telefon}. Kanál (SMS, nebo SMS i e-mail) a kategorie hlášení si nastavíte v Mém účtu.',
+    odber_v_uctu_odkaz: 'Nastavení odběru v Mém účtu',
+    odber_v_uctu_vystrahy: 'Aktuální výstrahy a odstávky',
   },
   soubory: {
     chyba_typ:

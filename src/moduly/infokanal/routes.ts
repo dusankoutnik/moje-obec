@@ -1,6 +1,6 @@
 // Veřejné routy infokanálu: přihlášení k odběru (OTP), správa odběru, odhlášení odkazem.
 import { zobrazitDevKod } from '../../lib/sms/presmerovani.js';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { KanalPreference } from '../../db/types.js';
 import { normalizujEmail, normalizujTelefon, formatujTelefon, bezDiakritiky } from '../../lib/kontakty.js';
 import type { InfokanalSluzba } from './sluzba.js';
@@ -44,6 +44,13 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
     return null;
   }
 
+  // odběr spárovaný s přihlášeným účtem se spravuje jen v Mém účtu (/ucet#odber)
+  async function odberVUctu(req: FastifyRequest): Promise<boolean> {
+    if (!req.uzivatel) return false;
+    const o = await sluzba.odberatelPodleTelefonu(req.uzivatel.telefon);
+    return !!(o && o.uzivatel_id === req.uzivatel.id && o.overen_at && !o.odhlasen_at);
+  }
+
   app.get('/infokanal', async (req, reply) => {
     const kategorie = await sluzba.kategorie();
     // přihlášený uživatel: předvyplnit z účtu, nebo rovnou do správy odběru, pokud už odebírá
@@ -51,8 +58,15 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
     if (req.uzivatel) {
       const o = await sluzba.odberatelPodleTelefonu(req.uzivatel.telefon);
       if (o && o.overen_at && !o.odhlasen_at) {
-        req.session.odber = { odberatelId: o.id, do: Date.now() + ODBER_PLATNOST_MS };
-        return reply.redirect('/infokanal/odber');
+        // odběr už má — nastavení (kanál, kategorie) je jen v Mém účtu, žádná druhá stránka s týmž formulářem (2026-10-22)
+        return reply.view('infokanal/index', {
+          titulek: t('infokanal.titulek'),
+          kategorie,
+          f: {},
+          kanaly: KANALY,
+          maOdber: true,
+          telefon: formatujTelefon(o.telefon),
+        });
       }
       predvyplneno = {
         jmeno: `${req.uzivatel.jmeno} ${req.uzivatel.prijmeni}`.trim(),
@@ -256,6 +270,7 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
   );
 
   app.get('/infokanal/odber', async (req, reply) => {
+    if (await odberVUctu(req)) return reply.redirect('/ucet#odber');
     const a = aktualniOdber(req);
     if (!a) return reply.redirect('/infokanal');
     const o = await sluzba.odberatelPodleId(a.id);
@@ -274,6 +289,7 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
   app.post<{ Body: Record<string, string | string[] | undefined> }>(
     '/infokanal/odber',
     async (req, reply) => {
+      if (await odberVUctu(req)) return reply.redirect('/ucet#odber');
       const a = aktualniOdber(req);
       if (!a) return reply.redirect('/infokanal');
       const b = req.body;

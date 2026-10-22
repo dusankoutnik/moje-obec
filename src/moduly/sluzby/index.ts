@@ -3,7 +3,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import { vyzadujRoli } from '../ucty/opravneni.js';
-import { zaregistrujProxy } from './proxy.js';
+import { prihlasenyZeSezeni, zaregistrujProxy } from './proxy.js';
 import { KLICE_MODULU, MODULY, ModulySluzba, podCestou, type KlicModulu, type StavModulu } from './sluzba.js';
 
 declare module 'fastify' {
@@ -51,10 +51,15 @@ export async function strankaNedostupne(app: FastifyInstance, _req: FastifyReque
 export function vytvorModuly(app: FastifyInstance) {
   const sluzba = new ModulySluzba(app.db, app.obec, app.env);
   app.decorate('moduly', sluzba);
-  zaregistrujProxy(app, sluzba, {
-    vypnuto: (req, reply) => strankaVypnuto(app, req, reply),
-    nedostupne: (req, reply) => strankaNedostupne(app, req, reply),
-  });
+  zaregistrujProxy(
+    app,
+    sluzba,
+    {
+      vypnuto: (req, reply) => strankaVypnuto(app, req, reply),
+      nedostupne: (req, reply) => strankaNedostupne(app, req, reply),
+    },
+    prihlasenyZeSezeni(app.db, app.env.SESSION_SECRET),
+  );
 }
 
 export function popisyProApi(app: FastifyInstance, stav: StavModulu) {
