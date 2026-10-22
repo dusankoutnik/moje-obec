@@ -990,3 +990,31 @@ body.zakladni .panel-hlavni {
 .obal.aplikace > .panel-hlavni {
   min-height: 40vh;
 }
+
+/* EDIT za titulkem stránky / příspěvku — jen pro role s úpravou webu (2026-10-23, Dušan) */
+.edit-box {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0.5em;
+  padding: 0.15em 0.5em;
+  border-radius: 6px;
+  background: var(--menu-admin, #c2410c);
+  color: #fff;
+  font-family: var(--pismo);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-decoration: none;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+.edit-box:hover,
+.edit-box:focus-visible {
+  background: #9a3412;
+  color: #fff;
+}
+@media print {
+  .edit-box {
+    display: none;
+  }
+}

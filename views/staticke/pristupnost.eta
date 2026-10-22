@@ -1,5 +1,5 @@
 <% layout('/layout') %>
-<h1><%= it.titulek %></h1>
+<h1><%= it.titulek %><%~ include('/web/_edit', { id: it.doplnek && it.doplnek.id, muzeEditovat: it.muzeEditovatWeb, t: it.t }) %></h1>
 <% if (it.doplnek) { %>
 <% /* obec má vlastní prohlášení (vlastní posouzení) — nahrazuje obecnou šablonu */ %>
 <div class="obsah-html doplnek-obce"><%~ it.doplnek.obsah_html %></div>

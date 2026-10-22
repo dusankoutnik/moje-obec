@@ -1,6 +1,6 @@
 <% layout('/layout') %>
 <% var o = it.obec.obec; %>
-<h1><%= it.titulek %></h1>
+<h1><%= it.titulek %><%~ include('/web/_edit', { id: it.doplnek && it.doplnek.id, muzeEditovat: it.muzeEditovatWeb, t: it.t }) %></h1>
 <div class="sloupce">
 <section class="karta">
   <h2><%= it.t('web.obecni_urad') %></h2>

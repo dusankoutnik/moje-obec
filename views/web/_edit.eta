@@ -1,0 +1,1 @@
+<% if (it.muzeEditovat && it.id) { %> <a class="edit-box" href="/sprava/web/obsah/<%= it.id %>" title="<%= it.t('web.edit_titulek') %>" aria-label="<%= it.t('web.edit_titulek') %>">EDIT</a><% } %>

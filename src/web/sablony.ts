@@ -6,6 +6,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import { formatujTelefon } from '../lib/kontakty.js';
 import { filtrujMenu, type PolozkaMenu } from '../moduly/sluzby/sluzba.js';
+import { maRoli } from '../moduly/ucty/sluzba.js';
 
 export const VIEWS_DIR = path.resolve(import.meta.dirname, '..', '..', 'views');
 // logo výrobce v patičce (Volt) — vykreslí se, jen když soubor existuje (public/img/volt-logo.svg nebo .png)
@@ -89,6 +90,8 @@ export default fp(async function sablony(app: FastifyInstance) {
         logoVyrobce: LOGO_VYROBCE ? `/static/img/${LOGO_VYROBCE}` : null,
         env: app.env.NODE_ENV,
         uzivatel: req.uzivatel ?? null,
+        // odkaz EDIT u titulků stránek a příspěvků (role web; admin a správce ji mají v sobě)
+        muzeEditovatWeb: maRoli(req.uzivatel, 'web'),
         csrf,
         cesta: req.url.split('?')[0],
         cestaSDotazem: req.url.slice(0, 300),

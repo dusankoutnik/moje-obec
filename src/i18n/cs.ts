@@ -503,6 +503,7 @@ export const cs = {
     ulozeno: 'Uloženo: {bod}.',
   },
   web: {
+    edit_titulek: 'Upravit v administraci',
     menu: 'Menu',
     oficialni_web: 'oficiální web obce',
     ucet: 'Účet',

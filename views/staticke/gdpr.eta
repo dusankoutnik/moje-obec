@@ -1,6 +1,6 @@
 <% layout('/layout') %>
 <% var o = it.obec.obec; %>
-<h1><%= it.titulek %></h1>
+<h1><%= it.titulek %><%~ include('/web/_edit', { id: it.doplnek && it.doplnek.id, muzeEditovat: it.muzeEditovatWeb, t: it.t }) %></h1>
 <p><strong>Správce osobních údajů:</strong> <%= o.nazev %>, <%= o.adresa.ulice %>, <%= o.adresa.psc %> <%= o.adresa.mesto %><% if (o.ico) { %>, IČO <%= o.ico %><% } %><% if (o.kontakt.email) { %>, e-mail <a href="mailto:<%= o.kontakt.email %>"><%= o.kontakt.email %></a><% } %><% if (o.kontakt.datova_schranka) { %>, datová schránka <%= o.kontakt.datova_schranka %><% } %>.</p>
 <% if (o.poverenec.jmeno || o.poverenec.email) { %><p><strong>Pověřenec pro ochranu osobních údajů:</strong> <%= o.poverenec.jmeno %><% if (o.poverenec.adresa) { %>, <%= o.poverenec.adresa %><% } %><% if (o.poverenec.telefon) { %>, <a href="tel:<%= o.poverenec.telefon.replace(/\s/g, '') %>"><%= it.fmtTelefon(o.poverenec.telefon) %></a><% } %> <% if (o.poverenec.email) { %>(<a href="mailto:<%= o.poverenec.email %>"><%= o.poverenec.email %></a>)<% } %></p><% } %>
 
