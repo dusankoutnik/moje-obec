@@ -106,6 +106,19 @@ export class DeskaSluzba {
     return q.execute();
   }
 
+  /** kategorie pro veřejný filtr desky: jen ty, ve kterých je aspoň jeden dokument (i v archivu) */
+  async kategorieSDokumenty(jenAktivni = true) {
+    const pocty = await this.db
+      .selectFrom('ud_dokumenty')
+      .select(['kategorie_id'])
+      .select((eb) => eb.fn.count<number>('id').as('n'))
+      .where('smazano_at', 'is', null)
+      .groupBy('kategorie_id')
+      .execute();
+    const maDokument = new Set(pocty.filter((p) => Number(p.n) > 0).map((p) => p.kategorie_id));
+    return (await this.kategorie(jenAktivni)).filter((k) => maDokument.has(k.id));
+  }
+
   kategoriePodleId(id: number) {
     return this.db.selectFrom('ud_kategorie').selectAll().where('id', '=', id).executeTakeFirst();
   }

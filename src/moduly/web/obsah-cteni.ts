@@ -113,13 +113,16 @@ export class ObsahCteni {
       .execute();
     const urlZ = (o: (typeof vse)[number], rodic?: (typeof vse)[number]) =>
       o.typ === 'odkaz' ? o.odkaz_url : rodic ? `/${rodic.slug}/${o.slug}` : `/${o.slug}`;
-    const menu = vse
+    // prázdné rubriky se v menu skrývají (pokyn 22. 10. 2026); keš menu je 60 s, takže se objeví chvíli po prvním příspěvku
+    const prazdna = await this.vedeNaPrazdnouRubriku();
+    const viditelne = vse.filter((o) => !(o.typ === 'odkaz' && prazdna(o.odkaz_url)));
+    const menu = viditelne
       .filter((o) => !o.nadrazena_id)
       .map((k) => ({
         id: k.id,
         titulek: k.titulek,
         url: urlZ(k),
-        deti: vse
+        deti: viditelne
           .filter((o) => o.nadrazena_id === k.id)
           .map((d) => ({ id: d.id, titulek: d.titulek, url: urlZ(d, k), deti: [] })),
       }));
@@ -245,6 +248,62 @@ export class ObsahCteni {
 
   kategorie() {
     return this.db.selectFrom('web_kategorie').selectAll().orderBy('poradi').orderBy('nazev').execute();
+  }
+
+  /** slugy rubrik aktualit bez jediného zveřejněného příspěvku (aktuality, nebo akce zobrazené i v aktualitách) */
+  async prazdneKategorie(): Promise<Set<string>> {
+    const radky = await this.db
+      .selectFrom('web_kategorie as k')
+      .leftJoin('web_obsah as o', (join) =>
+        join
+          .onRef('o.kategorie_id', '=', 'k.id')
+          .on('o.stav', '=', 'zverejneno')
+          .on('o.smazano_at', 'is', null)
+          .on((eb) =>
+            eb.or([
+              eb('o.typ', '=', 'aktualita'),
+              eb.and([eb('o.typ', '=', 'akce'), eb('o.v_aktualitach', '=', true)]),
+            ]),
+          ),
+      )
+      .select(['k.slug'])
+      .select((eb) => eb.fn.count<number>('o.id').as('n'))
+      .groupBy('k.slug')
+      .execute();
+    return new Set(radky.filter((r) => Number(r.n) === 0).map((r) => r.slug));
+  }
+
+  /** rubriky pro veřejný filtr: jen ty, ve kterých něco je (prázdné rubriky se návštěvníkům nenabízejí) */
+  async kategorieSObsahem() {
+    const [vse, prazdne] = await Promise.all([this.kategorie(), this.prazdneKategorie()]);
+    return vse.filter((k) => !prazdne.has(k.slug));
+  }
+
+  /** slugy kategorií úřední desky bez jediného dokumentu (ani v archivu) */
+  private async prazdneKategorieDesky(): Promise<Set<string>> {
+    const radky = await this.db
+      .selectFrom('ud_kategorie as k')
+      .leftJoin('ud_dokumenty as d', (join) =>
+        join.onRef('d.kategorie_id', '=', 'k.id').on('d.smazano_at', 'is', null),
+      )
+      .select(['k.slug'])
+      .select((eb) => eb.fn.count<number>('d.id').as('n'))
+      .groupBy('k.slug')
+      .execute();
+    return new Set(radky.filter((r) => Number(r.n) === 0).map((r) => r.slug));
+  }
+
+  /** odkaz v menu, který vede na prázdnou rubriku aktualit nebo prázdnou kategorii desky, se nezobrazí */
+  private async vedeNaPrazdnouRubriku(): Promise<(url: string | null) => boolean> {
+    const [aktuality, deska] = await Promise.all([this.prazdneKategorie(), this.prazdneKategorieDesky()]);
+    return (url) => {
+      if (!url) return false;
+      const a = /^\/aktuality\?kategorie=([\w-]+)$/.exec(url);
+      if (a) return aktuality.has(a[1]!);
+      const d = /^\/uredni-deska(?:\/archiv)?\?kategorie=([\w-]+)$/.exec(url);
+      if (d) return deska.has(d[1]!);
+      return false;
+    };
   }
 
   /** seznam pro správu */

@@ -4,6 +4,7 @@ Přehled změn platformy Web od Voltu 2.0 pro pilotní obec, nejnovější naho�
 
 ## 22. 10. 2026
 
+- **Prázdné rubriky se skrývají:** rubrika bez jediného příspěvku (např. Sport) se nenabízí ve filtru Aktualit ani v menu; na úřední desce totéž u kategorií bez dokumentů. Redaktor je v editoru vidí dál — jakmile něco zveřejní, rubrika se objeví.
 - **Akce z rezervací se samy připraví na web:** když si někdo zarezervuje sál nebo hřiště pro veřejnou akci,
   ve správě webu se objeví připravená akce k doplnění textu a fotky. Akce, kterou už na webu máte, se s rezervací
   spáruje — v kalendáři se pak neukáže dvakrát. Když se v rezervacích změní termín nebo se akce zruší, správa

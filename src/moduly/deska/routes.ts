@@ -13,7 +13,7 @@ export default async function deskaRoutes(app: FastifyInstance, z: { sluzba: Des
   const pomocnici = { lidskaVelikost, popisTypu, urlSouboru };
 
   app.get<{ Querystring: { kategorie?: string; q?: string } }>('/uredni-deska', async (req, reply) => {
-    const kategorie = await sluzba.kategorie();
+    const kategorie = await sluzba.kategorieSDokumenty();
     const f = { kategorie: String(req.query.kategorie ?? ''), q: String(req.query.q ?? '').slice(0, 100) };
     const dokumenty = await sluzba.aktualni(f);
     return reply.view('deska/index', {
@@ -30,7 +30,7 @@ export default async function deskaRoutes(app: FastifyInstance, z: { sluzba: Des
   app.get<{ Querystring: { kategorie?: string; q?: string; rok?: string; strana?: string } }>(
     '/uredni-deska/archiv',
     async (req, reply) => {
-      const kategorie = await sluzba.kategorie(false);
+      const kategorie = await sluzba.kategorieSDokumenty(false);
       const f = {
         kategorie: String(req.query.kategorie ?? ''),
         q: String(req.query.q ?? '').slice(0, 100),

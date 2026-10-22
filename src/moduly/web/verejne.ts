@@ -156,8 +156,9 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
   });
 
   app.get<{ Querystring: { kategorie?: string; strana?: string } }>('/aktuality', async (req, reply) => {
-    const kategorie = await s.obsah.kategorie();
-    const k = kategorie.find((x) => x.slug === req.query.kategorie);
+    const vsechny = await s.obsah.kategorie();
+    const kategorie = await s.obsah.kategorieSObsahem();
+    const k = vsechny.find((x) => x.slug === req.query.kategorie);
     const v = await s.obsah.aktuality({ kategorie: k?.id ?? null, stranka: cisloStrany(req.query.strana) });
     return reply.view('web/aktuality', {
       titulek: t('web.aktuality'),
