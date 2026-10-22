@@ -1305,9 +1305,10 @@ details.karta > summary.tlacitko {
   --aktivni-text: #132016;
   --tmava: #132016;
   --svetla: #e8f3e9;
-  --gradient-hore: rgba(19, 32, 22, 0.72);
-  --gradient-dole: rgba(19, 32, 22, 0.9);
-  --sklo: rgba(19, 32, 22, 0.45);
+  --gradient-hore: rgba(19, 32, 22, 0.4);
+  --gradient-dole: rgba(19, 32, 22, 0.6);
+  --sklo: rgba(19, 32, 22, 0.55);
+  --sklo-text: rgba(19, 32, 22, 0.6);
   --sklo-husty: rgba(19, 32, 22, 0.82);
   --sklo-okraj: rgba(255, 255, 255, 0.18);
   --radius: 0.625rem;
@@ -1745,6 +1746,16 @@ body.zakladni .panel-hlavni {
   position: relative;
   max-width: 1000px;
   width: 100%;
+  /* vlastní tmavé sklo pod textem: závoj přes fotku je slabý, čitelnost drží tenhle podklad */
+  padding: clamp(16px, 3vw, 32px);
+  border-radius: 1.4rem;
+  background: var(--sklo-text);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hero-in {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
 }
 .hero-odznak {
   display: inline-block;
@@ -1917,9 +1928,13 @@ body.zakladni .panel-hlavni {
   margin: 8px 0 32px;
 }
 .sekce-hlavicka h2 {
+  display: inline-block;
   color: var(--na-tmave);
   font-size: clamp(1.6rem, 3vw, 2.2rem);
   margin: 0 0 14px;
+  padding: 0.1em 0.55em;
+  border-radius: 0.6rem;
+  background: var(--sklo-text);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 .sekce-dal {
@@ -1927,6 +1942,10 @@ body.zakladni .panel-hlavni {
   margin: 16px 0 0;
 }
 .prazdne-na-tmave {
+  display: inline-block;
+  padding: 0.3em 0.7em;
+  border-radius: 0.6rem;
+  background: var(--sklo-text);
   color: #fff;
 }
 .karty-clanku {

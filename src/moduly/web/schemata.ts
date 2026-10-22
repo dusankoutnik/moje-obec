@@ -143,17 +143,25 @@ export const SCHEMATA: Schema[] = [
   },
 ];
 
-/** průhlednosti přes fotku: gradient shora/dole, sklo panelů */
-export const GRADIENT_HORE = 0.72;
-export const GRADIENT_DOLE = 0.9;
-export const SKLO = 0.45;
+/** průhlednosti přes fotku: gradient shora/dole, sklo panelů; text přímo na fotce má vlastní podklad SKLO_TEXT
+ *  (2026-10-22, Dušan: „fotka je málo vidět“ — závoj zesvětlen z 0,72/0,9, čitelnost drží podklad pod textem) */
+export const GRADIENT_HORE = 0.4;
+export const GRADIENT_DOLE = 0.6;
+export const SKLO = 0.55;
+export const SKLO_TEXT = 0.6;
 
 export function schemaPodleId(id: string | null | undefined): Schema | undefined {
   return SCHEMATA.find((s) => s.id === id);
 }
 
-/** nejhorší podklad pod textem přes fotku: úplně bílá fotka pod gradientem v nejsvětlejším místě */
+/** nejhorší podklad pod textem přes fotku: úplně bílá fotka pod gradientem v nejsvětlejším místě
+ *  a pod textovým podkladem (--sklo-text u nadpisů a hero) */
 export function nejhorsiPodklad(s: Schema): Rgb01 {
+  const t = oklchNaSrgb(s.tmava);
+  return pres(t, SKLO_TEXT, pres(t, GRADIENT_HORE, BILA));
+}
+/** fotka jen pod gradientem (pod sklem lišty a menu) */
+function fotkaPodGradientem(s: Schema): Rgb01 {
   return pres(oklchNaSrgb(s.tmava), GRADIENT_HORE, BILA);
 }
 
@@ -161,7 +169,7 @@ export function nejhorsiPodklad(s: Schema): Rgb01 {
 export function kontrolniDvojice(s: Schema): { nazev: string; popredi: Rgb01; pozadi: Rgb01; min: number }[] {
   const c = oklchNaSrgb;
   const hero = nejhorsiPodklad(s);
-  const sklo = pres(c(s.tmava), SKLO, hero);
+  const sklo = pres(c(s.tmava), SKLO, fotkaPodGradientem(s));
   const tmava = c(s.tmava);
   return [
     { nazev: 'bílý text na primární (tlačítka, menu)', popredi: BILA, pozadi: c(s.primarni), min: 4.5 },
@@ -209,6 +217,7 @@ export function cssSchematu(s: Schema, selektor = ':root'): string {
       `--gradient-hore:${rgba(s.tmava, GRADIENT_HORE)}`,
       `--gradient-dole:${rgba(s.tmava, GRADIENT_DOLE)}`,
       `--sklo:${rgba(s.tmava, SKLO)}`,
+      `--sklo-text:${rgba(s.tmava, SKLO_TEXT)}`,
       `--sklo-husty:${rgba(s.tmava, 0.82)}`,
       `--primarni-pruhledna:${rgba(s.primarni, 0.45)}`,
       // původní proměnné stylu (správa, formuláře) navázané na schéma

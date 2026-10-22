@@ -103,7 +103,7 @@ export class VzhledSluzba {
     const p = paleta(barva);
     const barvyCss = schema
       ? cssSchematu(schema)
-      : `:root{--primarni:${p.primarni};--na-tmave:#ffffff;--akcent:#ffd600;--aktivni:#ffffff;--aktivni-text:${p.tmava};--tmava:#151a16;--svetla:${p.svetla};--gradient-hore:rgba(15,20,16,.72);--gradient-dole:rgba(15,20,16,.9);--sklo:rgba(15,20,16,.45);--sklo-husty:rgba(15,20,16,.82);--primarni-pruhledna:${p.primarni}73;--zelena:${p.primarni};--zelena-tmava:${p.tmava};--zelena-svetla:${p.svetla}}`;
+      : `:root{--primarni:${p.primarni};--na-tmave:#ffffff;--akcent:#ffd600;--aktivni:#ffffff;--aktivni-text:${p.tmava};--tmava:#151a16;--svetla:${p.svetla};--gradient-hore:rgba(15,20,16,.4);--gradient-dole:rgba(15,20,16,.6);--sklo:rgba(15,20,16,.55);--sklo-text:rgba(15,20,16,.6);--sklo-husty:rgba(15,20,16,.82);--primarni-pruhledna:${p.primarni}73;--zelena:${p.primarni};--zelena-tmava:${p.tmava};--zelena-svetla:${p.svetla}}`;
     return {
       barva,
       schema,
