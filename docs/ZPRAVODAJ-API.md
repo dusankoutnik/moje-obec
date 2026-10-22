@@ -1,4 +1,4 @@
-# Zpravodaj → web: rozhraní pro sazbu (návrh 22. 10. 2026)
+# Zpravodaj → web: rozhraní pro sazbu (implementováno 22. 10. 2026)
 
 Obecní zpravodaj sází Claude v Typstu (mimo tento repozitář). Po vysázení má nové číslo samo vzniknout na webu
 obce jako příspěvek v kategorii „Zpravodaj“ s PDF, obálkou, obsahem čísla a **strukturovanými údaji**, které web
@@ -6,23 +6,28 @@ používá jinde (počet obyvatel v úvodu, akce v kalendáři). Web nic z PDF n
 
 ## Volání
 
-`POST {BASE_URL}/api/zpravodaj` · `Authorization: Bearer <ZPRAVODAJ_API_TOKEN>` (env; platforma má i obecný
-mechanismus tokenů pro integrace — viz „Rozhodnutí“) · `multipart/form-data`:
+`POST {BASE_URL}/api/v1/zpravodaj` · `Authorization: Bearer <token>` — token založí admin ve **Správa → API
+a integrace** s oprávněním `zpravodaj` (pro `rozeslat: true` navíc `infokanal:rozeslat`). Obecný popis API
+(autentizace, chyby, limity, další endpointy): stránka `/api` a `/api/openapi.json`. `multipart/form-data`:
 
 | pole       | povinné | obsah                                                                    |
 | ---------- | ------- | ------------------------------------------------------------------------ |
 | `metadata` | ano     | JSON (schéma níže) — soubor nebo textové pole                            |
-| `pdf`      | ano     | webová verze PDF (zmenšená, do ~10 MB)                                   |
+| `pdf`      | ano     | webová verze PDF (do 30 MB, doporučeno ~10 MB)                           |
 | `pdf_tisk` | ne      | tisková verze (bez ořezových značek), jen ke stažení                     |
 | `obalka`   | ne      | PNG/JPG první strany (např. 1200 px na výšku) → úvodní obrázek příspěvku |
 
-Odpověď `201 {"id": "...", "url": "https://…/aktuality/obecni-zpravodaj-2026-3", "stav": "zverejneno|koncept"}`.
-Chyby `400` s popisem pole, `401` špatný token, `413` moc velký soubor.
+Odpověď `201` (nové číslo) / `200` (úprava):
+`{"id", "url": "https://…/aktuality/obecni-zpravodaj-2026-3", "stav": "zverejneno|koncept", "aktualizovano",
+"soubory": {pdf, pdf_tisk?, obalka?}, "akce": [{nazev, stav: koncept|existuje|probehla|pravidelna|bez_data, id?}],
+"rozeslano": {hlaseni_id, prijemcu} | null, "poznamka"?}`.
+Chyby `{"chyba": "…", "pole": "metadata.evidence.obyvatel"}`: `400` neplatné pole, `401` špatný token, `403` token
+bez oprávnění, `413` moc velký soubor, `429` limit.
 **Idempotence:** stejné `rocnik` + `cislo` = aktualizace existujícího příspěvku (nová revize, staré soubory
-zůstávají v historii), ne duplicita. Ukázka:
+zůstávají v úložišti), ne duplicita; akce ani rozeslání se neopakují. Ukázka:
 
 ```bash
-curl -sS https://vlastiborice.cz/api/zpravodaj -H "Authorization: Bearer $TOKEN" \
+curl -sS https://vlastiborice.cz/api/v1/zpravodaj -H "Authorization: Bearer $ZPRAVODAJ_API_TOKEN" \
   -F metadata=@zpravodaj-2026-3.json -F pdf=@2026-03-web.pdf -F pdf_tisk=@2026-03-tisk.pdf -F obalka=@obalka.png
 ```
 
@@ -135,6 +140,12 @@ a zavolá se `curl` výše. Token dostane sázecí prostředí jednou (proměnn�
 
 ## Rozhodnutí
 
-- Implementace až po sloučení větve `akce-propojeni` (stejná oblast: migrace, akce, rozesílka z příspěvku).
-- Tokeny integrací: první verze `ZPRAVODAJ_API_TOKEN` v env; cílově tabulka `integrace_tokeny` (název, hash,
-  oprávnění, poslední použití) spravovaná ve Správě — stejný mechanismus se bude hodit pro rezervace a další.
+- Tokeny integrací jsou obecné (`api_tokeny`, Správa → API a integrace) — žádná proměnná `ZPRAVODAJ_API_TOKEN`
+  v env platformy; v sázecím prostředí se token drží v proměnné `ZPRAVODAJ_API_TOKEN` (nikdy do gitu).
+- Metadata se ukládají do `web_zpravodaj` (jedno číslo = jeden řádek, `metadata` jsonb, `obyvatel`, `evidence_k`),
+  příspěvek má zdroj `zpravodaj` a `externi_id` `rocnik-cislo`. Do úvodu se počítá jen **zveřejněné** číslo.
+- `zverejnit` je výchozí `true` (vynecháno = zveřejnit), `rozeslat` výchozí `false`; rozesílá se jen e-mail, jednou.
+- Akce z metadat vznikají jako **koncepty akcí** (zdroj `zpravodaj`) — najdete je mezi koncepty ve Správě webu;
+  seznam „Akce ke zpracování“ zůstává pro termíny z rezervací. Proběhlé a pravidelné se nezakládají.
+- Starší čísla (import z WordPressu) metadata nemají — u čísla 3/2026 stačí jednou poslat metadata přes API
+  (stejné číslo = úprava existujícího záznamu zdroje `zpravodaj`; importovaný příspěvek zůstane, zvažte ho skrýt).

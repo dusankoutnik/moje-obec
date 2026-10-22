@@ -4,6 +4,15 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (API pro integrace)
+
+- REST API `/api/v1` (migrace 0020): tokeny integrací s rozsahy (`api_tokeny`, Správa → API a integrace, audit,
+  limit na token), příspěvky (`POST`/`PATCH`/`GET`, idempotence `zdroj` + `externi_id`, markdown, obrázek, přílohy),
+  `POST /soubory`, `POST /deska` (zákonné lhůty, potvrzení nahrazení), `POST /prispevky/:id/rozeslat`,
+  `POST /zpravodaj` (`web_zpravodaj`, počet obyvatel v úvodu z posledního čísla, akce jako koncepty).
+- Dokumentace `/api` a OpenAPI 3.1 `/api/openapi.json`; odkaz „API“ v patičce.
+- Rozesílka příspěvku infokanálem vyčleněna do `infokanal/z-prispevku.ts` (správa i API).
+
 ### Přidáno (text dokumentů a vyhledávání v nich)
 
 - Text nahraných dokumentů pro vyhledávání (migrace 0015, `soubory_text`): textová vrstva PDF (`pdftotext`),
