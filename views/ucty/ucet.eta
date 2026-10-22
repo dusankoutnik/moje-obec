@@ -83,14 +83,14 @@
     <input type="hidden" name="_csrf" value="<%= it.csrf %>">
     <fieldset>
       <legend><%= it.t('muj_ucet.odber_kanal') %></legend>
-      <label class="volba"><input type="radio" name="kanal" value="sms" <%= it.odber.kanal === 'sms' ? 'checked' : '' %>> <%= it.t('muj_ucet.kanal_sms') %></label>
-      <label class="volba"><input type="radio" name="kanal" value="smisene" <%= it.odber.kanal !== 'sms' ? 'checked' : '' %> <%= (it.odber.email || it.u.email) ? '' : 'disabled' %>> <%= it.t('muj_ucet.kanal_smisene') %></label>
+      <label class="zatrzitko"><input type="radio" name="kanal" value="sms" <%= it.odber.kanal === 'sms' ? 'checked' : '' %>> <%= it.t('muj_ucet.kanal_sms') %></label>
+      <label class="zatrzitko"><input type="radio" name="kanal" value="smisene" <%= it.odber.kanal !== 'sms' ? 'checked' : '' %> <%= (it.odber.email || it.u.email) ? '' : 'disabled' %>> <%= it.t('muj_ucet.kanal_smisene') %></label>
       <% if (!it.odber.email && !it.u.email) { %><p class="napoveda"><%= it.t('muj_ucet.odber_bez_emailu') %></p><% } %>
     </fieldset>
     <fieldset>
       <legend><%= it.t('muj_ucet.odber_kategorie') %></legend>
       <% it.kategorie.forEach(function (k) { %>
-      <label class="volba"><input type="checkbox" name="kategorie" value="<%= k.id %>" <%= k.povinna || !it.optouty.has(k.id) ? 'checked' : '' %> <%= k.povinna ? 'disabled' : '' %>> <%= k.nazev %><%= k.povinna ? ' (' + it.t('muj_ucet.odber_povinna') + ')' : '' %></label>
+      <label class="zatrzitko"><input type="checkbox" name="kategorie" value="<%= k.id %>" <%= k.povinna || !it.optouty.has(k.id) ? 'checked' : '' %> <%= k.povinna ? 'disabled' : '' %>> <%= k.nazev %><%= k.povinna ? ' (' + it.t('muj_ucet.odber_povinna') + ')' : '' %></label>
       <% }) %>
       <p class="napoveda"><%= it.t('muj_ucet.odber_krizove') %></p>
     </fieldset>
@@ -154,7 +154,7 @@
     <label for="eklic-email"><%= it.t('muj_ucet.eklic_email') %></label>
     <input id="eklic-email" name="email" type="email" autocomplete="email" maxlength="120" value="<%= it.souhrn.ekeyEmail || '' %>" aria-describedby="eklic-napoveda">
     <p class="napoveda" id="eklic-napoveda"><%= it.t('muj_ucet.eklic_napoveda') %></p>
-    <% if (!it.u.email) { %><label class="volba"><input type="checkbox" name="pouzit_email" value="ano"> <%= it.t('muj_ucet.eklic_pouzit') %></label><% } %>
+    <% if (!it.u.email) { %><label class="zatrzitko"><input type="checkbox" name="pouzit_email" value="ano"> <%= it.t('muj_ucet.eklic_pouzit') %></label><% } %>
     <button class="tlacitko" type="submit"><%= it.t('muj_ucet.eklic_ulozit') %></button>
   </form>
   <% } %>
@@ -180,7 +180,7 @@
   <p><%= it.t('muj_ucet.eknihy_text') %></p>
   <form method="post" action="/ucet/eknihy" class="formular">
     <input type="hidden" name="_csrf" value="<%= it.csrf %>">
-    <label class="volba"><input type="checkbox" name="eknihy_sms" value="ano" <%= it.eknihySms ? 'checked' : '' %> aria-describedby="eknihy-napoveda"> <%= it.t('muj_ucet.eknihy_sms') %></label>
+    <label class="zatrzitko"><input type="checkbox" name="eknihy_sms" value="ano" <%= it.eknihySms ? 'checked' : '' %> aria-describedby="eknihy-napoveda"> <%= it.t('muj_ucet.eknihy_sms') %></label>
     <p class="napoveda" id="eknihy-napoveda"><%= it.t('muj_ucet.eknihy_sms_napoveda') %></p>
     <button class="tlacitko sekundarni" type="submit"><%= it.t('app.ulozit') %></button>
   </form>
