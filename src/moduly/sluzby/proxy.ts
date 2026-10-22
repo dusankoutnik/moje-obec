@@ -64,9 +64,9 @@ export type Prihlaseny = (req: FastifyRequest) => Promise<string | null>;
 // Jednotné přihlášení (2026-10-22): proxy běží před sezením platformy, cookie sezení si proto přečte sama (podpis
 // @fastify/cookie, tabulka sezeni) a aplikacím posílá u stránek hlavičku X-Platforma-Uzivatel — číslo účtu, nebo
 // prázdné (na webu nikdo přihlášen). Aplikace se podle ní tiše přihlásí přes OIDC, nebo naopak zruší své sezení.
+// Bez keše — po odhlášení na webu musí aplikace zareagovat hned (dva indexované dotazy jen u HTML stránek).
 export function prihlasenyZeSezeni(db: Db, secret: string, cookieName = 'mo_sezeni'): Prihlaseny {
   const signer = new fastifyCookie.Signer(secret);
-  const kes = new Map<string, { do: number; cislo: string | null }>();
   return async (req) => {
     const polozka = (req.headers.cookie ?? '')
       .split(';')
@@ -82,8 +82,6 @@ export function prihlasenyZeSezeni(db: Db, secret: string, cookieName = 'mo_seze
     const u = signer.unsign(hodnota);
     if (!u.valid || !u.value) return null;
     const sid = u.value;
-    const k = kes.get(sid);
-    if (k && k.do > Date.now()) return k.cislo;
     let cislo: string | null = null;
     const r = await db
       .selectFrom('sezeni')
@@ -100,8 +98,6 @@ export function prihlasenyZeSezeni(db: Db, secret: string, cookieName = 'mo_seze
         .executeTakeFirst();
       if (uz && !uz.blokovan_at && uz.cislo != null) cislo = String(uz.cislo);
     }
-    if (kes.size > 1000) kes.clear();
-    kes.set(sid, { do: Date.now() + 15_000, cislo });
     return cislo;
   };
 }
