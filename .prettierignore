@@ -9,3 +9,5 @@ public/js/vendor/
 docs/pruzkum/
 test-results/
 playwright-report/
+# uložené odpovědi zdrojů výstrah — přesně tak, jak je zdroj posílá
+test/fixtures/vystrahy/

@@ -130,6 +130,13 @@ const EnvSchema = z.object({
   BRANA_LIMIT_MIN: z.coerce.number().int().min(5).default(60),
   // podpisový klíč webhooků SMSGate (X-Signature); prázdné = ověřuje jen tajná adresa
   SMSGATE_WEBHOOK_KLIC: z.string().optional(),
+  // Automatické výstrahy infokanálu (ČHMÚ, ČEZ, SčVK podle obec.yml → vystrahy). 0 = vypnuto (nic se nestahuje ani neposílá).
+  VYSTRAHY: z
+    .string()
+    .optional()
+    .transform((v) => v === undefined || v === '' || v === '1' || v === 'true'),
+  // další adresy (čárkami) pro e-maily o výstrahách vedle správců (role admin a spravce s e-mailem)
+  VYSTRAHY_NOTIFY: z.string().default(''),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

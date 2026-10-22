@@ -1,0 +1,19 @@
+<% layout('/layout') %>
+<h1><%= it.t('vystrahy.titulek') %></h1>
+<p><%= it.t('vystrahy.uvod') %></p>
+<% if (!it.vystrahy.length) { %>
+<p class="prazdne"><%= it.t('vystrahy.zadne') %></p>
+<% } else { %>
+<ul class="odst-seznam">
+<% it.vystrahy.forEach(function (v) { %>
+  <li class="panel">
+    <h2><% if (v.zruseno_at) { %><span class="stitek"><%= it.t('vystrahy.zruseno') %></span> <% } %><%= v.titulek %></h2>
+    <p><strong><%= it.t('vystrahy.termin') %>:</strong> <%= v.kdy %> · <strong><%= it.t('vystrahy.zdroj') %>:</strong> <%= v.zdrojNazev %></p>
+    <% if (v.mista.length) { %><p><strong><%= it.t('vystrahy.mista') %>:</strong></p><ul><% v.mista.forEach(function (m) { %><li><%= m %></li><% }) %></ul><% } %>
+    <% if (v.text) { %><% v.text.split('\n\n').forEach(function (p) { %><p><%= p %></p><% }) %><% } %>
+    <% if (v.odkaz) { %><p><a href="<%= v.odkaz %>" rel="noopener noreferrer"><%= it.t('vystrahy.podrobnosti') %></a></p><% } %>
+  </li>
+<% }) %>
+</ul>
+<% } %>
+<p><a href="/infokanal"><%= it.t('vystrahy.odber') %></a></p>

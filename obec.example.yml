@@ -112,6 +112,15 @@ odstavky:
     # stránka ČEZ pro obec = odkaz „…/ovm/<klíč obce>/redirect“ z banneru ČEZ pro obce; prázdné = obecná stránka ČEZ
     odkaz: ''
 
+# Automatické výstrahy infokanálu (výchozí vypnuto; zdroj zapnete uvedením klíče, např. „cez:“). Vypínač pro celé: VYSTRAHY=0.
+# vystrahy:
+#   chmu:            # výstrahy ČHMÚ pro ORP; orp prázdné = obec.orp_cisorp; oblast = jak ji psát v e-mailu
+#     orp: ''
+#     oblast: ''
+#   cez:             # plánované odstávky elektřiny (stejná data jako modul odstavky); kod_obce prázdné = odstavky/obec
+#   scvk:            # výpadky vody SčVK (jen obce v Ústeckém a Libereckém kraji); obec = název obce na scvk.cz
+#     obec: ''
+
 texty:
   nazev_infokanalu: Infokanál
   sms_prefix: 'PRIKLADOV: '

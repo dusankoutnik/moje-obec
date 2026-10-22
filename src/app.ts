@@ -42,6 +42,7 @@ import podatelnaModul from './moduly/podatelna/index.js';
 import odstavkyModul from './moduly/odstavky/index.js';
 import sluzbyModul, { vytvorModuly } from './moduly/sluzby/index.js';
 import apiModul from './moduly/api/index.js';
+import vystrahyModul from './moduly/infokanal/vystrahy/index.js';
 
 /** vrátí true, pokud požadavek obsloužil (odpověď odeslána) */
 /** service worker, který po starém webu uklidí: smaže keše, odregistruje se a obnoví otevřená okna */
@@ -337,6 +338,7 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   await app.register(sluzbyModul);
   // API pro integrace (/api/v1, správa tokenů, dokumentace /api) — po modulech, jejichž služby používá
   await app.register(apiModul);
+  if (obec.moduly.infokanal) await app.register(vystrahyModul, { planovac: volby.planovac !== false });
 
   app.addHook('onClose', async () => {
     if (!volby.db) await db.destroy();
