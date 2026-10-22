@@ -40,6 +40,7 @@ export function celeJmeno(u: Pick<Uzivatel, 'jmeno' | 'prijmeni' | 'prezdivka' |
 export function profilUzivatele(u: Uzivatel) {
   return {
     sub: u.id,
+    cislo: u.cislo,
     mujucet_id: u.cislo,
     name: celeJmeno(u),
     given_name: u.jmeno,

@@ -57,7 +57,7 @@ export default async function interniRoutes(app: FastifyInstance, z: { ucty: Uct
       if (!aktor || aktor.blokovan_at || !aktor.role.some((r) => r === 'admin' || r === 'spravce'))
         return reply.code(403).send({ chyba: 'kdo' });
       const novy = await ucty.nastavRezident(u, b.rezident, aktor, 'interni-api', req.ip);
-      return profilUzivatele(novy);
+      return { ok: true, ...profilUzivatele(novy) };
     },
   );
 }

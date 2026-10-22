@@ -7,7 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { csrfZ, Prohlizec, spustTestApp, type TestApp } from './pomocnici.js';
+import { csrfZ, prihlasTelefonem, Prohlizec, spustTestApp, type TestApp } from './pomocnici.js';
 import {
   casZPrahy,
   prevedHash,
@@ -327,6 +327,27 @@ describe('OIDC klient rezervace', () => {
   });
 });
 
+describe('odhlášení z aplikace přes end_session', () => {
+  it('ukončí i sezení platformy', async () => {
+    const p = new Prohlizec(t.base);
+    await prihlasTelefonem(p, '777300400');
+    expect((await p.get('/ucet')).url).toContain('/ucet');
+    // aplikace pošle prohlížeč na end_session (bez id_token_hint stačí client_id)
+    const end = new URL(`${t.base}/oidc/session/end`);
+    end.searchParams.set('client_id', 'rezervace');
+    end.searchParams.set('post_logout_redirect_uri', `${t.base}/`);
+    const formular = await p.get(end.href);
+    const xsrf = /name="xsrf" value="([^"]+)"/.exec(formular.text)![1]!;
+    const akce = /action="([^"]+)"/.exec(formular.text)![1]!;
+    const odh = await p.post(akce, { xsrf, logout: 'yes' }, false);
+    expect(odh.res.headers.get('location')).toBe(`${t.base}/`);
+    // sezení platformy je pryč → /ucet chce znovu přihlášení
+    const ucet = await p.get('/ucet', false);
+    expect(ucet.res.status).toBe(302);
+    expect(ucet.res.headers.get('location')).toContain('/prihlaseni');
+  });
+});
+
 describe('interní API uživatelů', () => {
   const h = { 'x-api-secret': API_SECRET, 'content-type': 'application/json' };
   it('ověření klíče a zákaz přes proxy', async () => {
@@ -369,7 +390,7 @@ describe('interní API uživatelů', () => {
       body: JSON.stringify({ rezident: true, kdo: 3 }),
     });
     expect(ok.status).toBe(200);
-    expect(await ok.json()).toMatchObject({ rezident: true, rezident_posouzen_by: 3 });
+    expect(await ok.json()).toMatchObject({ ok: true, cislo: 2, rezident: true, rezident_posouzen_by: 3, blokovan: false });
     const a = await t.db
       .selectFrom('audit_log')
       .selectAll()

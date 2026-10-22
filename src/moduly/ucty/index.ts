@@ -13,6 +13,7 @@ import interniRoutes from './interni.js';
 import { vytvorOidcKlienta } from './oidc/klient.js';
 import { uklidOidc } from './oidc/adapter.js';
 import { UctySluzba } from './sluzba.js';
+import { zapisAudit } from '../../lib/audit.js';
 import { uklidZamku } from '../../lib/zamky.js';
 import interakceRoutes from './interakce.js';
 import uctyRoutes from './routes.js';
@@ -41,7 +42,22 @@ async function uctyModul(app: FastifyInstance) {
     const handler = provider.callback();
     const hlavicky = { ...zakladniHlavicky(app.env), 'content-security-policy': CSP_OIDC };
     // originalUrl (jako u Expressu) říká provideru, pod jakou cestou je namountovaný → správné URL v discovery
-    const predej = (req: FastifyRequest, reply: FastifyReply) => {
+    const predej = async (req: FastifyRequest, reply: FastifyReply) => {
+      // Odhlášení z aplikace (RP-initiated logout, end_session): potvrzení ukončí i sezení platformy, aby
+      // sezení platformy a OIDC session skončily spolu (aplikace nemohou volat POST /odhlaseni — CSRF).
+      // Cookie mo_sezeni je SameSite=lax, takže cizí web tímto POSTem nikoho neodhlásí.
+      if (req.method === 'POST' && req.url.split('?')[0] === `${OIDC_PREFIX}/session/end/confirm`) {
+        const uid = req.session?.uzivatelId;
+        if (uid) {
+          await req.session.destroy();
+          await zapisAudit(app.db, {
+            uzivatelId: uid,
+            akce: 'odhlaseni',
+            detail: { zpusob: 'end_session' },
+            ip: req.ip,
+          });
+        }
+      }
       reply.hijack();
       // odpověď píše provider sám → bezpečnostní hlavičky z onSend by chyběly
       for (const [k, v] of Object.entries(hlavicky)) reply.raw.setHeader(k, v);
