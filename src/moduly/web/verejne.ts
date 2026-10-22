@@ -1,5 +1,6 @@
 // Veřejná část obecního webu: titulní stránka, stránky podle menu, aktuality (+ RSS), akce, galerie, dokumenty,
 // dotace, hledání. Neznámé adresy: nejdřív stránka webu, pak tabulka přesměrování starých URL (301), jinak 404.
+import { obyvatelZeZpravodaje } from '../api/zpravodaj.js';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import { escapujHtml, perexOpakujeText, textZHtml, zkrat } from '../../lib/html.js';
@@ -82,10 +83,30 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
     const vsechnaDeska = app.obec.moduly.deska ? await app.deska.aktualni() : [];
     const deska = vsechnaDeska.slice(0, 5);
     // živé statistiky do úvodu — jen agregáty, žádná jména
-    const statistiky: { hodnota: string; cislo?: number; popisek: string; odkaz?: string }[] = [];
+    const statistiky: {
+      hodnota: string;
+      cislo?: number;
+      popisek: string;
+      odkaz?: string;
+      titulek?: string;
+    }[] = [];
     for (const f of app.obec.obec.fakta.slice(0, 3)) {
       const c = /^\d+$/.test(f.hodnota) ? Number(f.hodnota) : undefined;
       statistiky.push({ hodnota: f.hodnota, cislo: c, popisek: f.popisek, odkaz: f.odkaz });
+    }
+    // počet obyvatel z posledního čísla zpravodaje (API /api/v1/zpravodaj) má přednost před obec.yml
+    const zeZpravodaje = await obyvatelZeZpravodaje(app.db).catch(() => null);
+    if (zeZpravodaje) {
+      const st = {
+        hodnota: String(zeZpravodaje.obyvatel),
+        cislo: zeZpravodaje.obyvatel,
+        popisek: 'obyvatel',
+        titulek: zeZpravodaje.titulek,
+      };
+      const i = statistiky.findIndex((x) => /obyvatel/i.test(x.popisek));
+      if (i >= 0)
+        statistiky[i] = { ...statistiky[i]!, ...st, odkaz: statistiky[i]!.odkaz ?? zeZpravodaje.url };
+      else statistiky.unshift({ ...st, odkaz: zeZpravodaje.url });
     }
     if (app.obec.moduly.deska)
       statistiky.push({

@@ -160,7 +160,7 @@
   </div>
   <p class="obal paticka-zdroj">
     <% if (it.logoVyrobce) { %><a class="paticka-vyrobce" href="https://voltcesko.org/" rel="noopener"><img src="<%= it.logoVyrobce %>" alt="<%= it.t('app.patika_vyrobce_logo') %>" width="38" height="16"></a><% } %>
-    <span>Otevřený software <a href="https://voltcesko.org/" rel="noopener"><%= it.t('app.patika_vyrobce') %></a> (EUPL-1.2)<% if (it.devlog) { %> <span class="bez-zalomeni"><span aria-hidden="true">·</span> <a href="/devlog">Co je nového</a></span><% } %></span>
+    <span>Otevřený software <a href="https://voltcesko.org/" rel="noopener"><%= it.t('app.patika_vyrobce') %></a> (EUPL-1.2)<% if (it.devlog) { %> <span class="bez-zalomeni"><span aria-hidden="true">·</span> <a href="/devlog">Co je nového</a></span><% } %> <span class="bez-zalomeni"><span aria-hidden="true">·</span> <a href="/api">API</a></span></span>
   </p>
 </footer>
 </body>

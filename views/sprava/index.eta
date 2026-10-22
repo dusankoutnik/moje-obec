@@ -44,6 +44,7 @@
   <% } %>
   <% if (it.uzivatel.role.includes('admin')) { %>
   <article class="karta"><h2><a href="/sprava/moduly">🧩 <%= it.t('moduly_obce.titulek') %></a></h2><p><%= it.t('moduly_obce.karta') %></p></article>
+  <article class="karta"><h2><a href="/sprava/api">🔌 API a integrace</a></h2><p>Tokeny pro programy, které na web samy zapisují (zpravodaj, kalendář).</p></article>
   <% } %>
   <% if (it.uzivatel.role.includes('admin')) { %>
   <article class="karta"><h2><a href="/sprava/klienti"><%= it.t('sprava.klienti') %></a></h2><p><%= it.t('sprava.klienti_text') %></p></article>

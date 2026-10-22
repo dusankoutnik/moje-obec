@@ -352,6 +352,35 @@ loga a videa se neindexují. Vše běží lokálně na serveru obce.
   (60 s) → 502 „Služba je dočasně nedostupná“. WebSockety (Upgrade) se neproxují.
 - Testy: `test/moduly-proxy.test.ts` (falešná aplikace na volném portu).
 
+## API pro integrace (hotovo 22. 10. 2026)
+
+Obecné REST API `/api/v1` pro programy, které na web samy zapisují (sazba zpravodaje, kalendář, systémy úřadu).
+Kód `src/moduly/api/`, migrace 0020, testy `test/api.test.ts`, dokumentace pro lidi `/api`, strojová `/api/openapi.json`
+(OpenAPI 3.1, ručně v `openapi.ts` — při změně endpointu upravit i tam a na stránce).
+
+- **Tokeny** (`api_tokeny`): Správa → **API a integrace** (`/sprava/api`, jen admin) — název, rozsahy `obsah:cteni`,
+  `obsah:zapis`, `deska:zapis`, `infokanal:rozeslat`, `zpravodaj`; token (`wov_…`) se ukáže jen jednou, v DB je
+  SHA-256; zrušení, poslední použití + počet; audit `api.token_zalozen/zrusen`. Ověření `Authorization: Bearer`,
+  porovnání hashe v konstantním čase, limit 600 požadavků na token / 15 min, 30 neplatných pokusů z IP / 15 min.
+  Multipart na `/api/v1` pustí brána v `web/nahravani.ts` jen s platným tokenem (`app.apiNahrani.over`).
+- **Autor** obsahu a záznamů v auditu = uživatel, který token založil; audit má navíc id a název tokenu.
+- **Příspěvky**: `POST /prispevky` (aktualita/akce/stránka; html se sanitizuje, markdown se převede `markdown.ts`),
+  `PATCH /prispevky/:id` (jen obsah založený přes API), `GET /prispevky?zdroj=&externi_id=`, `GET /prispevky/:id`,
+  vše přes `ObsahSluzba.uloz` (revize, audit). Bez `zverejnit: true` = koncept; zveřejněný + `zverejnit: false` =
+  rozpracovaná změna. Kontroly jako ve správě (titulek, popis úvodního obrázku, alt obrázků v textu).
+  **Idempotence:** `zdroj` + `externi_id` (unikátní index mezi nesmazanými) → opakovaný POST upraví.
+- **Soubory** `POST /soubory` přes `SouboroveUloziste.uloz` (text/OCR do fronty). **Deska** `POST /deska`: minimální
+  doba kategorie, žádné zpětné vyvěšení, nahrazení rozpočtových dokumentů jen s `potvrdit_nahrazeni` (jinak 409).
+- **Rozeslání** `POST /prispevky/:id/rozeslat` = logika tlačítka „Rozeslat infokanálem“ (`infokanal/z-prispevku.ts`,
+  společné se správou); SMS jen s `sms: true`.
+- **Zpravodaj** `POST /zpravodaj` (docs/ZPRAVODAJ-API.md): metadata (zod) → aktualita v kategorii `zpravodaj`
+  (zdroj `zpravodaj`, externi_id `rocnik-cislo`), tabulka `web_zpravodaj` (metadata jsonb, obyvatel, soubory).
+  Úvod webu: `obyvatelZeZpravodaje()` nahradí fakt s popiskem „obyvatel“ z `obec.yml` (titulek „podle Zpravodaje …“),
+  jen ze zveřejněného čísla. Akce z metadat → koncepty akcí (zdroj `zpravodaj`), duplicita = stejný den + podobný
+  název; v seznamu „Akce ke zpracování“ nejsou (ten je pro termíny z rezervací) — jsou mezi koncepty správy webu.
+- Zbývá: webhooky/čtení desky přes API, tokeny pro aplikace rezervací (stejný mechanismus), limit v DB při více
+  instancích.
+
 ## Rezervace + platby (P1)
 
 Z Rezervací Vlastibořic (nejrozsáhlejší modul): zdroje (sál, posilovna, hřiště, štěpkovač) s kalendářem denním/týdenním, kapacita > 1 (posilovna, počet osob), celý den vs. čas, opakování (série), schvalování úřadem (karty), ceník rezident/nerezident (rezervace úřadu = 0), ruční sleva; **měsíční vyúčtování** = „Výzva k úhradě“ (obec není plátce DPH, žádné faktury), PDF, QR platba (SPD), VS, veřejná stránka platby tokenem, potvrzení o zaplacení, splatnost 14 dní, cron 1. den měsíce, SMS fallback bez e-mailu; report pro účetní (rozpočtová skladba, pohledávky, CSV/PDF); předprodej vstupenek bez registrace (QR, storno 96 h, platba na místě, VIP, pokladní listina); evidence přístupů k zámkům (TTLock: PIN/otisk/čip/eKlíč) a proces aktivace posilovny; spolujízda (jízdy, poptávky, odběry, počítadlo); klimatizace/SMS připomínky topení. Zákon: 128/2000 Sb. (záměry), účetnictví obce. Doporučené pořadí: kalendář + schvalování → ceník → vyúčtování/QR → zámky → předprodej → spolujízda.

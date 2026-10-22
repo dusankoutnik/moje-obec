@@ -36,6 +36,14 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
   hlídání brány (offline telefon, nedostupný cloud) s e-maily `BRANA_NOTIFY`.
 - Env `INTERNI_API_SECRET`, `APLIKACE_REZERVACE_URL`, `SPOLUJIZDA_HOOK_URL`, `SPOLUJIZDA_HOOK_SECRET`,
   `INFOKANAL_NOTIFY`, `BRANA_NOTIFY`, `BRANA_LIMIT_MIN`, `SMSGATE_WEBHOOK_KLIC`.
+### Přidáno (API pro integrace)
+
+- REST API `/api/v1` (migrace 0020): tokeny integrací s rozsahy (`api_tokeny`, Správa → API a integrace, audit,
+  limit na token), příspěvky (`POST`/`PATCH`/`GET`, idempotence `zdroj` + `externi_id`, markdown, obrázek, přílohy),
+  `POST /soubory`, `POST /deska` (zákonné lhůty, potvrzení nahrazení), `POST /prispevky/:id/rozeslat`,
+  `POST /zpravodaj` (`web_zpravodaj`, počet obyvatel v úvodu z posledního čísla, akce jako koncepty).
+- Dokumentace `/api` a OpenAPI 3.1 `/api/openapi.json`; odkaz „API“ v patičce.
+- Rozesílka příspěvku infokanálem vyčleněna do `infokanal/z-prispevku.ts` (správa i API).
 
 ### Přidáno (text dokumentů a vyhledávání v nich)
 

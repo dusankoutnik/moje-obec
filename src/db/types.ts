@@ -355,6 +355,8 @@ export interface WebObsahTable {
   rezervace_termin: string | null;
   /** akce se ukáže i v Aktualitách jako pozvánka */
   v_aktualitach: Generated<boolean>;
+  /** identifikátor záznamu v systému klienta API (unikátní se zdrojem) */
+  externi_id: Generated<string | null>;
   vytvoreno_at: TimestampGenerated;
   upraveno_at: TimestampGenerated;
   smazano_at: TimestampNullable;
@@ -543,6 +545,37 @@ export interface PodPodaniTable {
 }
 export type Podani = Selectable<PodPodaniTable>;
 
+export interface ApiTokenyTable {
+  id: Generated<string>;
+  nazev: string;
+  hash: string;
+  prefix: string;
+  rozsahy: string[];
+  zalozil_id: string | null;
+  vytvoren_at: TimestampGenerated;
+  posledni_pouziti_at: TimestampNullable;
+  posledni_ip: string | null;
+  pouziti: Generated<number>;
+  zruseno_at: TimestampNullable;
+  zrusil_id: string | null;
+}
+export type ApiToken = Selectable<ApiTokenyTable>;
+export interface WebZpravodajTable {
+  id: Generated<number>;
+  rocnik: number;
+  cislo: number;
+  obsah_id: string | null;
+  vydano: string;
+  obyvatel: number | null;
+  evidence_k: string | null;
+  metadata: JSONColumnType<Record<string, unknown>, string, string>;
+  pdf_id: string | null;
+  pdf_tisk_id: string | null;
+  obalka_id: string | null;
+  vytvoreno_at: TimestampGenerated;
+  upraveno_at: TimestampGenerated;
+}
+
 export interface Database {
   pod_podani: PodPodaniTable;
   kviz_kategorie: KvizKategorieTable;
@@ -580,4 +613,6 @@ export interface Database {
   ik_hlaseni: IkHlaseniTable;
   ik_prijemci: IkPrijemciTable;
   ik_odchozi: IkOdchoziTable;
+  api_tokeny: ApiTokenyTable;
+  web_zpravodaj: WebZpravodajTable;
 }

@@ -9,7 +9,7 @@
       <h2 id="stat-h" class="vh"><%= it.t('web.statistiky') %></h2>
       <ul class="stat-seznam">
         <% it.statistiky.forEach(function (s) { %>
-        <li class="stat"><% if (s.odkaz) { %><a class="stat-in" href="<%= s.odkaz %>"><% } else { %><span class="stat-in"><% } %><span class="stat-popisek"><%= s.popisek %></span> <span class="stat-hodnota" <% if (s.cislo !== undefined) { %>data-cislo="<%= s.cislo %>"<% } %>><%= s.hodnota %></span><% if (s.odkaz) { %></a><% } else { %></span><% } %></li>
+        <li class="stat"><% if (s.odkaz) { %><a class="stat-in" href="<%= s.odkaz %>"<% if (s.titulek) { %> title="<%= s.titulek %>"<% } %>><% } else { %><span class="stat-in"<% if (s.titulek) { %> title="<%= s.titulek %>"<% } %>><% } %><span class="stat-popisek"><%= s.popisek %></span> <span class="stat-hodnota" <% if (s.cislo !== undefined) { %>data-cislo="<%= s.cislo %>"<% } %>><%= s.hodnota %></span><% if (s.odkaz) { %></a><% } else { %></span><% } %></li>
         <% }) %>
       </ul>
     </section>
