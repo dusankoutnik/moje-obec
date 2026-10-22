@@ -147,6 +147,16 @@ pre.sms {
 .karta h2 {
   margin-top: 0;
 }
+/* nadpis uprostřed karty (např. Úřední hodiny pod adresou) potřebuje odstup; první prvek karty žádný */
+.karta > h2:not(:first-child) {
+  margin-top: 1.1em;
+}
+.karta > :first-child {
+  margin-top: 0;
+}
+.bez-zalomeni {
+  white-space: nowrap;
+}
 .karta.varovani {
   border-left: 4px solid var(--chyba);
   margin: 1em 0;
@@ -1916,6 +1926,29 @@ body.zakladni .panel-hlavni {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #fff;
+}
+/* telefon: statistiky ve dvou sloupcích, ať úvod nezabere celou obrazovku */
+@media (max-width: 600px) {
+  .hero-in {
+    padding: 12px;
+  }
+  .statistiky {
+    padding: 0.9rem 0.6rem;
+  }
+  .statistiky dl {
+    gap: 0.9rem 0.6rem;
+  }
+  .stat {
+    flex: 0 1 calc(50% - 0.3rem);
+    min-width: 0;
+  }
+  .stat dd {
+    font-size: 1.65rem;
+  }
+  .stat dt {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+  }
 }
 .hero-dolu {
   display: inline-flex;
