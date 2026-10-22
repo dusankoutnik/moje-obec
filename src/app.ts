@@ -40,6 +40,19 @@ import podatelnaModul from './moduly/podatelna/index.js';
 import odstavkyModul from './moduly/odstavky/index.js';
 
 /** vrátí true, pokud požadavek obsloužil (odpověď odeslána) */
+/** service worker, který po starém webu uklidí: smaže keše, odregistruje se a obnoví otevřená okna */
+const ZABIJAK_SERVICE_WORKERU = `self.addEventListener('install', function () { self.skipWaiting(); });
+self.addEventListener('activate', function (e) {
+  e.waitUntil(
+    caches.keys()
+      .then(function (k) { return Promise.all(k.map(function (n) { return caches.delete(n); })); })
+      .then(function () { return self.registration.unregister(); })
+      .then(function () { return self.clients.matchAll({ type: 'window' }); })
+      .then(function (okna) { okna.forEach(function (o) { o.navigate(o.url); }); })
+  );
+});
+`;
+
 /** typy souborů starého webu, které se smějí podávat (obrázky, dokumenty, archivy, média) */
 const PRIPONY_STAREHO_WEBU =
   /\.(jpe?g|png|gif|webp|bmp|ico|pdf|docx?|xlsx?|pptx?|odt|ods|odp|rtf|txt|csv|zip|rar|7z|mp3|mp4|m4a|webm|ogg|wav|kml|gpx)$/i;
@@ -198,6 +211,17 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
       allowedPath: (p) => PRIPONY_STAREHO_WEBU.test(p) && !p.includes('/.'),
       maxAge: env.NODE_ENV === 'production' ? '7d' : 0,
     });
+  }
+  // „zabiják“ service workerů starého webu (jednou načte, smaže keše, odregistruje se, obnoví otevřené stránky)
+  for (const cesta of env.STARE_SERVICE_WORKERY.split(',')
+    .map((c) => c.trim())
+    .filter((c) => /^\/[\w.-]+\.js$/.test(c))) {
+    app.get(cesta, async (_req, reply) =>
+      reply
+        .type('application/javascript; charset=utf-8')
+        .header('cache-control', 'no-cache')
+        .send(ZABIJAK_SERVICE_WORKERU),
+    );
   }
   await app.register(sablony);
 

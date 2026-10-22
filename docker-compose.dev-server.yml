@@ -19,6 +19,8 @@ services:
       KVIZ_BALIKY: /app/kviz-instance
       # soubory starého WordPressu na původní adrese /wp-content/uploads/ (pevné odkazy, ne kopie dat)
       STARY_WEB_SOUBORY: /app/stary-web-uploads
+      # service workery pluginu pwa-for-wp ze starého WordPressu — prohlížeče je dostanou jako „uklízeče“
+      STARE_SERVICE_WORKERY: /pwa-sw.js,/pwa-amp-sw.js
     volumes:
       - ./obec.yml:/app/obec.yml:ro
       - ../platforma-instance/kviz:/app/kviz-instance:ro

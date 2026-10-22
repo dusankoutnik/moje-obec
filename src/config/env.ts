@@ -28,6 +28,9 @@ const EnvSchema = z.object({
   // Soubory starého webu obce převzaté 1:1 (např. kopie wp-content/uploads z WordPressu): podávají se na původní
   // adrese, ať staré odkazy z e-mailů, PDF a vyhledávačů dál fungují. Prázdné = vypnuto.
   STARY_WEB_SOUBORY: z.string().optional(),
+  // Adresy service workerů starého webu (např. PWA pluginu WordPressu: /pwa-sw.js,/pwa-amp-sw.js). Prohlížečům stálých
+  // návštěvníků na nich vydáme worker, který smaže svou keš a odregistruje se — jinak by mohl dál podávat starý web.
+  STARE_SERVICE_WORKERY: z.string().default(''),
   STARY_WEB_PREFIX: z
     .string()
     .regex(/^\/[\w./-]*\/$/, 'STARY_WEB_PREFIX musí začínat i končit lomítkem')
