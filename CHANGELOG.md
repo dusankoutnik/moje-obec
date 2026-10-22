@@ -4,6 +4,13 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (úřední administrace ve Správě, 22. 10. 2026)
+
+- Modul `administrace`: dlaždice rezervací na `/sprava` podle rolí (živé počty z `/api/admin/summary`),
+  `/sprava/schvalovani` (žádosti o rezervace a posilovnu → admin API rezervací; posouzení rezidenta a jména
+  u účtů nativně), `/sprava/statistiky` (agregáty účtů, infokanálu, rezervací, eKnih), avízo správcům o novém
+  účtu k posouzení rezidenta (cron à 5 min). Env `APLIKACE_API_SECRET`, `REZIDENT_AVIZO`.
+
 ### Přidáno (moduly obce a aplikace za proxy, 22. 10. 2026)
 
 - Moduly obce zapínatelné ve Správě → Moduly obce (`/sprava/moduly`, admin, audit `moduly.zmena`): rezervace,

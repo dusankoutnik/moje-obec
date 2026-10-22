@@ -407,6 +407,34 @@ Kód `src/moduly/api/`, migrace 0020, testy `test/api.test.ts`, dokumentace pro 
 - Zbývá: webhooky/čtení desky přes API, tokeny pro aplikace rezervací (stejný mechanismus), limit v DB při více
   instancích.
 
+## Úřední administrace ve Správě (hotovo 22. 10. 2026 — `src/moduly/administrace/`)
+
+Náhrada centrální Administrace MujÚčtu (dashboard, Schvalování, Statistiky). Bez migrace — používá sloupce
+z 0017 (`rezident_posouzen_at/_by`, `navic`).
+
+- **Dlaždice na `/sprava`** podle rolí: správce/admin Schvalování (počty žádostí, k posouzení, bez jména),
+  Statistiky, Rezervace, Uživatelé rezervací, Spolujízda; správce i účetní Vyúčtování, Předprodej, Report,
+  Ceník (odkazy do `/rezervace/admin/…`). Počty z `GET <APLIKACE_REZERVACE_URL>/api/admin/summary`
+  (timeout 4 s); nedostupné rezervace = dlaždice bez čísla + hláška. Vypnutý modul rezervace = bez dlaždic.
+- **`/sprava/schvalovani`** (správce): žádosti o rezervace a série z `GET /api/admin/approvals`, tlačítka
+  Potvrdit/Zamítnout + poznámka → `POST /api/admin/approvals/reservation/:id {action, pozn, celaSerie, actorId}`;
+  posilovna → `POST /api/admin/approvals/gym/:uid` (jen admin; aktivace až po zapsání evidence zámků).
+  `actorId` = `uzivatele.cislo`. Nativně: účty se jménem bez posouzení rezidenta (✓ Rezident / Posouzeno — není
+  rezident → `ucty.nastavRezident`, audit `sprava.rezident`) a účty bez jména (doplnění jména, audit
+  `sprava.jmeno`).
+- **Avízo správcům** (cron à 5 min, `REZIDENT_AVIZO`, výchozí zapnuto): nový účet se jménem bez posouzení
+  z posledních 14 dní → jednou e-mail „⚠️ Nový účet: X — posuďte, zda je rezident“ adminům a správcům s e-mailem
+  (frontou `ik_odchozi`, zdroj `sprava`; značka `navic.rezident_avizo_at`). Po posouzení ve Schvalování
+  „✓ Vyřízeno: X — rezident ANO/NE“.
+- **`/sprava/statistiky`** (správce): agregáty účtů (přihlášení z auditu `prihlaseni`), infokanálu (odběratelé,
+  hlášení, SMS za měsíc z hlášení i interního API), rezervací (`/api/admin/summary`) a eKnih
+  (`GET <APLIKACE_EKNIHY_URL>/api/statistiky`). Jediné konkrétní položky = názvy nejstahovanějších knih.
+- **Klíč:** `x-api-secret` = `APLIKACE_API_SECRET`, jinak `INTERNI_API_SECRET` (rezervace ho přijímají
+  v režimu `IDENTITA=platforma`, větev `pr-ucet-rez`; jinak nastavit `APLIKACE_API_SECRET` = `SSO_API_SECRET`
+  rezervací).
+- **Zatím chybí:** návštěvnost z logů NPM (MůjÚčet `pristupy.js` — potřebuje mount `npm/data/logs` do kontejneru
+  platformy), týdenní úklid bezejmenných účtů (`uklid.js`), změny telefonu ke schválení.
+
 ## Rezervace + platby (P1)
 
 Z Rezervací Vlastibořic (nejrozsáhlejší modul): zdroje (sál, posilovna, hřiště, štěpkovač) s kalendářem denním/týdenním, kapacita > 1 (posilovna, počet osob), celý den vs. čas, opakování (série), schvalování úřadem (karty), ceník rezident/nerezident (rezervace úřadu = 0), ruční sleva; **měsíční vyúčtování** = „Výzva k úhradě“ (obec není plátce DPH, žádné faktury), PDF, QR platba (SPD), VS, veřejná stránka platby tokenem, potvrzení o zaplacení, splatnost 14 dní, cron 1. den měsíce, SMS fallback bez e-mailu; report pro účetní (rozpočtová skladba, pohledávky, CSV/PDF); předprodej vstupenek bez registrace (QR, storno 96 h, platba na místě, VIP, pokladní listina); evidence přístupů k zámkům (TTLock: PIN/otisk/čip/eKlíč) a proces aktivace posilovny; spolujízda (jízdy, poptávky, odběry, počítadlo); klimatizace/SMS připomínky topení. Zákon: 128/2000 Sb. (záměry), účetnictví obce. Doporučené pořadí: kalendář + schvalování → ceník → vyúčtování/QR → zámky → předprodej → spolujízda.

@@ -122,6 +122,9 @@ na platformu — pro aplikace žádné zvláštní location. Zapnutí/vypnutí: 
 Limit odpovědi `APLIKACE_TIMEOUT_MS` (60 s); u velkých nahrávání může být potřeba zvýšit
 `client_max_body_size` v NPM (platforma tělo jen předává).
 
+Správa → Schvalování a Statistiky volají admin API aplikací (`/api/admin/*` rezervací, `/api/statistiky` eKnih)
+po vnitřní síti s hlavičkou `x-api-secret` = `APLIKACE_API_SECRET` (prázdné = `INTERNI_API_SECRET`).
+
 ## 5. Zálohy
 
 Stav instalace je na **třech místech** a zálohovat je třeba všechna:
