@@ -95,6 +95,20 @@ const EnvSchema = z.object({
   IK_SMS_INTERVAL_MIN_MS: z.coerce.number().default(1000),
   IK_SMS_INTERVAL_MAX_MS: z.coerce.number().default(3000),
   IK_EMAIL_INTERVAL_MS: z.coerce.number().default(500),
+  // aplikace obce za proxy platformy (/rezervace/*, /eknihy/*): vnitřní adresa, např. http://rezervace:3000.
+  // Prázdné = aplikace na této instalaci není a modul se ve správě nenabízí.
+  APLIKACE_REZERVACE_URL: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().url().optional()),
+  APLIKACE_EKNIHY_URL: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().url().optional()),
+  // časový limit proxy na odpověď aplikace (ms)
+  APLIKACE_TIMEOUT_MS: z.coerce.number().int().min(1000).default(60_000),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

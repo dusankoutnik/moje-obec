@@ -40,6 +40,7 @@ import webMapa from './moduly/web/mapa.js';
 import kvizModul from './moduly/kviz/index.js';
 import podatelnaModul from './moduly/podatelna/index.js';
 import odstavkyModul from './moduly/odstavky/index.js';
+import sluzbyModul, { vytvorModuly } from './moduly/sluzby/index.js';
 
 /** vrátí true, pokud požadavek obsloužil (odpověď odeslána) */
 /** service worker, který po starém webu uklidí: smaže keše, odregistruje se a obnoví otevřená okna */
@@ -175,6 +176,8 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   app.addHook('onClose', async () => textSouboru.zastav());
   app.decorate('zachytavace404', [] as Zachytavac404[]);
   app.decorate('dataLayoutu', [] as ((req: FastifyRequest) => Promise<Record<string, unknown>>)[]);
+  // moduly obce (zapnutí ze správy) + proxy aplikací /rezervace, /eknihy — háček onRequest PŘED sezením a CSRF
+  vytvorModuly(app);
 
   const https = env.BASE_URL.startsWith('https://');
   await app.register(hlavicky);
@@ -330,6 +333,7 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   if (obec.moduly.kviz) await app.register(kvizModul);
   if (obec.moduly.podatelna) await app.register(podatelnaModul);
   if (obec.moduly.odstavky) await app.register(odstavkyModul, { planovac: volby.planovac !== false });
+  await app.register(sluzbyModul);
 
   app.addHook('onClose', async () => {
     if (!volby.db) await db.destroy();

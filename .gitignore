@@ -19,6 +19,8 @@ data/
 
 # Profil konkrétní obce (vzor je obec.example.yml)
 /obec.yml
+/obec.*.yml
+!/obec.example.yml
 test-results/
 playwright-report/
 

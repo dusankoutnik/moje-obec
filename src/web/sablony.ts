@@ -5,6 +5,7 @@ import { Eta } from 'eta';
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import fp from 'fastify-plugin';
 import { formatujTelefon } from '../lib/kontakty.js';
+import { filtrujMenu, type PolozkaMenu } from '../moduly/sluzby/sluzba.js';
 
 export const VIEWS_DIR = path.resolve(import.meta.dirname, '..', '..', 'views');
 // logo výrobce v patičce (Volt) — vykreslí se, jen když soubor existuje (public/img/volt-logo.svg nebo .png)
@@ -54,9 +55,25 @@ export default fp(async function sablony(app: FastifyInstance) {
       };
       const layout: Record<string, unknown> = {};
       for (const f of app.dataLayoutu) Object.assign(layout, await f(req).catch(() => ({})));
+      // vypnuté moduly obce (Správa → Moduly obce): šablony vidí `obec.moduly` podle skutečného stavu a menu webu
+      // nemá odkazy na jejich stránky; `obecStaticka` = profil z obec.yml (co je v instalaci registrované)
+      let obec = app.obec;
+      if (app.hasDecorator('moduly')) {
+        obec = await app.moduly.obecProSablony().catch(() => app.obec);
+        if (Array.isArray(layout.menu)) {
+          const skryte = await app.moduly.skryteCesty().catch(() => [] as string[]);
+          if (skryte.length)
+            layout.menu = filtrujMenu(
+              layout.menu as PolozkaMenu[],
+              skryte,
+              app.env.BASE_URL.replace(/\/$/, ''),
+            );
+        }
+      }
       const html = await eta.renderAsync(sablona, {
         t: app.t,
-        obec: app.obec,
+        obec,
+        obecStaticka: app.obec,
         devlog: app.env.DEVLOG,
         logoVyrobce: LOGO_VYROBCE ? `/static/img/${LOGO_VYROBCE}` : null,
         env: app.env.NODE_ENV,

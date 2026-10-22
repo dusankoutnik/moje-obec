@@ -4,7 +4,7 @@
   <% if (it.jeSpravce) { %>
   <article class="karta"><h2><a href="/sprava/uzivatele"><%= it.t('sprava.uzivatele') %></a></h2><p><%= it.t('sprava.uzivatele_text') %></p><p class="cislo"><%= it.t('sprava.pocet', { n: it.pocet }) %></p></article>
   <% } %>
-  <% if (it.jeRedaktor && it.obec.moduly.infokanal) { %>
+  <% if (it.jeRedaktor && it.obecStaticka.moduly.infokanal) { %>
   <article class="karta"><h2><a href="/infokanal/sprava"><%= it.obec.texty.nazev_infokanalu %></a></h2><p><%= it.t('sprava.infokanal_text') %></p><a class="tlacitko" href="/infokanal/sprava/nove"><%= it.t('infokanal.nove_hlaseni') %></a></article>
   <% } %>
   <% if (it.jeWeb && it.obec.moduly.web) { %>
@@ -22,7 +22,7 @@
   <% if (it.podatelnaNevyrizene !== null && it.podatelnaNevyrizene !== undefined) { %>
   <article class="karta"><h2><a href="/sprava/podatelna">📨 <%= it.t('podatelna.titulek') %></a></h2><p><%= it.t('sprava.podatelna_text') %></p><p class="cislo"><%= it.t('sprava.podatelna_nevyrizene', { n: it.podatelnaNevyrizene }) %></p></article>
   <% } %>
-  <% if (it.jeKviz && it.obec.moduly.kviz) { %>
+  <% if (it.jeKviz && it.obecStaticka.moduly.kviz) { %>
   <article class="karta"><h2><a href="/sprava/kviz">🧠 <%= it.t('kviz.sprava_titulek') %></a></h2><p><%= it.t('kviz.sprava_karta') %></p><a class="tlacitko" href="/kviz"><%= it.t('kviz.hrat') %></a></article>
   <% } %>
   <% if (it.sms) { %>
@@ -41,6 +41,9 @@
   <% } %>
   <% if (it.jeSpravce) { %>
   <article class="karta"><h2><a href="/sprava/audit"><%= it.t('sprava.audit') %></a></h2><p><%= it.t('sprava.audit_text') %></p></article>
+  <% } %>
+  <% if (it.uzivatel.role.includes('admin')) { %>
+  <article class="karta"><h2><a href="/sprava/moduly">🧩 <%= it.t('moduly_obce.titulek') %></a></h2><p><%= it.t('moduly_obce.karta') %></p></article>
   <% } %>
   <% if (it.uzivatel.role.includes('admin')) { %>
   <article class="karta"><h2><a href="/sprava/klienti"><%= it.t('sprava.klienti') %></a></h2><p><%= it.t('sprava.klienti_text') %></p></article>

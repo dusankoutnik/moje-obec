@@ -4,6 +4,8 @@ Přehled změn platformy Web od Voltu 2.0 pro pilotní obec, nejnovější naho�
 
 ## 22. 10. 2026
 
+- **Služby obce jdou zapnout a vypnout:** ve Správě → Moduly obce správce jedním zatržítkem zapne nebo vypne Rezervace, Předprodej vstupenek, Spolujízdu, eKnihy, Infokanál a Kvíz. Vypnutá služba zmizí z menu i z úvodu a místo ní se ukáže „Tato služba není v obci zapnutá“; data zůstávají a po zapnutí je vše jako dřív.
+- **Vše pod jednou adresou:** rezervace a eKnihy poběží přímo na webu obce na adresách `/rezervace/` a `/eknihy/` (místo samostatných subdomén).
 - **Hledání najde i to, co je uvnitř dokumentů:** vyhledávání na webu nově prohledává obsah nahraných PDF,
   Wordů a tabulek — ne jen jejich názvy. U naskenovaných PDF se text přečte rozpoznáváním písma (trvá to pár
   minut na dokument, běží na pozadí na serveru obce). Výsledek ukáže úryvek se zvýrazněnými slovy a odkaz na

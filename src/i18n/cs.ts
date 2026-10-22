@@ -1402,6 +1402,39 @@ export const cs = {
     v_priloze: 'v příloze {nazev}',
     dashboard: 'Text dokumentů: ve frontě {ceka}, chyby {chyby}',
   },
+  moduly_obce: {
+    titulek: 'Moduly obce',
+    karta: 'Zapnutí a vypnutí služeb obce (rezervace, předprodej, spolujízda, eKnihy, infokanál, kvíz).',
+    uvod: 'Vypnutá služba zmizí z menu, z úvodu i z patičky a její stránky ukážou „Tato služba není v obci zapnutá“. Data zůstávají — po zapnutí je vše jako dřív. Změna platí hned, bez restartu.',
+    legenda: 'Služby',
+    cast: 'část modulu {rodic}',
+    stav_zapnuto: 'Zapnuto:',
+    stav_vypnuto: 'Vypnuto — stránky služby návštěvníci neuvidí.',
+    sprava_modulu: 'Správa služby →',
+    nedostupny_aplikace:
+      'Na této instalaci není aplikace připojená (proměnná {promenna} v .env) — zapnout ji nelze.',
+    nedostupny_platforma:
+      'Modul není povolený v obec.yml (moduly.{klic}: true) — po povolení je potřeba restart.',
+    ulozeno: 'Uloženo (změn: {n}).',
+    beze_zmeny: 'Beze změny.',
+    nazev_rezervace: 'Rezervace',
+    nazev_predprodej: 'Předprodej vstupenek',
+    nazev_spolujizda: 'Spolujízda',
+    nazev_eknihy: 'eKnihy',
+    nazev_infokanal: 'Infokanál',
+    nazev_kviz: 'Kvíz',
+    popis_rezervace: 'Rezervace sálu, hřišť, posilovny a dalších obecních zařízení včetně vyúčtování.',
+    popis_predprodej: 'Prodej vstupenek na akce obce s QR platbou (část rezervací).',
+    popis_spolujizda: 'Sousedská spolujízda — nabídky a žádosti o svezení (část rezervací).',
+    popis_eknihy: 'Obecní knihovna volně dostupných e-knih se čtečkou v prohlížeči.',
+    popis_infokanal: 'Hlášení obce SMSkou a e-mailem, přihlašování k odběru.',
+    popis_kviz: 'Kvíz pro občany o obci a okolí.',
+    vypnuto_nadpis: 'Tato služba není v obci zapnutá',
+    vypnuto_text:
+      'Službu, kterou hledáte, obec na svém webu nenabízí (nebo ji dočasně vypnula). Pokud si myslíte, že je to chyba, ozvěte se obecnímu úřadu.',
+    nedostupne_nadpis: 'Služba je dočasně nedostupná',
+    nedostupne_text: 'Služba teď neodpovídá. Zkuste to prosím za chvíli znovu.',
+  },
 } as const;
 
 export type Slovnik = typeof cs;

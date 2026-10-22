@@ -1,0 +1,22 @@
+<% layout('/layout') %>
+<p><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<h1><%= it.t('moduly_obce.titulek') %></h1>
+<p><%= it.t('moduly_obce.uvod') %></p>
+<form method="post" action="/sprava/moduly" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <fieldset>
+    <legend><%= it.t('moduly_obce.legenda') %></legend>
+    <% it.radky.forEach(function (m) { %>
+    <div class="modul-obce" id="modul-<%= m.klic %>">
+      <% if (m.dostupny) { %><input type="hidden" name="<%= m.klic %>" value="0"><% } %>
+      <label class="zatrzitko"><input type="checkbox" name="<%= m.klic %>" value="1" aria-describedby="modul-<%= m.klic %>-popis" <%= m.nastaveno && m.dostupny ? 'checked' : '' %> <%= m.dostupny ? '' : 'disabled' %>> <strong><%= m.nazev %></strong><% if (m.rodic) { %> <span class="napoveda">(<%= it.t('moduly_obce.cast', { rodic: m.rodic }) %>)</span><% } %></label>
+      <p class="napoveda" id="modul-<%= m.klic %>-popis">
+        <%= m.popis %>
+        <% if (!m.dostupny) { %><br><%= m.nedostupnyDuvod %><% } else if (m.zapnuto) { %><br><%= it.t('moduly_obce.stav_zapnuto') %> <a href="<%= m.url %>"><%= m.url %></a><% } else { %><br><%= it.t('moduly_obce.stav_vypnuto') %><% } %>
+        <% if (m.sprava) { %><br><a href="<%= m.sprava %>"><%= it.t('moduly_obce.sprava_modulu') %></a><% } %>
+      </p>
+    </div>
+    <% }) %>
+  </fieldset>
+  <button class="tlacitko" type="submit"><%= it.t('app.ulozit') %></button>
+</form>

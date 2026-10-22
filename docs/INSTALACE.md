@@ -97,6 +97,31 @@ Použijte `docker-compose.dev-server.yml` jako vzor: služba `platforma` bez ve�
 
 `TRUST_PROXY_HOPS` musí odpovídat počtu proxy před aplikací (Caddy nebo jedna vlastní proxy = `1`, výchozí). Kdyby aplikace byla dostupná **přímo bez proxy**, nastavte `0` — jinak by si klient mohl hlavičkou `X-Forwarded-For` vymyslet adresu a obejít limity pokusů. Port aplikace nikdy nevystavujte do internetu vedle proxy.
 
+### Produkční instance vedle vývojové (stejný server)
+
+`docker-compose.prod-server.yml` = stejná architektura jako `docker-compose.dev-server.yml`, ale vlastní projekt
+(`name: platforma_prod`), kontejnery `platforma_prod` + `platforma_prod_db`, volumes `platforma_prod_data`,
+`platforma_prod_db_data`, síť `platforma_prod_default` (+ externí `web` s reverzní proxy), `NODE_ENV=production`,
+bez `ROBOTS_NOINDEX` a `DEVLOG`. Konfigurace v `.env.prod` (tajné hodnoty, `BASE_URL`, `POSTGRES_PASSWORD`,
+`APLIKACE_*_URL`) a `obec.prod.yml` — obojí mimo git. Spuštění:
+
+```bash
+docker compose --env-file .env.prod -f docker-compose.prod-server.yml up -d --build
+```
+
+(`--env-file` je nutný kvůli proměnné `POSTGRES_PASSWORD` v compose souboru; `env_file` ve službě ji nenahradí.)
+V reverzní proxy směřujte doménu na `platforma_prod:3000`.
+
+### Aplikace obce za proxy platformy (`/rezervace`, `/eknihy`)
+
+Platforma sama předává `/rezervace/*` na `APLIKACE_REZERVACE_URL` a `/eknihy/*` na `APLIKACE_EKNIHY_URL`
+(vnitřní adresy na sdílené síti, např. `http://rezervace:3000`). Bez proměnné se modul ve správě nenabízí.
+Aplikace musí běžet pod cestou (předpona v `X-Forwarded-Prefix`; rezervace `BASE_PATH=/rezervace`, eKnihy
+ProxyFix), cookie si nastavují s `Path=/rezervace` resp. `/eknihy`. Reverzní proxy (NPM) posílá celou doménu
+na platformu — pro aplikace žádné zvláštní location. Zapnutí/vypnutí: Správa → Moduly obce (admin), platí hned.
+Limit odpovědi `APLIKACE_TIMEOUT_MS` (60 s); u velkých nahrávání může být potřeba zvýšit
+`client_max_body_size` v NPM (platforma tělo jen předává).
+
 ## 5. Zálohy
 
 Stav instalace je na **třech místech** a zálohovat je třeba všechna:
