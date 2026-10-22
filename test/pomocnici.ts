@@ -77,7 +77,9 @@ export async function vycistiDb(db: Db, url = TEST_DB_URL) {
   await sql`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`.execute(db);
 }
 
-export async function spustTestApp(volby: { vycistit?: boolean } = {}): Promise<TestApp> {
+export async function spustTestApp(
+  volby: { vycistit?: boolean; env?: Record<string, string> } = {},
+): Promise<TestApp> {
   const port = await volnyPort();
   const base = `http://127.0.0.1:${port}`;
   const env = nactiEnv({
@@ -97,6 +99,7 @@ export async function spustTestApp(volby: { vycistit?: boolean } = {}): Promise<
     IK_EMAIL_INTERVAL_MS: '1',
     // kvíz: malý testovací balík (vymyšlená data), ne skutečná banka z kviz-otazky/
     KVIZ_VEREJNE: new URL('./fixtures/kviz', import.meta.url).pathname,
+    ...volby.env,
   });
   const db = vytvorDb(TEST_DB_URL, 4);
   if (volby.vycistit !== false) await vycistiDb(db);

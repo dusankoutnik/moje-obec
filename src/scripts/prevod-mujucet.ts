@@ -13,7 +13,9 @@ const args = process.argv.slice(2);
 const cesta = args.find((a) => !a.startsWith('--'));
 const prepinac = (p: string) => args.includes(p);
 if (!cesta) {
-  console.error('Použití: prevod-mujucet.ts <mujucet.db> [--nanecisto] [--anonymizovat] [--sloucit-telefonem]');
+  console.error(
+    'Použití: prevod-mujucet.ts <mujucet.db> [--nanecisto] [--anonymizovat] [--sloucit-telefonem]',
+  );
   process.exit(2);
 }
 

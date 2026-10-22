@@ -188,7 +188,11 @@ export async function prevedUcty(
         continue;
       }
       const telefonZdroj = String(r.phone ?? '').trim();
-      if (!Number.isInteger(r.id) || r.id < 1 || (!volby.anonymizovat && !/^\+\d{9,15}$/.test(telefonZdroj))) {
+      if (
+        !Number.isInteger(r.id) ||
+        r.id < 1 ||
+        (!volby.anonymizovat && !/^\+\d{9,15}$/.test(telefonZdroj))
+      ) {
         v.vynechano_neplatne++;
         v.konflikty.push({ cislo: r.id, duvod: 'neplatné číslo účtu nebo telefon' });
         continue;
@@ -220,7 +224,11 @@ export async function prevedUcty(
           barva: r.color ?? null,
           ikona: r.icon ?? '',
           eknihy_sms: !!r.eknihy_sms,
-          ekey_email_odmitnut: anon ? (r.ekey_email_odmitnut ? 'odmitnuto@dev.invalid' : null) : (r.ekey_email_odmitnut ?? null),
+          ekey_email_odmitnut: anon
+            ? r.ekey_email_odmitnut
+              ? 'odmitnuto@dev.invalid'
+              : null
+            : (r.ekey_email_odmitnut ?? null),
           rezident_avizo_at: casZPrahy(r.rezident_avizo_at)?.toISOString() ?? null,
           hlavni_role: r.role ?? 'user',
           ...(anon ? { anonymizovano: true } : {}),
@@ -228,9 +236,17 @@ export async function prevedUcty(
       };
       const hash = anon ? null : prevedHash(r.password_hash);
 
-      const stavajici = await tx.selectFrom('uzivatele').selectAll().where('cislo', '=', r.id).executeTakeFirst();
+      const stavajici = await tx
+        .selectFrom('uzivatele')
+        .selectAll()
+        .where('cislo', '=', r.id)
+        .executeTakeFirst();
       // konflikty kontaktu s jiným účtem platformy
-      const podleTel = await tx.selectFrom('uzivatele').selectAll().where('telefon', '=', telefon).executeTakeFirst();
+      const podleTel = await tx
+        .selectFrom('uzivatele')
+        .selectAll()
+        .where('telefon', '=', telefon)
+        .executeTakeFirst();
       const podleEmailu = email
         ? await tx
             .selectFrom('uzivatele')
@@ -250,7 +266,10 @@ export async function prevedUcty(
       }
       const emailVolny = !podleEmailu || podleEmailu.id === cil?.id;
       if (!emailVolny)
-        v.konflikty.push({ cislo: r.id, duvod: `e-mail už má účet platformy č. ${podleEmailu!.cislo} — převeden bez e-mailu` });
+        v.konflikty.push({
+          cislo: r.id,
+          duvod: `e-mail už má účet platformy č. ${podleEmailu!.cislo} — převeden bez e-mailu`,
+        });
       const radek = { ...data, email: emailVolny ? data.email : null };
 
       if (cil) {
@@ -266,7 +285,9 @@ export async function prevedUcty(
             gdpr_souhlas_at: radek.gdpr_souhlas_at ?? cil.gdpr_souhlas_at,
             telefon_overen_at: radek.telefon_overen_at ?? cil.telefon_overen_at,
             // demo/ruční účet sloučený telefonem si role ponechá a doplní o role z MůjÚčtu
-            role: [...new Set([...(cil.navic?.zdroj === 'mujucet' ? [] : cil.role), ...radek.role])].sort() as Role[],
+            role: [
+              ...new Set([...(cil.navic?.zdroj === 'mujucet' ? [] : cil.role), ...radek.role]),
+            ].sort() as Role[],
             upraven_at: new Date(),
           })
           .where('id', '=', cil.id)
