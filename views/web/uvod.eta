@@ -7,14 +7,11 @@
     <% if (it.statistiky.length) { %>
     <section class="statistiky vstup" style="--z:.44s" aria-labelledby="stat-h">
       <h2 id="stat-h" class="vh"><%= it.t('web.statistiky') %></h2>
-      <dl>
+      <ul class="stat-seznam">
         <% it.statistiky.forEach(function (s) { %>
-        <div class="stat">
-          <dt><%= s.popisek %></dt>
-          <dd><% if (s.odkaz) { %><a href="<%= s.odkaz %>"><% } %><span <% if (s.cislo !== undefined) { %>data-cislo="<%= s.cislo %>"<% } %>><%= s.hodnota %></span><% if (s.odkaz) { %></a><% } %></dd>
-        </div>
+        <li class="stat"><% if (s.odkaz) { %><a class="stat-in" href="<%= s.odkaz %>"><% } else { %><span class="stat-in"><% } %><span class="stat-popisek"><%= s.popisek %></span> <span class="stat-hodnota" <% if (s.cislo !== undefined) { %>data-cislo="<%= s.cislo %>"<% } %>><%= s.hodnota %></span><% if (s.odkaz) { %></a><% } else { %></span><% } %></li>
         <% }) %>
-      </dl>
+      </ul>
     </section>
     <% } %>
     <a class="hero-dolu vstup" style="--z:.56s" href="#rychle"><span class="vh"><%= it.t('web.dolu') %></span><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></a>
@@ -41,7 +38,7 @@
     </div>
     <% if (!it.aktuality.length) { %><p class="prazdne-na-tmave"><%= it.t('web.zadne_aktuality') %></p><% } %>
     <div class="karty-clanku uvod-karty">
-      <% it.aktuality.forEach(function (a) { %><%~ include('/web/_karta-aktuality', { a: a, obr: it.obr, fmtDatum: it.fmtDatum, zkrat: it.zkrat }) %><% }) %>
+      <% it.aktuality.forEach(function (a) { %><%~ include('/web/_karta-aktuality', { a: a, obr: it.obr, fmtDatum: it.fmtDatum, zkrat: it.zkrat, t: it.t }) %><% }) %>
     </div>
     <p class="sekce-dal"><a class="tlacitko" href="/aktuality"><%= it.t('web.vse_aktuality') %> ›</a></p>
   </section>

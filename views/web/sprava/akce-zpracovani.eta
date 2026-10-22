@@ -1,0 +1,118 @@
+<% layout('/layout') %>
+<% var p = it.p; var termin = function (e) { return e.opakovani ? e.opakovani + ' ' + it.fmtDatum(e.datum, false) : it.fmtDatum(e.datum, !e.akce_cely_den) + (e.akce_konec ? ' – ' + it.fmtDatum(e.akce_konec, !e.akce_cely_den) : ''); }; %>
+<p class="drobky"><a href="/sprava/web/akce">← <%= it.t('web.akce') %></a></p>
+<h1><%= it.titulek %></h1>
+<p class="perex"><%= it.t('propojeni.perex') %></p>
+<% if (!p.dostupny) { %><div class="flash flash-info" role="status"><%= it.t('propojeni.nedostupne') %></div><% } %>
+<% var nic = !p.koncepty.length && !p.navrhy.length && !p.bezAkce.length && !p.zmeny.length && !p.zrusene.length; %>
+<% if (nic) { %><p class="prazdne"><%= it.t('propojeni.nic') %></p><% } %>
+
+<% if (p.zmeny.length) { %>
+<section class="karta" aria-labelledby="zp-zmeny">
+  <h2 id="zp-zmeny"><%= it.t('propojeni.zmeny_titulek', { n: p.zmeny.length }) %></h2>
+  <ul class="seznam-zpracovani">
+  <% p.zmeny.forEach(function (z) { %>
+    <li>
+      <p><a href="/sprava/web/obsah/<%= z.akce.id %>"><strong><%= z.akce.titulek %></strong></a> · <%= it.t('propojeni.na_webu') %> <%= z.akce.datum ? it.fmtDatum(z.akce.datum, !z.akce.akce_cely_den) : '' %></p>
+      <p><%= it.t('propojeni.termin_zmenen', { termin: termin(z.termin) }) %></p>
+      <div class="tlacitka-radek">
+        <form method="post" action="/sprava/web/akce/zpracovani/termin" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce_id" value="<%= z.akce.id %>"><button class="tlacitko" type="submit" name="volba" value="prevzit"><%= it.t('propojeni.prevzit_termin') %></button></form>
+        <form method="post" action="/sprava/web/akce/zpracovani/termin" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce_id" value="<%= z.akce.id %>"><button class="tlacitko sekundarni" type="submit" name="volba" value="ponechat"><%= it.t('propojeni.ponechat_termin') %></button></form>
+      </div>
+    </li>
+  <% }) %>
+  </ul>
+</section>
+<% } %>
+
+<% if (p.zrusene.length) { %>
+<section class="karta" aria-labelledby="zp-zrusene">
+  <h2 id="zp-zrusene"><%= it.t('propojeni.zrusene_titulek', { n: p.zrusene.length }) %></h2>
+  <ul class="seznam-zpracovani">
+  <% p.zrusene.forEach(function (o) { %>
+    <li>
+      <p><a href="/sprava/web/obsah/<%= o.id %>"><strong><%= o.titulek %></strong></a> · <%= o.datum ? it.fmtDatum(o.datum, !o.akce_cely_den) : '' %> · <%= o.stav === 'zverejneno' ? it.t('web.stav_zverejneno') : it.t('web.stav_koncept') %></p>
+      <p><%= it.t('propojeni.zrusena_text') %></p>
+      <form method="post" action="/sprava/web/akce/zpracovani/odpojit" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce_id" value="<%= o.id %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('propojeni.odpojit') %></button></form>
+    </li>
+  <% }) %>
+  </ul>
+</section>
+<% } %>
+
+<% if (p.navrhy.length) { %>
+<section class="karta" aria-labelledby="zp-navrhy">
+  <h2 id="zp-navrhy"><%= it.t('propojeni.navrhy_titulek', { n: p.navrhy.length }) %></h2>
+  <p class="napoveda"><%= it.t('propojeni.navrhy_napoveda') %></p>
+  <ul class="seznam-zpracovani">
+  <% p.navrhy.forEach(function (n) { %>
+    <li>
+      <p><strong><%= n.termin.titulek %></strong> · <%= termin(n.termin) %> · <%= n.termin.akce_misto %></p>
+      <div class="tlacitka-radek">
+        <% n.kandidati.forEach(function (k) { %>
+        <form method="post" action="/sprava/web/akce/zpracovani/propojit" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="ref" value="<%= n.termin.ref %>"><input type="hidden" name="akce_id" value="<%= k.id %>"><button class="tlacitko" type="submit"><%= it.t('propojeni.propojit_s', { nazev: k.titulek }) %></button></form>
+        <% }) %>
+        <form method="post" action="/sprava/web/akce/zpracovani/koncept" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="ref" value="<%= n.termin.ref %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('propojeni.samostatna') %></button></form>
+        <form method="post" action="/sprava/web/akce/zpracovani/ignorovat" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="ref" value="<%= n.termin.ref %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('propojeni.jen_v_kalendari') %></button></form>
+      </div>
+    </li>
+  <% }) %>
+  </ul>
+</section>
+<% } %>
+
+<% if (p.koncepty.length) { %>
+<section class="karta" aria-labelledby="zp-koncepty">
+  <h2 id="zp-koncepty"><%= it.t('propojeni.koncepty_titulek', { n: p.koncepty.length }) %></h2>
+  <p class="napoveda"><%= it.t('propojeni.koncepty_napoveda') %></p>
+  <ul class="seznam-zpracovani">
+  <% p.koncepty.forEach(function (o) { %>
+    <li>
+      <p><strong><%= o.titulek %></strong> · <%= o.termin ? termin(o.termin) : '' %><%= o.akce_misto ? ' · ' + o.akce_misto : '' %></p>
+      <div class="tlacitka-radek">
+        <a class="tlacitko" href="/sprava/web/obsah/<%= o.id %>"><%= it.t('propojeni.doplnit_zverejnit') %></a>
+        <form method="post" action="/sprava/web/akce/zpracovani/ignorovat" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="ref" value="<%= o.rezervace_ref %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('propojeni.jen_v_kalendari') %></button></form>
+      </div>
+      <% if (it.cile.length) { %>
+      <form method="post" action="/sprava/web/akce/zpracovani/propojit" class="radek-uzky formular-inline">
+        <input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="ref" value="<%= o.rezervace_ref %>">
+        <label for="cil-<%= o.id %>"><%= it.t('propojeni.propojit_s_existujici') %></label>
+        <select id="cil-<%= o.id %>" name="akce_id">
+          <% it.cile.forEach(function (c) { %><option value="<%= c.id %>"><%= c.titulek %><%= c.datum ? ' (' + it.fmtDatum(c.datum, false) + ')' : '' %></option><% }) %>
+        </select>
+        <button class="tlacitko sekundarni" type="submit"><%= it.t('propojeni.propojit') %></button>
+      </form>
+      <% } %>
+    </li>
+  <% }) %>
+  </ul>
+</section>
+<% } %>
+
+<% if (p.bezAkce.length) { %>
+<section class="karta" aria-labelledby="zp-bez">
+  <h2 id="zp-bez"><%= it.t('propojeni.bez_akce_titulek', { n: p.bezAkce.length }) %></h2>
+  <% if (!it.konceptyZapnute) { %><p class="napoveda"><%= it.t('propojeni.koncepty_vypnute') %></p><% } %>
+  <ul class="seznam-zpracovani">
+  <% p.bezAkce.forEach(function (e) { %>
+    <li>
+      <p><strong><%= e.titulek %></strong> · <%= termin(e) %> · <%= e.akce_misto %></p>
+      <div class="tlacitka-radek">
+        <form method="post" action="/sprava/web/akce/zpracovani/koncept" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="ref" value="<%= e.ref %>"><button class="tlacitko" type="submit"><%= it.t('propojeni.zalozit_akci') %></button></form>
+        <form method="post" action="/sprava/web/akce/zpracovani/ignorovat" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="ref" value="<%= e.ref %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('propojeni.jen_v_kalendari') %></button></form>
+      </div>
+    </li>
+  <% }) %>
+  </ul>
+</section>
+<% } %>
+
+<% if (it.ignorovane.length) { %>
+<details class="karta">
+  <summary><%= it.t('propojeni.ignorovane_titulek', { n: it.ignorovane.length }) %></summary>
+  <ul class="kratky-seznam">
+    <% it.ignorovane.forEach(function (g) { %><li><%= g.nazev || g.ref %> <span class="poznamka"><%= it.fmtDatum(g.kdy, false) %></span>
+      <form method="post" action="/sprava/web/akce/zpracovani/zrusit-ignorovani" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="ref" value="<%= g.ref %>"><button class="odkaz-tlacitko" type="submit"><%= it.t('propojeni.zrusit_ignorovani') %></button></form></li><% }) %>
+  </ul>
+</details>
+<% } %>

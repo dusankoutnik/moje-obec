@@ -3,6 +3,7 @@
 <h1><%= it.t('web.sprava_titulek') %></h1>
 <p class="perex"><%= it.t('web.sprava_perex') %></p>
 <% if (it.koncici.length) { %><div class="flash flash-info" role="status"><%= it.t('web.dotace_koncici', { n: it.koncici.length }) %> <a href="/sprava/web/dotace"><%= it.t('web.dotace') %> →</a></div><% } %>
+<% if (it.akceKeZpracovani) { %><div class="flash flash-info" role="status"><%= it.t('propojeni.dashboard', { n: it.akceKeZpracovani }) %> <a href="/sprava/web/akce/zpracovani"><%= it.t('propojeni.titulek') %> →</a></div><% } %>
 <div class="dlazdice-akci">
   <a class="dlazdice hlavni" href="/sprava/web/novy?typ=aktualita"><span class="ikona" aria-hidden="true">✍️</span><strong><%= it.t('web.napsat_aktualitu') %></strong><span><%= it.t('web.napsat_aktualitu_text') %></span></a>
   <a class="dlazdice" href="/sprava/web/stranky"><span class="ikona" aria-hidden="true">📄</span><strong><%= it.t('web.stranky') %></strong><span><%= it.t('web.stranky_text') %></span></a>

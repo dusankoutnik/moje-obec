@@ -4,6 +4,14 @@ Přehled změn platformy Web od Voltu 2.0 pro pilotní obec, nejnovější naho�
 
 ## 22. 10. 2026
 
+- **Akce z rezervací se samy připraví na web:** když si někdo zarezervuje sál nebo hřiště pro veřejnou akci,
+  ve správě webu se objeví připravená akce k doplnění textu a fotky. Akce, kterou už na webu máte, se s rezervací
+  spáruje — v kalendáři se pak neukáže dvakrát. Když se v rezervacích změní termín nebo se akce zruší, správa
+  na to upozorní.
+- **Pozvánka i mezi zprávami:** akci jde jedním zatržítkem ukázat i v Aktualitách.
+- **Rozeslat jedním tlačítkem:** zveřejněnou zprávu nebo pozvánku jde poslat občanům SMS a e-mailem — text se
+  předvyplní sám a u příspěvku je vidět, kdy a kolika lidem odešel.
+- **Čísla na úvodu jsou klikací** a vedou tam, kde se o nich dozvíte víc; nově je tam pět nejbližších akcí.
 - **Nový název:** platforma se jmenuje **Web od Voltu 2.0**, v patičce je logo Voltu s odkazem na Volt Česko.
 - **Vzhled:** fotka obce v pozadí je víc vidět; texty přímo na fotce mají vlastní tmavý podklad, aby zůstaly čitelné.
 - **Efekty tlačítek menu** ve Správě → Vzhled: decentní odlesk, vodní hladina, dýchání nebo bez efektu, a k tomu síla efektu. Kdo má v zařízení zapnuté „omezit pohyb“, vidí tlačítka vždy v klidu.

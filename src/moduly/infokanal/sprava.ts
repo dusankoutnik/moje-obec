@@ -7,6 +7,9 @@ import { sanitizuj, textNaHtml, textZHtml, zkrat } from '../../lib/html.js';
 import { PRAZDNA_POLE } from '../web/obsah.js';
 import type { InfokanalSluzba } from './sluzba.js';
 import { casPraha } from '../../lib/datum.js';
+import { bezDiakritiky } from '../../lib/kontakty.js';
+import { zapisAudit } from '../../lib/audit.js';
+import { formatujDatum } from '../../web/sablony.js';
 
 /** hodnota z <input type="datetime-local"> (YYYY-MM-DDTHH:MM) je čas v Praze, ne v pásmu serveru */
 export function naplanovanoZFormulare(v: unknown): Date | null | 'neplatne' {
@@ -35,15 +38,66 @@ export default async function infokanalSprava(
     return reply.view('infokanal/sprava/hlaseni', { titulek: t('infokanal.hlaseni'), hlaseni, stat });
   });
 
-  app.get('/infokanal/sprava/nove', { preHandler: redaktor }, async (_req, reply) => {
-    const kategorie = await sluzba.kategorie();
-    return reply.view('infokanal/sprava/nove', {
-      titulek: t('infokanal.nove_hlaseni'),
-      kategorie,
-      f: {},
-      smsPrefix: app.obec.texty.sms_prefix,
-    });
-  });
+  /** příspěvek webu (zveřejněná aktualita nebo akce), který se rozesílá infokanálem */
+  async function prispevek(id: unknown) {
+    if (!app.obec.moduly.web || typeof id !== 'string' || !id) return null;
+    const o = await app.web.obsah.podleId(id);
+    if (!o || o.smazano_at || o.stav !== 'zverejneno' || (o.typ !== 'aktualita' && o.typ !== 'akce'))
+      return null;
+    return o;
+  }
+
+  /** předvyplnění hlášení z příspěvku: předmět = titulek, e-mail = perex + odkaz, SMS krátce + odkaz (1 SMS) */
+  async function predvyplneni(
+    o: NonNullable<Awaited<ReturnType<typeof prispevek>>>,
+    kategorie: { id: number; slug: string }[],
+  ) {
+    const url = `${app.env.BASE_URL}${await app.web.obsah.url(o)}`;
+    const kdy = o.typ === 'akce' && o.datum ? formatujDatum(o.datum, !o.akce_cely_den) : '';
+    // akce → pozvánky (kultura), jinak obecná hlášení — jen kategorie, které v infokanálu existují
+    const slugy = o.typ === 'akce' ? ['pozvanky', 'kultura', 'hlaseni'] : ['hlaseni'];
+    const k = slugy.map((sl) => kategorie.find((x) => x.slug === sl)).find(Boolean) ?? kategorie[0];
+    const uvod = o.typ === 'akce' ? t('propojeni.sms_pozvanka') : '';
+    const prefix = app.obec.texty.sms_prefix;
+    const misto = 160 - bezDiakritiky(prefix).length - url.length - 1;
+    const zaklad = bezDiakritiky(
+      `${uvod}${o.titulek}${kdy ? `, ${kdy}` : ''}${o.akce_misto && o.typ === 'akce' ? `, ${o.akce_misto}` : ''}`,
+    );
+    const sms = bezDiakritiky(`${zkrat(zaklad, Math.max(30, misto - 2))} ${url}`); // „…“ → „...“
+    const perex = o.perex || zkrat(textZHtml(o.obsah_html), 400);
+    return {
+      kategorie_id: String(k?.id ?? ''),
+      email_predmet: (o.typ === 'akce'
+        ? t('propojeni.email_pozvanka', { titulek: o.titulek })
+        : o.titulek
+      ).slice(0, 200),
+      email_text: [
+        kdy ? `${t('web.kdy')}: ${kdy}${o.akce_misto ? `, ${o.akce_misto}` : ''}` : '',
+        perex,
+        `${t('propojeni.email_odkaz')} ${url}`,
+      ]
+        .filter(Boolean)
+        .join('\n\n'),
+      sms_text: sms,
+      obsah_id: o.id,
+    };
+  }
+
+  app.get<{ Querystring: { obsah?: string } }>(
+    '/infokanal/sprava/nove',
+    { preHandler: redaktor },
+    async (req, reply) => {
+      const kategorie = await sluzba.kategorie();
+      const o = await prispevek(req.query.obsah);
+      return reply.view('infokanal/sprava/nove', {
+        titulek: t('infokanal.nove_hlaseni'),
+        kategorie,
+        f: o ? await predvyplneni(o, kategorie) : {},
+        prispevek: o,
+        smsPrefix: app.obec.texty.sms_prefix,
+      });
+    },
+  );
 
   app.post<{ Body: Record<string, string | string[] | undefined> }>(
     '/infokanal/sprava/nove',
@@ -51,11 +105,18 @@ export default async function infokanalSprava(
     async (req, reply) => {
       const b = req.body;
       const kategorie = await sluzba.kategorie();
+      // rozesílka příspěvku webu: článek už existuje, nový se nezakládá; hlášení se k příspěvku zapíše
+      const o = await prispevek(b.obsah_id);
+      if (o) {
+        b.clanek_titulek = '';
+        b.clanek_text = '';
+      }
       const vykresli = (chyba: string) =>
         reply.view('infokanal/sprava/nove', {
           titulek: t('infokanal.nove_hlaseni'),
           kategorie,
           f: b,
+          prispevek: o,
           chyba,
           smsPrefix: app.obec.texty.sms_prefix,
         });
@@ -87,6 +148,15 @@ export default async function infokanalSprava(
                 : 'Neplatná kategorie.',
         );
       fronta.kopni();
+      if (o) {
+        await app.db.updateTable('web_obsah').set({ hlaseni_id: v.id }).where('id', '=', o.id).execute();
+        await zapisAudit(app.db, {
+          uzivatelId: req.uzivatel!.id,
+          akce: 'web.rozeslano',
+          detail: { id: o.id, typ: o.typ, hlaseni: v.id, prijemcu: v.prijemcu },
+          ip: req.ip,
+        });
+      }
       // článek z hlášení → aktualita na webu obce (modul web), s datem rozeslání
       const clanekTitulek = String(b.clanek_titulek ?? '').trim();
       if (clanekTitulek && app.obec.moduly.web) {

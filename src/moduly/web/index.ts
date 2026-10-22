@@ -9,6 +9,8 @@ import { DokumentySluzba, DotaceSluzba, GalerieSluzba, PresmerovaniSluzba } from
 import { VzhledSluzba } from './vzhled.js';
 import { ExterniKalendar } from './akce-externi.js';
 import { VideaSluzba } from './videa.js';
+import { AkcePropojeniSluzba } from './akce-propojeni.js';
+import webSpravaAkce from './sprava-akce.js';
 import webVerejne from './verejne.js';
 import webSprava from './sprava.js';
 import webSpravaDalsi from './sprava-dalsi.js';
@@ -29,6 +31,8 @@ export interface WebSluzby {
   vzhled: VzhledSluzba;
   /** akce sálu, hřišť a předprodeje z rezervačního systému */
   kalendar: ExterniKalendar;
+  /** propojení akcí webu s termíny v rezervacích (koncepty, návrhy, změny termínu) */
+  propojeni: AkcePropojeniSluzba;
   videa: VideaSluzba;
 }
 
@@ -40,14 +44,20 @@ declare module 'fastify' {
 }
 
 async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
+  const obsah = new ObsahSluzba(app.db);
+  const kalendar = new ExterniKalendar(app.env.REZERVACE_KALENDAR_URL, app.log);
   const s: WebSluzby = {
-    obsah: new ObsahSluzba(app.db),
+    obsah,
     galerie: new GalerieSluzba(app.db),
     dokumenty: new DokumentySluzba(app.db),
     dotace: new DotaceSluzba(app.db),
     presmerovani: new PresmerovaniSluzba(app.db),
     vzhled: new VzhledSluzba(app.db, app.obec),
-    kalendar: new ExterniKalendar(app.env.REZERVACE_KALENDAR_URL, app.log),
+    kalendar,
+    propojeni: new AkcePropojeniSluzba(app.db, obsah, kalendar, () => ({
+      koncepty: app.obec.web.akce_koncepty,
+      textPredprodeje: app.t('propojeni.koncept_predprodej'),
+    })),
     videa: new VideaSluzba(app.db, app.soubory),
   };
   app.decorate('web', s);
@@ -96,12 +106,22 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
   await app.register(webSprava, s);
   await app.register(webSpravaDalsi, s);
   await app.register(webSpravaVidea, s);
+  await app.register(webSpravaAkce, s);
 
   if (volby.planovac) {
     const job = new Cron('0 8 * * *', { timezone: 'Europe/Prague' }, async () => {
       await upozorniNaKonecDotaci(app).catch((e) => app.log.warn({ err: e }, 'dotace upozornění'));
     });
-    app.addHook('onClose', async () => job.stop());
+    // termíny z rezervací → koncepty akcí ke zpracování (idempotentní)
+    const sync = new Cron('*/10 * * * *', { timezone: 'Europe/Prague', protect: true }, async () => {
+      await s.propojeni
+        .synchronizuj()
+        .catch((e) => app.log.warn({ err: e }, 'synchronizace akcí z rezervací'));
+    });
+    app.addHook('onClose', async () => {
+      job.stop();
+      sync.stop();
+    });
   }
 }
 

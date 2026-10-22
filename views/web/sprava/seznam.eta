@@ -4,6 +4,7 @@
   <h1><%= it.titulek %></h1>
   <a class="tlacitko velke" href="/sprava/web/novy?typ=<%= it.typ %>">＋ <%= it.t('web.novy_' + it.typ) %></a>
 </div>
+<% if (it.typ === 'akce') { %><p><a href="/sprava/web/akce/zpracovani"><%= it.t('propojeni.titulek') %><% if (it.akceKeZpracovani) { %> (<%= it.akceKeZpracovani %>)<% } %> →</a></p><% } %>
 <form method="get" action="/sprava/web/<%= it.sekce %>" class="filtr" role="search">
   <div><label for="q"><%= it.t('web.hledat') %></label><input id="q" name="q" type="search" value="<%= it.q %>"></div>
   <button class="tlacitko sekundarni" type="submit"><%= it.t('web.hledat') %></button>

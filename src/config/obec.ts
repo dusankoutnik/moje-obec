@@ -9,6 +9,9 @@ const AdresaSchema = z.object({
   mesto: z.string().default(''),
 });
 
+// odkaz z dlaždice statistik: vlastní cesta (/…, ne //…) nebo https://
+const ODKAZ_FAKTA = /^(\/(?!\/)[^\s]*|https:\/\/[^\s]+)$/;
+
 export const ObecSchema = z.object({
   obec: z.object({
     nazev: z.string().min(1),
@@ -48,8 +51,20 @@ export const ObecSchema = z.object({
     // zpracovatelé osobních údajů (GDPR čl. 28) pro stránku Ochrana osobních údajů, např.
     // { nazev: 'Contabo GmbH (Německo)', ucel: 'pronájem serveru, na kterém web běží' }
     zpracovatele: z.array(z.object({ nazev: z.string().min(1), ucel: z.string().default('') })).default([]),
-    // fakta do úvodu webu (statistiky): např. { hodnota: '357', popisek: 'obyvatel' }
-    fakta: z.array(z.object({ hodnota: z.string().min(1), popisek: z.string().min(1) })).default([]),
+    // fakta do úvodu webu (statistiky): např. { hodnota: '357', popisek: 'obyvatel', odkaz: '/obec' } — odkaz
+    // nepovinný (vlastní cesta /… nebo https://…), celá dlaždice pak vede na něj
+    fakta: z
+      .array(
+        z.object({
+          hodnota: z.string().min(1),
+          popisek: z.string().min(1),
+          odkaz: z
+            .string()
+            .regex(ODKAZ_FAKTA, 'odkaz musí být cesta na webu (/…) nebo začínat https://')
+            .optional(),
+        }),
+      )
+      .default([]),
     // zastupitelstvo: volební období a poznámka (např. termín ustavujícího zasedání) — u seznamu lidí na stránce
     // kontaktů a v bodě 3 povinných informací; prázdné = nezobrazí se
     zastupitelstvo: z
@@ -101,6 +116,15 @@ export const ObecSchema = z.object({
       podatelna: z.boolean().default(false),
       // plánované odstávky elektřiny ČEZ Distribuce na titulce a /odstavky (jen obce na území ČEZ Distribuce)
       odstavky: z.boolean().default(false),
+    })
+    .prefault({}),
+  // obecní web (modul web)
+  web: z
+    .object({
+      // veřejné termíny z rezervačního systému zakládat jako koncepty akcí ke zpracování (Akce ke zpracování)
+      akce_koncepty: z.boolean().default(true),
+      // statistika „zpráv za poslední měsíc“ v úvodu: slug kategorie aktualit; prázdné = všechny aktuality
+      stat_zpravy_kategorie: z.string().default(''),
     })
     .prefault({}),
   // elektronická podatelna — formulář pro podání bez elektronického podpisu (modul podatelna)

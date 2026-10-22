@@ -31,6 +31,9 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
         : null,
       jeRedaktor: maRoli(u, 'redaktor'),
       jeWeb: maRoli(u, 'web'),
+      // termíny z rezervací, které čekají na redaktora webu (koncepty, návrhy propojení, změny)
+      akceKeZpracovani:
+        app.obec.moduly.web && maRoli(u, 'web') ? await app.web.propojeni.pocet().catch(() => 0) : 0,
       jeDeska: maRoli(u, 'deska'),
       jeKviz: maRoli(u, 'kviz', 'web'),
       // podání obsahují osobní údaje — jen správce obce (admin má vše)

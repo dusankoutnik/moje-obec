@@ -7,7 +7,7 @@
   <% if (o.typ === 'aktualita' && o.datum) { %><p class="clanek-meta"><time datetime="<%= o.datum.toISOString() %>"><%= it.fmtDatum(o.datum, false) %></time><% if (it.kategorie) { %> · <a href="/aktuality?kategorie=<%= it.kategorie.slug %>"><%= it.kategorie.nazev %></a><% } %></p><% } %>
   <% if (o.typ === 'akce') { %>
   <dl class="seznam akce-udaje">
-    <dt><%= it.t('web.kdy') %></dt><dd><%= o.datum ? it.fmtDatum(o.datum, !o.akce_cely_den) : '' %><%= o.akce_konec ? ' – ' + it.fmtDatum(o.akce_konec, !o.akce_cely_den) : '' %></dd>
+    <dt><%= it.t('web.kdy') %></dt><dd><% if (it.serie) { %><%= it.serie.opakovani %> <%= it.fmtDatum(it.serie.datum, false) %><% } else { %><%= o.datum ? it.fmtDatum(o.datum, !o.akce_cely_den) : '' %><%= o.akce_konec ? ' – ' + it.fmtDatum(o.akce_konec, !o.akce_cely_den) : '' %><% } %></dd>
     <% if (o.akce_misto) { %><dt><%= it.t('web.kde') %></dt><dd><%= o.akce_misto %></dd><% } %>
   </dl>
   <% } %>

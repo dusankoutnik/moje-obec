@@ -17,6 +17,14 @@ export function odkazAkce(a: {
 
 export interface ExterniAkce {
   id: string;
+  /** odkaz pro propojení s akcí webu: id série (s45) u opakovaných, jinak id položky (r123, e7) */
+  ref: string;
+  /** typ položky z API (rezervace, predprodej) */
+  typ: string;
+  /** den konání (u série nejbližší) YYYY-MM-DD a časy HH:MM z API */
+  den: string;
+  od: string | null;
+  do: string | null;
   externi: true;
   titulek: string;
   slug: null;
@@ -79,6 +87,11 @@ export function prevedPolozky(polozky: Polozka[], ted = new Date()): ExterniAkce
     const den = new Date(Date.parse(p.datum + 'T12:00:00Z')).getUTCDay();
     vysledek.push({
       id: p.id,
+      ref: p.serie || p.id,
+      typ: p.typ,
+      den: p.datum,
+      od: p.cely_den ? null : p.od,
+      do: p.cely_den ? null : p.do,
       externi: true,
       titulek: p.nazev,
       slug: null,
@@ -96,27 +109,46 @@ export function prevedPolozky(polozky: Polozka[], ted = new Date()): ExterniAkce
   return vysledek;
 }
 
+/** podpis termínu pro hlídání změn: série = den v týdnu a časy (nejbližší výskyt se posouvá), jinak datum a časy */
+export function podpisTerminu(a: Pick<ExterniAkce, 'ref' | 'den' | 'od' | 'do' | 'akce_cely_den'>): string {
+  const casy = a.akce_cely_den ? 'cely-den' : `${a.od ?? ''}-${a.do ?? ''}`;
+  if (a.ref.startsWith('s')) {
+    const den = new Date(Date.parse(a.den + 'T12:00:00Z')).getUTCDay();
+    return `serie|${den}|${casy}`;
+  }
+  return `${a.den}|${casy}`;
+}
+
 export class ExterniKalendar {
   private kes: { cas: number; akce: Polozka[] } | null = null;
+  /** poslední stažení se povedlo (jen tehdy se smí usuzovat, že termín z rezervací zmizel) */
+  private naposledyOk = false;
   constructor(
     private url: string | undefined,
     private log: FastifyBaseLogger,
   ) {}
 
   async akce(ted = new Date()): Promise<ExterniAkce[]> {
-    if (!this.url) return [];
+    return (await this.nacti(ted)).akce;
+  }
+
+  /** akce i s informací, jestli zdroj právě odpovídá (nastavený a poslední stažení prošlo) */
+  async nacti(ted = new Date()): Promise<{ dostupny: boolean; akce: ExterniAkce[] }> {
+    if (!this.url) return { dostupny: false, akce: [] };
     if (!this.kes || Date.now() - this.kes.cas > 10 * 60_000) {
       try {
         const r = await fetch(this.url, { signal: AbortSignal.timeout(4000) });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const j = (await r.json()) as { polozky?: Polozka[] };
         this.kes = { cas: Date.now(), akce: Array.isArray(j.polozky) ? j.polozky : [] };
+        this.naposledyOk = true;
       } catch (e) {
+        this.naposledyOk = false;
         this.log.warn({ err: (e as Error).message }, 'kalendář rezervací nedostupný');
         // poslední známá data ponecháme, další pokus za minutu
         this.kes = { cas: Date.now() - 9 * 60_000, akce: this.kes?.akce ?? [] };
       }
     }
-    return prevedPolozky(this.kes.akce, ted);
+    return { dostupny: this.naposledyOk, akce: prevedPolozky(this.kes.akce, ted) };
   }
 }

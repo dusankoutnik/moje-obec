@@ -1,5 +1,17 @@
 # Stav projektu — etapa 1 (18. 10. 2026)
 
+## Akce propojené s rezervacemi a klikací statistiky (22. 10. 2026)
+
+- Zadání a rozhodnutí: `docs/AKCE-PROPOJENI.md`, popis v `docs/MODULY.md` (Obecní web — akce propojené
+  s rezervacemi). Migrace **0014** (`rezervace_ref`, `rezervace_termin`, `v_aktualitach`, `web_akce_ignorovane`).
+- Nové: synchronizace à 10 min (koncepty akcí z rezervací), stránka `/sprava/web/akce/zpracovani`, propojení
+  a pozvánka v editoru akce, sloučení v kalendáři a na úvodu, pozvánky v Aktualitách/RSS, rozesílka příspěvku
+  infokanálem, klikací dlaždice statistik, pět nejbližších akcí, `web.akce_koncepty` a
+  `web.stat_zpravy_kategorie` v `obec.yml`.
+- Ověření: `test/akce-propojeni.test.ts` (14 testů), celkem 339.
+- Na devu po nasazení: doplnit pilotní `obec.yml` (odkazy faktů, `web.stat_zpravy_kategorie: obecni-urad`) a
+  projít „Akce ke zpracování“ — první synchronizace založí koncepty pro všechny veřejné termíny z rezervací.
+
 ## Odstávky elektřiny ČEZ na titulce (21. 10. 2026)
 
 - Nový modul `odstavky` (`moduly.odstavky`, `odstavky.cez.kod_obce`/`odkaz` v `obec.yml`), popis v `docs/MODULY.md`:

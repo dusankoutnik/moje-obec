@@ -168,33 +168,44 @@ export class ObsahCteni {
       .execute();
   }
 
-  /** aktuality veřejně (stránkovaně) */
+  /** aktuality veřejně (stránkovaně) — i s akcemi, které se mají ukázat jako pozvánka (v_aktualitach);
+   * pozvánka se řadí podle data zveřejnění, akce_datum je začátek akce */
   async aktuality(v: { kategorie?: number | null; stranka?: number; naStranku?: number } = {}) {
     const n = v.naStranku ?? 12;
     const strana = Math.max(1, v.stranka ?? 1);
+    const ted = new Date();
+    const razeni = sql<Date>`(CASE WHEN o.typ = 'akce' THEN coalesce(o.zverejneno_at, o.vytvoreno_at) ELSE o.datum END)`;
     let q = this.db
       .selectFrom('web_obsah as o')
       .leftJoin('soubory as s', 's.id', 'o.obrazek_id')
       .leftJoin('web_kategorie as k', 'k.id', 'o.kategorie_id')
       .select([
         'o.id',
+        'o.typ',
         'o.titulek',
         'o.slug',
         'o.perex',
-        'o.datum',
+        'o.datum as akce_datum',
+        'o.akce_cely_den',
         'o.obrazek_id',
         's.alt as obrazek_alt',
         's.puvodni_nazev as obrazek_nazev',
         'k.nazev as kategorie',
         'k.slug as kategorie_slug',
       ])
-      .where('o.typ', '=', 'aktualita')
+      .select(razeni.as('datum'))
       .where('o.stav', '=', 'zverejneno')
       .where('o.smazano_at', 'is', null)
-      .where('o.datum', '<=', new Date());
+      .where((eb) =>
+        eb.or([
+          eb.and([eb('o.typ', '=', 'aktualita'), eb('o.datum', '<=', ted)]),
+          eb.and([eb('o.typ', '=', 'akce'), eb('o.v_aktualitach', '=', true)]),
+        ]),
+      );
     if (v.kategorie) q = q.where('o.kategorie_id', '=', v.kategorie);
     const radky = await q
-      .orderBy('o.datum', 'desc')
+      .orderBy(razeni, 'desc')
+      .orderBy('o.id')
       .limit(n + 1)
       .offset((strana - 1) * n)
       .execute();
@@ -217,6 +228,7 @@ export class ObsahCteni {
         'o.akce_cely_den',
         'o.akce_misto',
         'o.obrazek_id',
+        'o.rezervace_ref',
         's.alt as obrazek_alt',
         's.puvodni_nazev as obrazek_nazev',
       ])

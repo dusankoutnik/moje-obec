@@ -1888,40 +1888,50 @@ body.zakladni .panel-hlavni {
     backdrop-filter: blur(6px);
   }
 }
-.statistiky dl {
+.statistiky .stat-seznam {
   /* flex místo gridu: neúplný poslední řádek se vycentruje */
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.1rem 1.2rem;
   margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .stat {
   flex: 0 1 148px;
   min-width: min(128px, 100%);
   text-align: center;
   display: flex;
+}
+/* celá dlaždice je jeden odkaz (číslo + popisek = přístupný název odkazu) */
+.stat-in {
+  flex: 1;
+  display: flex;
   flex-direction: column-reverse;
   /* u column-reverse je flex-end nahoře → čísla v jedné řadě i při dvouřádkovém popisku */
   justify-content: flex-end;
   gap: 0.25em;
+  padding: 0.35rem 0.4rem;
+  border-radius: 0.6rem;
+  color: inherit;
+  text-decoration: none;
 }
-.stat dd {
-  margin: 0;
+a.stat-in:hover,
+a.stat-in:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+}
+a.stat-in:hover .stat-hodnota {
+  text-decoration: underline;
+}
+.stat-hodnota {
   font-family: var(--pismo-nadpis);
   font-weight: 700;
   font-size: 2.1rem;
   line-height: 1.1;
   color: var(--na-tmave);
 }
-.stat dd a {
-  color: inherit;
-  text-decoration: none;
-}
-.stat dd a:hover {
-  text-decoration: underline;
-}
-.stat dt {
+.stat-popisek {
   font-size: 0.74rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -3108,4 +3118,37 @@ button.kviz-odpoved:active {
 }
 .devlog li {
   margin-bottom: 0.35rem;
+}
+
+/* správa webu → Akce ke zpracování */
+.seznam-zpracovani {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.seznam-zpracovani > li {
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--linka);
+}
+.seznam-zpracovani > li:first-child {
+  border-top: 0;
+}
+.seznam-zpracovani p {
+  margin: 0 0 0.4rem;
+}
+.tlacitka-radek {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.formular-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+.formular-inline select {
+  max-width: 100%;
 }

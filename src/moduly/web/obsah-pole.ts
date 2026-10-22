@@ -56,6 +56,8 @@ export interface PoleObsahu {
   akce_konec: string | null;
   akce_cely_den: boolean;
   akce_misto: string;
+  /** akce: ukázat i v Aktualitách jako pozvánku */
+  v_aktualitach: boolean;
 }
 
 export const PRAZDNA_POLE: PoleObsahu = {
@@ -72,6 +74,7 @@ export const PRAZDNA_POLE: PoleObsahu = {
   akce_konec: null,
   akce_cely_den: false,
   akce_misto: '',
+  v_aktualitach: false,
 };
 
 export function poleZRadku(o: WebObsah): PoleObsahu {
@@ -89,6 +92,7 @@ export function poleZRadku(o: WebObsah): PoleObsahu {
     akce_konec: o.akce_konec ? o.akce_konec.toISOString() : null,
     akce_cely_den: o.akce_cely_den,
     akce_misto: o.akce_misto,
+    v_aktualitach: o.v_aktualitach,
   };
 }
 
@@ -112,6 +116,7 @@ export function doSloupcu(p: PoleObsahu) {
     akce_konec: p.akce_konec ? new Date(p.akce_konec) : null,
     akce_cely_den: p.akce_cely_den,
     akce_misto: p.akce_misto,
+    v_aktualitach: p.v_aktualitach === true,
   };
 }
 

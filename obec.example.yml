@@ -41,9 +41,9 @@ obec:
   # Zpracovatelé osobních údajů (GDPR čl. 28) — hosting, SMS brána, e-mailová služba podle smluv obce
   zpracovatele: []
   #  - { nazev: 'Poskytovatel serveru s.r.o.', ucel: 'pronájem serveru, na kterém web běží' }
-  # Fakta do úvodu webu (statistiky), např.:
+  # Fakta do úvodu webu (statistiky, nejvýš tři). Nepovinný odkaz = kam dlaždice vede (cesta na webu /… nebo https://…):
   fakta:
-    - { hodnota: '500', popisek: 'obyvatel' }
+    - { hodnota: '500', popisek: 'obyvatel', odkaz: /kontakt }
   # Zastupitelstvo: volební období a poznámka (zobrazí se u seznamu lidí na stránce Kontakt a v bodě 3), např.:
   zastupitelstvo:
     volebni_obdobi: ''
@@ -79,6 +79,14 @@ moduly:
   odstavky: false
   rezervace: false
   knihovna: false
+
+# Obecní web (modul web)
+web:
+  # veřejné termíny z rezervačního systému (REZERVACE_KALENDAR_URL v .env) zakládat jako koncepty akcí — redaktor je
+  # najde ve správě webu v „Akce ke zpracování“, doplní text a zveřejní, nebo označí „jen v kalendáři“
+  akce_koncepty: true
+  # statistika „zpráv za poslední měsíc“ v úvodu: slug kategorie aktualit (např. obecni-urad); prázdné = všechny
+  stat_zpravy_kategorie: ''
 
 # Elektronická podatelna (modul podatelna)
 podatelna:

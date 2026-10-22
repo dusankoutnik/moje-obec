@@ -2,8 +2,10 @@
 <p><a href="/infokanal/sprava">← <%= it.t('infokanal.hlaseni') %></a></p>
 <h1><%= it.t('infokanal.nove_hlaseni') %></h1>
 <% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<% if (it.prispevek) { %><div class="flash flash-info" role="status"><%= it.t('propojeni.rozesilate', { titulek: it.prispevek.titulek }) %></div><% } %>
 <form method="post" action="/infokanal/sprava/nove" class="formular siroky">
   <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <% if (it.prispevek) { %><input type="hidden" name="obsah_id" value="<%= it.prispevek.id %>"><% } %>
   <div class="radek">
     <div>
       <label for="kategorie_id"><%= it.t('infokanal.kategorie_pole') %></label>
@@ -33,9 +35,11 @@
   <input id="email_predmet" name="email_predmet" maxlength="200" value="<%= it.f.email_predmet || '' %>">
   <label for="email_text"><%= it.t('infokanal.email_text') %></label>
   <textarea id="email_text" name="email_text" rows="8"><%= it.f.email_text || '' %></textarea>
+  <% if (!it.prispevek) { %>
   <label for="clanek_titulek"><%= it.t('infokanal.clanek_titulek') %></label>
   <input id="clanek_titulek" name="clanek_titulek" maxlength="200" value="<%= it.f.clanek_titulek || '' %>">
   <label for="clanek_text"><%= it.t('infokanal.clanek_html') %></label>
   <textarea id="clanek_text" name="clanek_text" rows="6"><%= it.f.clanek_text || '' %></textarea>
+  <% } %>
   <button class="tlacitko" type="submit"><%= it.t('infokanal.odeslat') %></button>
 </form>

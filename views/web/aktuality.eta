@@ -8,7 +8,7 @@
 <% } %>
 <% if (!it.radky.length) { %><p class="prazdne"><%= it.t('web.zadne_aktuality') %></p><% } %>
 <div class="karty-clanku seznam-clanku">
-  <% it.radky.forEach(function (a) { %><%~ include('/web/_karta-aktuality', { a: a, obr: it.obr, fmtDatum: it.fmtDatum, zkrat: it.zkrat, h: 2 }) %><% }) %>
+  <% it.radky.forEach(function (a) { %><%~ include('/web/_karta-aktuality', { a: a, obr: it.obr, fmtDatum: it.fmtDatum, zkrat: it.zkrat, t: it.t, h: 2 }) %><% }) %>
 </div>
 <nav class="strankovani" aria-label="<%= it.t('deska.strankovani') %>">
   <% var k = it.aktivni ? 'kategorie=' + it.aktivni + '&' : ''; %>

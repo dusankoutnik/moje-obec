@@ -22,21 +22,61 @@ function sloucAkce<T extends { datum: Date | null }, U extends { datum: Date }>(
 
 async function webVerejne(app: FastifyInstance, s: WebSluzby) {
   const t = app.t;
+
+  /**
+   * Nadcházející akce webu + termíny z rezervací. Termín propojený se ZVEŘEJNĚNOU akcí webu se nahradí touto akcí
+   * (odkaz /akce/<slug>); u série se bere nejbližší výskyt a text opakování z rezervací. Akce webu, která je
+   * takto zastoupená, se podruhé nevypisuje.
+   */
+  async function nadchazejiciAkce(limitWebu: number) {
+    const [akceWebu, externi] = await Promise.all([s.obsah.akce({ limit: limitWebu }), s.kalendar.akce()]);
+    const propojene = await s.propojeni.zverejnenePropojene(externi.map((e) => e.ref));
+    const podleRef = new Map(propojene.map((a) => [a.rezervace_ref!, a]));
+    const ted = new Date();
+    const zastoupene = new Set<string>();
+    const ext: ((typeof externi)[number] | (typeof propojene)[number] | Record<string, unknown>)[] = [];
+    for (const e of externi) {
+      const a = podleRef.get(e.ref);
+      if (!a) {
+        ext.push(e);
+        continue;
+      }
+      if (zastoupene.has(a.id)) continue;
+      zastoupene.add(a.id);
+      if (e.opakovani)
+        ext.push({
+          ...a,
+          datum: e.datum,
+          akce_konec: e.akce_konec,
+          akce_cely_den: e.akce_cely_den,
+          opakovani: e.opakovani,
+        });
+      // jednorázová akce: platí termín z webu (redaktor ho mohl upravit); proběhlá už mezi nadcházející nepatří
+      else if (a.datum && (a.akce_konec ?? new Date(a.datum.getTime() + 86_400_000)) >= ted) ext.push(a);
+    }
+    return sloucAkce(
+      akceWebu.filter((a) => !zastoupene.has(a.id)),
+      ext as { datum: Date }[],
+    ) as (Awaited<ReturnType<typeof s.obsah.akce>>[number] & {
+      externi?: boolean;
+      url?: string | null;
+      opakovani?: string | null;
+    })[];
+  }
+
   const pomocnici = { urlSouboru, lidskaVelikost, popisTypu, zkrat, textZHtml, odkazAkce };
   const obr = (id: string | null, nazev: string | null | undefined, nahled = true) =>
     id ? urlSouboru({ id, puvodni_nazev: nazev ?? 'obrazek.jpg' }, nahled) : '';
 
   app.decorate('webUvod', async (_req: FastifyRequest, reply: FastifyReply) => {
-    const [aktuality, akceWebu, externi, dotace, videaTitulky, videaCelkem] = await Promise.all([
+    const [aktuality, vsechnyAkce, dotace, videaTitulky, videaCelkem] = await Promise.all([
       s.obsah.aktuality({ naStranku: 4 }),
-      s.obsah.akce({ limit: 5 }),
-      s.kalendar.akce(),
+      nadchazejiciAkce(6),
       s.dotace.aktivni(),
       s.videa.seznam({ verejne: true, naTitulce: true, limit: 4 }),
       s.videa.pocetVerejnych(),
     ]);
     const videa = await s.videa.proZobrazeni(videaTitulky);
-    const vsechnyAkce = sloucAkce(akceWebu, externi);
     const akce = vsechnyAkce.slice(0, 3); // panel „Nadcházející akce“
     const vsechnaDeska = app.obec.moduly.deska ? await app.deska.aktualni() : [];
     const deska = vsechnaDeska.slice(0, 5);
@@ -44,7 +84,7 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
     const statistiky: { hodnota: string; cislo?: number; popisek: string; odkaz?: string }[] = [];
     for (const f of app.obec.obec.fakta.slice(0, 3)) {
       const c = /^\d+$/.test(f.hodnota) ? Number(f.hodnota) : undefined;
-      statistiky.push({ hodnota: f.hodnota, cislo: c, popisek: f.popisek });
+      statistiky.push({ hodnota: f.hodnota, cislo: c, popisek: f.popisek, odkaz: f.odkaz });
     }
     if (app.obec.moduly.deska)
       statistiky.push({
@@ -63,24 +103,28 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
           odkaz: '/infokanal',
         });
     }
+    // zprávy za poslední měsíc: jen kategorie z obec.yml (web.stat_zpravy_kategorie), jinak všechny aktuality
     const pred30 = new Date(Date.now() - 30 * 86_400_000);
-    const noveAktuality = await app.db
+    const slugZprav = app.obec.web.stat_zpravy_kategorie;
+    const katZprav = slugZprav ? (await s.obsah.kategorie()).find((k) => k.slug === slugZprav) : undefined;
+    let dotazZprav = app.db
       .selectFrom('web_obsah')
       .select((eb) => eb.fn.countAll<number>().as('n'))
       .where('typ', '=', 'aktualita')
       .where('stav', '=', 'zverejneno')
       .where('smazano_at', 'is', null)
       .where('datum', '>=', pred30)
-      .where('datum', '<=', new Date())
-      .executeTakeFirstOrThrow();
+      .where('datum', '<=', new Date());
+    if (katZprav) dotazZprav = dotazZprav.where('kategorie_id', '=', katZprav.id);
+    const noveAktuality = await dotazZprav.executeTakeFirstOrThrow();
     statistiky.push({
       hodnota: String(Number(noveAktuality.n)),
       cislo: Number(noveAktuality.n),
       popisek: t('web.stat_aktuality'),
-      odkaz: '/aktuality',
+      odkaz: katZprav ? `/aktuality?kategorie=${encodeURIComponent(katZprav.slug)}` : '/aktuality',
     });
-    // čtyři nejbližší akce (web + rezervace sálu a hřišť + předprodej)
-    vsechnyAkce.slice(0, 4).forEach((a, i) => {
+    // pět nejbližších akcí (web + rezervace sálu a hřišť + předprodej), každá vede na svou stránku
+    vsechnyAkce.slice(0, 5).forEach((a, i) => {
       if (!a.datum) return;
       statistiky.push({
         hodnota: a.datum.toLocaleDateString('cs-CZ', {
@@ -132,7 +176,7 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
     const polozky = radky
       .map(
         (a) =>
-          `<item><title>${x(a.titulek)}</title><link>${base}/aktuality/${a.slug}</link><guid isPermaLink="false">${a.id}</guid>${a.datum ? `<pubDate>${a.datum.toUTCString()}</pubDate>` : ''}<description>${x(a.perex)}</description></item>`,
+          `<item><title>${x(a.titulek)}</title><link>${base}/${a.typ === 'akce' ? 'akce' : 'aktuality'}/${a.slug}</link><guid isPermaLink="false">${a.id}</guid>${a.datum ? `<pubDate>${a.datum.toUTCString()}</pubDate>` : ''}<description>${x(a.perex)}</description></item>`,
       )
       .join('\n');
     return reply
@@ -172,16 +216,27 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
 
   app.get<{ Querystring: { probehle?: string } }>('/akce', async (req, reply) => {
     const probehle = req.query.probehle === '1';
-    const akceWebu = await s.obsah.akce({ probehle, limit: 100 });
-    // akce sálu, hřišť a předprodeje z rezervací — jen nadcházející (proběhlé se nezobrazují)
-    const akce = probehle ? akceWebu : sloucAkce(akceWebu, await s.kalendar.akce());
+    // akce sálu, hřišť a předprodeje z rezervací — jen nadcházející (proběhlé se nezobrazují); propojené
+    // se zveřejněnou akcí webu se ukážou jako ona
+    let akce;
+    if (probehle) {
+      // akce propojená s běžící sérií má v databázi první termín — mezi proběhlé nepatří, dokud série běží
+      const bezici = new Set((await s.kalendar.akce()).filter((e) => e.opakovani).map((e) => e.ref));
+      akce = (await s.obsah.akce({ probehle, limit: 100 })).filter(
+        (a) => !a.rezervace_ref || !bezici.has(a.rezervace_ref),
+      );
+    } else akce = await nadchazejiciAkce(100);
     return reply.view('web/akce', { titulek: t('web.akce'), akce, probehle, obr, ...pomocnici });
   });
 
   app.get<{ Params: { slug: string } }>('/akce/:slug', async (req, reply) => {
     const o = await s.obsah.podleSlugu('akce', req.params.slug);
     if (!o) return reply.callNotFound();
-    return detail(reply, o, { zpet: { url: '/akce', text: t('web.akce') } });
+    // akce propojená se sérií v rezervacích: nejbližší termín a opakování z rezervací
+    const serie = o.rezervace_ref?.startsWith('s')
+      ? (await s.kalendar.akce()).find((e) => e.ref === o.rezervace_ref)
+      : undefined;
+    return detail(reply, o, { zpet: { url: '/akce', text: t('web.akce') }, serie });
   });
 
   app.get('/galerie', async (_req, reply) => {
