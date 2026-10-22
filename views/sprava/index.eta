@@ -8,7 +8,7 @@
   <article class="karta"><h2><a href="/infokanal/sprava"><%= it.obec.texty.nazev_infokanalu %></a></h2><p><%= it.t('sprava.infokanal_text') %></p><a class="tlacitko" href="/infokanal/sprava/nove"><%= it.t('infokanal.nove_hlaseni') %></a></article>
   <% } %>
   <% if (it.jeWeb && it.obec.moduly.web) { %>
-  <article class="karta"><h2><a href="/sprava/web"><%= it.t('web.sprava_titulek') %></a></h2><p><%= it.t('sprava.web_text') %></p><a class="tlacitko" href="/sprava/web/novy?typ=aktualita"><%= it.t('web.napsat_aktualitu') %></a></article>
+  <article class="karta"><h2><a href="/sprava/web"><%= it.t('web.sprava_titulek') %></a></h2><p><%= it.t('sprava.web_text') %></p><% if (it.akceKeZpracovani) { %><p class="cislo"><a href="/sprava/web/akce/zpracovani"><%= it.t('propojeni.dashboard', { n: it.akceKeZpracovani }) %></a></p><% } %><a class="tlacitko" href="/sprava/web/novy?typ=aktualita"><%= it.t('web.napsat_aktualitu') %></a></article>
   <% } %>
   <% if (it.jeSpravce && it.obec.moduly.web) { %>
   <article class="karta"><h2><a href="/sprava/web/vzhled">🎨 <%= it.t('web.vzhled') %></a></h2><p><%= it.t('web.vzhled_text') %></p><a class="tlacitko" href="/sprava/web/vzhled"><%= it.t('web.vzhled_zmenit') %></a></article>

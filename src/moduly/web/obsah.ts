@@ -38,6 +38,9 @@ export interface NavicUlozeni {
   puvodniUrl?: string | null;
   hlaseniId?: string | null;
   zverejnenoAt?: Date | null;
+  /** propojení s termínem v rezervačním systému (koncept ze synchronizace) */
+  rezervaceRef?: string | null;
+  rezervaceTermin?: string | null;
 }
 
 export class ObsahSluzba extends ObsahCteni {
@@ -208,6 +211,8 @@ export class ObsahSluzba extends ObsahCteni {
         zdroj: navic.zdroj ?? '',
         puvodni_url: navic.puvodniUrl ?? null,
         hlaseni_id: navic.hlaseniId ?? null,
+        rezervace_ref: navic.rezervaceRef ?? null,
+        rezervace_termin: navic.rezervaceRef ? (navic.rezervaceTermin ?? null) : null,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -351,7 +356,25 @@ export class ObsahSluzba extends ObsahCteni {
     if (!smazat) {
       // při obnově může být adresa mezitím obsazená
       const slug = await this.unikatniSlug(o.typ, o.slug, o.id, !o.nadrazena_id);
-      await this.db.updateTable('web_obsah').set({ smazano_at: null, slug }).where('id', '=', id).execute();
+      // termín z rezervací mezitím mohla převzít jiná akce — obnovená akce pak zůstane nepropojená
+      const refObsazeny =
+        !!o.rezervace_ref &&
+        !!(await this.db
+          .selectFrom('web_obsah')
+          .select('id')
+          .where('rezervace_ref', '=', o.rezervace_ref)
+          .where('smazano_at', 'is', null)
+          .where('id', '!=', o.id)
+          .executeTakeFirst());
+      await this.db
+        .updateTable('web_obsah')
+        .set({
+          smazano_at: null,
+          slug,
+          ...(refObsazeny ? { rezervace_ref: null, rezervace_termin: null } : {}),
+        })
+        .where('id', '=', id)
+        .execute();
     } else {
       await this.db.updateTable('web_obsah').set({ smazano_at: new Date() }).where('id', '=', id).execute();
       // podstránky smazané stránky se přesunou o úroveň výš (nic se neztratí)

@@ -1,12 +1,14 @@
 # Akce: propojení rezervace, kalendáře, pozvánky a rozesílky (návrh 22. 10. 2026)
 
 ## Cíl
+
 Jedna společenská akce (koncert v sále, turnaj na hřišti, jóga každý čtvrtek) má dnes až čtyři podoby, které spolu
 nevědí: **rezervace** v rezervačním systému, **položka v kalendáři** `/akce`, **pozvánka** (článek v Aktualitách,
 typicky „Obec informuje“ nebo „Kultura a akce“) a **rozesílka** infokanálem. Cíl: jedna akce = jeden záznam
 na webu, ke kterému se ostatní podoby připojí — a nezáleží na tom, co vznikne dřív.
 
 ## Model
+
 - Ústředním bodem je **záznam obsahu typu `akce`** (`web_obsah`, už dnes má datum, konec, celý den, místo,
   text, obrázek, kategorii a `hlaseni_id`).
 - Nový sloupec `web_obsah.rezervace_ref` (text, unikátní mezi nesmazanými): odkaz na termín v rezervačním
@@ -18,6 +20,7 @@ na webu, ke kterému se ostatní podoby připojí — a nezáleží na tom, co v
 - Rozesílka: `web_obsah.hlaseni_id` (už existuje) — u záznamu se zobrazí „Rozesláno <datum>, <n> příjemcům“.
 
 ## Toky
+
 1. **Nejdřív rezervace.** Synchronizace kalendáře (při každém načtení API, keš 10 min, plus cron) pro každou
    veřejnou rezervaci bez propojení:
    - když najde nepropojenou akci na webu ve **stejný den** s podobným názvem nebo časem (normalizovaný název
@@ -42,6 +45,7 @@ na webu, ke kterému se ostatní podoby připojí — a nezáleží na tom, co v
    (hlášení → článek) už existuje.
 
 ## Úvodní statistiky
+
 Každé číslo je odkaz: fakta z `obec.yml` mají nepovinné `odkaz` (obyvatel → `/ucet`, osady →
 `/obec/informace-o-obci`); úřední deska → `/uredni-deska`; odběratelé → `/infokanal`; zprávy za měsíc =
 počet aktualit kategorie z `web.stat_zpravy_kategorie` (Vlastibořice `obecni-urad`) s odkazem na

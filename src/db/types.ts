@@ -282,11 +282,23 @@ export interface WebObsahTable {
   zdroj: Generated<string>;
   puvodni_url: string | null;
   hlaseni_id: string | null;
+  /** termín v rezervačním systému: r<id> / s<id> (série) / e<id> (předprodej) */
+  rezervace_ref: string | null;
+  /** podpis termínu z rezervací při propojení (pro hlídání změn) */
+  rezervace_termin: string | null;
+  /** akce se ukáže i v Aktualitách jako pozvánka */
+  v_aktualitach: Generated<boolean>;
   vytvoreno_at: TimestampGenerated;
   upraveno_at: TimestampGenerated;
   smazano_at: TimestampNullable;
 }
 export type WebObsah = Selectable<WebObsahTable>;
+export interface WebAkceIgnorovaneTable {
+  ref: string;
+  nazev: Generated<string>;
+  kdo: string | null;
+  kdy: TimestampGenerated;
+}
 export interface WebRevizeTable {
   id: Generated<number>;
   obsah_id: string;
@@ -474,6 +486,7 @@ export interface Database {
   web_kategorie: WebKategorieTable;
   web_obsah: WebObsahTable;
   web_revize: WebRevizeTable;
+  web_akce_ignorovane: WebAkceIgnorovaneTable;
   web_galerie: WebGalerieTable;
   web_galerie_fotky: WebGalerieFotkyTable;
   web_dokumenty: WebDokumentyTable;

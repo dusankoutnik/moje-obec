@@ -77,6 +77,35 @@
         <label for="misto"><%= it.t('web.kde') %></label>
         <input id="misto" name="misto" maxlength="200" value="<%= f.akce_misto %>">
       </section>
+      <section class="karta">
+        <h2><%= it.t('propojeni.pozvanka_titulek') %></h2>
+        <label class="zatrzitko"><input type="checkbox" name="v_aktualitach" value="ano" aria-describedby="vakt-n" <%= f.v_aktualitach ? 'checked' : '' %>> <%= it.t('propojeni.v_aktualitach') %></label>
+        <p class="napoveda" id="vakt-n"><%= it.t('propojeni.v_aktualitach_napoveda') %></p>
+        <label for="kategorie_id"><%= it.t('web.kategorie') %></label>
+        <select id="kategorie_id" name="kategorie_id"><option value=""><%= it.t('web.bez_kategorie') %></option>
+          <% it.kategorie.forEach(function (k) { %><option value="<%= k.id %>" <%= f.kategorie_id === k.id ? 'selected' : '' %>><%= k.nazev %></option><% }) %>
+        </select>
+      </section>
+      <% if (it.nabidka.length || (o && o.rezervace_ref)) { %>
+      <section class="karta">
+        <h2><%= it.t('propojeni.editor_titulek') %></h2>
+        <label for="rezervace_ref"><%= it.t('propojeni.editor_pole') %></label>
+        <select id="rezervace_ref" name="rezervace_ref" aria-describedby="rez-n">
+          <option value=""><%= it.t('propojeni.editor_nepropojovat') %></option>
+          <% if (o && o.rezervace_ref && !it.propojenyTermin) { %><option value="<%= o.rezervace_ref %>" selected><%= it.t('propojeni.editor_uz_neni', { ref: o.rezervace_ref }) %></option><% } %>
+          <% it.nabidka.forEach(function (e) { %><option value="<%= e.ref %>" <%= o && o.rezervace_ref === e.ref ? 'selected' : '' %>><%= e.titulek %> — <%= e.opakovani ? e.opakovani : it.fmtDatum(e.datum, !e.akce_cely_den) %> · <%= e.akce_misto %></option><% }) %>
+        </select>
+        <p class="napoveda" id="rez-n"><%= it.t('propojeni.editor_napoveda') %></p>
+      </section>
+      <% } %>
+      <% } %>
+
+      <% if (it.rozesilka) { %>
+      <section class="karta">
+        <h2><%= it.t('propojeni.rozesilka_titulek') %></h2>
+        <% if (it.rozesilka.hlaseni) { %><p><%= it.t('propojeni.rozeslano', { datum: it.fmtDatum(it.rozesilka.hlaseni.naplanovano_na || it.rozesilka.hlaseni.vytvoreno_at), n: it.rozesilka.hlaseni.prijemcu }) %> <a href="/infokanal/sprava/hlaseni/<%= it.rozesilka.hlaseni.id %>"><%= it.t('propojeni.rozeslano_detail') %></a></p><% } %>
+        <% if (it.rozesilka.muze) { %><p><a class="tlacitko sekundarni" href="/infokanal/sprava/nove?obsah=<%= o.id %>"><%= it.t('propojeni.rozeslat') %></a></p><% } else { %><p class="napoveda"><%= it.t('propojeni.rozeslat_az_zverejnene') %></p><% } %>
+      </section>
       <% } %>
 
       <% if (typ === 'stranka' || typ === 'odkaz') { %>
