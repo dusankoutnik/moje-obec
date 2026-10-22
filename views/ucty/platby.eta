@@ -1,0 +1,54 @@
+<% layout('/layout') %>
+<p><a href="/ucet"><%= it.t('muj_ucet.platby_zpet') %></a></p>
+<h1><%= it.t('muj_ucet.platby_titulek') %></h1>
+<% if (!it.data) { %>
+<p class="flash flash-info"><%= it.t('muj_ucet.platby_nedostupne') %></p>
+<% } else { const d = it.data; %>
+<section class="karta" aria-labelledby="mesic-h">
+  <h2 id="mesic-h"><%= it.t('muj_ucet.platby_mesic', { obdobi: d.mesic.obdobi }) %></h2>
+  <p class="napoveda"><%= it.t('muj_ucet.platby_mesic_text') %></p>
+  <% if (!d.mesic.polozky.length) { %><p><%= it.t('muj_ucet.platby_mesic_zadne') %></p><% } else { %>
+  <div class="tabulka-obal"><table class="tabulka">
+    <thead><tr><th scope="col"><%= it.t('muj_ucet.platby_datum') %></th><th scope="col"><%= it.t('muj_ucet.platby_co') %></th><th scope="col"><%= it.t('muj_ucet.platby_cena') %></th></tr></thead>
+    <tbody>
+    <% d.mesic.polozky.forEach(function (p) { %>
+      <tr><td><%= p.datum %> <%= p.cas %></td><td><%= p.co %><%= p.ucel ? ' — ' + p.ucel : '' %><%= p.ceka ? ' (' + it.t('muj_ucet.rez_ceka') + ')' : '' %></td><td><%= p.cena ? p.cena + ' Kč' : it.t('muj_ucet.platby_zdarma') %></td></tr>
+    <% }) %>
+    </tbody>
+    <tfoot><tr><th scope="row" colspan="2"><%= it.t('muj_ucet.platby_soucet') %></th><td><strong><%= d.mesic.soucet %> Kč</strong><%= d.mesic.cekajici ? ' ' + it.t('muj_ucet.platby_po_schvaleni', { castka: d.mesic.cekajici }) : '' %></td></tr></tfoot>
+  </table></div>
+  <% } %>
+</section>
+<section class="karta" aria-labelledby="vyuct-h">
+  <h2 id="vyuct-h"><%= it.t('muj_ucet.platby_vyuctovani') %></h2>
+  <% if (!d.vyuctovani.length) { %><p><%= it.t('muj_ucet.platby_vyuctovani_zadne') %></p><% } else { %>
+  <div class="tabulka-obal"><table class="tabulka">
+    <thead><tr><th scope="col"><%= it.t('muj_ucet.platby_cislo') %></th><th scope="col"><%= it.t('muj_ucet.platby_obdobi') %></th><th scope="col"><%= it.t('muj_ucet.platby_castka') %></th><th scope="col"><%= it.t('muj_ucet.platby_splatnost') %></th><th scope="col"><%= it.t('muj_ucet.platby_stav') %></th><th scope="col"><%= it.t('muj_ucet.platby_pdf') %></th></tr></thead>
+    <tbody>
+    <% d.vyuctovani.forEach(function (v) { %>
+      <tr>
+        <td><%= v.cislo %></td><td><%= v.obdobi %></td><td><%= v.castka %> Kč</td><td><%= v.splatnost %></td>
+        <td><%= v.zaplaceno ? it.t('muj_ucet.platby_zaplaceno', { datum: v.zaplaceno }) : (v.poSplatnosti ? it.t('muj_ucet.platby_po_splatnosti') : it.t('muj_ucet.platby_k_uhrade')) %>
+          <% if (!v.zaplaceno && v.platba) { %><br><a href="<%= v.platba %>"><%= it.t('muj_ucet.platby_qr') %></a><% } %></td>
+        <td><a href="<%= v.pdf %>"><%= it.t('muj_ucet.platby_pdf') %><span class="vh"> <%= v.cislo %></span></a><% if (v.potvrzeni) { %> · <a href="<%= v.potvrzeni %>"><%= it.t('muj_ucet.platby_potvrzeni') %></a><% } %></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+  <% } %>
+</section>
+<% if (it.predprodej && d.predprodej.length) { %>
+<section class="karta" aria-labelledby="pp-h">
+  <h2 id="pp-h"><%= it.t('muj_ucet.platby_predprodej') %></h2>
+  <div class="tabulka-obal"><table class="tabulka">
+    <thead><tr><th scope="col"><%= it.t('muj_ucet.platby_akce') %></th><th scope="col"><%= it.t('muj_ucet.platby_vstupenek') %></th><th scope="col"><%= it.t('muj_ucet.platby_castka') %></th><th scope="col"><%= it.t('muj_ucet.platby_stav') %></th></tr></thead>
+    <tbody>
+    <% d.predprodej.forEach(function (o) { %>
+      <tr><td><%= o.akce %> (<%= o.datum %>)</td><td><%= o.pocet %></td><td><%= o.castka %> Kč</td>
+        <td><%= o.zaplaceno ? it.t('muj_ucet.platby_zaplaceno', { datum: o.zaplaceno }) : o.stav %> · <a href="<%= o.odkaz %>"><%= it.t('muj_ucet.platby_objednavka') %></a></td></tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+</section>
+<% } %>
+<% } %>

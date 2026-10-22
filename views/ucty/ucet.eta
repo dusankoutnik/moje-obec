@@ -1,13 +1,31 @@
 <% layout('/layout') %>
 <h1><%= it.t('ucet.titulek') %></h1>
+<nav aria-label="<%= it.t('muj_ucet.obsah') %>" class="ucet-obsah">
+  <ul class="stitky">
+    <li><a href="#udaje"><%= it.t('ucet.udaje') %></a></li>
+    <% if (it.moduly.infokanal) { %><li><a href="#odber"><%= it.t('muj_ucet.odber_nadpis') %></a></li><% } %>
+    <% if (it.moduly.rezervace) { %><li><a href="#rezervace"><%= it.t('muj_ucet.rez_nadpis') %></a></li><li><a href="#zamky"><%= it.t('muj_ucet.zamky_nadpis') %></a></li><% } %>
+    <% if (it.moduly.spolujizda) { %><li><a href="#spolujizda"><%= it.t('muj_ucet.spolu_nadpis') %></a></li><% } %>
+    <% if (it.moduly.eknihy) { %><li><a href="#eknihy"><%= it.t('muj_ucet.eknihy_nadpis') %></a></li><% } %>
+    <li><a href="#soukromi"><%= it.t('muj_ucet.soukromi') %></a></li>
+  </ul>
+</nav>
+<% if (it.nabidkaEmailu) { %>
+<section class="karta" aria-labelledby="nabidka-emailu">
+  <h2 id="nabidka-emailu"><%= it.t('muj_ucet.eklic_email_nabidka') %></h2>
+  <p><%= it.t('muj_ucet.eklic_email_nabidka_text', { email: it.nabidkaEmailu }) %></p>
+  <form method="post" action="/ucet/eklic-email" class="inline">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <button class="tlacitko" type="submit" name="akce" value="ano"><%= it.t('muj_ucet.eklic_email_ano_tl', { email: it.nabidkaEmailu }) %></button>
+    <button class="tlacitko sekundarni" type="submit" name="akce" value="ne"><%= it.t('muj_ucet.eklic_email_ne_tl') %></button>
+  </form>
+</section>
+<% } %>
 <div class="sloupce">
-<section class="karta">
-  <h2><%= it.t('ucet.udaje') %></h2>
+<section class="karta" id="udaje" aria-labelledby="udaje-h">
+  <h2 id="udaje-h"><%= it.t('ucet.udaje') %></h2>
   <form method="post" action="/ucet" class="formular">
     <input type="hidden" name="_csrf" value="<%= it.csrf %>">
-    <label for="telefon"><%= it.t('ucet.telefon') %></label>
-    <input id="telefon" type="tel" value="<%= it.fmtTelefon(it.u.telefon) %>" readonly aria-describedby="telefon-napoveda">
-    <p class="napoveda" id="telefon-napoveda"><%= it.t('ucet.telefon_napoveda') %></p>
     <div class="radek">
       <div><label for="jmeno"><%= it.t('ucet.jmeno') %></label><input id="jmeno" name="jmeno" autocomplete="given-name" maxlength="100" value="<%= it.u.jmeno %>"></div>
       <div><label for="prijmeni"><%= it.t('ucet.prijmeni') %></label><input id="prijmeni" name="prijmeni" autocomplete="family-name" maxlength="100" value="<%= it.u.prijmeni %>"></div>
@@ -21,9 +39,17 @@
     </select>
     <button class="tlacitko" type="submit"><%= it.t('app.ulozit') %></button>
   </form>
-</section>
-<section class="karta">
-  <h2><%= it.t('ucet.email') %> a <%= it.t('prihlaseni.heslo').toLowerCase() %></h2>
+  <h3><%= it.t('ucet.telefon') %></h3>
+  <p><strong><%= it.fmtTelefon(it.u.telefon) %></strong></p>
+  <% if (it.zmenaTelefonu) { %>
+  <div class="flash flash-info"><%= it.t('muj_ucet.telefon_ceka', { telefon: it.fmtTelefon(it.zmenaTelefonu.telefon_novy), datum: it.fmtDatum(it.zmenaTelefonu.vytvoreno_at) }) %>
+    <form method="post" action="/ucet/telefon/zrusit" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"> <button class="odkaz-tlacitko" type="submit"><%= it.t('muj_ucet.telefon_zrusit') %></button></form>
+  </div>
+  <% } else { %>
+  <p class="napoveda"><%= it.t('ucet.telefon_napoveda') %></p>
+  <p><a class="tlacitko sekundarni" href="/ucet/telefon"><%= it.t('muj_ucet.telefon_zmenit') %></a></p>
+  <% } %>
+  <h3><%= it.t('ucet.email') %> a <%= it.t('prihlaseni.heslo').toLowerCase() %></h3>
   <p class="napoveda"><%= it.t('ucet.citlive_napoveda') %></p>
   <dl class="seznam">
     <dt><%= it.t('ucet.email') %></dt><dd><%= it.u.email || it.t('ucet.email_zadny') %></dd>
@@ -39,18 +65,143 @@
     <a class="tlacitko sekundarni" href="/ucet/email"><%= it.u.email ? it.t('ucet.email_zmenit') : it.t('ucet.email_pridat') %></a>
     <% if (it.u.email) { %><a class="tlacitko sekundarni" href="/ucet/heslo"><%= it.t('ucet.heslo_zmenit') %></a><% } %>
   </p>
-  <h2><%= it.t('ucet.propojene') %></h2>
   <dl class="seznam">
     <dt><%= it.t('ucet.role') %></dt><dd><%= it.u.role.length ? it.u.role.join(', ') : it.t('ucet.role_obcan') %></dd>
     <dt><%= it.t('ucet.rezident') %></dt><dd><%= it.u.rezident ? it.t('app.ano') : it.t('app.ne') %></dd>
-    <dt><%= it.t('ucet.gdpr') %></dt><dd><%= it.fmtDatum(it.u.gdpr_souhlas_at) %></dd>
-    <% if (it.obec.moduly.infokanal) { %>
-    <dt><%= it.t('ucet.infokanal_odber') %></dt>
-    <dd><%= it.odber && it.odber.overen ? it.t('ucet.infokanal_odber_ano') : it.t('ucet.infokanal_odber_ne') %> <a href="/infokanal"><%= it.odber && it.odber.overen ? it.t('ucet.infokanal_spravovat') : it.t('ucet.infokanal_prihlasit') %></a></dd>
-    <% } %>
   </dl>
-  <h2><%= it.t('ucet.sezeni') %></h2>
+  <h3><%= it.t('ucet.sezeni') %></h3>
   <p><%= it.t('ucet.sezeni_text') %></p>
   <form method="post" action="/odhlaseni"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('app.odhlasit') %></button></form>
+</section>
+
+<% if (it.moduly.infokanal) { %>
+<section class="karta" id="odber" aria-labelledby="odber-h">
+  <h2 id="odber-h"><%= it.t('muj_ucet.odber_nadpis') %> (<%= it.obec.texty.nazev_infokanalu %>)</h2>
+  <% if (it.odberAktivni) { %>
+  <p><%= it.t('muj_ucet.odber_ano', { telefon: it.fmtTelefon(it.odber.telefon) }) %></p>
+  <form method="post" action="/ucet/odber" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <fieldset>
+      <legend><%= it.t('muj_ucet.odber_kanal') %></legend>
+      <label class="volba"><input type="radio" name="kanal" value="sms" <%= it.odber.kanal === 'sms' ? 'checked' : '' %>> <%= it.t('muj_ucet.kanal_sms') %></label>
+      <label class="volba"><input type="radio" name="kanal" value="smisene" <%= it.odber.kanal !== 'sms' ? 'checked' : '' %> <%= (it.odber.email || it.u.email) ? '' : 'disabled' %>> <%= it.t('muj_ucet.kanal_smisene') %></label>
+      <% if (!it.odber.email && !it.u.email) { %><p class="napoveda"><%= it.t('muj_ucet.odber_bez_emailu') %></p><% } %>
+    </fieldset>
+    <fieldset>
+      <legend><%= it.t('muj_ucet.odber_kategorie') %></legend>
+      <% it.kategorie.forEach(function (k) { %>
+      <label class="volba"><input type="checkbox" name="kategorie" value="<%= k.id %>" <%= k.povinna || !it.optouty.has(k.id) ? 'checked' : '' %> <%= k.povinna ? 'disabled' : '' %>> <%= k.nazev %><%= k.povinna ? ' (' + it.t('muj_ucet.odber_povinna') + ')' : '' %></label>
+      <% }) %>
+      <p class="napoveda"><%= it.t('muj_ucet.odber_krizove') %></p>
+    </fieldset>
+    <button class="tlacitko" type="submit" name="akce" value="ulozit"><%= it.t('muj_ucet.odber_ulozit') %></button>
+  </form>
+  <form method="post" action="/ucet/odber" data-confirm="<%= it.t('muj_ucet.odber_zrusit_potvrzeni') %>">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <button class="odkaz-tlacitko" type="submit" name="akce" value="zrusit"><%= it.t('muj_ucet.odber_zrusit') %></button>
+  </form>
+  <% } else { %>
+  <p><%= it.t('muj_ucet.odber_ne') %></p>
+  <form method="post" action="/ucet/odber">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <input type="hidden" name="kanal" value="<%= it.u.email ? 'smisene' : 'sms' %>">
+    <button class="tlacitko" type="submit" name="akce" value="prihlasit"><%= it.t('muj_ucet.odber_prihlasit') %></button>
+  </form>
+  <% } %>
+</section>
+<% } %>
+
+<% if (it.moduly.rezervace) { %>
+<section class="karta" id="rezervace" aria-labelledby="rez-h">
+  <h2 id="rez-h"><%= it.t('muj_ucet.rez_nadpis') %></h2>
+  <% if (!it.souhrn) { %>
+  <p class="flash flash-info"><%= it.t('muj_ucet.nedostupne') %></p>
+  <% } else { %>
+  <h3><%= it.t('muj_ucet.rez_nadchazejici') %></h3>
+  <% if (it.souhrn.upcoming && it.souhrn.upcoming.length) { %>
+  <ul>
+    <% it.souhrn.upcoming.forEach(function (r) { %><li><%= r.datum %> <%= r.cas %> — <%= r.co %><%= r.ucel ? ' (' + r.ucel + ')' : '' %><%= r.ceka ? ' · ' + it.t('muj_ucet.rez_ceka') : '' %></li><% }) %>
+  </ul>
+  <% if (it.souhrn.reservations > it.souhrn.upcoming.length) { %><p><%= it.t('muj_ucet.rez_pocet', { pocet: it.souhrn.reservations }) %></p><% } %>
+  <% } else if (it.souhrn.reservations) { %>
+  <p><%= it.t('muj_ucet.rez_pocet', { pocet: it.souhrn.reservations }) %></p>
+  <% } else { %>
+  <p><%= it.t('muj_ucet.rez_zadne') %></p>
+  <% } %>
+  <% if (it.souhrn.unpaidInvoices) { %><p class="flash flash-info"><%= it.t('muj_ucet.rez_nezaplacene', { pocet: it.souhrn.unpaidInvoices }) %></p><% } %>
+  <% } %>
+  <p>
+    <a class="tlacitko" href="/rezervace/"><%= it.t('muj_ucet.rez_otevrit') %></a>
+    <a class="tlacitko sekundarni" href="/ucet/platby"><%= it.t('muj_ucet.platby_odkaz') %></a>
+    <a class="tlacitko sekundarni" href="/rezervace/ucet"><%= it.t('muj_ucet.rez_detail') %></a>
+  </p>
+</section>
+
+<section class="karta" id="zamky" aria-labelledby="zamky-h">
+  <h2 id="zamky-h"><%= it.t('muj_ucet.zamky_nadpis') %></h2>
+  <% if (!it.souhrn) { %>
+  <p class="flash flash-info"><%= it.t('muj_ucet.nedostupne') %></p>
+  <% } else { %>
+  <dl class="seznam">
+    <dt><%= it.t('muj_ucet.posilovna') %></dt><dd><%= it.t('muj_ucet.posilovna_' + (it.souhrn.gymStatus || 'none')) %></dd>
+    <dt><%= it.t('muj_ucet.pristupy') %></dt><dd><%= it.souhrn.accesses.length ? it.souhrn.accesses.join(', ') : it.t('muj_ucet.pristupy_zadne') %></dd>
+  </dl>
+  <% if ((it.souhrn.gymStatus || 'none') === 'none') { %><p><a href="/rezervace/posilovna-pristup"><%= it.t('muj_ucet.posilovna_zadost') %></a></p><% } %>
+  <h3><%= it.t('muj_ucet.eklic') %></h3>
+  <% if (it.souhrn.ekeyWait) { %><p class="flash flash-info"><%= it.souhrn.ekeyWait.message || it.t('muj_ucet.eklic_ceka', { ucet: it.souhrn.ekeyWait.account }) %></p><% } %>
+  <form method="post" action="/ucet/eklic" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <label for="eklic-email"><%= it.t('muj_ucet.eklic_email') %></label>
+    <input id="eklic-email" name="email" type="email" autocomplete="email" maxlength="120" value="<%= it.souhrn.ekeyEmail || '' %>" aria-describedby="eklic-napoveda">
+    <p class="napoveda" id="eklic-napoveda"><%= it.t('muj_ucet.eklic_napoveda') %></p>
+    <% if (!it.u.email) { %><label class="volba"><input type="checkbox" name="pouzit_email" value="ano"> <%= it.t('muj_ucet.eklic_pouzit') %></label><% } %>
+    <button class="tlacitko" type="submit"><%= it.t('muj_ucet.eklic_ulozit') %></button>
+  </form>
+  <% } %>
+</section>
+<% } %>
+
+<% if (it.moduly.spolujizda) { %>
+<section class="karta" id="spolujizda" aria-labelledby="spolu-h">
+  <h2 id="spolu-h"><%= it.t('muj_ucet.spolu_nadpis') %></h2>
+  <% if (!it.souhrn) { %>
+  <p class="flash flash-info"><%= it.t('muj_ucet.nedostupne') %></p>
+  <% } else { %>
+  <p><%= it.t('muj_ucet.spolu_jizdy', { pocet: it.souhrn.trips }) %></p>
+  <% if (it.souhrn.ridesGiven) { %><p><%= it.t('muj_ucet.spolu_svezeni', { pocet: it.souhrn.ridesGiven }) %></p><% } %>
+  <% } %>
+  <p><a class="tlacitko sekundarni" href="/rezervace/spolujizda"><%= it.t('muj_ucet.spolu_otevrit') %></a></p>
+</section>
+<% } %>
+
+<% if (it.moduly.eknihy) { %>
+<section class="karta" id="eknihy" aria-labelledby="eknihy-h">
+  <h2 id="eknihy-h"><%= it.t('muj_ucet.eknihy_nadpis') %></h2>
+  <p><%= it.t('muj_ucet.eknihy_text') %></p>
+  <form method="post" action="/ucet/eknihy" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <label class="volba"><input type="checkbox" name="eknihy_sms" value="ano" <%= it.eknihySms ? 'checked' : '' %> aria-describedby="eknihy-napoveda"> <%= it.t('muj_ucet.eknihy_sms') %></label>
+    <p class="napoveda" id="eknihy-napoveda"><%= it.t('muj_ucet.eknihy_sms_napoveda') %></p>
+    <button class="tlacitko sekundarni" type="submit"><%= it.t('app.ulozit') %></button>
+  </form>
+  <p><a class="tlacitko sekundarni" href="/eknihy/"><%= it.t('muj_ucet.eknihy_otevrit') %></a></p>
+</section>
+<% } %>
+
+<section class="karta" id="soukromi" aria-labelledby="soukromi-h">
+  <h2 id="soukromi-h"><%= it.t('muj_ucet.soukromi') %></h2>
+  <dl class="seznam">
+    <dt><%= it.t('ucet.gdpr') %></dt><dd><%= it.fmtDatum(it.u.gdpr_souhlas_at) %></dd>
+  </dl>
+  <p><%= it.t('muj_ucet.soukromi_text') %> <a href="/ochrana-osobnich-udaju"><%= it.t('muj_ucet.zasady') %></a></p>
+  <p><a class="tlacitko sekundarni" href="/ucet/moje-udaje.json" download><%= it.t('muj_ucet.stahnout') %></a></p>
+  <h3><%= it.t('muj_ucet.vymaz_nadpis') %></h3>
+  <p><%= it.t('muj_ucet.vymaz_text') %></p>
+  <form method="post" action="/ucet/vymaz" class="formular" data-confirm="<%= it.t('muj_ucet.vymaz_potvrzeni') %>">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <label for="vymaz-zprava"><%= it.t('muj_ucet.vymaz_zprava') %></label>
+    <textarea id="vymaz-zprava" name="zprava" maxlength="1000" rows="3"></textarea>
+    <button class="tlacitko sekundarni" type="submit"><%= it.t('muj_ucet.vymaz_odeslat') %></button>
+  </form>
 </section>
 </div>
