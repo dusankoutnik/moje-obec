@@ -71,6 +71,25 @@ role[], gdpr_souhlas_at, blokovan, vytvoren_at}`; neznámé číslo 404.
 - `POST /api/interni/uzivatel/:cislo/rezident` `{rezident: bool, kdo: <číslo účtu správce>}` → `{ok: true, …profil}`;
   `kdo` musí být neblokovaný admin nebo správce (jinak 403); zároveň nastaví posouzení rezidenta; audit `sprava.rezident`.
 
+### Stránka Můj účet (hotovo 22. 10. 2026 — `src/moduly/ucty/ucet-karty.ts`, `ucet-aplikace.ts`, migrace 0021)
+
+Náhrada aplikace MůjÚčet: `/ucet` sdružuje všechna nastavení účtu, karty podle zapnutých modulů obce (vypnutý modul
+= karta zmizí, aplikace neodpoví = „teď nedostupné“, zbytek funguje):
+
+- **Osobní údaje** (jméno, příjmení, přezdívka, část obce), e-mail a heslo (po čerstvém ověření), **telefon** — žádost
+  `/ucet/telefon` (po čerstvém ověření, jedna čekající na účet) → e-mail správcům → `/sprava/ucty/zmeny-telefonu`
+  (role správce) schválí (telefon účtu + odběratele, `telefon_overen_at` se vynuluje, SMS na nové číslo) nebo zamítne
+  (SMS na staré s výzvou ozvat se úřadu). SMS jdou frontou infokanálu (`app.infokanalOdchozi`), bez něj přímo bránou.
+- **Odběr hlášení**: odběratel podle `uzivatel_id`, jinak telefonu; kanál `sms`/`smisene`, kategorie (optouty),
+  přihlášení jedním klikem (telefon ověřen přihlášením), zrušení odběru.
+- **Rezervace** z aplikace (`APLIKACE_REZERVACE_URL`, `x-api-secret: INTERNI_API_SECRET`, timeout 4 s):
+  `GET /api/sso/summary/:cislo` (počty, `upcoming`, `gymStatus`, přístupy, `ekeyEmail`, `ekeyWait`),
+  `GET /api/sso/platby/:cislo` → `/ucet/platby`, `POST /api/sso/ekey/:cislo` (eKlíč), `POST /api/sso/mirror/:cislo`
+  po změně telefonu. E-mail TTLock jako kontaktní jen se souhlasem (zatržítko u eKlíče nebo nabídka Ano/Ne).
+- **Spolujízda** (počty ze souhrnu), **eKnihy** (opt-in `uzivatele.navic.eknihy_sms` pro avízo novinek).
+- **Soukromí**: datum GDPR souhlasu, export `GET /ucet/moje-udaje.json` (profil bez hesla, odběr bez tokenu, změny
+  telefonu, souhrn rezervací, záznamy auditu), žádost o výmaz `POST /ucet/vymaz` (e-mail správcům, výmaz dělá úřad).
+
 ## Infokanál (P0 — datový model a UI hotové; výstrahy P1)
 
 **Převzato z VlastiKanálu:**
