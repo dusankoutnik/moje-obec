@@ -1,6 +1,7 @@
 <% layout('/layout') %>
 <h1><%= it.obec.texty.nazev_infokanalu %> — <%= it.t('infokanal.hlaseni') %></h1>
 <p><a class="tlacitko" href="/infokanal/sprava/nove"><%= it.t('infokanal.nove_hlaseni') %></a> <a class="tlacitko sekundarni" href="/infokanal/sprava/odberatele"><%= it.t('infokanal.odberatele') %></a></p>
+<p><a href="/infokanal/sprava/vystrahy"><%= it.t('vystrahy.odkaz_sprava') %></a></p>
 <p><%= it.t('infokanal.pocet_odberatelu', { n: it.stat.celkem, sms: it.stat.sms, email: it.stat.email }) %></p>
 <div class="tabulka-obal">
 <table class="tabulka">

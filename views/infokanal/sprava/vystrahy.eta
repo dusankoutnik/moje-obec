@@ -1,0 +1,29 @@
+<% layout('/layout') %>
+<p><a href="/infokanal/sprava">← <%= it.t('infokanal.hlaseni') %></a></p>
+<h1><%= it.t('vystrahy.sprava') %></h1>
+<p><%= it.t('vystrahy.sprava_uvod') %></p>
+<p><%= it.zapnute.length ? it.t('vystrahy.zapnute', { zdroje: it.zapnute.join(', ') }) : it.t('vystrahy.vypnuto') %> · <a href="/infokanal/vystrahy"><%= it.t('vystrahy.titulek') %></a></p>
+<% if (it.zdroje.length) { %>
+<h2><%= it.t('vystrahy.stav_zdroje') %></h2>
+<ul>
+<% it.zdroje.forEach(function (z) { %><li><strong><%= z.zdroj %></strong> — <%= it.t('vystrahy.posledni_ok') %>: <%= it.fmtDatum(z.posledni_ok) || '—' %><% if (z.posledni_chyba) { %>; <%= it.t('vystrahy.posledni_chyba') %>: <%= z.posledni_chyba %><% } %></li><% }) %>
+</ul>
+<% } %>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <thead><tr><th><%= it.t('vystrahy.vytvoreno') %></th><th><%= it.t('vystrahy.zdroj') %></th><th><%= it.t('vystrahy.titulek_pole') %></th><th><%= it.t('vystrahy.termin') %></th><th><%= it.t('vystrahy.stav') %></th><th><%= it.t('vystrahy.hlaseni') %></th></tr></thead>
+  <tbody>
+  <% if (!it.vystrahy.length) { %><tr><td colspan="6"><%= it.t('sprava.zadne') %></td></tr><% } %>
+  <% it.vystrahy.forEach(function (v) { %>
+    <tr>
+      <td><%= it.fmtDatum(v.vytvoreno_at) %></td>
+      <td><%= v.zdrojNazev %></td>
+      <td><a href="/infokanal/sprava/vystrahy/<%= v.id %>"><%= v.titulek %></a><% if (v.zruseno_at) { %> (<%= it.t('vystrahy.zruseno') %>)<% } %></td>
+      <td><%= v.kdy %></td>
+      <td><%= it.t('vystrahy.stav_' + v.stav) %></td>
+      <td><% if (v.hlaseni_id) { %><a href="/infokanal/sprava/hlaseni/<%= v.hlaseni_id %>">🤖 <%= it.t('vystrahy.hlaseni') %></a><% } %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
