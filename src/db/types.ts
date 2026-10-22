@@ -617,6 +617,7 @@ export interface Database {
   web_zpravodaj: WebZpravodajTable;
   ik_vystrahy: IkVystrahyTable;
   ik_vystrahy_zdroje: IkVystrahyZdrojeTable;
+  uzivatele_zmeny_telefonu: UzivateleZmenyTelefonuTable;
 }
 
 // ---- automatické výstrahy infokanálu (migrace 0019) ----
@@ -651,4 +652,18 @@ export interface IkVystrahyZdrojeTable {
   chyba_od: TimestampNullable;
   alarm_at: TimestampNullable;
   razitko: string | null;
+}
+
+// ---- žádosti o změnu telefonu ze stránky Můj účet (migrace 0021) ----
+export type StavZmenyTelefonu = 'ceka' | 'schvaleno' | 'zamitnuto' | 'zruseno';
+export interface UzivateleZmenyTelefonuTable {
+  id: Generated<number>;
+  uzivatel_id: string;
+  telefon_stary: string;
+  telefon_novy: string;
+  duvod: Generated<string>;
+  stav: Generated<StavZmenyTelefonu>;
+  vyrizil_id: string | null;
+  vyrizeno_at: TimestampNullable;
+  vytvoreno_at: TimestampGenerated;
 }

@@ -12,7 +12,7 @@ import type { UctySluzba } from './sluzba.js';
 /** jak dlouho platí čerstvé ověření (staré heslo / SMS kód) pro citlivé změny */
 export const OVERENI_PLATNOST_MS = 10 * 60_000;
 // kam smí ověření pokračovat (jen stránky citlivých změn)
-const CILE_OVERENI = ['/ucet/email', '/ucet/heslo'];
+const CILE_OVERENI = ['/ucet/email', '/ucet/heslo', '/ucet/telefon'];
 
 interface Zavislosti {
   klient: OidcKlient;
@@ -76,19 +76,7 @@ export default async function uctyRoutes(app: FastifyInstance, z: Zavislosti) {
     return reply.redirect(klient.odhlasovaciUrl(idToken));
   });
 
-  app.get('/ucet', { preHandler: vyzadujPrihlaseni }, async (req, reply) => {
-    const u = req.uzivatel!;
-    let odber: { overen: boolean } | null = null;
-    if (app.obec.moduly.infokanal) {
-      const o = await app.db
-        .selectFrom('ik_odberatele')
-        .select(['overen_at', 'odhlasen_at'])
-        .where('telefon', '=', u.telefon)
-        .executeTakeFirst();
-      if (o) odber = { overen: !!o.overen_at && !o.odhlasen_at };
-    }
-    return reply.view('ucty/ucet', { titulek: t('ucet.titulek'), u, odber });
-  });
+  // GET /ucet (stránka se všemi kartami účtu) je v ucet-karty.ts
 
   app.post<{ Body: Record<string, string | undefined> }>(
     '/ucet',

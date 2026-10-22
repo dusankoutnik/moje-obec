@@ -1,0 +1,22 @@
+<% layout('/layout') %>
+<p><a href="/ucet"><%= it.t('muj_ucet.platby_zpet') %></a></p>
+<h1><%= it.t('muj_ucet.telefon_titulek') %></h1>
+<section class="karta">
+  <p><%= it.t('muj_ucet.telefon_text') %></p>
+  <% if (it.zmena) { %>
+  <div class="flash flash-info"><%= it.t('muj_ucet.telefon_ceka', { telefon: it.fmtTelefon(it.zmena.telefon_novy), datum: it.fmtDatum(it.zmena.vytvoreno_at) }) %></div>
+  <form method="post" action="/ucet/telefon/zrusit"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('muj_ucet.telefon_zrusit') %></button></form>
+  <% } else { %>
+  <% if (it.chyba) { %><p class="flash flash-chyba" role="alert"><%= it.chyba %></p><% } %>
+  <form method="post" action="/ucet/telefon" class="formular">
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <label for="stary"><%= it.t('ucet.telefon') %></label>
+    <input id="stary" type="tel" value="<%= it.fmtTelefon(it.u.telefon) %>" readonly>
+    <label for="telefon"><%= it.t('muj_ucet.telefon_novy') %></label>
+    <input id="telefon" name="telefon" type="tel" autocomplete="tel" required value="<%= (it.f && it.f.telefon) || '' %>">
+    <label for="duvod"><%= it.t('muj_ucet.telefon_duvod') %></label>
+    <textarea id="duvod" name="duvod" maxlength="300" rows="2"><%= (it.f && it.f.duvod) || '' %></textarea>
+    <button class="tlacitko" type="submit"><%= it.t('muj_ucet.telefon_odeslat') %></button>
+  </form>
+  <% } %>
+</section>

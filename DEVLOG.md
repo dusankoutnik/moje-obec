@@ -5,6 +5,7 @@ Přehled změn platformy Web od Voltu 2.0 pro pilotní obec, nejnovější naho�
 ## 22. 10. 2026
 
 - **Úřad má všechno ve Správě:** na úvodu Správy jsou nově i dlaždice rezervací (čekající žádosti, nezaplacená vyúčtování, předprodej, spolujízda) s aktuálními počty, stránka **Schvalování** (potvrzení rezervací a posilovny, posouzení, kdo je rezident, doplnění jména u účtů bez jména) a **Statistiky** se souhrnnými čísly pro zastupitelstvo. Správci dostanou e-mail, když vznikne nový účet, u kterého je potřeba posoudit rezidenta.
+- **Můj účet na jednom místě:** stránka Můj účet sdružuje všechna nastavení — osobní údaje, odběr hlášení obce (SMS nebo i e-mail a co chcete dostávat), rezervace a platby s výzvami k úhradě a QR platbou, přístupy do posilovny a eKlíč, spolujízdu i SMS o nových e-knihách. Změnu telefonu schvaluje úřad. Své údaje si můžete stáhnout a požádat o výmaz účtu.
 - **Služby obce jdou zapnout a vypnout:** ve Správě → Moduly obce správce jedním zatržítkem zapne nebo vypne Rezervace, Předprodej vstupenek, Spolujízdu, eKnihy, Infokanál a Kvíz. Vypnutá služba zmizí z menu i z úvodu a místo ní se ukáže „Tato služba není v obci zapnutá“; data zůstávají a po zapnutí je vše jako dřív.
 - **Vše pod jednou adresou:** rezervace a eKnihy poběží přímo na webu obce na adresách `/rezervace/` a `/eknihy/` (místo samostatných subdomén).
 - **Web má API:** programy úřadu mohou na web samy přidávat zprávy, akce a dokumenty na úřední desku — třeba

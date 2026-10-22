@@ -1,0 +1,34 @@
+<% layout('/layout') %>
+<p><a href="/sprava"><%= it.t('muj_ucet.sprava_zpet') %></a></p>
+<h1><%= it.t('muj_ucet.sprava_zmeny_titulek') %></h1>
+<% const jmeno = function (r) { return ((r.jmeno || '') + ' ' + (r.prijmeni || '')).trim() || r.prezdivka || it.fmtTelefon(r.telefon); }; %>
+<% if (!it.ceka.length) { %><p><%= it.t('muj_ucet.sprava_ceka_zadna') %></p><% } else { %>
+<div class="tabulka-obal"><table class="tabulka">
+  <thead><tr><th scope="col"><%= it.t('muj_ucet.sprava_kdo') %></th><th scope="col"><%= it.t('muj_ucet.sprava_stary') %></th><th scope="col"><%= it.t('muj_ucet.sprava_novy') %></th><th scope="col"><%= it.t('muj_ucet.sprava_duvod') %></th><th scope="col"><%= it.t('muj_ucet.sprava_kdy') %></th><th scope="col"><span class="vh"><%= it.t('muj_ucet.sprava_stav') %></span></th></tr></thead>
+  <tbody>
+  <% it.ceka.forEach(function (r) { %>
+    <tr>
+      <td><a href="/sprava/uzivatele/<%= r.uzivatel_id %>"><%= jmeno(r) %></a></td>
+      <td><%= it.fmtTelefon(r.telefon_stary) %></td><td><%= it.fmtTelefon(r.telefon_novy) %></td>
+      <td><%= r.duvod %></td><td><%= it.fmtDatum(r.vytvoreno_at) %></td>
+      <td>
+        <form method="post" action="/sprava/ucty/zmeny-telefonu/<%= r.id %>" class="inline" data-confirm="<%= it.t('muj_ucet.sprava_schvalit_potvrzeni') %>"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko" type="submit" name="akce" value="schvalit"><%= it.t('muj_ucet.sprava_schvalit') %></button></form>
+        <form method="post" action="/sprava/ucty/zmeny-telefonu/<%= r.id %>" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko sekundarni" type="submit" name="akce" value="zamitnout"><%= it.t('muj_ucet.sprava_zamitnout') %></button></form>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<% if (it.vyrizene.length) { %>
+<h2><%= it.t('muj_ucet.sprava_vyrizene') %></h2>
+<div class="tabulka-obal"><table class="tabulka">
+  <thead><tr><th scope="col"><%= it.t('muj_ucet.sprava_kdo') %></th><th scope="col"><%= it.t('muj_ucet.sprava_stary') %></th><th scope="col"><%= it.t('muj_ucet.sprava_novy') %></th><th scope="col"><%= it.t('muj_ucet.sprava_stav') %></th><th scope="col"><%= it.t('muj_ucet.sprava_vyrizil') %></th></tr></thead>
+  <tbody>
+  <% it.vyrizene.forEach(function (r) { %>
+    <tr><td><a href="/sprava/uzivatele/<%= r.uzivatel_id %>"><%= jmeno(r) %></a></td><td><%= it.fmtTelefon(r.telefon_stary) %></td><td><%= it.fmtTelefon(r.telefon_novy) %></td>
+      <td><%= it.t('muj_ucet.stav_' + r.stav) %> (<%= it.fmtDatum(r.vyrizeno_at) %>)</td><td><%= ((r.vyrizil_jmeno || '') + ' ' + (r.vyrizil_prijmeni || '')).trim() %></td></tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>

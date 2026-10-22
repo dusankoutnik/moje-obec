@@ -43,6 +43,7 @@
   <% if (A.ucty) { %>
   <article class="karta" id="schvalovani"><h2><a href="/sprava/schvalovani">🕐 Schvalování</a></h2><p>Žádosti o rezervace a posilovnu, nové účty k posouzení rezidenta, účty bez jména.</p>
     <p class="cislo"><% if (S) { %><%= S.pending %> rezervací · <%= S.gymRequested %> posilovna · <% } %><%= A.ucty.kPosouzeni %> k posouzení · <%= A.ucty.bezJmena %> bez jména</p></article>
+  <article class="karta"><h2><a href="/sprava/ucty/zmeny-telefonu">📞 Změny telefonu</a></h2><p>Žádosti občanů o změnu přihlašovacího telefonu ke schválení.</p></article>
   <article class="karta"><h2><a href="/sprava/statistiky">📈 Statistiky</a></h2><p>Souhrnná čísla účtů a aplikací — jen agregáty, bez jmen.</p></article>
   <% } %>
   <% if (A.rezervace) { %>

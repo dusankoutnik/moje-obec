@@ -10,6 +10,20 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
   `/sprava/schvalovani` (žádosti o rezervace a posilovnu → admin API rezervací; posouzení rezidenta a jména
   u účtů nativně), `/sprava/statistiky` (agregáty účtů, infokanálu, rezervací, eKnih), avízo správcům o novém
   účtu k posouzení rezidenta (cron à 5 min). Env `APLIKACE_API_SECRET`, `REZIDENT_AVIZO`.
+### Přidáno (stránka Můj účet, 22. 10. 2026)
+
+- `/ucet` = jediná stránka všech nastavení účtu (náhrada aplikace MůjÚčet), karty podle zapnutých modulů
+  (`app.moduly.stav()`): osobní údaje, telefon, e-mail/heslo, odběr hlášení (kanál SMS / SMS i e-mail, kategorie,
+  přihlášení jedním klikem `POST /ucet/odber`), rezervace (souhrn z `GET /api/sso/summary/:cislo`), posilovna
+  a přístupy, eKlíč (`POST /ucet/eklic` → `POST /api/sso/ekey/:cislo`; nabídka použít e-mail TTLock pro zprávy obce
+  jen se souhlasem `POST /ucet/eklic-email`, odmítnutí v `navic.ekey_email_odmitnut`), spolujízda, eKnihy
+  (`POST /ucet/eknihy` → `navic.eknihy_sms`), soukromí (`GET /ucet/moje-udaje.json`, `POST /ucet/vymaz` = žádost
+  úřadu e-mailem). Aplikace neodpoví → karta „teď nedostupné“.
+- `/ucet/platby` (aktuální měsíc, výzvy k úhradě s PDF a QR platbou, předprodej) z `GET /api/sso/platby/:cislo`.
+- Změna telefonu se schválením úřadem: `GET/POST /ucet/telefon` (po čerstvém ověření), migrace 0021
+  `uzivatele_zmeny_telefonu`, avízo správcům e-mailem, Správa `/sprava/ucty/zmeny-telefonu` (správce) — schválení
+  přepíše telefon účtu i odběratele, SMS na nové / při zamítnutí na staré číslo přes frontu infokanálu.
+- Aplikace rezervací se volá napřímo `APLIKACE_REZERVACE_URL` s `x-api-secret: INTERNI_API_SECRET`.
 
 ### Přidáno (moduly obce a aplikace za proxy, 22. 10. 2026)
 
