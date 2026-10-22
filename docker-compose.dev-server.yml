@@ -17,9 +17,12 @@ services:
       ROBOTS_NOINDEX: '1'
       # vlastní otázky kvízu obce (mimo veřejný repozitář)
       KVIZ_BALIKY: /app/kviz-instance
+      # soubory starého WordPressu na původní adrese /wp-content/uploads/ (pevné odkazy, ne kopie dat)
+      STARY_WEB_SOUBORY: /app/stary-web-uploads
     volumes:
       - ./obec.yml:/app/obec.yml:ro
       - ../platforma-instance/kviz:/app/kviz-instance:ro
+      - ../platforma-instance/stary-web-uploads:/app/stary-web-uploads:ro
       - platforma_data:/app/data # nahrané soubory obce — přežijí rebuild
     # zpracování fotek (sharp) a import potřebují víc než původních 384 MB
     mem_limit: 640m

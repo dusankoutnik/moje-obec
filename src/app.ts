@@ -40,6 +40,10 @@ import podatelnaModul from './moduly/podatelna/index.js';
 import odstavkyModul from './moduly/odstavky/index.js';
 
 /** vrátí true, pokud požadavek obsloužil (odpověď odeslána) */
+/** typy souborů starého webu, které se smějí podávat (obrázky, dokumenty, archivy, média) */
+const PRIPONY_STAREHO_WEBU =
+  /\.(jpe?g|png|gif|webp|bmp|ico|pdf|docx?|xlsx?|pptx?|odt|ods|odp|rtf|txt|csv|zip|rar|7z|mp3|mp4|m4a|webm|ogg|wav|kml|gpx)$/i;
+
 export type Zachytavac404 = (req: FastifyRequest, reply: FastifyReply) => Promise<boolean>;
 
 export interface AppVolby {
@@ -182,11 +186,25 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
     decorateReply: false,
     maxAge: env.NODE_ENV === 'production' ? '7d' : 0,
   });
+  // soubory starého webu na původní adrese (jen dokumenty a obrázky — nic spustitelného)
+  if (env.STARY_WEB_SOUBORY) {
+    await app.register(fastifyStatic, {
+      root: path.resolve(env.STARY_WEB_SOUBORY),
+      prefix: env.STARY_WEB_PREFIX,
+      decorateReply: false,
+      index: false,
+      list: false,
+      dotfiles: 'deny',
+      allowedPath: (p) => PRIPONY_STAREHO_WEBU.test(p) && !p.includes('/.'),
+      maxAge: env.NODE_ENV === 'production' ? '7d' : 0,
+    });
+  }
   await app.register(sablony);
 
   // přihlášený uživatel ze sezení (jeden dotaz na požadavek; statické soubory a OIDC endpointy přeskočit)
   app.addHook('preHandler', async (req) => {
     if (req.url.startsWith('/static/') || req.url.startsWith('/healthz')) return;
+    if (env.STARY_WEB_SOUBORY && req.url.startsWith(env.STARY_WEB_PREFIX)) return;
     const id = req.session?.uzivatelId;
     if (!id) return;
     const u = await db.selectFrom('uzivatele').selectAll().where('id', '=', id).executeTakeFirst();

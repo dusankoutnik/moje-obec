@@ -25,6 +25,13 @@ const EnvSchema = z.object({
   OBEC_YML: z.string().default('./obec.yml'),
   // Data obce mimo databázi (nahrané soubory, obrázky). V Dockeru pojmenovaný volume — musí přežít rebuild.
   DATA_DIR: z.string().default('./data'),
+  // Soubory starého webu obce převzaté 1:1 (např. kopie wp-content/uploads z WordPressu): podávají se na původní
+  // adrese, ať staré odkazy z e-mailů, PDF a vyhledávačů dál fungují. Prázdné = vypnuto.
+  STARY_WEB_SOUBORY: z.string().optional(),
+  STARY_WEB_PREFIX: z
+    .string()
+    .regex(/^\/[\w./-]*\/$/, 'STARY_WEB_PREFIX musí začínat i končit lomítkem')
+    .default('/wp-content/uploads/'),
   SMS_PROVIDER: z.enum(['konzole', 'smsgate', 'smsbrana', 'gosms', 'smsmanager']).default('konzole'),
   SMS_ODESILATEL: z.string().optional(),
   // vývoj/pilot: „+420777000001>+420777000099, …“ — SMS pro tato čísla jdou skutečnou bránou na jiné číslo
