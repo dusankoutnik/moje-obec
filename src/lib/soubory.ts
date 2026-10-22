@@ -10,6 +10,7 @@ import { fileTypeFromBuffer, fileTypeFromFile } from 'file-type';
 import type { Db } from '../db/index.js';
 import type { Insertable } from 'kysely';
 import type { DruhSouboru, Soubor, SouboryTable } from '../db/types.js';
+import { jeIndexovatelny } from './text-souboru.js';
 
 sharp.concurrency(1); // malý server sdílený s dalšími službami — šetřit paměť
 sharp.cache(false);
@@ -55,6 +56,8 @@ export type ChybaSouboru = 'typ' | 'velikost' | 'poskozeny' | 'prazdny';
 
 export class SouboroveUloziste {
   readonly koren: string;
+  /** probudí frontu textu dokumentů po zařazení nového souboru (nastavuje app.ts) */
+  priZarazeniTextu: (() => void) | null = null;
   constructor(
     private db: Db,
     dataDir: string,
@@ -169,7 +172,23 @@ export class SouboroveUloziste {
         nahral_id: v.nahralId ?? null,
       },
     );
+    // text dokumentu pro vyhledávání (PDF, Word…, obrázek nahraný jako dokument) — zpracuje worker na pozadí
+    if (jeIndexovatelny(mime, v.druh === 'dokument')) await this.zaradText(soubor.id);
     return { soubor };
+  }
+
+  /** řádek fronty textu (stav ceka); selhání nesmí shodit nahrání souboru */
+  async zaradText(id: string) {
+    try {
+      await this.db
+        .insertInto('soubory_text')
+        .values({ soubor_id: id })
+        .onConflict((oc) => oc.column('soubor_id').doNothing())
+        .execute();
+      this.priZarazeniTextu?.();
+    } catch (e) {
+      console.error('zařazení souboru do fronty textu selhalo', id, e);
+    }
   }
 
   /**

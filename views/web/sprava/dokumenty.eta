@@ -16,10 +16,11 @@
 </section>
 <% if (it.dokumenty.length) { %>
 <div class="tabulka-obal"><table class="tabulka">
-  <thead><tr><th scope="col"><%= it.t('web.nazev_dokumentu') %></th><th scope="col"><%= it.t('web.skupina') %></th><th scope="col"><%= it.t('web.soubor') %></th><th scope="col"><span class="vh"><%= it.t('sprava.akce') %></span></th></tr></thead>
+  <thead><tr><th scope="col"><%= it.t('web.nazev_dokumentu') %></th><th scope="col"><%= it.t('web.skupina') %></th><th scope="col"><%= it.t('web.soubor') %></th><th scope="col"><%= it.t('text.titulek') %></th><th scope="col"><span class="vh"><%= it.t('sprava.akce') %></span></th></tr></thead>
   <tbody>
   <% it.dokumenty.forEach(function (d) { %>
     <tr><td><%= d.nazev %></td><td><%= d.skupina %></td><td><a href="<%= it.urlSouboru({ id: d.soubor_id, puvodni_nazev: d.puvodni_nazev }) %>"><%= it.popisTypu(d.pripona) %>, <%= it.lidskaVelikost(d.velikost) %></a></td>
+    <td><% var st = it.stitekTextu(d.soubor_id); if (st) { %><span class="stav-stitek <%= st.trida %>" title="<%= it.t('text.stitek_napoveda') %>"><%= st.text %></span><% } %></td>
     <td><form method="post" action="/sprava/web/dokumenty" class="inline" data-confirm="<%= it.t('web.dokument_kos_potvrdit') %>"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="kos"><input type="hidden" name="id" value="<%= d.id %>"><button class="tlacitko nebezpecne male" type="submit"><%= it.t('web.smazat') %></button></form></td></tr>
   <% }) %>
   </tbody>

@@ -3152,3 +3152,29 @@ button.kviz-odpoved:active {
 .formular-inline select {
   max-width: 100%;
 }
+
+/* text dokumentů: úryvek ve výsledcích hledání a štítky stavu */
+.vysledky .uryvek {
+  color: var(--text-tlumeny, #444);
+  font-size: 0.95rem;
+}
+.vysledky .uryvek mark {
+  background: #fff1a8;
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+.stav-stitek.stav-ok {
+  background: var(--zelena-svetla);
+  color: var(--zelena-tmava);
+}
+.stav-stitek.stav-ceka {
+  background: #e3effa;
+  color: #1d4e89;
+}
+.tlacitka-rada {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 8px 0;
+}

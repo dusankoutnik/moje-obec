@@ -27,6 +27,7 @@ import nahravani from './web/nahravani.js';
 import souboryRoutes from './web/soubory.js';
 import ikonyRoutes from './web/ikony.js';
 import { SouboroveUloziste } from './lib/soubory.js';
+import { TextFronta } from './lib/text-fronta.js';
 import devlogRoutes from './web/devlog.js';
 import sablony from './web/sablony.js';
 import hlavicky from './web/hlavicky.js';
@@ -86,6 +87,8 @@ declare module 'fastify' {
     limity: { poslat: Limit; overit: Limit; heslo: Limit; podani: Limit };
     sessionStore: PostgresSessionStore;
     soubory: SouboroveUloziste;
+    /** text nahraných dokumentů (vrstva PDF / OCR / Office) pro vyhledávání — fronta a worker */
+    textSouboru: TextFronta;
     /** moduly sem přidávají hledání obsahu pro neznámé adresy (stránky webu, přesměrování starých URL) */
     zachytavace404: Zachytavac404[];
     /** moduly sem přidávají data pro layout (menu, vzhled, patička) — volá se při každém vykreslení stránky */
@@ -152,6 +155,24 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   app.decorate('sessionStore', store);
   app.decorateRequest('uzivatel', null);
   app.decorate('soubory', new SouboroveUloziste(db, env.DATA_DIR));
+  const textSouboru = new TextFronta(
+    db,
+    app.soubory,
+    {
+      zapnuto: env.TEXT_SOUBORU,
+      ocrJazyky: env.OCR_JAZYKY,
+      ocrMaxStran: env.OCR_MAX_STRAN,
+      ocrDpi: env.OCR_DPI,
+      maxZnaku: env.TEXT_MAX_ZNAKU,
+      tmpDir: path.join(path.resolve(env.DATA_DIR), 'tmp'),
+    },
+    log,
+  );
+  app.decorate('textSouboru', textSouboru);
+  app.soubory.priZarazeniTextu = () => textSouboru.kopni();
+  if (volby.planovac !== false) textSouboru.start();
+  else textSouboru.vypniPlanovac();
+  app.addHook('onClose', async () => textSouboru.zastav());
   app.decorate('zachytavace404', [] as Zachytavac404[]);
   app.decorate('dataLayoutu', [] as ((req: FastifyRequest) => Promise<Record<string, unknown>>)[]);
 

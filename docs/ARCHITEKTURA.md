@@ -124,6 +124,23 @@ Role na účtu: `redaktor` (hlášení, články), `ucetni` (platby), `spravce` 
 
 **Rozhodnutí.** Pozadí jsou dvě vrstvy `position: fixed` (ne `background-attachment: fixed`, které iOS nepodporuje) s gradientem přes `::after`. Server vybere první fotku (pevnou nebo náhodnou), takže bez JS je pozadí vidět; v režimu „střídání“ `public/js/web.js` po 25 s přednačte další fotku a vrstvy prolne (nestřídá na skryté záložce). Sklo (`backdrop-filter`) jen v `@supports`, jinak hustší neprůhledné pozadí (slabé telefony, starší prohlížeče). Shimmer menu, vstupní animace, prolínání a počítadla statistik se při `prefers-reduced-motion` vypínají. Náhled vzhledu je uložený v sezení správce (vidí ho jen on, s pruhem Použít / Ukončit); předchozí vzhled se pamatuje pro „Vrátit zpět“. Ikony (favicon, ICO, apple-touch, manifest) se generují ze znaku obce (sharp, průhlednost zachována, centrování do čtverce) a drží v paměti.
 
+## ADR 24 — Text dokumentů lokálně: vrstva PDF, OCR tesseractem, Office přes ZIP/XML
+
+**Kontext.** Vyhledávání prohledávalo jen názvy a popisy; obsah PDF (na pilotu 829 souborů, část skeny) a Wordů ne.
+Cloudové OCR nepřichází v úvahu (dokumenty úřadu obsahují osobní údaje, obec nemá platit za API).
+
+**Rozhodnutí.** Text se vyčítá **na serveru obce** procesy z Debianu (`pdftotext`, `pdftoppm` + `tesseract` s češtinou,
+`antiword`), kancelářské formáty ZIP/XML se čtou přímo v Node (`fflate`). Fronta je tabulka `soubory_text`
+(řádek vzniká při uložení dokumentu, zpracovává ho worker v aplikaci po jednom, `nice`, s limity času a výstupu;
+chyby 3× s odkladem). Index je generovaný `tsvector` jako u obsahu webu; úryvky dává `ts_headline` s textovou
+konfigurací `cs_bez` (porovnává bez diakritiky, vrací původní text). Výsledek hledání vede na místo, kde dokument
+na webu je; soubor bez veřejného místa se nehledá. Správa vidí frontu, chyby a může zpracování spustit znovu
+(jednotlivě i hromadně). Podrobnosti a odchylky od návrhu: `docs/HLEDANI-DOKUMENTY.md`.
+
+**Důsledky.** Obraz Dockeru je o ~60 MB větší (balíky), aplikace potřebuje `mem_limit` ≥ 768 MB (tesseract ~150 MB
+na stranu). Mimo Docker se balíky instalují ručně; bez nich dokumenty skončí jako `nepodporovano` a správa to ukáže.
+Integrační testy s binárkami běží v CI, lokálně bez nich se přeskočí.
+
 ---
 
 ## Mapa modulů
@@ -150,7 +167,9 @@ src/
                import/ (typy.ts rozhraní, importer.ts, stahovac.ts, wordpress.ts, galileo.ts, html-pomoc.ts)
     kviz/      vyber.ts (algoritmus výběru otázek, bez DB), import.ts (YAML balíky → DB, zod), sluzba.ts (hráči, hra,
                skóre, správa), routes.ts (/kviz/*), sprava.ts (/sprava/kviz)
-  lib/     … + soubory.ts (úložiště souborů), html.ts (sanitizace), barvy.ts (kontrast), datum.ts (Praha), hledani.ts, slug.ts
+  lib/     … + soubory.ts (úložiště souborů), html.ts (sanitizace), barvy.ts (kontrast), datum.ts (Praha), hledani.ts, slug.ts,
+           text-souboru.ts (text z PDF/OCR/Office — čistá logika + procesy), text-fronta.ts (fronta a worker textu dokumentů)
+  moduly/web/hledani-dokumentu.ts (výsledky z textu dokumentů → místo na webu), scripts/text-souboru.ts (zařazení stávajících)
   web/     … + nahravani.ts (multipart na disk), soubory.ts (/soubory/:id)
 views/   Eta šablony (layout.eta + složky dle modulů)     public/  CSS, favicon, robots
 test/    Vitest (jednotkové + HTTP proti Postgresu)        src/scripts/seed.ts (demo data)
@@ -194,6 +213,9 @@ web_galerie    nazev · slug · datum · stav  + web_galerie_fotky (galerie_id, 
 web_dokumenty  nazev · popis · skupina · soubor_id
 web_dotace     projekt · poskytovatel · text · odkaz · zobrazit_od · zobrazit_do · v_paticce · stav · upozorneno_at  + web_dotace_loga
 web_presmerovani  stara_cesta PK · nova_cesta · pocet · posledni_at
+soubory_text   soubor_id PK → soubory · stav (ceka|zpracovava|hotovo|bez_textu|nepodporovano|chyba) · zdroj (vrstva|ocr|docx|xlsx|pptx|odt|antiword|rtf|obrazek)
+               text · stran · ma_vrstvu · chyba · poznamka · pokusu · priorita · zarazeno_at · dalsi_pokus_at · zacatek_at · zpracovano_at · trvani_ms
+               vyhledavani tsvector (generovaný, GIN)
 ```
 
 Vazba občan ↔ odběratel: podle telefonu (`ik_odberatele.uzivatel_id` se doplní, když se občan přihlásí k odběru z účtu). Účet není podmínkou odběru — senior bez účtu se přihlásí jen telefonem a kódem.

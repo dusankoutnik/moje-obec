@@ -23,7 +23,7 @@
   <thead><tr><th scope="col"><%= it.t('deska.nazev') %></th><th scope="col"><%= it.t('deska.kategorie') %></th><th scope="col"><%= it.t('deska.vyveseno_cele') %></th><th scope="col"><%= it.t('deska.sejmuto_cele') %></th></tr></thead>
   <tbody>
   <% it.dokumenty.forEach(function (d) { %>
-    <tr><td><a href="/sprava/deska/<%= d.id %>"><%= d.nazev %></a><% if (d.hlaseni_id) { %> <span class="stitek" title="<%= it.t('deska.rozeslano_stitek') %>">📣</span><% } %></td><td><%= d.kategorie %></td><td><%= it.fmtDatum(d.vyveseno_od, false) %></td><td><%= d.sejmuto_do ? it.fmtDatum(d.sejmuto_do, false) : it.t('deska.do_odvolani') %></td></tr>
+    <tr><td><a href="/sprava/deska/<%= d.id %>"><%= d.nazev %></a><% if (d.hlaseni_id) { %> <span class="stitek" title="<%= it.t('deska.rozeslano_stitek') %>">📣</span><% } %><% var st = it.stitkyTextu.get(d.id); if (st) { %> <span class="stav-stitek <%= st.trida %>" title="<%= it.t('text.stitek_napoveda') %>"><%= st.text %></span><% } %></td><td><%= d.kategorie %></td><td><%= it.fmtDatum(d.vyveseno_od, false) %></td><td><%= d.sejmuto_do ? it.fmtDatum(d.sejmuto_do, false) : it.t('deska.do_odvolani') %></td></tr>
   <% }) %>
   </tbody>
 </table>

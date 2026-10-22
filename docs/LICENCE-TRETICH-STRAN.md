@@ -16,6 +16,11 @@ z balíčků npm, žádné CDN):
 | Genos                 | `@fontsource/genos`                 | SIL OFL 1.1                                                                       | písmo webu       |
 | Quill 2               | `quill`                             | BSD-3-Clause                                                                      | editor ve správě |
 
+Na serveru (do prohlížeče se neposílá) navíc běží `fflate` (MIT) — čtení ZIP archivů kancelářských formátů
+(docx, xlsx, pptx, odt) kvůli textu dokumentů pro vyhledávání — a systémové nástroje z Debianu v obrazu Dockeru:
+`poppler-utils` (GPL-2.0-or-later), `tesseract-ocr` (Apache-2.0) s jazykovými daty `tesseract-ocr-ces`/`-eng`
+(Apache-2.0) a `antiword` (GPL-2.0). Volají se jako samostatné procesy, kód platformy se s nimi nespojuje.
+
 Z písem se vydávají jen soubory `*.woff2` podmnožin latin a latin-ext (čeština ověřena na glyfech:
 á č ď é ě í ň ó ř š ť ú ů ý ž, velká písmena, „ “ –). Texty licencí jsou v příslušných balíčcích
 (`node_modules/@fontsource/*/LICENSE`).

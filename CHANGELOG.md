@@ -4,6 +4,20 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (text dokumentů a vyhledávání v nich)
+
+- Text nahraných dokumentů pro vyhledávání (migrace 0015, `soubory_text`): textová vrstva PDF (`pdftotext`),
+  skeny přes OCR (`pdftoppm` + `tesseract`, ces+eng), docx/xlsx/pptx/odt/ods/odp (ZIP/XML, `fflate`), `.doc`
+  (`antiword`), RTF, obrázek nahraný jako dokument. Worker na pozadí (jeden soubor po druhém, `nice`, opakování
+  chyb 3×, cron à 1 min), rychlá kontrola vrstvy při nahrání PDF s hláškou správci.
+- `/hledat`: zdroj „v dokumentech“ s úryvkem a zvýrazněnými slovy, odkaz na místo na webu (úřední deska,
+  `/dokumenty#d-<id>`, stránka s odkazem na soubor); sloučení s ostatními výsledky; neveřejné soubory se nehledají.
+- Správa: `/sprava/web/text-dokumentu` (stav fronty, seznamy, „Zpracovat znovu/teď“, hromadné „Zkontrolovat všechny
+  dokumenty znovu“ a „Znovu jen chyby a bez textu“ s potvrzením a auditem), štítky stavu u dokumentů desky a souborů
+  ke stažení, karta na dashboardu; skript `src/scripts/text-souboru.ts`.
+- Env `TEXT_SOUBORU`, `OCR_JAZYKY`, `OCR_MAX_STRAN`, `OCR_DPI`, `TEXT_MAX_ZNAKU`; obraz Dockeru s poppler-utils,
+  tesseract-ocr (+ces, +eng), antiword; CI je instaluje před testy.
+
 ### Přidáno (akce propojené s rezervacemi)
 
 - Akce webu propojené s termíny rezervačního systému (`web_obsah.rezervace_ref`, migrace 0014): synchronizace

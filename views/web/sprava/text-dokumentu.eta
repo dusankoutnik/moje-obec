@@ -1,0 +1,64 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<h1><%= it.t('text.titulek') %></h1>
+<p class="perex"><%= it.t('text.perex') %></p>
+<% if (!it.prehled.zapnuto) { %><p class="flash flash-info" role="status"><%= it.t('text.vypnuto') %></p><% } %>
+<% var chybi = Object.keys(it.prehled.nastroje).filter(function (k) { return !it.prehled.nastroje[k]; }); %>
+<% if (chybi.length) { %><p class="flash flash-chyba" role="alert"><%= it.t('text.chybi_nastroje', { seznam: chybi.join(', ') }) %></p><% } %>
+
+<section class="karta" id="stav-fronty">
+  <h2><%= it.t('text.stav_fronty') %></h2>
+  <p class="cislo"><%= it.t('text.ceka_n', { n: it.prehled.ceka }) %><% if (it.prehled.ceka) { %> · <%= it.t('text.odhad', { doba: it.odhad }) %><% } %></p>
+  <% if (it.prehled.aktualni) { %><p><%= it.t('text.prave_zpracovava') %> <strong><%= it.prehled.aktualni.nazev %></strong> <span class="poznamka">(<%= it.t('text.od') %> <%= it.fmtDatum(it.prehled.aktualni.od) %>)</span></p><% } else if (it.prehled.ceka) { %><p class="poznamka"><%= it.t('text.ceka_na_worker') %></p><% } %>
+  <p><%= it.t('text.hotovo_dnes', { n: it.prehled.hotovoDnes }) %> ·
+    <%= it.t('text.stav_hotovo') %> <strong><%= it.prehled.pocty.hotovo %></strong> ·
+    <%= it.t('text.stav_bez_textu') %> <strong><%= it.prehled.pocty.bez_textu %></strong> ·
+    <%= it.t('text.stav_nepodporovano') %> <strong><%= it.prehled.pocty.nepodporovano %></strong> ·
+    <%= it.t('text.stav_chyba') %> <strong><%= it.prehled.pocty.chyba %></strong></p>
+  <p class="napoveda"><%= it.t('text.obnovit_napoveda') %> <a href="<%= it.cesta %>"><%= it.t('text.obnovit') %></a></p>
+</section>
+
+<section class="karta" id="hromadne">
+  <h2><%= it.t('text.hromadne') %></h2>
+  <p class="napoveda"><%= it.t('text.hromadne_napoveda') %></p>
+  <div class="tlacitka-rada">
+    <form method="post" action="/sprava/web/text-dokumentu" class="inline" data-confirm="<%= it.t('text.potvrdit_vse', { n: it.vsech, doba: it.odhadVsech }) %>">
+      <input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="vse"><input type="hidden" name="potvrdit" value="ano">
+      <button class="tlacitko sekundarni" type="submit" <%= it.vsech ? '' : 'disabled' %>><%= it.t('text.znovu_vse', { n: it.vsech }) %></button>
+    </form>
+    <form method="post" action="/sprava/web/text-dokumentu" class="inline" data-confirm="<%= it.t('text.potvrdit_chyby', { n: it.kOpakovani, doba: it.odhadOpakovani }) %>">
+      <input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="akce" value="znovu-chyby"><input type="hidden" name="potvrdit" value="ano">
+      <button class="tlacitko sekundarni" type="submit" <%= it.kOpakovani ? '' : 'disabled' %>><%= it.t('text.znovu_chyby', { n: it.kOpakovani }) %></button>
+    </form>
+  </div>
+  <p class="poznamka"><%= it.t('text.hromadne_odhad', { vse: it.odhadVsech, chyby: it.odhadOpakovani }) %></p>
+</section>
+
+<% function misto(r) { if (r.deska_id) { %><a href="/sprava/deska/<%= r.deska_id %>"><%= it.t('deska.titulek') %>: <%= r.deska_nazev %></a><% } else if (r.dokument_id) { %><a href="/sprava/web/dokumenty"><%= it.t('web.dokumenty') %>: <%= r.dokument_nazev %></a><% } else { %><span class="poznamka"><%= it.t('text.misto_jinde') %></span><% } } %>
+<% function akce(r) { %>
+  <form method="post" action="/sprava/web/text-dokumentu" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="id" value="<%= r.soubor_id %>"><input type="hidden" name="akce" value="znovu"><button class="odkaz-tlacitko" type="submit"><%= it.t('text.zpracovat_znovu') %></button></form>
+  <form method="post" action="/sprava/web/text-dokumentu" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><input type="hidden" name="id" value="<%= r.soubor_id %>"><input type="hidden" name="akce" value="ted"><button class="odkaz-tlacitko" type="submit"><%= it.t('text.zpracovat_ted') %></button></form>
+<% } %>
+<% function tabulka(nadpis, idSekce, radky, sChybou) { %>
+<section id="<%= idSekce %>">
+  <h2><%= nadpis %> (<%= radky.length %>)</h2>
+  <% if (!radky.length) { %><p class="prazdne"><%= it.t('text.nic') %></p><% } else { %>
+  <div class="tabulka-obal"><table class="tabulka kompaktni">
+    <thead><tr><th scope="col"><%= it.t('text.soubor') %></th><th scope="col"><%= it.t('text.misto') %></th><th scope="col"><%= it.t('text.stav') %></th><% if (sChybou) { %><th scope="col"><%= it.t('text.podrobnosti') %></th><% } %><th scope="col"><span class="vh"><%= it.t('sprava.akce') %></span></th></tr></thead>
+    <tbody>
+    <% radky.forEach(function (r) { var st = it.stitek(r); %>
+      <tr><td><a href="<%= it.urlSouboru({ id: r.soubor_id, puvodni_nazev: r.puvodni_nazev }) %>"><%= r.puvodni_nazev %></a> <span class="poznamka">(<%= it.popisTypu(r.pripona) %>, <%= it.lidskaVelikost(r.velikost) %><% if (r.stran) { %>, <%= it.t('text.stran', { n: r.stran }) %><% } %>)</span></td>
+        <td><% misto(r) %></td>
+        <td><span class="stav-stitek <%= st ? st.trida : '' %>"><%= st ? st.text : r.stav %></span><% if (r.priorita > 0 && (r.stav === 'ceka' || r.stav === 'zpracovava')) { %> <span class="poznamka"><%= it.t('text.prednostne') %></span><% } %></td>
+        <% if (sChybou) { %><td><% if (r.chyba) { %><%= r.chyba %><% } %><% if (r.poznamka) { %> <span class="poznamka"><%= r.poznamka %></span><% } %><% if (r.pokusu > 1) { %> <span class="poznamka"><%= it.t('text.pokusu', { n: r.pokusu }) %></span><% } %></td><% } %>
+        <td><% akce(r) %></td></tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+  <% } %>
+</section>
+<% } %>
+<% tabulka(it.t('text.cekajici'), 'cekajici', it.cekajici, false) %>
+<% tabulka(it.t('text.chyby'), 'chyby', it.chyby, true) %>
+<% tabulka(it.t('text.bez_textu'), 'bez-textu', it.bezTextu, true) %>
+<% tabulka(it.t('text.nepodporovane'), 'nepodporovane', it.nepodporovane, true) %>

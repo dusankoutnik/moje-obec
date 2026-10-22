@@ -27,8 +27,8 @@ services:
       - ../platforma-instance/kviz:/app/kviz-instance:ro
       - ../platforma-instance/stary-web-uploads:/app/stary-web-uploads:ro
       - platforma_data:/app/data # nahrané soubory obce — přežijí rebuild
-    # zpracování fotek (sharp) a import potřebují víc než původních 384 MB
-    mem_limit: 640m
+    # zpracování fotek (sharp), import a OCR dokumentů (tesseract ~150 MB na stranu) potřebují víc než původních 384 MB
+    mem_limit: 768m
     depends_on:
       platforma_db:
         condition: service_healthy

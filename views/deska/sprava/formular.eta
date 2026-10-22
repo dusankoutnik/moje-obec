@@ -54,7 +54,7 @@
     <legend><span class="krok"><%= 4 %></span> <%= it.t('deska.prilohy') %></legend>
     <% if (it.prilohy.length) { %>
     <ul class="prilohy-sprava">
-      <% it.prilohy.forEach(function (s) { %><li><a href="<%= it.urlSouboru(s) %>"><%= s.puvodni_nazev %></a> <span class="poznamka">(<%= it.popisTypu(s.pripona) %>, <%= it.lidskaVelikost(s.velikost) %>)</span> <label class="zatrzitko inline-zatrzitko"><input type="checkbox" name="odebrat" value="<%= s.id %>"> <%= it.t('deska.odebrat_prilohu') %></label></li><% }) %>
+      <% it.prilohy.forEach(function (s) { %><li><a href="<%= it.urlSouboru(s) %>"><%= s.puvodni_nazev %></a> <span class="poznamka">(<%= it.popisTypu(s.pripona) %>, <%= it.lidskaVelikost(s.velikost) %>)</span><% var st = it.stitekTextu(s.id); if (st) { %> <span class="stav-stitek <%= st.trida %>" title="<%= it.t('text.stitek_napoveda') %>"><%= st.text %></span><% } %> <label class="zatrzitko inline-zatrzitko"><input type="checkbox" name="odebrat" value="<%= s.id %>"> <%= it.t('deska.odebrat_prilohu') %></label></li><% }) %>
     </ul>
     <% } %>
     <label for="prilohy"><%= it.prilohy.length ? it.t('deska.pridat_prilohy') : it.t('deska.nahrat_prilohy') %></label>

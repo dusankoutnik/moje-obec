@@ -13,6 +13,7 @@ import { urlSouboru } from '../../web/soubory.js';
 import { vyzadujRoli } from '../ucty/opravneni.js';
 import { maRoli } from '../ucty/sluzba.js';
 import { STRUKTURA_PI, vyplnPi } from './povinne.js';
+import { stitekTextu } from '../web/sprava-dalsi/text-dokumentu.js';
 import {
   TYPY_ROZPOCTU,
   zkontrolujDobu,
@@ -47,6 +48,7 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
         q: req.query.q ?? '',
         dokumenty,
         pocty,
+        stitkyTextu: await stitkyTextuDokumentu(dokumenty.map((d) => d.id)),
         jeSpravce: maRoli(req.uzivatel, 'spravce'),
       });
     },
@@ -64,6 +66,7 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
       prilohy: [],
       nahrazeni: [],
       prilohyUlozene: [],
+      stitekTextu: () => null,
       ...pomocnici,
       ...data,
     };
@@ -189,10 +192,42 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
     return { sejme, klic };
   }
 
-  // přílohy z formuláře → úložiště; vrací id uložených a chyby jednotlivých souborů
-  async function ulozPrilohy(req: FastifyRequest): Promise<{ ids: string[]; chyby: string[] }> {
+  /**
+   * Štítek stavu textu (vyhledávání) pro seznam dokumentů desky: za dokument jeden — chyba nebo čekání kterékoliv
+   * přílohy má přednost, jinak „text ✓“ jen když text mají všechny přílohy.
+   */
+  async function stitkyTextuDokumentu(dokumentIds: string[]) {
+    const out = new Map<string, ReturnType<typeof stitekTextu>>();
+    if (!dokumentIds.length) return out;
+    const radky = await app.db
+      .selectFrom('ud_prilohy as p')
+      .innerJoin('soubory_text as x', 'x.soubor_id', 'p.soubor_id')
+      .select(['p.dokument_id', 'x.stav', 'x.zdroj'])
+      .where('p.dokument_id', 'in', dokumentIds)
+      .execute();
+    const poradi = ['chyba', 'ceka', 'zpracovava', 'bez_textu', 'nepodporovano', 'hotovo'];
+    for (const id of dokumentIds) {
+      const moje = radky.filter((r) => r.dokument_id === id);
+      if (!moje.length) continue;
+      const hlavni = moje.sort((a, b) => poradi.indexOf(a.stav) - poradi.indexOf(b.stav))[0]!;
+      out.set(
+        id,
+        stitekTextu(t, {
+          stav: hlavni.stav,
+          zdroj: moje.every((m) => m.zdroj === hlavni.zdroj) ? hlavni.zdroj : null,
+        }),
+      );
+    }
+    return out;
+  }
+
+  // přílohy z formuláře → úložiště; vrací id uložených, chyby jednotlivých souborů a hlášky rychlé kontroly PDF
+  async function ulozPrilohy(
+    req: FastifyRequest,
+  ): Promise<{ ids: string[]; chyby: string[]; info: string[] }> {
     const ids: string[] = (await drivePrilohy(req, req.body as Telo)).map((s) => s.id);
     const chyby: string[] = [];
+    const info: string[] = [];
     for (const s of souboryZPole(req, 'prilohy')) {
       if (s.oriznuto) {
         chyby.push(`${s.nazev}: ${chybaSouboruText(t, 'velikost')}`);
@@ -205,9 +240,14 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
         nahralId: req.uzivatel!.id,
       });
       if ('chyba' in v) chyby.push(`${s.nazev}: ${chybaSouboruText(t, v.chyba)}`);
-      else ids.push(v.soubor.id);
+      else {
+        ids.push(v.soubor.id);
+        // rychlá kontrola textové vrstvy PDF (do 5 s) — správce hned ví, zda bude dokument prohledávatelný
+        const k = await app.textSouboru.rychlaKontrola(v.soubor);
+        if (k) info.push(t(`text.kontrola_${k}`, { nazev: v.soubor.puvodni_nazev }));
+      }
     }
-    return { ids, chyby };
+    return { ids, chyby, info };
   }
 
   // „vyvěsit + rozeslat“: hlášení infokanálu s odkazem na dokument
@@ -292,7 +332,8 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
         (vyveseno
           ? t('deska.vyveseno_ok')
           : t('deska.pripraveno_ok', { datum: v.data.od.split('-').reverse().join('. ') })) +
-        (prijemcu !== null && prijemcu !== undefined ? ' ' + t('deska.rozeslano', { n: prijemcu }) : ''),
+        (prijemcu !== null && prijemcu !== undefined ? ' ' + t('deska.rozeslano', { n: prijemcu }) : '') +
+        (prilohy.info.length ? ' ' + prilohy.info.join(' ') : ''),
     };
     return reply.redirect(`/sprava/deska/${id}`);
   });
@@ -312,7 +353,16 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
       typ_rozpoctu: d.typ_rozpoctu ?? '',
       rok: d.rok ? String(d.rok) : '',
     };
-    return reply.view('deska/sprava/formular', await formular(req, { d, f, prilohy: d.prilohy }));
+    const stavy = await app.textSouboru.stavy(d.prilohy.map((p) => p.id));
+    return reply.view(
+      'deska/sprava/formular',
+      await formular(req, {
+        d,
+        f,
+        prilohy: d.prilohy,
+        stitekTextu: (id: string) => stitekTextu(t, stavy.get(id)),
+      }),
+    );
   });
 
   app.post<{ Params: { id: string }; Body: Telo }>(
@@ -353,7 +403,7 @@ export default async function deskaSprava(app: FastifyInstance, z: { sluzba: Des
       await sluzba.odeberPrilohy(d.id, vice(b.odebrat).map(String));
       req.session.flash = prilohy.chyby.length
         ? { typ: 'chyba', text: t('app.ulozeno') + ' ' + prilohy.chyby.join(' ') }
-        : { typ: 'ok', text: t('deska.ulozeno_ok') };
+        : { typ: 'ok', text: [t('deska.ulozeno_ok'), ...prilohy.info].join(' ') };
       return reply.redirect(`/sprava/deska/${d.id}`);
     },
   );

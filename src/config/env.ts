@@ -79,6 +79,19 @@ const EnvSchema = z.object({
   // (adresáře oddělené čárkou, např. /app/kviz-instance)
   KVIZ_VEREJNE: z.string().optional(),
   KVIZ_BALIKY: z.string().default(''),
+  // Text nahraných dokumentů (textová vrstva PDF, OCR skenů, kancelářské formáty) pro vyhledávání — běží na pozadí
+  // v aplikaci; vyžaduje poppler-utils, tesseract-ocr (+ces, +eng) a antiword (v obrazu Dockeru jsou). 0 = vypnuto.
+  TEXT_SOUBORU: z
+    .string()
+    .optional()
+    .transform((v) => v === undefined || v === '' || v === '1' || v === 'true'),
+  OCR_JAZYKY: z
+    .string()
+    .regex(/^[a-z_]+(\+[a-z_]+)*$/, 'OCR_JAZYKY: kódy jazyků tesseractu oddělené plusem, např. ces+eng')
+    .default('ces+eng'),
+  OCR_MAX_STRAN: z.coerce.number().int().min(1).default(300),
+  OCR_DPI: z.coerce.number().int().min(72).max(600).default(200),
+  TEXT_MAX_ZNAKU: z.coerce.number().int().min(1000).default(2_000_000),
   IK_SMS_INTERVAL_MIN_MS: z.coerce.number().default(1000),
   IK_SMS_INTERVAL_MAX_MS: z.coerce.number().default(3000),
   IK_EMAIL_INTERVAL_MS: z.coerce.number().default(500),

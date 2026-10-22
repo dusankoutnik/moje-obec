@@ -262,3 +262,22 @@ export async function prihlasTelefonem(p: Prohlizec, telefon: string) {
   }
   return po;
 }
+
+// Malý Word (docx) sestavený v paměti: [Content_Types].xml jako první položka (podle ní file-type pozná OOXML).
+export async function docxSTextem(odstavce: string[]): Promise<Buffer> {
+  const { strToU8, zipSync } = await import('fflate');
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const telo = odstavce
+    .map((o) => `<w:p><w:r><w:t xml:space="preserve">${esc(o)}</w:t></w:r></w:p>`)
+    .join('');
+  return Buffer.from(
+    zipSync({
+      '[Content_Types].xml': strToU8(
+        '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>',
+      ),
+      'word/document.xml': strToU8(
+        `<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${telo}</w:body></w:document>`,
+      ),
+    }),
+  );
+}

@@ -11,6 +11,7 @@ import type { WebSluzby } from './index.js';
 import { rozdelPodleVidei } from './videa.js';
 import { odkazAkce } from './akce-externi.js';
 import { pomocniciOdstavek } from '../odstavky/index.js';
+import { klicVysledku, vysledkyZDokumentu, type VysledekHledani } from './hledani-dokumentu.js';
 
 /** akce webu + akce z rezervací, seřazené podle začátku */
 function sloucAkce<T extends { datum: Date | null }, U extends { datum: Date }>(
@@ -278,7 +279,7 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
     const q = String(req.query.q ?? '')
       .slice(0, 100)
       .trim();
-    const vysledky: { typ: string; titulek: string; url: string; text: string; datum?: Date | null }[] = [];
+    const vysledky: VysledekHledani[] = [];
     if (q) {
       const nalezene = await s.obsah.hledej(q);
       const adresy = await s.obsah.urlMnoha(nalezene);
@@ -315,9 +316,28 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
           titulek: d.nazev,
           url: urlSouboru({ id: d.soubor_id, puvodni_nazev: d.puvodni_nazev }),
           text: d.popis,
+          klic: klicVysledku({ url: '', souborId: d.soubor_id }),
         });
+      // obsah dokumentů (text PDF, OCR, Word): sloučit s výsledky podle místa na webu, úryvek doplnit
+      const podleKlice = new Map(vysledky.map((v) => [v.klic ?? klicVysledku(v), v]));
+      for (const d of await vysledkyZDokumentu(app, s, q)) {
+        const klic = d.klic ?? d.url;
+        const existujici = podleKlice.get(klic);
+        if (existujici) {
+          existujici.uryvek ??= d.uryvek;
+          continue;
+        }
+        podleKlice.set(klic, d);
+        vysledky.push(d);
+      }
     }
-    return reply.view('web/hledat', { titulek: t('web.hledat'), q, vysledky, noindex: true });
+    return reply.view('web/hledat', {
+      titulek: t('web.hledat'),
+      q,
+      vysledky,
+      hledaDokumenty: app.env.TEXT_SOUBORU,
+      noindex: true,
+    });
   });
 
   // stránky webu a přesměrování starých adres (jen pro jinak neznámé adresy)

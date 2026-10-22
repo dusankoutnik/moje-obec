@@ -51,7 +51,28 @@ Vitest; `test/pomocnici.ts` postaví aplikaci na volném portu s čistou testova
 - jednotkové: `kontakty`, `vyber-prijemcu`, `sms-adaptery` (falešný `fetch`), `otp` (s DB)
 - HTTP: `ucty` (přihlášení, heslo, role, blokace, audit), `zmeny-uctu` (čerstvé ověření před změnou e-mailu/hesla), `deska` (lhůty, přílohy, EXIF, archiv, RSS, rozpočet, povinné informace), `web` (stránky, koncepty, revize, editor, galerie, dotace, přesměrování, hledání, vzhled, přístupnost), `import` (WordPress/Galileo s falešným stahováním), `oidc` (externí klient: discovery, PKCE, kód → tokeny, ID token proti JWKS, userinfo, refresh, souhlas/odmítnutí), `infokanal` (odběr s OTP, správa, odhlášení odkazem, hlášení → fronta → preference kanálů, krizové, zastavení, webhook)
 
+- text dokumentů: `text-souboru` (čistá logika, Office přes ZIP, příkazy; integrace s pdftotext/OCR/antiword jen
+  když binárky jsou — `describe.skipIf`), `text-fronta` (HTTP: zařazení při nahrání, worker, hledání s úryvkem,
+  soukromí, správa fronty, odolnost)
+
 Nový test potřebuje jen `spustTestApp()` v `beforeAll` a `zavri()` v `afterAll`.
+
+### Testy s nástroji pro text dokumentů
+
+`./dev.sh` běží v `node:22-bookworm-slim` bez poppleru a tesseractu — integrační testy textu dokumentů se přeskočí
+(v CI se balíky instalují). Spustit je lokálně jde ve vlastním obrazu:
+
+```bash
+docker build -t pt-text-tools -f - . <<'DOCKERFILE'
+FROM node:22-bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends poppler-utils tesseract-ocr tesseract-ocr-ces tesseract-ocr-eng antiword && rm -rf /var/lib/apt/lists/*
+DOCKERFILE
+docker run --rm --network platforma_test -v "$PWD":/app -w /app -u "$(id -u):$(id -g)" -e HOME=/tmp \
+  -e TEST_DATABASE_URL=postgres://platforma:platforma@platforma_test_db:5432/platforma_test pt-text-tools npx vitest run
+```
+
+Testovací soubory jsou v `test/fixtures/text/` (ručně sestavené PDF s textovou vrstvou, sken jako JPEG a PDF se
+vloženým JPEG, prázdné dvoustránkové PDF); docx se skládá v testu přes `fflate` (`docxSTextem` v `test/pomocnici.ts`).
 
 ### Pokrytí kódu testy
 

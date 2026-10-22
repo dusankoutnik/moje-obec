@@ -11,7 +11,11 @@ RUN npm run build && npm prune --omit=dev
 FROM node:22-bookworm-slim
 ENV NODE_ENV=production
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+# curl = healthcheck; poppler-utils (pdftotext, pdftoppm, pdfinfo), tesseract-ocr s češtinou a angličtinou a antiword
+# = text dokumentů pro vyhledávání (docs/HLEDANI-DOKUMENTY.md); OCR běží lokálně, žádná cloudová služba
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      curl poppler-utils tesseract-ocr tesseract-ocr-ces tesseract-ocr-eng antiword \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --chown=node:node package.json ./

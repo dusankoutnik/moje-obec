@@ -4,6 +4,12 @@ Přehled změn platformy Web od Voltu 2.0 pro pilotní obec, nejnovější naho�
 
 ## 22. 10. 2026
 
+- **Hledání najde i to, co je uvnitř dokumentů:** vyhledávání na webu nově prohledává obsah nahraných PDF,
+  Wordů a tabulek — ne jen jejich názvy. U naskenovaných PDF se text přečte rozpoznáváním písma (trvá to pár
+  minut na dokument, běží na pozadí na serveru obce). Výsledek ukáže úryvek se zvýrazněnými slovy a odkaz na
+  úřední desku nebo stránku, kde dokument je. Hned po nahrání PDF se správce dozví, jestli má dokument textovou
+  vrstvu, a ve Správa → Obecní web → Text dokumentů vidí, co čeká, co se právě zpracovává a co se nepovedlo
+  (s tlačítky „Zpracovat znovu“, „Zpracovat teď“ a hromadnou kontrolou všech dokumentů).
 - **Prázdné rubriky se skrývají:** rubrika bez jediného příspěvku (např. Sport) se nenabízí ve filtru Aktualit ani v menu; na úřední desce totéž u kategorií bez dokumentů. Redaktor je v editoru vidí dál — jakmile něco zveřejní, rubrika se objeví.
 - **Akce z rezervací se samy připraví na web:** když si někdo zarezervuje sál nebo hřiště pro veřejnou akci,
   ve správě webu se objeví připravená akce k doplnění textu a fotky. Akce, kterou už na webu máte, se s rezervací

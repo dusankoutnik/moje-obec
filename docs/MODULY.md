@@ -204,6 +204,31 @@ systému (`REZERVACE_KALENDAR_URL`, položky `r<id>`, série `s<id>`, předprode
 - **Statistiky úvodu:** každá dlaždice je odkaz; `obec.fakta[].odkaz` (cesta `/…` nebo `https://…`),
   `web.stat_zpravy_kategorie` (slug kategorie zpráv za měsíc), pět nejbližších akcí.
 
+## Text dokumentů a vyhledávání v nich (hotovo 22. 10. 2026)
+
+Zadání a rozhodnutí: `docs/HLEDANI-DOKUMENTY.md`. Každý nahraný dokument (příloha úřední desky, soubor ke stažení,
+dokument v obsahu) dostane na pozadí **text**: z textové vrstvy PDF (`pdftotext`), u skenů přes **OCR**
+(`pdftoppm` + `tesseract`, česky i anglicky), z Wordu/Excelu/PowerPointu/OpenDocumentu (ZIP/XML přímo v Node),
+ze starého `.doc` (`antiword`) a z RTF. Obrázek nahraný jako dokument (sken JPG/PNG) jde rovnou do OCR; fotky galerií,
+loga a videa se neindexují. Vše běží lokálně na serveru obce.
+
+- **Data:** tabulka `soubory_text` (stav `ceka | zpracovava | hotovo | bez_textu | nepodporovano | chyba`, zdroj,
+  text do `TEXT_MAX_ZNAKU`, počet stran, vrstva, chyba/poznámka, pokusy, priorita), generovaný `tsvector` + GIN;
+  textová konfigurace `cs_bez` pro úryvky s diakritikou. Migrace 0015.
+- **Worker** (`src/lib/text-fronta.ts`): jeden soubor po druhém, `nice -n 15`, atomické zabrání řádku, chyby 3× s
+  odkladem 10 min, zaseknuté řádky po 40 min zpět do fronty, cron à 1 min + probuzení po nahrání. Čistá logika
+  (rozhodnutí o vrstvě, parsování Office, příkazy) v `src/lib/text-souboru.ts`.
+- **Hledání:** `/hledat` má zdroj „v dokumentech“ (úryvek s `<mark>`, odkaz na místo na webu: dokument desky,
+  `/dokumenty#d-<id>`, stránka s odkazem na soubor); neveřejné a nikde nepoužité soubory se nehledají.
+- **Správa:** `/sprava/web/text-dokumentu` (role `web`/`deska`) — stav fronty, chyby, bez textu, nepodporované,
+  „Zpracovat znovu / teď“, hromadně „Zkontrolovat všechny dokumenty znovu“ a „Znovu jen chyby a bez textu“;
+  štítky u dokumentů desky a souborů ke stažení; karta na dashboardu `/sprava`; hláška o vrstvě hned při nahrání
+  PDF. Skript `src/scripts/text-souboru.ts` (`--chybejici | --vse | --jen-pdf | --znovu-chyby | --id …`).
+- **Konfigurace:** `TEXT_SOUBORU`, `OCR_JAZYKY`, `OCR_MAX_STRAN`, `OCR_DPI`, `TEXT_MAX_ZNAKU`; nástroje jsou
+  v obrazu Dockeru (mimo Docker doinstalovat, viz `INSTALACE.md`).
+- Rychlost: text z vrstvy do sekundy, sken ~3–8 s na stranu (2 vlákna), paměť tesseractu ~150 MB — proto
+  `mem_limit` 768 MB.
+
 ## Rezervace + platby (P1)
 
 Z Rezervací Vlastibořic (nejrozsáhlejší modul): zdroje (sál, posilovna, hřiště, štěpkovač) s kalendářem denním/týdenním, kapacita > 1 (posilovna, počet osob), celý den vs. čas, opakování (série), schvalování úřadem (karty), ceník rezident/nerezident (rezervace úřadu = 0), ruční sleva; **měsíční vyúčtování** = „Výzva k úhradě“ (obec není plátce DPH, žádné faktury), PDF, QR platba (SPD), VS, veřejná stránka platby tokenem, potvrzení o zaplacení, splatnost 14 dní, cron 1. den měsíce, SMS fallback bez e-mailu; report pro účetní (rozpočtová skladba, pohledávky, CSV/PDF); předprodej vstupenek bez registrace (QR, storno 96 h, platba na místě, VIP, pokladní listina); evidence přístupů k zámkům (TTLock: PIN/otisk/čip/eKlíč) a proces aktivace posilovny; spolujízda (jízdy, poptávky, odběry, počítadlo); klimatizace/SMS připomínky topení. Zákon: 128/2000 Sb. (záměry), účetnictví obce. Doporučené pořadí: kalendář + schvalování → ceník → vyúčtování/QR → zámky → předprodej → spolujízda.

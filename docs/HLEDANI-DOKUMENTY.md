@@ -1,22 +1,26 @@
 # Text dokumentů a vyhledávání v nich (návrh 22. 10. 2026)
 
 ## Dnešní stav
+
 Vyhledávání `/hledat` prochází jen stránky a aktuality (titulek, perex, HTML), názvy a popisy dokumentů úřední desky
 a názvy souborů ke stažení. **Obsah PDF a kancelářských souborů se neprohledává.** Na pilotu je 829 PDF (548 MB),
 76 Wordů, 7 tabulek; část PDF jsou skeny bez textové vrstvy.
 
 ## Cíl
+
 Každý nahraný dokument dostane **text** (z textové vrstvy, nebo OCR, když vrstva chybí), text se **naindexuje** a
 vyhledávání ho najde s úryvkem a odkazem na místo, kde dokument na webu je (úřední deska, dokumenty, článek).
 Vše běží **lokálně** na serveru obce (žádná cloudová služba), na pozadí, aby nahrání nečekalo.
 
 ## Nástroje (v obrazu Dockeru, Debian bookworm)
+
 `poppler-utils` (pdftotext, pdftoppm, pdfinfo), `tesseract-ocr` + `tesseract-ocr-ces` + `tesseract-ocr-eng` (OCR
 česky i anglicky), `antiword` (starý Word `.doc`). Kancelářské formáty ZIP/XML (`.docx .xlsx .pptx .odt .ods`) se
 čtou přímo v Node (malá knihovna pro ZIP, např. `fflate`, MIT — zapsat do `docs/LICENCE-TRETICH-STRAN.md`).
 Obrázky nahrané jako dokument (sken ve formátu JPG/PNG) jdou rovnou do OCR.
 
 ## Datový model
+
 - `soubory_text` (`soubor_id` PK → `soubory`, `stav` `ceka|zpracovava|hotovo|bez_textu|nepodporovano|chyba`,
   `zdroj` `vrstva|ocr|docx|xlsx|pptx|odt|antiword|obrazek|null`, `text` (do 2 MB), `stran`, `ma_vrstvu` boolean,
   `chyba` text, `pokusu` int, `zarazeno_at`, `zpracovano_at`, `trvani_ms`), generovaný sloupec
@@ -25,9 +29,10 @@ Obrázky nahrané jako dokument (sken ve formátu JPG/PNG) jdou rovnou do OCR.
   a worker se „kopne“ (jako fronta infokanálu). Soubory jiného druhu (fotky galerie, loga, videa) se neindexují.
 
 ## Zpracování (worker v aplikaci, jeden soubor po druhém, `nice`)
+
 1. **PDF:** `pdfinfo` (počet stran) → `pdftotext -layout` (limit 60 s). Má-li průměr < 40 znaků na stranu → bez
    vrstvy → **OCR**: `pdftoppm -r 200 -png` po stranách (nejvýš `OCR_MAX_STRAN` = 300) → `tesseract -l ces+eng
-   --psm 1` na každou stranu, texty spojit; limit 20 min na soubor. PDF s vrstvou i tak projde OCR, když vrstva
+--psm 1` na každou stranu, texty spojit; limit 20 min na soubor. PDF s vrstvou i tak projde OCR, když vrstva
    obsahuje hlavně nesmysly (podíl písmen < 50 %) — staré skeny s rozbitou vrstvou.
 2. **Office:** docx/xlsx/pptx/odt/ods = ZIP → `word/document.xml`, `xl/sharedStrings.xml` + listy, `ppt/slides/*.xml`,
    `content.xml` → text bez značek; `.doc` → `antiword -t`; `.xls` → zatím `nepodporovano`.
@@ -42,6 +47,7 @@ Obrázky nahrané jako dokument (sken ve formátu JPG/PNG) jdou rovnou do OCR.
    jen zařadí do fronty; zpracování běží v aplikaci. Na pilotu stovky PDF → hodiny OCR na pozadí; ukazatel ve správě.
 
 ## Vyhledávání
+
 `/hledat` přidá zdroj **„v dokumentech“**: `soubory_text.vyhledavani @@ to_tsquery` (stejný `tsDotaz`), řazení
 `ts_rank`, úryvek `ts_headline('simple', f_unaccent(lower(text)), dotaz)` (zvýrazněná slova ~ 200 znaků).
 Odkaz vede tam, kde je dokument na webu (v tomto pořadí): příloha úřední desky → `/uredni-deska/<id>` (typ „Úřední
@@ -50,18 +56,58 @@ deska“ / „archiv desky“), soubor ke stažení → `/dokumenty#<id>`, člá
 nejvýš 20. Na stránce výsledků poznámka „Prohledáváme i obsah dokumentů (PDF, Word)“.
 
 ## Správa
+
 - Správa → Obecní web → **„Text dokumentů“** (`/sprava/web/text-dokumentu`, role `web`/`deska`): počty podle stavu,
   seznam čekajících / chyb / bez textu s tlačítky „Zpracovat znovu“ a „Zpracovat teď“ (přednostně), odhad fronty.
 - U dokumentu desky a souboru ke stažení ve správě štítek: „text ✓ (vrstva)“, „text ✓ (OCR)“, „OCR čeká“,
   „bez textu“, „chyba“. Počet čekajících na dashboardu správy.
 
 ## Testy a CI
+
 Jednotkové: rozpoznání „bez vrstvy“, parsování Office XML, sestavení příkazů, mapování souboru na stránku, úryvek.
 Integrační (`describe.skipIf(!binárky)`): malé PDF s vrstvou, malý sken (PNG → PDF přes `pdftoppm`? ne — přibalit
 testovací PDF/PNG v `test/fixtures/`), docx; v CI doinstalovat `poppler-utils tesseract-ocr tesseract-ocr-ces antiword`,
 aby integrační testy běžely. Lokálně `./dev.sh` (node slim) je přeskočí.
 
 ## Poznámky
+
 - Osobní údaje: index obsahuje jen to, co je v dokumentech veřejně; úryvky ve výsledcích = kontext hledaných slov.
 - Paměť: tesseract ~150 MB na stranu; worker po jedné straně, `nice -n 15`; dev kontejner zvýšit na 768 MB.
 - Náklady nula, běží na serveru obce; rychlost ~3–8 s na stranu skenu.
+
+## Rozhodnutí při implementaci (22. 10. 2026)
+
+- **Zařazení do fronty = řádek v `soubory_text`**, který zakládá přímo `SouboroveUloziste.uloz()` (druh dokument
+  → PDF, Office, obrázek jako dokument). Funguje tedy i pro import a skripty, které běží mimo aplikaci; worker
+  v aplikaci si řádky vezme při nejbližším probuzení (cron à 1 min). `TEXT_SOUBORU=0` jen zastaví worker, řádky
+  čekají.
+- **Navíc sloupce** `priorita` („Zpracovat teď“ = 1), `dalsi_pokus_at` (odklad 10 min po chybě), `poznamka`
+  (nechybové informace: „OCR jen prvních 300 stran“, „text zkrácen“, „slabá vrstva, OCR nedostupné“).
+- **Úryvky**: generovaný sloupec indexu je podle návrhu (`to_tsvector('simple', f_unaccent(lower(text)))`), ale
+  `ts_headline` nad ním by vracel text bez diakritiky a velkých písmen. Proto migrace zakládá textovou konfiguraci
+  `cs_bez` (parser `simple` + slovník `unaccent`): porovnává bez diakritiky, vrací původní text. Úryvek se hledá
+  jen v prvních 300 000 znacích (rychlost), označený `<mark>`, text je escapovaný.
+- **Strop tsvectoru 1 MB**: nekvalitní OCR plné unikátních „slov“ ho může přesáhnout → zápis se opakuje s textem
+  zkráceným na polovinu (až 4×), do poznámky se zapíše, na kolik znaků.
+- **„Nesmysly“ ve vrstvě** se počítají z podílu písmen **a číslic** (ne jen písmen) — tabulky rozpočtu jsou samá
+  čísla a nejsou nesmysl; navíc podíl náhradních/soukromých znaků > 5 %.
+- **Soubor bez veřejného místa se nehledá** (odebraná příloha, nikdy nepřipojený soubor, příloha dokumentu v koši
+  či připraveného na později, sejmutý dokument z kategorie s neveřejným archivem) — návrh říkal „jinak přímo
+  soubor“, ale takový soubor mohl z webu zmizet kvůli osobním údajům a hledání by ho vracelo.
+- **OCR strany**: nejdřív `--psm 1` (s rozpoznáním otočení), prázdný výsledek (< 20 znaků) zkusí `--psm 3`;
+  `--dpi` se předává podle `OCR_DPI`. Obrázky nahrané jako dokument se berou v obou podobách: při nahrání podle
+  požadovaného druhu, při hromadném zařazení jako přílohy úřední desky (jinak jsou k nerozeznání od fotek galerie).
+- **RTF** se čte také (vlastní převod: cp1250, `\u`, skupiny s metadaty se vynechají), `.odp` přes `content.xml`
+  (zdroj `odt`). `.xls` a `.ppt` zůstávají `nepodporovano`.
+- **Slabá vrstva bez OCR**: když tesseract chybí a vrstva má aspoň 20 znaků a není nesmysl, uloží se jako `hotovo`
+  (zdroj vrstva, `ma_vrstvu=false`, poznámka) — lepší než nic.
+- **Správa**: kromě návrhu i tlačítka „Zkontrolovat všechny dokumenty znovu“ (= skript `--vse`) a „Znovu jen chyby
+  a bez textu“ (= `--znovu-chyby`, zahrnuje i `nepodporovano` — po doinstalování nástrojů) s potvrzením, počtem
+  a odhadem doby (průměr posledních 50 zpracování × počet); stav fronty (čekající, právě zpracovávaný soubor,
+  hotovo dnes) se čte při každém načtení stránky. Skript má navíc `--chybejici` (výchozí, jen soubory bez řádku).
+- **Hromadné zařazení nesahá na soubor ve stavu `zpracovava`**; výsledek se zapisuje jen `WHERE stav =
+'zpracovava'` — kdo mezitím řádek vrátil do fronty, vyhraje (soubor se zpracuje znovu).
+- **Deska v seznamu**: za dokument jeden štítek (chyba / čeká má přednost před hotovo; „text ✓ (vrstva/OCR)“ jen
+  když všechny přílohy mají stejný zdroj), v detailu štítek u každé přílohy.
+- Limity: pdftotext 60 s, OCR 20 min na soubor a 180 s na stranu, rychlá kontrola 5 s (pdfinfo 2 s), výstup
+  příkazu nejvýš 24 MB, položka ZIPu nejvýš 80 MB (větší se přeskočí s poznámkou).

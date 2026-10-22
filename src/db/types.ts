@@ -194,6 +194,30 @@ export interface SouboryTable {
 }
 export type Soubor = Selectable<SouboryTable>;
 
+// ---- text dokumentů (vrstva PDF / OCR / kancelářské formáty), docs/HLEDANI-DOKUMENTY.md ----
+export type StavTextu = 'ceka' | 'zpracovava' | 'hotovo' | 'bez_textu' | 'nepodporovano' | 'chyba';
+export type ZdrojTextu = 'vrstva' | 'ocr' | 'docx' | 'xlsx' | 'pptx' | 'odt' | 'antiword' | 'rtf' | 'obrazek';
+export interface SouboryTextTable {
+  soubor_id: string;
+  stav: Generated<StavTextu>;
+  zdroj: ZdrojTextu | null;
+  text: string | null;
+  stran: number | null;
+  ma_vrstvu: boolean | null;
+  chyba: string | null;
+  poznamka: string | null;
+  pokusu: Generated<number>;
+  priorita: Generated<number>;
+  zarazeno_at: TimestampGenerated;
+  dalsi_pokus_at: Date | null;
+  zacatek_at: Date | null;
+  zpracovano_at: Date | null;
+  trvani_ms: number | null;
+  /** generovaný sloupec (jen ke čtení) */
+  vyhledavani: Generated<string>;
+}
+export type SouborText = Selectable<SouboryTextTable>;
+
 // ---- úřední deska ----
 export interface UdKategorieTable {
   id: Generated<number>;
@@ -495,6 +519,7 @@ export interface Database {
   web_presmerovani: WebPresmerovaniTable;
   web_videa: WebVideaTable;
   soubory: SouboryTable;
+  soubory_text: SouboryTextTable;
   ud_kategorie: UdKategorieTable;
   ud_dokumenty: UdDokumentyTable;
   ud_prilohy: UdPrilohyTable;

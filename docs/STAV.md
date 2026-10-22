@@ -1,5 +1,20 @@
 # Stav projektu — etapa 1 (18. 10. 2026)
 
+## Text dokumentů a vyhledávání v nich (22. 10. 2026)
+
+- Zadání a rozhodnutí: `docs/HLEDANI-DOKUMENTY.md` (sekce „Rozhodnutí při implementaci“), popis v `docs/MODULY.md`.
+  Migrace **0015** (`soubory_text` + GIN, textová konfigurace `cs_bez`). Nová závislost `fflate` (MIT); obraz
+  Dockeru má `poppler-utils`, `tesseract-ocr` (+ces, +eng) a `antiword`.
+- Nové: worker textu dokumentů (`src/lib/text-fronta.ts`, `src/lib/text-souboru.ts`), zdroj „v dokumentech“
+  na `/hledat` s úryvkem, správa `/sprava/web/text-dokumentu` (stav fronty, chyby, znovu/teď, hromadně),
+  štítky u desky a dokumentů, karta na dashboardu, hláška o vrstvě při nahrání PDF, skript
+  `src/scripts/text-souboru.ts`, env `TEXT_SOUBORU`, `OCR_*`, `TEXT_MAX_ZNAKU`; `mem_limit` devu 768 MB.
+- Ověření: `test/text-souboru.test.ts` (18, z toho 6 jen s binárkami) a `test/text-fronta.test.ts` (18, z toho
+  1 jen s OCR); v CI se balíky instalují, lokálně `./dev.sh` je přeskočí (vlastní obraz viz `docs/VYVOJ.md`).
+- Na devu po nasazení: `docker exec platforma node dist/scripts/text-souboru.js --chybejici` zařadí stávajících
+  ~830 PDF + Office; textové vrstvy jsou hotové za minuty, skeny (OCR) řádově hodiny na pozadí — postup ve
+  Správa → Obecní web → Text dokumentů.
+
 ## Akce propojené s rezervacemi a klikací statistiky (22. 10. 2026)
 
 - Zadání a rozhodnutí: `docs/AKCE-PROPOJENI.md`, popis v `docs/MODULY.md` (Obecní web — akce propojené

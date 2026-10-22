@@ -62,6 +62,17 @@ Modul zapnete v `obec.yml` (`moduly.kviz: true`). Veřejné otázky jsou v obraz
 (např. volume `./kviz:/app/kviz-instance:ro` + `KVIZ_BALIKY=/app/kviz-instance`). Balíky se načítají při startu;
 po úpravě souboru stačí Správa → Kvíz → „Načíst balíky znovu“.
 
+### Text dokumentů (vyhledávání v PDF a Wordu)
+
+Obraz Dockeru obsahuje `poppler-utils` (pdftotext, pdftoppm, pdfinfo), `tesseract-ocr` s češtinou a angličtinou
+a `antiword` — text nahraných dokumentů (i skenů přes OCR) se vyčítá na pozadí a hledání na webu ho najde. Nic se
+neposílá mimo server. Při běhu **mimo Docker** je nutné balíky doinstalovat (Debian/Ubuntu:
+`apt-get install poppler-utils tesseract-ocr tesseract-ocr-ces tesseract-ocr-eng antiword`); bez nich skončí
+dokumenty ve stavu „nepodporováno“ a Správa → Obecní web → Text dokumentů to ukáže. Nastavení: `TEXT_SOUBORU`
+(1/0), `OCR_JAZYKY`, `OCR_MAX_STRAN`, `OCR_DPI`, `TEXT_MAX_ZNAKU` v `.env`. OCR potřebuje paměť (~150 MB na stranu)
+— `mem_limit` aplikace nechte aspoň 768 MB. Dokumenty nahrané před zapnutím (import) zařadíte příkazem
+`docker compose exec app node dist/scripts/text-souboru.js --chybejici` (nebo tlačítkem ve správě).
+
 ## 3. Spuštění
 
 ```bash
