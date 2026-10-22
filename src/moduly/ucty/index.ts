@@ -3,7 +3,13 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { IncomingMessage } from 'node:http';
 import { Cron } from 'croner';
 import fp from 'fastify-plugin';
-import { vytvorProvider, zajistiKlientaPlatformy, OIDC_PREFIX } from './oidc/provider.js';
+import {
+  vytvorProvider,
+  zajistiKlientaPlatformy,
+  zajistiKlientyAplikaci,
+  OIDC_PREFIX,
+} from './oidc/provider.js';
+import interniRoutes from './interni.js';
 import { vytvorOidcKlienta } from './oidc/klient.js';
 import { uklidOidc } from './oidc/adapter.js';
 import { UctySluzba } from './sluzba.js';
@@ -23,6 +29,7 @@ declare module 'fastify' {
 async function uctyModul(app: FastifyInstance) {
   const provider = await vytvorProvider(app.db, app.env, app.obec);
   await zajistiKlientaPlatformy(app.db, app.env);
+  await zajistiKlientyAplikaci(app.db, app.env);
   const klient = vytvorOidcKlienta(app.env);
   const ucty = new UctySluzba(app.db);
   app.decorate('ucty', ucty);
@@ -50,6 +57,7 @@ async function uctyModul(app: FastifyInstance) {
   await app.register(interakceRoutes, { provider, ucty });
   await app.register(uctyRoutes, { klient, ucty });
   await app.register(spravaRoutes, { ucty });
+  await app.register(interniRoutes, { ucty });
 
   // úklid: prošlé OIDC záznamy, sezení, OTP kódy a čítače zámků přihlášení — každou hodinu
   if (app.env.NODE_ENV !== 'test') {

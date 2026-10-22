@@ -39,6 +39,10 @@ export interface UzivateleTable {
   email_cekajici_at: TimestampNullable;
   vytvoren_at: TimestampGenerated;
   upraven_at: TimestampGenerated;
+  cislo: Generated<number>;
+  rezident_posouzen_at: TimestampNullable;
+  rezident_posouzen_by: number | null;
+  navic: ColumnType<Record<string, unknown>, string | undefined, string>;
 }
 export type Uzivatel = Selectable<UzivateleTable>;
 export type NovyUzivatel = Insertable<UzivateleTable>;
@@ -92,6 +96,7 @@ export interface OidcKlientiTable {
   duveryhodny: Generated<boolean>;
   aktivni: Generated<boolean>;
   vytvoren_at: TimestampGenerated;
+  auth_metoda: Generated<string>;
 }
 
 export interface NastaveniTable {

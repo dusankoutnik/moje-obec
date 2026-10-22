@@ -95,6 +95,17 @@ const EnvSchema = z.object({
   IK_SMS_INTERVAL_MIN_MS: z.coerce.number().default(1000),
   IK_SMS_INTERVAL_MAX_MS: z.coerce.number().default(3000),
   IK_EMAIL_INTERVAL_MS: z.coerce.number().default(500),
+  // OIDC klienti aplikací (rezervace, eKnihy): tajemství jednotlivě, nebo JSON pole
+  // [{"client_id","client_secret","nazev"?,"redirect_uris"?,"post_logout_redirect_uris"?,"auth_metoda"?}]
+  OIDC_REZERVACE_SECRET: z.string().min(16).optional(),
+  OIDC_EKNIHY_SECRET: z.string().min(16).optional(),
+  OIDC_KLIENTI: z.string().optional(),
+  // interní API pro aplikace (hlavička x-api-secret); prázdné = API vypnuté
+  INTERNI_API_SECRET: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().min(24).optional()),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
