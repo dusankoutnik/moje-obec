@@ -130,6 +130,10 @@ export interface IkOdberateleTable {
   uzivatel_id: string | null;
   poznamka: Generated<string>;
   vytvoren_at: TimestampGenerated;
+  /** id odběratele ve VlastiKanálu (převod 2026-10, migrace 0018) */
+  prevod_id: Generated<number | null>;
+  /** číslo účtu MujÚčtu (= uzivatele.cislo) — dopárování vazby uzivatel_id */
+  mujucet_cislo: Generated<number | null>;
 }
 export type Odberatel = Selectable<IkOdberateleTable>;
 
@@ -157,8 +161,42 @@ export interface IkHlaseniTable {
   zdroj_automatu: string | null;
   vytvoreno_at: TimestampGenerated;
   dokonceno_at: TimestampNullable;
+  /** id hlášení ve VlastiKanálu (převod, migrace 0018) */
+  prevod_id: Generated<number | null>;
+  /** souhrn příjemců převedené historie {prijemcu, odeslano, sms:{stav:n}, email:{…}, web_url?} */
+  souhrn: ColumnType<SouhrnHlaseni | null, string | null | undefined, string | null>;
 }
 export type Hlaseni = Selectable<IkHlaseniTable>;
+export interface SouhrnHlaseni {
+  prijemcu: number;
+  odeslano: number;
+  sms: Record<string, number>;
+  email: Record<string, number>;
+  web_url?: string | null;
+  puvodni_stav?: string;
+}
+
+// odchozí fronta interního API (jednotlivé SMS/e-maily aplikací obce), migrace 0018
+export interface IkOdchoziTable {
+  id: Generated<number>;
+  davka: string;
+  zdroj: Generated<string>;
+  kanal: 'sms' | 'email';
+  kontakt: string;
+  sms_text: string | null;
+  email_predmet: string | null;
+  email_text: string | null;
+  email_html: string | null;
+  stav: Generated<StavPrijemce>;
+  pokusy: Generated<number>;
+  posledni_chyba: string | null;
+  brana_id: string | null;
+  dalsi_pokus_at: TimestampNullable;
+  zabrano_at: TimestampNullable;
+  vytvoreno_at: TimestampGenerated;
+  odeslano_at: TimestampNullable;
+  doruceno_at: TimestampNullable;
+}
 
 // odesila_se = řádek si zabral rozesílací worker (atomicky), odeslání právě probíhá
 export type StavPrijemce = 'ceka' | 'odesila_se' | 'odeslano' | 'doruceno' | 'selhalo' | 'vzdano';
@@ -541,4 +579,5 @@ export interface Database {
   ik_optouty: IkOptoutyTable;
   ik_hlaseni: IkHlaseniTable;
   ik_prijemci: IkPrijemciTable;
+  ik_odchozi: IkOdchoziTable;
 }

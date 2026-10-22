@@ -50,6 +50,12 @@ export class PresmerovaniSms implements SmsPoskytovatel {
       : this.zaklad.stavDoruceni(branaId);
   }
 
+  // příchozí SMS chodí ze skutečné brány (konzole žádné nemá)
+  get prichoziZWebhooku() {
+    if (this.skutecny.prichoziZWebhooku) return this.skutecny.prichoziZWebhooku.bind(this.skutecny);
+    return this.zaklad.prichoziZWebhooku?.bind(this.zaklad);
+  }
+
   get zpracujWebhook() {
     return this.zaklad.zpracujWebhook?.bind(this.zaklad);
   }

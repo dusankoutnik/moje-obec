@@ -28,6 +28,7 @@ function poskytovatel(nazev: Env['SMS_PROVIDER'], env: Env, log: Logger): SmsPos
         url: env.SMSGATE_URL ?? '',
         user: env.SMSGATE_USER ?? '',
         pass: env.SMSGATE_PASS ?? '',
+        webhookKlic: env.SMSGATE_WEBHOOK_KLIC || undefined,
       });
     case 'smsbrana':
       return new SmsBrana({

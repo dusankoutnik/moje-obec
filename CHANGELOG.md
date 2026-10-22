@@ -24,6 +24,18 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 - Interní API `/api/interni/uzivatel/:cislo`, `/api/interni/uzivatele?role=`, `POST …/rezident` (`INTERNI_API_SECRET`).
 - Převodní skript `src/scripts/prevod-mujucet.ts` (`--nanecisto`, `--anonymizovat`, `--sloucit-telefonem`,
   `--redaktor-bez-webu`); hesla MůjÚčtu (scrypt N=16384) se ověří nativně a po přihlášení přepočítají. Návod `docs/PREVOD.md`.
+### Přidáno (infokanál — přechod z VlastiKanálu)
+
+- Převod VlastiKanálu `src/scripts/prevod-vlastikanal.ts` (odběratelé, kategorie, opt-outy, historie hlášení se
+  souhrnem; `--nanecisto`, `--anonymizovat`, `--doparovat`), migrace 0018 (`prevod_id`, `mujucet_cislo`,
+  `ik_hlaseni.souhrn`, odchozí fronta `ik_odchozi`), `docs/PREVOD.md`.
+- Interní API `POST /api/interni/odeslat` (fronta s opakováním, předpona obce, limit délky, audit) a
+  `GET /api/interni/odber`; sdílené ověření `src/lib/interni-api.ts` (`INTERNI_API_SECRET`).
+- Příchozí SMS: `START jméno`, `STOP`, `ODVOZ cíl` (předání rezervacím), ostatní e-mailem správcům.
+- SMSGate: webhooky příchozích SMS a doručenek, podpis `X-Signature`, skript `smsgate-webhook.ts`;
+  hlídání brány (offline telefon, nedostupný cloud) s e-maily `BRANA_NOTIFY`.
+- Env `INTERNI_API_SECRET`, `APLIKACE_REZERVACE_URL`, `SPOLUJIZDA_HOOK_URL`, `SPOLUJIZDA_HOOK_SECRET`,
+  `INFOKANAL_NOTIFY`, `BRANA_NOTIFY`, `BRANA_LIMIT_MIN`, `SMSGATE_WEBHOOK_KLIC`.
 
 ### Přidáno (text dokumentů a vyhledávání v nich)
 

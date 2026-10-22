@@ -382,7 +382,7 @@ export class InfokanalSluzba {
   }
 
   async seznamHlaseni(limit = 50) {
-    return this.db
+    const r = await this.db
       .selectFrom('ik_hlaseni')
       .leftJoin('ik_kategorie', 'ik_kategorie.id', 'ik_hlaseni.kategorie_id')
       .leftJoin('uzivatele', 'uzivatele.id', 'ik_hlaseni.autor_id')
@@ -396,6 +396,7 @@ export class InfokanalSluzba {
         'ik_hlaseni.vytvoreno_at',
         'ik_hlaseni.naplanovano_na',
         'ik_hlaseni.zdroj_automatu',
+        'ik_hlaseni.souhrn',
         'ik_kategorie.nazev as kategorie',
         'uzivatele.jmeno',
         'uzivatele.prijmeni',
@@ -416,6 +417,12 @@ export class InfokanalSluzba {
       .orderBy('ik_hlaseni.vytvoreno_at', 'desc')
       .limit(limit)
       .execute();
+    // převedená historie z VlastiKanálu nemá jednotlivé příjemce — počty ze souhrnu
+    return r.map((h) =>
+      h.souhrn && !Number(h.prijemcu)
+        ? { ...h, prijemcu: h.souhrn.prijemcu, odeslano: h.souhrn.odeslano }
+        : h,
+    );
   }
 
   async detailHlaseni(id: string) {
