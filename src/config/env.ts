@@ -18,6 +18,8 @@ const EnvSchema = z.object({
   LOG_LEVEL: z.string().default('info'),
   // vývojová / testovací instalace: X-Robots-Tag noindex na všech odpovědích a robots.txt „Disallow: /“
   ROBOTS_NOINDEX: bool,
+  // testovací instalace: odkaz „Co je nového“ (/devlog) v patičce
+  DEVLOG: bool,
   DATABASE_URL: z.string().min(1),
   SESSION_SECRET: z.string().min(32),
   OIDC_COOKIE_SECRET: z.string().min(32),

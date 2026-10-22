@@ -2180,7 +2180,7 @@ body.zakladni .panel-hlavni {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 10px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: #cfcfcf;
   padding-bottom: 20px;
   margin: 0;
@@ -2195,7 +2195,7 @@ body.zakladni .panel-hlavni {
   font-weight: 700;
 }
 .paticka-vyrobce img {
-  height: 22px;
+  height: 16px;
   width: auto;
 }
 
@@ -3074,4 +3074,13 @@ button.kviz-odpoved:active {
   margin: 4px 0 0;
   color: var(--text-tlumeny);
   font-size: 0.88rem;
+}
+
+/* devlog „Co je nového“ */
+.devlog h2 {
+  margin-top: 1.6rem;
+  font-size: 1.25rem;
+}
+.devlog li {
+  margin-bottom: 0.35rem;
 }

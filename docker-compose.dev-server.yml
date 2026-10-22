@@ -15,6 +15,7 @@ services:
       OBEC_YML: /app/obec.yml
       # vývojová instalace: X-Robots-Tag noindex a robots.txt „Disallow: /“ (NPM robots.txt přebíjí také)
       ROBOTS_NOINDEX: '1'
+      DEVLOG: '1'
       # vlastní otázky kvízu obce (mimo veřejný repozitář)
       KVIZ_BALIKY: /app/kviz-instance
       # soubory starého WordPressu na původní adrese /wp-content/uploads/ (pevné odkazy, ne kopie dat)

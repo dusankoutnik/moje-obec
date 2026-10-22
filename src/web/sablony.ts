@@ -57,6 +57,7 @@ export default fp(async function sablony(app: FastifyInstance) {
       const html = await eta.renderAsync(sablona, {
         t: app.t,
         obec: app.obec,
+        devlog: app.env.DEVLOG,
         logoVyrobce: LOGO_VYROBCE ? `/static/img/${LOGO_VYROBCE}` : null,
         env: app.env.NODE_ENV,
         uzivatel: req.uzivatel ?? null,

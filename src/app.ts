@@ -27,6 +27,7 @@ import nahravani from './web/nahravani.js';
 import souboryRoutes from './web/soubory.js';
 import ikonyRoutes from './web/ikony.js';
 import { SouboroveUloziste } from './lib/soubory.js';
+import devlogRoutes from './web/devlog.js';
 import sablony from './web/sablony.js';
 import hlavicky from './web/hlavicky.js';
 import webRoutes from './web/routes.js';
@@ -294,6 +295,7 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
     return reply.code(status).send({ chyba: e.message });
   });
 
+  await app.register(devlogRoutes);
   await app.register(webRoutes);
   await app.register(souboryRoutes);
   await app.register(ikonyRoutes);

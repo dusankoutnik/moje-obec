@@ -1,0 +1,5 @@
+<% layout('/layout') %>
+<div class="panel-hlavni devlog">
+  <h1>Co je nového</h1>
+  <%~ it.html %>
+</div>
