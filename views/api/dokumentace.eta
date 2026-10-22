@@ -2,7 +2,7 @@
 <article class="obsah-clanek api-dokumentace">
 <h1>API webu obce</h1>
 <p>Rozhraní pro programy, které na web obce samy zapisují: sazba obecního zpravodaje, kalendář akcí, systémy úřadu.
-  Všechno, co přes API vznikne, jde stejnou cestou jako ze správy — s revizemi, auditem, kontrolou HTML a zákonných
+  Všechno, co přes API vznikne, jde stejnou cestou jako z administrace — s revizemi, auditem, kontrolou HTML a zákonných
   náležitostí (popisy obrázků, lhůty úřední desky). Strojový popis: <a href="/api/openapi.json"><code>/api/openapi.json</code></a> (OpenAPI 3.1).</p>
 
 <nav aria-label="Obsah stránky"><ul>
@@ -17,7 +17,7 @@
 </ul></nav>
 
 <h2 id="autentizace">Autentizace a oprávnění</h2>
-<p>Token založí administrátor webu ve <strong>Správa → API a integrace</strong>; ukáže se jen jednou. Posílá se v hlavičce
+<p>Token založí administrátor webu ve <strong>Administrace → API a integrace</strong>; ukáže se jen jednou. Posílá se v hlavičce
   <code>Authorization: Bearer wov_…</code>. Každý token má jen vybraná oprávnění:</p>
 <ul>
   <% it.rozsahy.forEach(function (r) { %><li><code><%= r %></code> — <%= it.popis[r] %></li><% }) %>
@@ -35,7 +35,7 @@
 
 <h2 id="prispevky">Příspěvky</h2>
 <p><code>POST /api/v1/prispevky</code> (oprávnění <code>obsah:zapis</code>) založí aktualitu, akci nebo stránku.
-  Bez <code>"zverejnit": true</code> vznikne <strong>koncept</strong>, který redaktor zkontroluje a zveřejní ve správě.</p>
+  Bez <code>"zverejnit": true</code> vznikne <strong>koncept</strong>, který redaktor zkontroluje a zveřejní v administraci.</p>
 <table class="tabulka">
   <thead><tr><th scope="col">Pole</th><th scope="col">Význam</th></tr></thead>
   <tbody>
@@ -84,14 +84,14 @@ curl -sS <%= it.base %>/api/v1/prispevky -H "Authorization: Bearer $TOKEN" \
   (slug/id kategorie desky), <code>vyveseno_od</code> (výchozí dnes, nikdy v minulosti), <code>vyveseno_do</code> nebo
   <code>do_odvolani=true</code> (bez data se použije výchozí doba kategorie), <code>popis</code>, <code>cislo_jednaci</code>,
   <code>puvodce</code>, u rozpočtových dokumentů <code>typ_rozpoctu</code> a <code>rok</code>, přílohy v <code>prilohy</code>.
-  Minimální doba vyvěšení kategorie se hlídá stejně jako ve správě. Když by dokument sejmul starší rozpočtové dokumenty,
+  Minimální doba vyvěšení kategorie se hlídá stejně jako v administraci. Když by dokument sejmul starší rozpočtové dokumenty,
   vrátí se <code>409</code> se seznamem <code>sejme</code> — pošlete znovu s <code>potvrdit_nahrazeni=true</code>.</p>
 <pre><code>curl -sS <%= it.base %>/api/v1/deska -H "Authorization: Bearer $TOKEN" \
   -F nazev='Oznámení o konání zasedání' -F kategorie=oznameni -F vyveseno_do=2026-11-10 -F prilohy=@pozvanka.pdf</code></pre>
 
 <h2 id="rozeslat">Rozeslání infokanálem</h2>
 <p><code>POST /api/v1/prispevky/:id/rozeslat</code> (oprávnění <code>infokanal:rozeslat</code>) rozešle zveřejněnou
-  aktualitu nebo akci odběratelům stejně jako tlačítko „Rozeslat infokanálem“ ve správě: e-mail s perexem a odkazem;
+  aktualitu nebo akci odběratelům stejně jako tlačítko „Rozeslat infokanálem“ v administraci: e-mail s perexem a odkazem;
   SMS jen s <code>{"sms": true}</code> (stojí peníze). Volitelně <code>kategorie</code> (slug kategorie infokanálu).
   Odpověď <code>202 {"hlaseni_id", "prijemcu"}</code>.</p>
 

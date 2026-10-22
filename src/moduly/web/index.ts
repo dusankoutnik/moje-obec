@@ -102,6 +102,12 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
     return reply.header('cache-control', 'no-store').redirect(bezpecnyNavrat(zpet));
   });
 
+  // „Správa“ se jmenuje Administrace (22. 10. 2026); adresa zůstává /sprava — /administrace* trvale přesměrovat
+  const naSpravu = async (req: FastifyRequest, reply: FastifyReply) =>
+    reply.redirect('/sprava' + req.url.slice('/administrace'.length), 301);
+  app.get('/administrace', naSpravu);
+  app.get('/administrace/*', naSpravu);
+
   await app.register(webVerejne, s);
   await app.register(webSprava, s);
   await app.register(webSpravaDalsi, s);

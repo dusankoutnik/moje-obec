@@ -10,7 +10,7 @@ export const cs = {
     prihlasit: 'Přihlásit se',
     odhlasit: 'Odhlásit',
     ucet: 'Můj účet',
-    sprava: 'Správa',
+    sprava: 'Administrace',
     infokanal: 'Infokanál',
     patika_pristupnost: 'Prohlášení o přístupnosti',
     patika_gdpr: 'Ochrana osobních údajů',
@@ -173,7 +173,7 @@ export const cs = {
       'Dobrý den,\n\nváš kód pro potvrzení e-mailu k účtu {obec} je: {kod}\n\nKód platí 10 minut. Pokud jste o změnu nežádali, tento e-mail ignorujte.\n',
   },
   sprava: {
-    titulek: 'Správa',
+    titulek: 'Administrace',
     uzivatele: 'Uživatelé',
     uzivatele_text: 'Účty občanů, role a blokace.',
     infokanal_text: 'Hlášení, odběratelé a rozesílka.',
@@ -377,7 +377,7 @@ export const cs = {
       'Rozpočtová dokumentace podle zákona o rozpočtových pravidlech územních rozpočtů: návrh a schválený rozpočet, střednědobý výhled a závěrečný účet. Každý dokument je zveřejněn, dokud ho nenahradí nový.',
     rozpocet_nic: 'Obec zatím žádnou rozpočtovou dokumentaci nezveřejnila.',
     rozpocet_archiv: 'Starší rozpočtové dokumenty ({n})',
-    sprava_titulek: 'Úřední deska — správa',
+    sprava_titulek: 'Úřední deska — administrace',
     novy: 'Vyvěsit dokument',
     upravit: 'Upravit dokument',
     stavy: 'Stav dokumentů',
@@ -472,7 +472,7 @@ export const cs = {
     kat_aktivni: 'Nabízet při vyvěšení (zrušte pro skrytí)',
     kat_archiv: 'Po sejmutí zůstává ve veřejném archivu',
     kat_archiv_napoveda:
-      'Zrušte u dokumentů jiných úřadů (exekuce, dražby, doručování, finanční úřad…): obsahují osobní údaje a po sejmutí nemají důvod zůstat veřejně. Ve správě zůstávají.',
+      'Zrušte u dokumentů jiných úřadů (exekuce, dražby, doručování, finanční úřad…): obsahují osobní údaje a po sejmutí nemají důvod zůstat veřejně. V administraci zůstávají.',
     sejmuto_neverejne: 'Dokument už na úřední desce není',
     sbirka_pp_text:
       'Obecně závazné vyhlášky a nařízení obce nabývají platnosti vyhlášením ve Sbírce právních předpisů; úplné znění všech platných předpisů obce najdete tam:',
@@ -969,7 +969,7 @@ export const cs = {
     zdroj_vimeo: 'Vimeo',
     zdroj_souboru: 'vlastní soubor',
     vlozit: 'Vložit video',
-    vlozit_napoveda: 'Vyberte video z knihovny videí webu (Správa → Obecní web → Videa).',
+    vlozit_napoveda: 'Vyberte video z knihovny videí webu (Administrace → Obecní web → Videa).',
     v_textu: 'Video: {nazev}',
   },
   kviz: {
@@ -1398,7 +1398,7 @@ export const cs = {
     stitek_bez_textu: 'bez textu',
     stitek_nepodporovano: 'bez textu (formát)',
     stitek_chyba: 'text: chyba',
-    stitek_napoveda: 'Stav vyčtení textu pro vyhledávání — Správa → Obecní web → Text dokumentů.',
+    stitek_napoveda: 'Stav vyčtení textu pro vyhledávání — Administrace → Obecní web → Text dokumentů.',
     kontrola_vrstva: '{nazev}: textová vrstva v pořádku, vyhledávání ho najde.',
     kontrola_bez_vrstvy:
       '{nazev}: PDF nemá textovou vrstvu (sken) — text doplníme na pozadí (OCR, několik minut).',
@@ -1415,7 +1415,7 @@ export const cs = {
     cast: 'část modulu {rodic}',
     stav_zapnuto: 'Zapnuto:',
     stav_vypnuto: 'Vypnuto — stránky služby návštěvníci neuvidí.',
-    sprava_modulu: 'Správa služby →',
+    sprava_modulu: 'Administrace služby →',
     nedostupny_aplikace:
       'Na této instalaci není aplikace připojená (proměnná {promenna} v .env) — zapnout ji nelze.',
     nedostupny_platforma:
@@ -1501,7 +1501,7 @@ export const cs = {
     telefon_sms_zamitnuto:
       'Zadost o zmenu telefonniho cisla u vaseho uctu obce byla zamitnuta. Pokud jste o zadnou zmenu nezadali, okamzite se ozvete uradu: {kontakt}.',
     sprava_zmeny_titulek: 'Změny telefonu ke schválení',
-    sprava_zpet: '← Správa',
+    sprava_zpet: '← Administrace',
     sprava_ceka_zadna: 'Žádná žádost nečeká.',
     sprava_vyrizene: 'Vyřízené za posledních 90 dní',
     sprava_kdo: 'Účet',
@@ -1534,7 +1534,7 @@ export const cs = {
     vymaz_potvrzeni: 'Opravdu poslat úřadu žádost o výmaz účtu?',
     vymaz_predmet: 'Žádost o výmaz účtu: {jmeno}',
     vymaz_mail:
-      'Dobrý den,\n\n{jmeno} žádá o výmaz svého účtu.\n\nTelefon: {telefon}\nE-mail: {email}\nZpráva: {zprava}\n\nÚčet ve správě: {url}\n\nŽádost vyřiďte do 30 dnů (čl. 12 GDPR); rezervace a vyúčtování obec uchovává kvůli účetnictví.',
+      'Dobrý den,\n\n{jmeno} žádá o výmaz svého účtu.\n\nTelefon: {telefon}\nE-mail: {email}\nZpráva: {zprava}\n\nÚčet v administraci: {url}\n\nŽádost vyřiďte do 30 dnů (čl. 12 GDPR); rezervace a vyúčtování obec uchovává kvůli účetnictví.',
     vymaz_odeslano: 'Žádost o výmaz jsme předali úřadu. Ozve se vám.',
     odber_nadpis: 'Hlášení obce',
     odber_ano: 'Hlášení obce dostáváte na telefon {telefon}.',

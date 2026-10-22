@@ -22,7 +22,7 @@
 
 <% if (it.infokanal) { const k = it.infokanal; %>
 <section class="karta">
-  <h2>📢 <%= it.infokanalNazev %> <a href="/infokanal/sprava">správa →</a></h2>
+  <h2>📢 <%= it.infokanalNazev %> <a href="/infokanal/sprava">administrace →</a></h2>
   <ul class="sprava-cisla">
     <% ;[
       ['odběratelů', k.odberatelu, k.overenych + ' ověřených · ' + k.sUctem + ' s účtem'],
@@ -83,4 +83,4 @@
 </section>
 <% } %>
 
-<p class="napoveda">Návštěvnost webu a aplikací (z logů serveru) zatím ve Správě není — doplní se později.</p>
+<p class="napoveda">Návštěvnost webu a aplikací (z logů serveru) zatím v Administraci není — doplní se později.</p>
