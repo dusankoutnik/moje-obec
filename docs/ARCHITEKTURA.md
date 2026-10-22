@@ -158,7 +158,7 @@ src/
     ucty/      jádro: oidc/provider.ts, oidc/adapter.ts, oidc/klient.ts, interakce.ts (přihlašovací obrazovky),
                routes.ts (/prihlaseni, /ucet, /odhlaseni), sprava.ts (/sprava/*), sluzba.ts, opravneni.ts
     infokanal/ sluzba.ts (odběratelé, výběr příjemců, hlášení), fronta.ts (worker), routes.ts (veřejné),
-               sprava.ts (/infokanal/sprava/*), vystrahy/typy.ts (návrh rozhraní)
+               sprava.ts (/infokanal/sprava/*), vystrahy/ (automatické výstrahy ČHMÚ, ČEZ, SčVK)
     deska/     sluzba.ts (vyvěšení, lhůty, rozpočet, archiv), povinne.ts (struktura vyhl. 515/2020),
                routes.ts (/uredni-deska, /rozpocet, /povinne-informace, RSS), sprava.ts (/sprava/deska, /sprava/povinne-informace)
     web/       obsah.ts (stránky/aktuality/akce/odkazy, koncepty, revize, strom menu), dalsi.ts (galerie, dokumenty,

@@ -61,9 +61,35 @@ Platforma plní bod 2 (prohlášení, přístupný design), 6 (stránka zásad, 
 
 Ceny (10/2026, bez DPH, orientačně): SMSbrána ~1,08 Kč (s bonusem ~0,89), GoSMS „od 0,41 Kč“ u velkých objemů, SMS Manager 0,89 Kč v pásmu 5–10 tis./měs. (vlastní textový odesílatel +500 Kč/měs.). Doporučení pro obce: začít SMS Managerem nebo SMSbránou (prepaid, bez paušálu). **Úkol P1:** s první obcí ověřit vybraný adaptér naživo, doplnit cron pro `stahniDorucenky()` u SMSbrány, SMS `START/STOP` přes příchozí zprávy.
 
-### Automatické výstrahy (P1 — jen návrh rozhraní, `src/moduly/infokanal/vystrahy/typy.ts`)
+### Automatické výstrahy (hotovo 22. 10. 2026 — `src/moduly/infokanal/vystrahy/`, migrace 0019)
 
-Převzaté chování z VlastiKanálu (v provozu od 10/2026): zdroj se polluje cronem, události se dedupují podle klíče, žlutá/informační → jen e-mail správcům s tlačítkem „Rozeslat“, oranžová/odstávka → rozešle se samo (v noci 22–6 h naplánovaně na 6:30), červená → krizová zpráva všem; den předem připomínka; zrušení/změna termínu → další zpráva; cílení na dotčené části obce; při výpadku zdroje > 24 h jedno upozornění; veřejný přehled `/vystrahy`; vypínač v konfiguraci.
+**Implementace:** `VystrahySluzba` (`sluzba.ts`) + parsery `chmu.ts`, `scvk.ts`, texty `texty.ts`, časy `cas.ts`
+(pražské pásmo, noční klid). Tabulka `ik_vystrahy` (zdroj `chmu|cez|scvk`, `externi_id` = „jev|stupeň“ / id odstávky /
+id události SčVK, stav `ceka|odeslano|zahozeno|preskoceno`, první `hlaseni_id`, `pripomenuto_at`, `zruseno_at`, kdo
+rozhodl) a `ik_vystrahy_zdroje` (poslední úspěch/chyba, `chyba_od`, `alarm_at`, u ČHMÚ razítko zpracovaného souboru).
+Hlášení vznikají přes `InfokanalSluzba.zalozHlaseni` s `zdrojAutomatu`, `dulezite: true` (smíšení odběratelé SMSkou)
+a kategorií `pocasi` / `elektrina` / `voda` (odhlásitelné); červená ČHMÚ = kategorie `krizove`, `krizove: true`.
+Cílení ČEZ/SčVK: `cil='casti'` s dotčenými částmi + `''` (odběratelé bez vyplněné části); všechny části = celá obec.
+
+- **Konfigurace** `obec.yml`: `vystrahy: { chmu: { orp, oblast }, cez: { kod_obce }, scvk: { obec } }` — chybějící
+  zdroj je vypnutý, prázdný klíč (`cez:`) zapnutý s výchozími hodnotami (`orp` → `obec.orp_cisorp`, `kod_obce` →
+  `odstavky.cez.kod_obce` / `obec.kod_obce`, `scvk.obec` → `obec.kratky_nazev`). Env `VYSTRAHY=0` vypne plánovač,
+  `VYSTRAHY_NOTIFY` = další adresy pro e-maily (vedle rolí admin a spravce s e-mailem).
+- **Plánovač** (Europe/Prague, `protect`): ČHMÚ `*/10`, ČEZ `5 7,15` + připomínka `0 17`, SčVK `7,27,47` +
+  připomínka `2 17`. ČEZ data bere z `OdstavkySluzba` modulu odstavky (stejná keš 1 h, po 429 pauza 3 h) — žádné
+  dotazy navíc; bez modulu odstavky si vytvoří vlastní instanci nad stejným uložením.
+- **Stránky:** veřejně `/infokanal/vystrahy` (rozeslané a stále platné), správa `/infokanal/sprava/vystrahy`
+  (role redaktor; seznam se zdrojem, stavem a odkazem na hlášení, stav zdrojů), detail `/…/vystrahy/:id` s tlačítky
+  **Rozeslat odběratelům** / **Zahodit** u čekající žluté (zahození = jen stav; rozeslání je atomické).
+- **Odchylky od VlastiKanálu:** SčVK porovnává seznam obcí v titulku přesně (ne regex na „obec X“ — titulek může
+  znít „obec Hrubá Skála, Troskovice, část obce Jivina“, kde Jivina není naše); upozornění na výpadek zdroje se
+  počítá od začátku nepřetržitého selhávání (i když zdroj nikdy nefungoval); připomínky neovlivňují stav zdroje.
+- **Testy:** `test/vystrahy.test.ts` nad uloženými odpověďmi v `test/fixtures/vystrahy/` (výřez CAP z 31. 7. 2026,
+  výpis adresáře ČHMÚ, odpověď bezstavy.cz, výřezy seznamů a detailu SčVK), pevné hodiny a podstrčený fetch.
+
+**Původní rozbor (návrh):**
+
+Převzaté chování z VlastiKanálu (v provozu od 10/2026): zdroj se polluje cronem, události se dedupují podle klíče, žlutá/informační → jen e-mail správcům s tlačítkem „Rozeslat“, oranžová/odstávka → rozešle se samo (v noci 22–6 h naplánovaně na 6:30), červená → krizová zpráva všem; den předem připomínka; zrušení/změna termínu → další zpráva; cílení na dotčené části obce; při výpadku zdroje > 24 h jedno upozornění; veřejný přehled `/infokanal/vystrahy`; vypínač v konfiguraci.
 
 **Zdroje:**
 

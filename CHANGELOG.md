@@ -4,6 +4,19 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (automatické výstrahy infokanálu)
+
+- Výstrahy ČHMÚ (CAP, ORP z `obec.yml`): žlutá ke schválení správci (e-mail s odkazem, Rozeslat / Zahodit), oranžová
+  se rozešle sama (v noci 22–6 h naplánovaně na 6:30), červená jako krizové hlášení; pokračování a nižší stupeň
+  během vyššího podle VlastiKanálu.
+- Odstávky elektřiny ČEZ z dat modulu odstavky: oznámení, připomínka den předem v 17:00, změna termínu, zrušení;
+  cílení na dotčené části obce + odběratele bez vyplněné části.
+- Výpadky vody SčVK (plánované odstávky a havárie z HTML seznamů): oznámení s plným textem a seznamem odběrných míst,
+  připomínka, změna, zrušení/ukončení (zmizení ze seznamu + 404 detailu).
+- Migrace 0019 (`ik_vystrahy`, `ik_vystrahy_zdroje`), `obec.yml` → `vystrahy`, env `VYSTRAHY`, `VYSTRAHY_NOTIFY`;
+  veřejná stránka `/infokanal/vystrahy`, správa `/infokanal/sprava/vystrahy`; e-mail správcům o každém automatickém
+  rozeslání a jednou při výpadku zdroje > 24 h.
+
 ### Přidáno (text dokumentů a vyhledávání v nich)
 
 - Text nahraných dokumentů pro vyhledávání (migrace 0015, `soubory_text`): textová vrstva PDF (`pdftotext`),
