@@ -226,8 +226,8 @@ loga a videa se neindexují. Vše běží lokálně na serveru obce.
   PDF. Skript `src/scripts/text-souboru.ts` (`--chybejici | --vse | --jen-pdf | --znovu-chyby | --id …`).
 - **Konfigurace:** `TEXT_SOUBORU`, `OCR_JAZYKY`, `OCR_MAX_STRAN`, `OCR_DPI`, `TEXT_MAX_ZNAKU`; nástroje jsou
   v obrazu Dockeru (mimo Docker doinstalovat, viz `INSTALACE.md`).
-- Rychlost: text z vrstvy do sekundy, sken ~3–8 s na stranu (2 vlákna), paměť tesseractu ~150 MB — proto
-  `mem_limit` 768 MB.
+- Rychlost: text z vrstvy do sekundy, sken ~3–7 s na stranu (tesseract záměrně s jedním vláknem — se 4 vlákny
+  OpenMP je pomalejší a vytíží celý server), paměť tesseractu ~150 MB — proto `mem_limit` 768 MB.
 
 ## Rezervace + platby (P1)
 

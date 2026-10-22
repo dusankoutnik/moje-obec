@@ -111,3 +111,7 @@ aby integrační testy běžely. Lokálně `./dev.sh` (node slim) je přeskočí
   když všechny přílohy mají stejný zdroj), v detailu štítek u každé přílohy.
 - Limity: pdftotext 60 s, OCR 20 min na soubor a 180 s na stranu, rychlá kontrola 5 s (pdfinfo 2 s), výstup
   příkazu nejvýš 24 MB, položka ZIPu nejvýš 80 MB (větší se přeskočí s poznámkou).
+- **Tesseract jen s jedním vláknem** (`OMP_THREAD_LIMIT=1` v prostředí procesu): s výchozími 4 vlákny OpenMP byl na
+  husté straně A4 (200 dpi, 48 řádků) **pomalejší** (15 s a 45 s CPU) než s jedním (6,7 s), a při souběžné zátěži
+  serveru (testy) trval i 3,5 min. Jedno vlákno = ~7 s na hustou stranu, řídké úřední dokumenty 2–4 s; `nice`
+  neměří znatelný rozdíl.

@@ -411,9 +411,12 @@ export async function spust(
   const nice = v.nice === false ? null : await najdiBinarku('nice', v.path);
   const max = v.maxVystupB ?? MAX_VYSTUP_B;
   return new Promise<VysledekPrikazu>((resolve, reject) => {
+    // Tesseract s OpenMP bere 4 vlákna a je přitom POMALEJŠÍ (měření 22. 10. 2026, hustá strana A4 při 200 dpi:
+    // 4 vlákna 15 s a 45 s CPU, jedno vlákno 6,7 s) — a navíc by vytížil celý malý server. Jedno vlákno pro vše.
+    const env = { ...process.env, OMP_THREAD_LIMIT: '1' };
     const dite = nice
-      ? spawn(nice, ['-n', '15', bin, ...args], { cwd: v.cwd, stdio: ['ignore', 'pipe', 'pipe'] })
-      : spawn(bin, args, { cwd: v.cwd, stdio: ['ignore', 'pipe', 'pipe'] });
+      ? spawn(nice, ['-n', '15', bin, ...args], { cwd: v.cwd, env, stdio: ['ignore', 'pipe', 'pipe'] })
+      : spawn(bin, args, { cwd: v.cwd, env, stdio: ['ignore', 'pipe', 'pipe'] });
     const kusy: Buffer[] = [];
     let delka = 0;
     let oriznuto = false;
