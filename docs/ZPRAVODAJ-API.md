@@ -5,15 +5,16 @@ obce jako příspěvek v kategorii „Zpravodaj“ s PDF, obálkou, obsahem čí
 používá jinde (počet obyvatel v úvodu, akce v kalendáři). Web nic z PDF nehádá — vše dostane v metadatech.
 
 ## Volání
+
 `POST {BASE_URL}/api/zpravodaj` · `Authorization: Bearer <ZPRAVODAJ_API_TOKEN>` (env; platforma má i obecný
 mechanismus tokenů pro integrace — viz „Rozhodnutí“) · `multipart/form-data`:
 
-| pole | povinné | obsah |
-|---|---|---|
-| `metadata` | ano | JSON (schéma níže) — soubor nebo textové pole |
-| `pdf` | ano | webová verze PDF (zmenšená, do ~10 MB) |
-| `pdf_tisk` | ne | tisková verze (bez ořezových značek), jen ke stažení |
-| `obalka` | ne | PNG/JPG první strany (např. 1200 px na výšku) → úvodní obrázek příspěvku |
+| pole       | povinné | obsah                                                                    |
+| ---------- | ------- | ------------------------------------------------------------------------ |
+| `metadata` | ano     | JSON (schéma níže) — soubor nebo textové pole                            |
+| `pdf`      | ano     | webová verze PDF (zmenšená, do ~10 MB)                                   |
+| `pdf_tisk` | ne      | tisková verze (bez ořezových značek), jen ke stažení                     |
+| `obalka`   | ne      | PNG/JPG první strany (např. 1200 px na výšku) → úvodní obrázek příspěvku |
 
 Odpověď `201 {"id": "...", "url": "https://…/aktuality/obecni-zpravodaj-2026-3", "stav": "zverejneno|koncept"}`.
 Chyby `400` s popisem pole, `401` špatný token, `413` moc velký soubor.
@@ -26,6 +27,7 @@ curl -sS https://vlastiborice.cz/api/zpravodaj -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Metadata (JSON)
+
 Vzor podle čísla **3/2026** (září 2026). Jména soukromých osob se **neposílají** (přihlášení/odhlášení jen počty).
 
 ```json
@@ -63,10 +65,34 @@ Vzor podle čísla **3/2026** (září 2026). Jména soukromých osob se **nepos
     "zustatek_pokladna": null
   },
   "akce": [
-    { "nazev": "Obecní výlet – zámek Litomyšl", "datum": "2026-10-03", "od": "07:30", "misto": "odjezd Vlastibořice (DPS), 7:35 Jivina", "poznamka": "přihlášky na OÚ do 14. 9." },
-    { "nazev": "Volby do zastupitelstva obce", "datum": "2026-10-09", "datum_do": "2026-10-10", "misto": "budova obecního úřadu" },
-    { "nazev": "Clapton & Dylan at Kulturák", "datum": "2026-10-16", "od": "18:00", "misto": "Kulturní dům", "poznamka": "Santal 18:00, The Boband 20:00, vstupné 200 Kč" },
-    { "nazev": "Powerjóga s Veru Vanclovou", "pravidelne": "každé pondělí", "od": "18:30", "misto": "Kulturní dům", "odkaz": "https://www.vanclovi.cz", "od_data": "2026-09-07" }
+    {
+      "nazev": "Obecní výlet – zámek Litomyšl",
+      "datum": "2026-10-03",
+      "od": "07:30",
+      "misto": "odjezd Vlastibořice (DPS), 7:35 Jivina",
+      "poznamka": "přihlášky na OÚ do 14. 9."
+    },
+    {
+      "nazev": "Volby do zastupitelstva obce",
+      "datum": "2026-10-09",
+      "datum_do": "2026-10-10",
+      "misto": "budova obecního úřadu"
+    },
+    {
+      "nazev": "Clapton & Dylan at Kulturák",
+      "datum": "2026-10-16",
+      "od": "18:00",
+      "misto": "Kulturní dům",
+      "poznamka": "Santal 18:00, The Boband 20:00, vstupné 200 Kč"
+    },
+    {
+      "nazev": "Powerjóga s Veru Vanclovou",
+      "pravidelne": "každé pondělí",
+      "od": "18:30",
+      "misto": "Kulturní dům",
+      "odkaz": "https://www.vanclovi.cz",
+      "od_data": "2026-09-07"
+    }
   ],
   "tiraz": {
     "vydavatel": "Obec Vlastibořice",
@@ -87,6 +113,7 @@ v čísle (web si poradí s duplicitami — viz níže). `zverejnit: false` = p�
 kontrole; `rozeslat: true` = po zveřejnění vznikne hlášení infokanálu „Vyšel nový zpravodaj“ s odkazem.
 
 ## Co web s daty udělá
+
 - **Příspěvek** (kategorie `zpravodaj`): titulek, úvodní obrázek z obálky, perex, blok „V tomto čísle“ (obsah
   se stranami), odkazy ke stažení (web / tisk, velikost), tabulka „Z evidence obyvatel k …“ a „Hospodaření k …“
   (jen čísla, nic osobního), tiráž. Zdroj příspěvku `zpravodaj`, metadata uložená u příspěvku (`web_zpravodaj`).
@@ -99,6 +126,7 @@ kontrole; `rozeslat: true` = po zveřejnění vznikne hlášení infokanálu „
   (`pravidelne`) jen jako poznámka v příspěvku, do kalendáře ne (ty žijí v rezervacích).
 
 ## Co má sázecí Claude mít v hlavičce Typstu
+
 Aby metadata nevznikala ručně, drží se v Typstu jako jeden slovník na začátku čísla (zdroj pravdy pro sazbu
 i pro web): ročník, číslo, datum vydání, období, perex, kapitoly (nadpis + strana se dopočítá), evidence
 obyvatel (k datu, počty), hospodaření (k datu, částky), kalendář akcí (strukturovaně, ne jako text), tiráž.
@@ -106,6 +134,7 @@ Z něj se při exportu vygeneruje `zpravodaj-RRRR-C.json` + PNG obálky (`typst 
 a zavolá se `curl` výše. Token dostane sázecí prostředí jednou (proměnná `ZPRAVODAJ_API_TOKEN`), nikdy do gitu.
 
 ## Rozhodnutí
+
 - Implementace až po sloučení větve `akce-propojeni` (stejná oblast: migrace, akce, rozesílka z příspěvku).
 - Tokeny integrací: první verze `ZPRAVODAJ_API_TOKEN` v env; cílově tabulka `integrace_tokeny` (název, hash,
   oprávnění, poslední použití) spravovaná ve Správě — stejný mechanismus se bude hodit pro rezervace a další.
