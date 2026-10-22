@@ -127,6 +127,13 @@
       <label class="zatrzitko"><input type="radio" name="efekt_menu" value="<%= e %>" <%= it.v.efektMenu === e ? 'checked' : '' %>> <%= it.t('web.efekt_' + e) %></label>
       <% }) %>
     </div>
+    <p class="vh" id="sila-h"><%= it.t('web.efekt_sila') %></p>
+    <div role="radiogroup" aria-labelledby="sila-h">
+      <strong aria-hidden="true"><%= it.t('web.efekt_sila') %></strong>
+      <% ;['slaba', 'stredni', 'vyrazna'].forEach(function (e) { %>
+      <label class="zatrzitko"><input type="radio" name="efekt_sila" value="<%= e %>" <%= it.v.efektSila === e ? 'checked' : '' %>> <%= it.t('web.sila_' + e) %></label>
+      <% }) %>
+    </div>
     <p class="napoveda" id="efekt-n"><%= it.t('web.efekt_napoveda') %></p>
   </fieldset>
 

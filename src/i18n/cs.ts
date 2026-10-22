@@ -861,6 +861,10 @@ export const cs = {
     efekt_hladina: 'Vodní hladina — pomalu se vlnící světlo jako odraz vody',
     efekt_dychani: 'Dýchání — tlačítka velmi zvolna zjasňují a tmavnou',
     efekt_zadny: 'Bez efektu',
+    efekt_sila: 'Síla efektu',
+    sila_slaba: 'Slabá',
+    sila_stredni: 'Střední',
+    sila_vyrazna: 'Výrazná',
     efekt_napoveda:
       'Návštěvníci, kteří mají v počítači nebo telefonu zapnuté „omezit pohyb“, uvidí vždy klidná tlačítka.',
     pozadi_alt: 'Fotografie obce {obec}',

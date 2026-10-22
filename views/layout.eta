@@ -20,7 +20,7 @@
 <% if (it.noindex) { %><meta name="robots" content="noindex"><% } %>
 </head>
 <% var jeSprava = it.cesta.startsWith('/sprava') || it.cesta.startsWith('/infokanal/sprava'); %>
-<body class="<%= it.vzhled ? 'web efekt-' + it.vzhled.efektMenu : 'zakladni' %><%= jeSprava ? ' je-sprava' : '' %><%= it.plnaSirka ? ' je-uvod' : '' %>">
+<body class="<%= it.vzhled ? 'web efekt-' + it.vzhled.efektMenu + ' sila-' + it.vzhled.efektSila : 'zakladni' %><%= jeSprava ? ' je-sprava' : '' %><%= it.plnaSirka ? ' je-uvod' : '' %>">
 <% if (it.vzhled) { %>
 <div class="pozadi" aria-hidden="true" <% if (it.pozadiStridat && it.pozadiStridat.length) { %>data-fotky="<%= JSON.stringify(it.pozadiStridat) %>"<% } %>>
   <div class="pozadi-vrstva viditelna"<% if (it.pozadiPrvni) { %> style="background-image:url('<%= it.pozadiPrvni %>')"<% } %>></div>

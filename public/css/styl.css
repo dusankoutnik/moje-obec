@@ -1533,7 +1533,16 @@ body.web {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   transition: transform 0.18s ease;
 }
-/* efekty tlačítek menu — volí se ve Správě → Vzhled (třída efekt-* na <body>) */
+/* efekty tlačítek menu — volí se ve Správě → Vzhled (třídy efekt-* a sila-* na <body>) */
+body {
+  --sila: 1;
+}
+body.sila-slaba {
+  --sila: 0.5;
+}
+body.sila-vyrazna {
+  --sila: 1.9;
+}
 .pilulka > ul > li > a::after {
   content: '';
   position: absolute;
@@ -1542,7 +1551,12 @@ body.web {
 }
 /* decentní odlesk: úzký slabý pruh, dlouhé pauzy */
 .efekt-odlesk .pilulka > ul > li > a::after {
-  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.13) 50%, transparent 58%);
+  background: linear-gradient(
+    105deg,
+    transparent 42%,
+    rgba(255, 255, 255, calc(0.13 * var(--sila))) 50%,
+    transparent 58%
+  );
   transform: translateX(-130%);
   animation: odlesk calc(var(--d, 7s) * 2) ease-in-out var(--o, 0s) infinite;
 }
@@ -1558,9 +1572,13 @@ body.web {
 /* vodní hladina: dvě vrstvy měkkého světla, které se pomalu přelévají proti sobě */
 .efekt-hladina .pilulka > ul > li > a::after {
   background:
-    radial-gradient(60% 90% at 30% 110%, rgba(255, 255, 255, 0.16), transparent 70%),
-    radial-gradient(55% 80% at 70% -10%, rgba(255, 255, 255, 0.11), transparent 70%),
-    repeating-linear-gradient(172deg, transparent 0 7px, rgba(255, 255, 255, 0.045) 7px 9px);
+    radial-gradient(60% 90% at 30% 110%, rgba(255, 255, 255, calc(0.16 * var(--sila))), transparent 70%),
+    radial-gradient(55% 80% at 70% -10%, rgba(255, 255, 255, calc(0.11 * var(--sila))), transparent 70%),
+    repeating-linear-gradient(
+      172deg,
+      transparent 0 7px,
+      rgba(255, 255, 255, calc(0.045 * var(--sila))) 7px 9px
+    );
   background-size:
     220% 100%,
     240% 100%,
@@ -1589,7 +1607,7 @@ body.web {
 }
 /* dýchání: velmi pomalé zjasnění a ztmavnutí */
 .efekt-dychani .pilulka > ul > li > a::after {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, calc(0.09 * var(--sila)));
   opacity: 0;
   animation: dychani calc(var(--d, 7s) * 1.2) ease-in-out var(--o, 0s) infinite;
 }

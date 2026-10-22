@@ -20,6 +20,8 @@ export type RezimPozadi = 'pevne' | 'nahodne' | 'stridani';
 /** efekt na tlačítkách hlavního menu (Správa → Vzhled); při „omezit pohyb“ v systému se nehýbe nic */
 export type EfektMenu = 'odlesk' | 'hladina' | 'dychani' | 'zadny';
 export const EFEKTY_MENU: EfektMenu[] = ['odlesk', 'hladina', 'dychani', 'zadny'];
+export type SilaEfektu = 'slaba' | 'stredni' | 'vyrazna';
+export const SILY_EFEKTU: SilaEfektu[] = ['slaba', 'stredni', 'vyrazna'];
 
 export interface UlozenyVzhled {
   barva?: string;
@@ -42,6 +44,7 @@ export interface UlozenyVzhled {
   pozadi_rezim?: RezimPozadi;
   pozadi_pevne?: string | null;
   efekt_menu?: EfektMenu;
+  efekt_sila?: SilaEfektu;
   predchozi?: Omit<UlozenyVzhled, 'predchozi'> | null;
 }
 
@@ -65,6 +68,7 @@ export interface Vzhled {
   pozadiRezim: RezimPozadi;
   pozadiPevne: string | null;
   efektMenu: EfektMenu;
+  efektSila: SilaEfektu;
   /** CSS proměnné barev a písma + @font-face (vkládá se do <head>) */
   css: string;
   ulozeno: UlozenyVzhled;
@@ -126,6 +130,7 @@ export class VzhledSluzba {
       pozadiRezim: u.pozadi_rezim ?? 'stridani',
       pozadiPevne: u.pozadi_pevne && pozadi.includes(u.pozadi_pevne) ? url(u.pozadi_pevne) : null,
       efektMenu: u.efekt_menu && EFEKTY_MENU.includes(u.efekt_menu) ? u.efekt_menu : 'odlesk',
+      efektSila: u.efekt_sila && SILY_EFEKTU.includes(u.efekt_sila) ? u.efekt_sila : 'stredni',
       css: fontFace([pismo]) + cssPisma(pismo) + barvyCss,
       ulozeno: u,
     };
