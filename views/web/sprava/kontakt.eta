@@ -1,0 +1,40 @@
+<% layout('/layout') %>
+<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<h1><%= it.t('web.kontakt_obce') %></h1>
+<p class="perex"><%= it.t('web.kontakt_obce_perex') %></p>
+<% if (it.chyby.length) { %><div class="flash flash-chyba" role="alert"><%= it.t('web.kontakt_obce_chyba') %> <%= it.chyby.map(function (c) { return it.t('web.kontakt_pole_' + c); }).join(', ') %></div><% } %>
+<form method="post" action="/sprava/web/kontakt" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <fieldset>
+    <legend><%= it.t('web.kontakt_adresa') %></legend>
+    <label for="k-ulice"><%= it.t('web.kontakt_pole_ulice') %></label>
+    <input id="k-ulice" name="ulice" required maxlength="120" value="<%= it.f.ulice %>">
+    <label for="k-psc"><%= it.t('web.kontakt_pole_psc') %></label>
+    <input id="k-psc" name="psc" inputmode="numeric" maxlength="10" value="<%= it.f.psc %>">
+    <label for="k-mesto"><%= it.t('web.kontakt_pole_mesto') %></label>
+    <input id="k-mesto" name="mesto" required maxlength="80" value="<%= it.f.mesto %>">
+  </fieldset>
+  <fieldset>
+    <legend><%= it.t('web.kontakt_spojeni') %></legend>
+    <label for="k-telefon"><%= it.t('web.kontakt_pole_telefon') %></label>
+    <input id="k-telefon" name="telefon" type="tel" maxlength="40" value="<%= it.f.telefon %>">
+    <label for="k-email"><%= it.t('web.kontakt_pole_email') %></label>
+    <input id="k-email" name="email" type="email" maxlength="120" value="<%= it.f.email %>">
+    <label for="k-ds"><%= it.t('web.kontakt_pole_datova_schranka') %></label>
+    <input id="k-ds" name="datova_schranka" maxlength="20" value="<%= it.f.datova_schranka %>">
+  </fieldset>
+  <fieldset>
+    <legend><%= it.t('web.kontakt_pole_uredni_hodiny') %></legend>
+    <label for="k-hodiny" class="vh"><%= it.t('web.kontakt_pole_uredni_hodiny') %></label>
+    <textarea id="k-hodiny" name="uredni_hodiny" rows="5" maxlength="600" aria-describedby="k-hodiny-napoveda"><%= it.f.uredni_hodiny %></textarea>
+    <p class="napoveda" id="k-hodiny-napoveda"><%= it.t('web.kontakt_hodiny_napoveda') %></p>
+  </fieldset>
+  <p class="napoveda"><%= it.t('web.kontakt_pevne', { ico: it.obec.obec.ico || '—' }) %></p>
+  <p class="tlacitka-rada"><button class="tlacitko" type="submit"><%= it.t('app.ulozit') %></button> <a class="tlacitko sekundarni" href="/kontakt"><%= it.t('web.kontakt_zobrazit') %></a></p>
+</form>
+<% if (it.upraveno) { %>
+<form method="post" action="/sprava/web/kontakt/vychozi" data-confirm="<%= it.t('web.kontakt_vychozi_potvrdit') %>">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <button class="odkaz-tlacitko" type="submit"><%= it.t('web.kontakt_vychozi') %></button>
+</form>
+<% } %>

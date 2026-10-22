@@ -15,6 +15,7 @@ import webVerejne from './verejne.js';
 import webSprava from './sprava.js';
 import webSpravaDalsi from './sprava-dalsi.js';
 import webSpravaVidea from './sprava-videa.js';
+import webKontaktObce from './kontakt-obce.js';
 import { upozorniNaKonecDotaci, zalozVychoziMenu } from './udrzba.js';
 import { jeVelikost } from './pisma.js';
 import { maRoli } from '../ucty/sluzba.js';
@@ -112,6 +113,7 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
   await app.register(webSprava, s);
   await app.register(webSpravaDalsi, s);
   await app.register(webSpravaVidea, s);
+  await app.register(webKontaktObce);
   await app.register(webSpravaAkce, s);
 
   if (volby.planovac) {

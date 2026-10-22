@@ -3,7 +3,7 @@
 <h1><%= it.titulek %><%~ include('/web/_edit', { id: it.doplnek && it.doplnek.id, muzeEditovat: it.muzeEditovatWeb, t: it.t }) %></h1>
 <div class="sloupce">
 <section class="karta">
-  <h2><%= it.t('web.obecni_urad') %></h2>
+  <h2><%= it.t('web.obecni_urad') %><% if (it.obec.moduly.web) { %><%~ include('/web/_edit', { href: '/sprava/web/kontakt', muzeEditovat: it.muzeEditovatWeb, t: it.t }) %><% } %></h2>
   <address class="adresa">
     <strong><%= o.nazev %></strong><br>
     <%= o.adresa.ulice %><br><%= o.adresa.psc %> <%= o.adresa.mesto %><br>

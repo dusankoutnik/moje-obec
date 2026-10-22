@@ -1,1 +1,1 @@
-<% if (it.muzeEditovat && it.id) { %> <a class="edit-box" href="/sprava/web/obsah/<%= it.id %>" title="<%= it.t('web.edit_titulek') %>" aria-label="<%= it.t('web.edit_titulek') %>">EDIT</a><% } %>
+<% var cil = it.href || (it.id ? '/sprava/web/obsah/' + it.id : ''); %><% if (it.muzeEditovat && cil) { %> <a class="edit-box" href="<%= cil %>" title="<%= it.t('web.edit_titulek') %>" aria-label="<%= it.t('web.edit_titulek') %>">EDIT</a><% } %>
