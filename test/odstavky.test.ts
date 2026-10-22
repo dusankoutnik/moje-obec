@@ -97,9 +97,10 @@ describe('profil obce', () => {
     const zaklad = { obec: { nazev: 'Obec X', kratky_nazev: 'X', casti: ['X'] } };
     expect(() => obecZObjektu({ ...zaklad, odstavky: { cez: { kod_obce: '56a' } } })).toThrow();
     expect(() => obecZObjektu({ ...zaklad, odstavky: { cez: { odkaz: 'http://x.cz' } } })).toThrow();
+    expect(() => obecZObjektu({ ...zaklad, odstavky: { cez: { banner: 'http://x.cz/b.png' } } })).toThrow();
     const o = obecZObjektu(zaklad);
     expect(o.moduly.odstavky).toBe(false);
-    expect(o.odstavky.cez).toEqual({ kod_obce: '', odkaz: '' });
+    expect(o.odstavky.cez).toEqual({ kod_obce: '', odkaz: '', banner: '' });
   });
 });
 
