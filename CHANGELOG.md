@@ -4,6 +4,17 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (moduly obce a aplikace za proxy, 22. 10. 2026)
+
+- Moduly obce zapínatelné ve Správě → Moduly obce (`/sprava/moduly`, admin, audit `moduly.zmena`): rezervace,
+  předprodej, spolujízda, eKnihy, infokanál, kvíz; `nastaveni.moduly`, výchozí z `obec.yml` (nové klíče
+  `predprodej`, `spolujizda`, `eknihy`); služba `app.moduly` s keší. Vypnutý modul zmizí z menu, úvodu, patičky
+  a mapy stránek, jeho stránky vrací 404 „Tato služba není v obci zapnutá“ (správa zůstává).
+- Veřejné `GET /api/moduly` pro horní lištu aplikací.
+- Proxy `/rezervace/*` a `/eknihy/*` na aplikace obce (`APLIKACE_REZERVACE_URL`, `APLIKACE_EKNIHY_URL`,
+  `APLIKACE_TIMEOUT_MS`): mimo sezení/CSRF/CSP platformy, tělo 1:1, `X-Forwarded-*`, 502 při nedostupnosti.
+- `docker-compose.prod-server.yml` (instance `platforma_prod` vedle devu).
+
 ### Přidáno (text dokumentů a vyhledávání v nich)
 
 - Text nahraných dokumentů pro vyhledávání (migrace 0015, `soubory_text`): textová vrstva PDF (`pdftotext`),

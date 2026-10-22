@@ -229,6 +229,71 @@ loga a videa se neindexují. Vše běží lokálně na serveru obce.
 - Rychlost: text z vrstvy do sekundy, sken ~3–7 s na stranu (tesseract záměrně s jedním vláknem — se 4 vlákny
   OpenMP je pomalejší a vytíží celý server), paměť tesseractu ~150 MB — proto `mem_limit` 768 MB.
 
+## Moduly obce — zapínání ve správě a aplikace za proxy (hotovo 22. 10. 2026)
+
+- **Klíče:** `rezervace`, `predprodej`, `spolujizda` (části rezervací), `eknihy`, `infokanal`, `kviz`. Výchozí stav
+  z `obec.yml` → `moduly` (`eknihy` bere i starší `knihovna`; `predprodej`/`spolujizda` výchozí `true`), změny ze
+  **Správa → Moduly obce** (`/sprava/moduly`, jen role `admin`, audit `moduly.zmena`) v `nastaveni.moduly`.
+  Bez migrace (tabulka `nastaveni` existuje; číslo 0016 zůstává volné).
+- **Služba** `app.moduly` (`src/moduly/sluzby/sluzba.ts`): `zapnuto(klic)`, `stav()`, `nastaveno()`, `uloz()`,
+  `dostupny(klic)`, `obecProSablony()`, `skryteCesty()`; keš 30 s, po uložení se zahodí. Skutečný stav =
+  nastaveno ∧ dostupné ∧ zapnutý rodič. Dostupné: aplikace jen s `APLIKACE_REZERVACE_URL` / `APLIKACE_EKNIHY_URL`,
+  platformní moduly jen když je `obec.yml` povolí (registrují se při startu; vypnutí za běhu nevyžaduje restart).
+- **Vypnutý modul:** šablony dostávají `obec.moduly` podle skutečného stavu (menu, úvod, patička, mapa stránek,
+  sitemap), menu webu se filtruje od odkazů na cesty vypnutých modulů (i absolutní na `BASE_URL`). Veřejné stránky
+  (`/infokanal*`, `/kviz*`, `/rezervace*`, `/eknihy*`) vrací 404 „Tato služba není v obci zapnutá“. Zůstává:
+  správa (`/infokanal/sprava`, `/sprava/kviz`) a odhlášení odběru odkazem z e-mailu (`/infokanal/odhlasit/…`).
+  `obecStaticka` v šablonách = profil z obec.yml (karta správy na dashboardu zůstává).
+- **`GET /api/moduly`** (veřejné, keš 30 s, CORS `*`) — tvar **zafixovaný** s aplikacemi (lišta rezervací a eKnih):
+
+  ```json
+  {
+    "moduly": [
+      { "klic": "rezervace", "nazev": "Rezervace", "url": "/rezervace/", "zapnuto": true },
+      {
+        "klic": "predprodej",
+        "nazev": "Předprodej vstupenek",
+        "url": "/rezervace/predprodej",
+        "zapnuto": true,
+        "rodic": "rezervace"
+      },
+      {
+        "klic": "spolujizda",
+        "nazev": "Spolujízda",
+        "url": "/rezervace/spolujizda",
+        "zapnuto": false,
+        "rodic": "rezervace"
+      },
+      { "klic": "infokanal", "nazev": "Infokanál", "url": "/infokanal", "zapnuto": true },
+      { "klic": "eknihy", "nazev": "eKnihy", "url": "/eknihy/", "zapnuto": true },
+      { "klic": "kviz", "nazev": "Kvíz", "url": "/kviz", "zapnuto": true }
+    ],
+    "zapnuto": {
+      "rezervace": true,
+      "predprodej": true,
+      "spolujizda": false,
+      "infokanal": true,
+      "eknihy": true,
+      "kviz": true
+    }
+  }
+  ```
+
+  V `moduly` je vždy všech šest klíčů (`rezervace, predprodej, spolujizda, eknihy, infokanal, kviz`) v pořadí lišty,
+  odkaz se kreslí jen u `zapnuto: true`. Obec (`/`) a Můj účet (`/ucet`) si aplikace přidávají samy. Název
+  infokanálu z `texty.nazev_infokanalu`.
+
+- **Proxy** (`src/moduly/sluzby/proxy.ts`, `node:http` bez další závislosti): háček `onRequest` před sezením
+  platformy — tělo se nečte (formuláře, multipart 1:1), žádná cookie `mo_sezeni`, CSRF ani bezpečnostní hlavičky
+  / CSP platformy (odpověď přes `reply.hijack`). Cesta se předává celá (s předponou), hlavičky `Host` (původní),
+  `X-Forwarded-Host`, `X-Forwarded-Proto` (podle `BASE_URL`), `X-Forwarded-For` (= skutečná IP klienta podle
+  `TRUST_PROXY_HOPS`, podvržené hodnoty klienta se zahodí), `X-Forwarded-Prefix: /rezervace|/eknihy`. `Set-Cookie`
+  a `Location` beze změny; absolutní `Location` na vnitřní adresu aplikace se přepíše na relativní.
+  `/rezervace` → 301 `/rezervace/` (totéž `/eknihy`). Vypnutý `predprodej`/`spolujizda` blokuje
+  `/rezervace/predprodej*` / `/rezervace/spolujizda*`. Aplikace neodpoví / timeout `APLIKACE_TIMEOUT_MS`
+  (60 s) → 502 „Služba je dočasně nedostupná“. WebSockety (Upgrade) se neproxují.
+- Testy: `test/moduly-proxy.test.ts` (falešná aplikace na volném portu).
+
 ## Rezervace + platby (P1)
 
 Z Rezervací Vlastibořic (nejrozsáhlejší modul): zdroje (sál, posilovna, hřiště, štěpkovač) s kalendářem denním/týdenním, kapacita > 1 (posilovna, počet osob), celý den vs. čas, opakování (série), schvalování úřadem (karty), ceník rezident/nerezident (rezervace úřadu = 0), ruční sleva; **měsíční vyúčtování** = „Výzva k úhradě“ (obec není plátce DPH, žádné faktury), PDF, QR platba (SPD), VS, veřejná stránka platby tokenem, potvrzení o zaplacení, splatnost 14 dní, cron 1. den měsíce, SMS fallback bez e-mailu; report pro účetní (rozpočtová skladba, pohledávky, CSV/PDF); předprodej vstupenek bez registrace (QR, storno 96 h, platba na místě, VIP, pokladní listina); evidence přístupů k zámkům (TTLock: PIN/otisk/čip/eKlíč) a proces aktivace posilovny; spolujízda (jízdy, poptávky, odběry, počítadlo); klimatizace/SMS připomínky topení. Zákon: 128/2000 Sb. (záměry), účetnictví obce. Doporučené pořadí: kalendář + schvalování → ceník → vyúčtování/QR → zámky → předprodej → spolujízda.

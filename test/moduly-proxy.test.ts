@@ -178,7 +178,7 @@ describe('moduly obce', () => {
     const r = await fetch(t.base + '/api/moduly');
     expect(r.status).toBe(200);
     const j = (await r.json()) as {
-      moduly: { klic: string; nazev: string; url: string }[];
+      moduly: { klic: string; nazev: string; url: string; zapnuto: boolean }[];
       zapnuto: Record<string, boolean>;
     };
     expect(j.zapnuto).toEqual(VSE);
@@ -194,7 +194,12 @@ describe('moduly obce', () => {
       nazev: 'TestKanál',
       url: '/infokanal',
     });
-    expect(j.moduly.find((m) => m.klic === 'rezervace')).toMatchObject({ url: '/rezervace/' });
+    expect(j.moduly.find((m) => m.klic === 'rezervace')).toMatchObject({
+      klic: 'rezervace',
+      nazev: 'Rezervace',
+      url: '/rezervace/',
+      zapnuto: true,
+    });
   });
 
   it('vypnutý předprodej a spolujízda: proxy je blokuje, zbytek rezervací jede; audit', async () => {
@@ -207,8 +212,13 @@ describe('moduly obce', () => {
     expect(zachycene.length).toBe(pocet); // k aplikaci nic nedošlo
     expect((await fetch(t.base + '/rezervace/predprodejni')).status).toBe(200); // jiná cesta
     expect((await fetch(t.base + '/rezervace/')).status).toBe(200);
-    const j = (await (await fetch(t.base + '/api/moduly')).json()) as { zapnuto: Record<string, boolean> };
+    const j = (await (await fetch(t.base + '/api/moduly')).json()) as {
+      moduly: { klic: string; zapnuto: boolean }[];
+      zapnuto: Record<string, boolean>;
+    };
     expect(j.zapnuto.predprodej).toBe(false);
+    expect(j.moduly.find((m) => m.klic === 'predprodej')!.zapnuto).toBe(false);
+    expect(j.moduly).toHaveLength(6);
     const audit = await t.db
       .selectFrom('audit_log')
       .selectAll()

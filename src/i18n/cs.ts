@@ -1405,8 +1405,7 @@ export const cs = {
   moduly_obce: {
     titulek: 'Moduly obce',
     karta: 'Zapnutí a vypnutí služeb obce (rezervace, předprodej, spolujízda, eKnihy, infokanál, kvíz).',
-    uvod:
-      'Vypnutá služba zmizí z menu, z úvodu i z patičky a její stránky ukážou „Tato služba není v obci zapnutá“. Data zůstávají — po zapnutí je vše jako dřív. Změna platí hned, bez restartu.',
+    uvod: 'Vypnutá služba zmizí z menu, z úvodu i z patičky a její stránky ukážou „Tato služba není v obci zapnutá“. Data zůstávají — po zapnutí je vše jako dřív. Změna platí hned, bez restartu.',
     legenda: 'Služby',
     cast: 'část modulu {rodic}',
     stav_zapnuto: 'Zapnuto:',

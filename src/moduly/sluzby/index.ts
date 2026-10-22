@@ -87,16 +87,14 @@ async function sluzbyModul(app: FastifyInstance) {
   // veřejný přehled modulů pro aplikace (horní lišta) — jen názvy, adresy a stav
   app.get('/api/moduly', async (_req, reply) => {
     const stav = await app.moduly.stav();
-    const vse = popisyProApi(app, stav);
-    return reply
-      .header('cache-control', 'public, max-age=30')
-      .header('access-control-allow-origin', '*')
-      .send({
-        obec: app.obec.obec.nazev,
-        moduly: vse.filter((m) => m.zapnuto),
-        vse,
-        zapnuto: stav,
-      });
+    return (
+      reply
+        .header('cache-control', 'public, max-age=30')
+        .header('access-control-allow-origin', '*')
+        // tvar zafixovaný s aplikacemi (lišta): všech šest modulů s příznakem `zapnuto`; Obec a Můj účet si
+        // aplikace přidávají samy
+        .send({ moduly: popisyProApi(app, stav), zapnuto: stav })
+    );
   });
 
   app.get('/sprava/moduly', { preHandler: admin }, async (_req, reply) => {
