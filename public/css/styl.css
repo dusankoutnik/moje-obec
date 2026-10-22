@@ -2171,7 +2171,7 @@ a.stat-in:hover .stat-hodnota {
   background: var(--tmava);
   color: #dcdcdc;
   border-top: 4px solid var(--akcent);
-  font-size: 0.95rem;
+  font-size: 0.8875rem;
 }
 .paticka-in {
   display: grid;
@@ -2210,15 +2210,15 @@ a.stat-in:hover .stat-hodnota {
 .paticka li {
   margin: 0 0 0.35em;
 }
-.paticka-zdroj {
+.paticka .paticka-zdroj {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 10px;
-  font-size: 0.75rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.6875rem;
   color: #cfcfcf;
   padding-bottom: 20px;
-  margin: 0;
+  margin: 0 auto;
 }
 .paticka-zdroj a {
   color: #e6e6e6;
