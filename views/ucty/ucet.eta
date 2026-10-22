@@ -61,7 +61,7 @@
     <form method="post" action="/ucet/email/zrusit" class="inline"><input type="hidden" name="_csrf" value="<%= it.csrf %>"> <button class="odkaz-tlacitko" type="submit"><%= it.t('ucet.email_ceka_zrusit') %></button></form>
   </div>
   <% } %>
-  <p>
+  <p class="tlacitka-rada">
     <a class="tlacitko sekundarni" href="/ucet/email"><%= it.u.email ? it.t('ucet.email_zmenit') : it.t('ucet.email_pridat') %></a>
     <% if (it.u.email) { %><a class="tlacitko sekundarni" href="/ucet/heslo"><%= it.t('ucet.heslo_zmenit') %></a><% } %>
   </p>
@@ -130,7 +130,7 @@
   <% } %>
   <% if (it.souhrn.unpaidInvoices) { %><p class="flash flash-info"><%= it.t('muj_ucet.rez_nezaplacene', { pocet: it.souhrn.unpaidInvoices }) %></p><% } %>
   <% } %>
-  <p>
+  <p class="tlacitka-rada">
     <a class="tlacitko" href="/rezervace/"><%= it.t('muj_ucet.rez_otevrit') %></a>
     <a class="tlacitko sekundarni" href="/ucet/platby"><%= it.t('muj_ucet.platby_odkaz') %></a>
     <a class="tlacitko sekundarni" href="/rezervace/ucet"><%= it.t('muj_ucet.rez_detail') %></a>
