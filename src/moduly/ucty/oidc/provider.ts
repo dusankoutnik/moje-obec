@@ -63,6 +63,72 @@ export async function zajistiKlientaPlatformy(db: Db, env: Env): Promise<void> {
     .execute();
 }
 
+// Klienti aplikací obce (rezervace, eKnihy) z env — důvěryhodní (první strana, bez obrazovky souhlasu).
+// Jednotlivě OIDC_REZERVACE_SECRET / OIDC_EKNIHY_SECRET, nebo JSON pole OIDC_KLIENTI (má přednost u stejného id).
+// Klient, který v env není, se nemění (ani nevypíná) — vypnout jde v tabulce oidc_klienti (aktivni=false).
+export interface KlientZEnv {
+  client_id: string;
+  client_secret: string;
+  nazev?: string;
+  redirect_uris?: string[];
+  post_logout_redirect_uris?: string[];
+  auth_metoda?: 'client_secret_basic' | 'client_secret_post';
+}
+
+const APLIKACE: Record<string, { nazev: string; cesta: string }> = {
+  rezervace: { nazev: 'Rezervace', cesta: '/rezervace' },
+  eknihy: { nazev: 'eKnihy', cesta: '/eknihy' },
+};
+
+export function klientiZEnv(env: Env): KlientZEnv[] {
+  const mapa = new Map<string, KlientZEnv>();
+  if (env.OIDC_REZERVACE_SECRET)
+    mapa.set('rezervace', { client_id: 'rezervace', client_secret: env.OIDC_REZERVACE_SECRET });
+  if (env.OIDC_EKNIHY_SECRET)
+    mapa.set('eknihy', { client_id: 'eknihy', client_secret: env.OIDC_EKNIHY_SECRET });
+  if (env.OIDC_KLIENTI) {
+    let pole: unknown;
+    try {
+      pole = JSON.parse(env.OIDC_KLIENTI);
+    } catch {
+      throw new Error('OIDC_KLIENTI není platný JSON');
+    }
+    if (!Array.isArray(pole)) throw new Error('OIDC_KLIENTI musí být JSON pole');
+    for (const k of pole as KlientZEnv[]) {
+      if (!k?.client_id || typeof k.client_secret !== 'string' || k.client_secret.length < 16)
+        throw new Error('OIDC_KLIENTI: každý klient potřebuje client_id a client_secret (min. 16 znaků)');
+      if (k.client_id === PLATFORMA_CLIENT_ID) throw new Error('OIDC_KLIENTI: id „platforma“ je vyhrazené');
+      mapa.set(k.client_id, k);
+    }
+  }
+  return [...mapa.values()];
+}
+
+export async function zajistiKlientyAplikaci(db: Db, env: Env): Promise<string[]> {
+  const ids: string[] = [];
+  for (const k of klientiZEnv(env)) {
+    const app = APLIKACE[k.client_id];
+    const cesta = app?.cesta ?? `/${k.client_id}`;
+    const radek = {
+      client_id: k.client_id,
+      client_secret: k.client_secret,
+      nazev: k.nazev ?? app?.nazev ?? k.client_id,
+      redirect_uris: k.redirect_uris ?? [`${env.BASE_URL}${cesta}/prihlaseni/callback`],
+      post_logout_redirect_uris: k.post_logout_redirect_uris ?? [`${env.BASE_URL}/`],
+      auth_metoda: k.auth_metoda === 'client_secret_post' ? 'client_secret_post' : 'client_secret_basic',
+      duveryhodny: true,
+      aktivni: true,
+    };
+    await db
+      .insertInto('oidc_klienti')
+      .values(radek)
+      .onConflict((oc) => oc.column('client_id').doUpdateSet(radek))
+      .execute();
+    ids.push(k.client_id);
+  }
+  return ids;
+}
+
 function htmlStranka(nadpis: string, telo: string, obec: string): string {
   return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${nadpis} — ${obec}</title><link rel="stylesheet" href="/static/css/styl.css"></head><body><header class="hlavicka"><div class="obal"><a class="znacka" href="/">${obec}</a></div></header><main id="obsah" class="obal"><h1>${nadpis}</h1>${telo}</main></body></html>`;
 }
@@ -87,7 +153,7 @@ export async function vytvorProvider(db: Db, env: Env, obec: ObecProfil): Promis
       profile: ['name', 'given_name', 'family_name', 'nickname', 'preferred_username', 'updated_at'],
       email: ['email', 'email_verified'],
       phone: ['phone_number', 'phone_number_verified'],
-      obec: ['cast_obce', 'rezident', 'role'],
+      obec: ['cast_obce', 'rezident', 'role', 'mujucet_id'],
     },
     pkce: { required: () => true },
     clientDefaults: {
@@ -171,6 +237,7 @@ export async function vytvorProvider(db: Db, env: Env, obec: ObecProfil): Promis
             cast_obce: u.cast_obce,
             rezident: u.rezident,
             role: u.role,
+            mujucet_id: u.cislo,
           };
         },
       };

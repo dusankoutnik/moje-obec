@@ -38,6 +38,39 @@ Platforma plní bod 2 (prohlášení, přístupný design), 6 (stránka zásad, 
 
 **OIDC provider (P0 — hotovo):** discovery, JWKS (ES256 + RS256, generované při prvním startu, v DB), Authorization Code + PKCE povinně, refresh tokeny, userinfo, introspekce/revokace, RP-initiated logout, obrazovka souhlasu pro cizí klienty, důvěryhodné first-party klienty bez souhlasu. Správa klientů zatím SQL (`oidc_klienti`); formulář v administraci P1. **P2:** federace na Identitu občana (NIA) a Bank iD jako upstream IdP (uživatel si k účtu připojí „ověřenou identitu“ — vyšší úroveň důvěry pro úřední agendy).
 
+**Číslo účtu (22. 10. 2026, migrace 0017):** `uzivatele.cislo` (int, unikátní, sekvence `uzivatele_cislo_seq`) =
+id uživatele v MůjÚčtu a v aplikacích rezervace/eKnihy; převedené účty mají číslo z MůjÚčtu, nové další volné.
+V claims jako `mujucet_id`. Navíc `rezident_posouzen_at`/`rezident_posouzen_by` (číslo účtu správce) a `navic jsonb`
+(údaje MůjÚčtu, které platforma zatím nepoužívá: `zdroj`, `barva`, `ikona`, `eknihy_sms`, `ekey_email_odmitnut`,
+`rezident_avizo_at`, `hlavni_role`). Převod viz `docs/PREVOD.md`.
+
+**OIDC klienti aplikací obce:** registrují se při startu z env — `OIDC_REZERVACE_SECRET` → klient `rezervace`,
+`OIDC_EKNIHY_SECRET` → `eknihy`, případně `OIDC_KLIENTI` (JSON pole `{client_id, client_secret, nazev?,
+redirect_uris?, post_logout_redirect_uris?, auth_metoda?}`, má přednost). Výchozí `redirect_uri`
+`<BASE_URL>/<klient>/prihlaseni/callback`, `post_logout_redirect_uri` `<BASE_URL>/`, důvěryhodní (bez obrazovky
+souhlasu), `token_endpoint_auth_method` `client_secret_basic` (nebo `client_secret_post` přes `auth_metoda`),
+ID token **ES256**, PKCE povinné. Klient, který z env zmizí, se nemění (vypíná se `oidc_klienti.aktivni`).
+
+**Claims** (scope → claims; vše v **userinfo** `/oidc/me`, ID token nese jen `sub` + standardní): `profile` → `name`,
+`given_name`, `family_name`, `nickname`, `preferred_username`, `updated_at`; `email` → `email`, `email_verified`;
+`phone` → `phone_number` (E.164), `phone_number_verified`; `obec` → `role` (pole), `rezident`, `cast_obce`,
+`mujucet_id`.
+
+**Odhlášení z aplikace:** aplikace pošle prohlížeč na `/oidc/session/end?client_id=…&post_logout_redirect_uri=<BASE_URL>/`
+(nebo s `id_token_hint`); potvrzovací stránka se odešle sama a ukončí **OIDC session i sezení platformy** (`mo_sezeni`).
+
+**Interní API pro aplikace** (`src/moduly/ucty/interni.ts`): hlavička `x-api-secret` = `INTERNI_API_SECRET`
+(porovnání v konstantním čase; bez env = vypnuto, 404). Požadavek s `X-Forwarded-For` (přišel přes reverzní proxy) = 404
+— aplikace volají platformu po vnitřní síti (`http://platforma:3000`).
+
+- `GET /api/interni/uzivatel/:cislo` → profil `{sub, cislo, mujucet_id, name, given_name, family_name, nickname, email,
+email_verified, phone_number, phone_number_verified, cast_obce, rezident, rezident_posouzen_at, rezident_posouzen_by,
+role[], gdpr_souhlas_at, blokovan, vytvoren_at}`; neznámé číslo 404.
+- `GET /api/interni/uzivatele?role=spravce,admin` → `{uzivatele: [profil…]}` — neblokované účty s některou z rolí
+  (přesná shoda, admin se ke „spravce“ nepřidává sám); bez platné role 400.
+- `POST /api/interni/uzivatel/:cislo/rezident` `{rezident: bool, kdo: <číslo účtu správce>}` → `{ok: true, …profil}`;
+  `kdo` musí být neblokovaný admin nebo správce (jinak 403); zároveň nastaví posouzení rezidenta; audit `sprava.rezident`.
+
 ## Infokanál (P0 — datový model a UI hotové; výstrahy P1)
 
 **Převzato z VlastiKanálu:**

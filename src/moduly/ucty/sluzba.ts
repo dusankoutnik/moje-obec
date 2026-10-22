@@ -1,4 +1,5 @@
 // Služba účtů: hledání/zakládání podle telefonu, role, souhlas, profil. Vše, co s účty dělají routy i OIDC.
+import { sql } from 'kysely';
 import type { Db } from '../../db/index.js';
 import type { Role, Uzivatel } from '../../db/types.js';
 import { ROLE } from '../../db/types.js';
@@ -35,11 +36,79 @@ export function celeJmeno(u: Pick<Uzivatel, 'jmeno' | 'prijmeni' | 'prezdivka' |
   return j || u.prezdivka || u.telefon;
 }
 
+/** profil účtu pro aplikace obce — stejné údaje jako OIDC claims (interní API, avíza) */
+export function profilUzivatele(u: Uzivatel) {
+  return {
+    sub: u.id,
+    cislo: u.cislo,
+    mujucet_id: u.cislo,
+    name: celeJmeno(u),
+    given_name: u.jmeno,
+    family_name: u.prijmeni,
+    nickname: u.prezdivka,
+    email: u.email,
+    email_verified: !!u.email_overen_at,
+    phone_number: u.telefon,
+    phone_number_verified: !!u.telefon_overen_at,
+    cast_obce: u.cast_obce,
+    rezident: u.rezident,
+    rezident_posouzen_at: u.rezident_posouzen_at?.toISOString() ?? null,
+    rezident_posouzen_by: u.rezident_posouzen_by,
+    role: u.role,
+    gdpr_souhlas_at: u.gdpr_souhlas_at?.toISOString() ?? null,
+    blokovan: !!u.blokovan_at,
+    vytvoren_at: u.vytvoren_at.toISOString(),
+  };
+}
+
 export class UctySluzba {
   constructor(private db: Db) {}
 
   podleId(id: string) {
     return this.db.selectFrom('uzivatele').selectAll().where('id', '=', id).executeTakeFirst();
+  }
+
+  podleCisla(cislo: number) {
+    return this.db.selectFrom('uzivatele').selectAll().where('cislo', '=', cislo).executeTakeFirst();
+  }
+
+  /** neblokované účty s některou z rolí (přesná shoda; admin se k ostatním nepřidává) */
+  podleRole(role: Role[]) {
+    return this.db
+      .selectFrom('uzivatele')
+      .selectAll()
+      .where('blokovan_at', 'is', null)
+      .where(sql<boolean>`role && ${sql.val(role)}::text[]`)
+      .orderBy('cislo')
+      .execute();
+  }
+
+  /** úřad přepíná rezidenta (z platformy nebo z administrace rezervací přes interní API); zároveň = posouzeno */
+  async nastavRezident(
+    cil: Uzivatel,
+    rezident: boolean,
+    aktor: Uzivatel | null,
+    zdroj: string,
+    ip?: string | null,
+  ): Promise<Uzivatel> {
+    const r = await this.db
+      .updateTable('uzivatele')
+      .set({
+        rezident,
+        rezident_posouzen_at: new Date(),
+        rezident_posouzen_by: aktor?.cislo ?? null,
+        upraven_at: new Date(),
+      })
+      .where('id', '=', cil.id)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    await zapisAudit(this.db, {
+      uzivatelId: aktor?.id ?? null,
+      akce: 'sprava.rezident',
+      detail: { cil: cil.id, cislo: cil.cislo, rezident, puvodne: cil.rezident, zdroj },
+      ip,
+    });
+    return r;
   }
 
   podleTelefonu(telefon: string) {

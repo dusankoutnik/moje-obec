@@ -109,6 +109,17 @@ const EnvSchema = z.object({
     .pipe(z.string().url().optional()),
   // časový limit proxy na odpověď aplikace (ms)
   APLIKACE_TIMEOUT_MS: z.coerce.number().int().min(1000).default(60_000),
+  // OIDC klienti aplikací (rezervace, eKnihy): tajemství jednotlivě, nebo JSON pole
+  // [{"client_id","client_secret","nazev"?,"redirect_uris"?,"post_logout_redirect_uris"?,"auth_metoda"?}]
+  OIDC_REZERVACE_SECRET: z.string().min(16).optional(),
+  OIDC_EKNIHY_SECRET: z.string().min(16).optional(),
+  OIDC_KLIENTI: z.string().optional(),
+  // interní API pro aplikace (hlavička x-api-secret); prázdné = API vypnuté
+  INTERNI_API_SECRET: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().min(24).optional()),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
