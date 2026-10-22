@@ -1,7 +1,7 @@
 // Všechny texty rozhraní na jednom místě. Zatím jen čeština; další jazyk = další soubor se stejnými klíči.
 export const cs = {
   app: {
-    nazev: 'Moje obec',
+    nazev: 'Web od Voltu',
     skip: 'Přeskočit na obsah',
     menu: 'Hlavní nabídka',
     domu: 'Úvod',
@@ -15,7 +15,7 @@ export const cs = {
     patika_pristupnost: 'Prohlášení o přístupnosti',
     patika_gdpr: 'Ochrana osobních údajů',
     patika_kontakt: 'Kontakt',
-    patika_zdroj: 'Otevřený software Moje obec 2.0 (EUPL-1.2)',
+    patika_zdroj: 'Otevřený software Web od Voltu 2.0 (EUPL-1.2)',
     patika_vyrobce: 'Web od Voltu 2.0',
     patika_vyrobce_logo: 'Volt',
     chyba_404: 'Stránka nenalezena',
@@ -37,7 +37,7 @@ export const cs = {
     csrf: 'Formulář vypršel (bezpečnostní kontrola). Načtěte stránku znovu a zkuste to prosím ještě jednou.',
   },
   uvod: {
-    titulek: 'Moje obec — služby obce online',
+    titulek: 'Služby obce online',
     perex: 'Na jednom místě: hlášení obce do telefonu a e-mailu, účet občana a další služby obce.',
     karta_ucet: 'Můj účet',
     karta_ucet_text: 'Jeden účet pro všechny služby obce. Stačí telefon — přihlásíte se kódem z SMS.',

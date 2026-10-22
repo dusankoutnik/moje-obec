@@ -104,7 +104,7 @@ await migruj(db);
 
 const kontakt = process.env.IMPORT_KONTAKT ?? 'kontakt neuveden';
 const stahovac = vytvorStahovac({
-  userAgent: `MojeObec-import (${kontakt})`,
+  userAgent: `WebOdVoltu-import (${kontakt})`,
   rozestupMs,
   limitBajtu: limitMb * 1024 * 1024,
   log: (z) => console.log('  ·', z),

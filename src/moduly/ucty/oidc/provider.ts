@@ -50,7 +50,7 @@ export async function zajistiKlientaPlatformy(db: Db, env: Env): Promise<void> {
   const radek = {
     client_id: PLATFORMA_CLIENT_ID,
     client_secret: env.OIDC_PLATFORMA_SECRET,
-    nazev: 'Moje obec — platforma',
+    nazev: 'Web od Voltu — platforma',
     redirect_uris: [`${env.BASE_URL}/prihlaseni/callback`],
     post_logout_redirect_uris: [`${env.BASE_URL}/`],
     duveryhodny: true,

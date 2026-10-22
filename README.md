@@ -1,4 +1,4 @@
-# Moje obec 2.0
+# Web od Voltu 2.0
 
 Otevřená platforma pro **malé české obce**: obecní web s jednoduchým redakčním systémem pro úřad, úřední deska s povinně zveřejňovanými informacemi, jeden účet občana (přihlášení telefonem a SMS kódem, standardní OpenID Connect), infokanál (hlášení obce SMSkou a e-mailem) a postupně další služby — rezervace obecních prostor s vyúčtováním, obecní knihovna.
 

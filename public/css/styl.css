@@ -1927,27 +1927,13 @@ body.zakladni .panel-hlavni {
   letter-spacing: 0.12em;
   color: #fff;
 }
-/* telefon: statistiky ve dvou sloupcích, ať úvod nezabere celou obrazovku */
+/* telefon: statistiky v úvodu se nezobrazují — obsah je hned pod názvem obce (pokyn 22. 10. 2026) */
 @media (max-width: 600px) {
   .hero-in {
     padding: 12px;
   }
   .statistiky {
-    padding: 0.9rem 0.6rem;
-  }
-  .statistiky dl {
-    gap: 0.9rem 0.6rem;
-  }
-  .stat {
-    flex: 0 1 calc(50% - 0.3rem);
-    min-width: 0;
-  }
-  .stat dd {
-    font-size: 1.65rem;
-  }
-  .stat dt {
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
+    display: none;
   }
 }
 .hero-dolu {

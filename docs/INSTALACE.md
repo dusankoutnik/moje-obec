@@ -13,7 +13,7 @@ Cíl: obec si pronajme levný VPS (2 vCPU, 4 GB RAM stačí, Ubuntu 24.04), nasm
 ## 2. Soubory
 
 ```bash
-sudo mkdir -p /opt/moje-obec && sudo chown $USER /opt/moje-obec && cd /opt/moje-obec
+sudo mkdir -p /opt/web-od-voltu && sudo chown $USER /opt/web-od-voltu && cd /opt/web-od-voltu
 git clone https://github.com/<organizace>/platforma .     # nebo rozbalit vydání
 cp .env.example .env
 cp obec.example.yml obec.yml
@@ -66,7 +66,7 @@ po úpravě souboru stačí Správa → Kvíz → „Načíst balíky znovu“.
 
 ```bash
 docker compose up -d
-docker compose logs -f app      # čekejte na „Moje obec 2.0 běží“
+docker compose logs -f app      # čekejte na „Web od Voltu 2.0 běží“
 curl -s https://obec.example.cz/healthz   # {"stav":"ok",…}
 ```
 
@@ -94,28 +94,28 @@ Stav instalace je na **třech místech** a zálohovat je třeba všechna:
 2. **nahrané soubory obce** (přílohy úřední desky, fotky, loga, videa) — volume `app_data` (v kontejneru `/app/data`);
 3. **konfigurace** `.env` a `obec.yml` (bez `.env` nejde obnovit přihlášení — cookie tajemství) a volume `caddy_data` (certifikáty a účet Let's Encrypt; bez něj se certifikát vystaví znovu, ale při opakovaných obnovách hrozí limit Let's Encrypt).
 
-Názvy volumes mají předponu podle adresáře instalace (`/opt/moje-obec` → `moje-obec_app_data`); ověřte je příkazem `docker volume ls`.
+Názvy volumes mají předponu podle adresáře instalace (`/opt/web-od-voltu` → `web-od-voltu_app_data`); ověřte je příkazem `docker volume ls`.
 
-Denní záloha skriptem `/opt/moje-obec/zaloha.sh` (spouští uživatel ve skupině `docker`):
+Denní záloha skriptem `/opt/web-od-voltu/zaloha.sh` (spouští uživatel ve skupině `docker`):
 
 ```bash
 #!/bin/sh
 set -eu
-cd /opt/moje-obec
+cd /opt/web-od-voltu
 mkdir -p zalohy && chmod 700 zalohy
 D=$(date +%F)
 docker compose exec -T db pg_dump -U platforma -Fc platforma > zalohy/db-$D.dump
-docker run --rm -v moje-obec_app_data:/data:ro -v "$PWD/zalohy":/z alpine tar czf /z/soubory-$D.tar.gz -C /data .
-docker run --rm -v moje-obec_caddy_data:/data:ro -v "$PWD/zalohy":/z alpine tar czf /z/caddy-$D.tar.gz -C /data .
+docker run --rm -v web-od-voltu_app_data:/data:ro -v "$PWD/zalohy":/z alpine tar czf /z/soubory-$D.tar.gz -C /data .
+docker run --rm -v web-od-voltu_caddy_data:/data:ro -v "$PWD/zalohy":/z alpine tar czf /z/caddy-$D.tar.gz -C /data .
 tar czf zalohy/konfigurace-$D.tar.gz .env obec.yml
 find zalohy -name '*-*.dump' -mtime +30 -delete
 find zalohy -name '*-*.tar.gz' -mtime +30 -delete
 ```
 
 ```bash
-chmod 700 /opt/moje-obec/zaloha.sh
-# /etc/cron.d/moje-obec-zaloha  (v crontabu se % musí psát jako \%; skript to obchází)
-15 3 * * * obec /opt/moje-obec/zaloha.sh
+chmod 700 /opt/web-od-voltu/zaloha.sh
+# /etc/cron.d/web-od-voltu-zaloha  (v crontabu se % musí psát jako \%; skript to obchází)
+15 3 * * * obec /opt/web-od-voltu/zaloha.sh
 ```
 
 Zálohy kopírujte i **mimo server** (rsync na jiný stroj, objektové úložiště) — záloha na stejném disku neochrání před ztrátou serveru. Obsahují osobní údaje a tajemství: šifrovat a omezit přístup. Jednou za čas obnovu vyzkoušejte na jiném stroji.
@@ -127,14 +127,14 @@ Databáze potřebuje rozšíření `unaccent` (hledání bez diakritiky); migrac
 Obnovuje se **při zastavené aplikaci** (jinak by do databáze během obnovy zapisovala — fronta hlášení, sezení):
 
 ```bash
-cd /opt/moje-obec
+cd /opt/web-od-voltu
 docker compose stop app
 # databáze: --clean smaže a znovu založí objekty ze zálohy
 docker compose exec -T db pg_restore -U platforma -d platforma --clean --if-exists < zalohy/db-2026-10-13.dump
 # soubory obce
-docker run --rm -v moje-obec_app_data:/data -v "$PWD/zalohy":/z alpine sh -c 'tar xzf /z/soubory-2026-10-13.tar.gz -C /data'
+docker run --rm -v web-od-voltu_app_data:/data -v "$PWD/zalohy":/z alpine sh -c 'tar xzf /z/soubory-2026-10-13.tar.gz -C /data'
 docker compose start app
-docker compose logs -f app     # migrace doběhnou, čekejte na „Moje obec 2.0 běží“
+docker compose logs -f app     # migrace doběhnou, čekejte na „Web od Voltu 2.0 běží“
 ```
 
 Na novém serveru: nejdřív vrátit `.env` a `obec.yml` (a případně `caddy_data`), `docker compose up -d db`, obnovit databázi a soubory jako výše, pak `docker compose up -d`.

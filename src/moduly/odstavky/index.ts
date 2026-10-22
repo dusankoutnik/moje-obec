@@ -29,7 +29,7 @@ async function odstavkyModul(app: FastifyInstance, volby: { planovac: boolean })
       kodObce,
       odkazCez: app.obec.odstavky.cez.odkaz || CEZ_WEB,
       banner: !!app.obec.odstavky.cez.banner,
-      userAgent: `Moje obec 2.0 (${app.env.BASE_URL})`,
+      userAgent: `Web od Voltu 2.0 (${app.env.BASE_URL})`,
     },
     app.log,
   );
@@ -46,7 +46,7 @@ async function odstavkyModul(app: FastifyInstance, volby: { planovac: boolean })
     if (!bannerKes || Date.now() - bannerKes.at > 3600_000) {
       try {
         const r = await fetch(bannerUrl, {
-          headers: { 'user-agent': `Moje obec 2.0 (${app.env.BASE_URL})` },
+          headers: { 'user-agent': `Web od Voltu 2.0 (${app.env.BASE_URL})` },
           signal: AbortSignal.timeout(10_000),
         });
         const typ = r.headers.get('content-type') ?? '';

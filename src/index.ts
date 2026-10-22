@@ -28,4 +28,4 @@ process.on('SIGTERM', () => void zavri('SIGTERM'));
 process.on('SIGINT', () => void zavri('SIGINT'));
 
 await app.listen({ port: env.PORT, host: env.HOST });
-app.log.info({ url: env.BASE_URL, obec: app.obec.obec.nazev }, 'Moje obec 2.0 běží');
+app.log.info({ url: env.BASE_URL, obec: app.obec.obec.nazev }, 'Web od Voltu 2.0 běží');

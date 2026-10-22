@@ -194,4 +194,4 @@ Z eKnih: katalog volných e-knih (4 468, filtr jazyka), čtečka v prohlížeči
 - Dashboard úřadu se statistikami (jen agregáty), jednotná administrace, dlaždice podle rolí.
 - Návody občanům (PDF z HTML, pozor na font DejaVu v headless Chrome — zkušenost).
 - Zálohy (cron `pg_dump`, viz INSTALACE), monitoring `/healthz`, aktualizace obrazu.
-- Značka: „Moje obec“ (zkontrolováno TMview + domény 9/2026; „eObec“ je zapsaná známka Asseco — nepoužívat).
+- Značka: **Web od Voltu 2.0** (od 22. 10. 2026; dříve „Moje obec“, které používají jiné produkty). „Moje obec“ zůstává jen jako název sekce služeb v menu obce. „eObec“ je zapsaná známka Asseco — nepoužívat.

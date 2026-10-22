@@ -11,6 +11,7 @@ Přehled změn platformy Web od Voltu 2.0 pro pilotní obec, nejnovější naho�
 - **Staré odkazy fungují:** soubory starého webu (`/wp-content/uploads/…`) jsou dostupné na původních adresách; prohlížečům stálých návštěvníků se starý „offline“ režim sám odinstaluje.
 - Odkaz **Správa** se přesunul z hlavičky do patičky.
 - Tato stránka (devlog) v patičce testovacího webu.
+- **Telefon:** úvod bez bloku statistik (obsah je hned pod názvem obce), opravené odstupy na stránce Kontakt.
 
 ## 21. 10. 2026
 
