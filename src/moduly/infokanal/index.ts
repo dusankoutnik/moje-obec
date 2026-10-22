@@ -8,11 +8,19 @@ import { InfokanalSluzba } from './sluzba.js';
 import { RozesilaciFronta } from './fronta.js';
 import infokanalRoutes from './routes.js';
 import infokanalSprava from './sprava.js';
+import interniInfokanal from './interni.js';
+import { OdchoziFronta } from './odchozi.js';
+import { PrichoziSluzba } from './prichozi.js';
+import { HlidaniBrany } from './brana.js';
+import { SmsGate } from '../../lib/sms/smsgate.js';
+import { mapaPresmerovani } from '../../lib/sms/presmerovani.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
     infokanal: InfokanalSluzba;
     infokanalFronta: RozesilaciFronta;
+    infokanalOdchozi: OdchoziFronta;
+    infokanalPrichozi: PrichoziSluzba;
   }
 }
 
@@ -37,6 +45,42 @@ async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }
   app.decorate('infokanal', sluzba);
   app.decorate('infokanalFronta', fronta);
 
+  // odchozí fronta interního API (jednotlivé SMS/e-maily aplikací, odpovědi na příchozí SMS)
+  const odchozi = new OdchoziFronta(
+    app.db,
+    app.sms,
+    app.mail,
+    {
+      smsPrefix: app.obec.texty.sms_prefix,
+      smsIntervalMs: app.env.IK_SMS_INTERVAL_MIN_MS,
+      emailIntervalMs: app.env.IK_EMAIL_INTERVAL_MS,
+    },
+    app.log,
+  );
+  app.decorate('infokanalOdchozi', odchozi);
+  const odvozUrl =
+    app.env.SPOLUJIZDA_HOOK_URL ||
+    (app.env.APLIKACE_REZERVACE_URL
+      ? app.env.APLIKACE_REZERVACE_URL.replace(/\/+$/, '') + '/api/sms/prichozi'
+      : null);
+  const odvozHlavicky: Record<string, string> = {};
+  if (app.env.SPOLUJIZDA_HOOK_SECRET) odvozHlavicky['x-hook-secret'] = app.env.SPOLUJIZDA_HOOK_SECRET;
+  if (app.env.INTERNI_API_SECRET) odvozHlavicky['x-api-secret'] = app.env.INTERNI_API_SECRET;
+  const prichozi = new PrichoziSluzba(
+    app.db,
+    odchozi,
+    app.mail,
+    {
+      odvozUrl,
+      odvozHlavicky,
+      notify: seznam(app.env.INFOKANAL_NOTIFY),
+      nazevKanalu: app.obec.texty.nazev_infokanalu,
+    },
+    app.log,
+  );
+  app.decorate('infokanalPrichozi', prichozi);
+  await app.register(interniInfokanal, { odchozi });
+
   await app.register(infokanalRoutes, { sluzba });
   await app.register(infokanalSprava, { sluzba, fronta });
 
@@ -49,22 +93,71 @@ async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }
     });
     sub.post<{ Params: { tajemstvi: string } }>('/webhook/sms/:tajemstvi', async (req, reply) => {
       if (!stejneTajemstvi(req.params.tajemstvi, tajemstvi)) return reply.code(404).send();
-      if (!app.sms.zpracujWebhook) return reply.send({ ok: true, zmen: 0 });
-      let zmeny;
+      let zmeny: { branaId: string; stav: string }[] = [];
+      let zpravy: { od: string; text: string; prijato: Date | null }[] = [];
       try {
-        zmeny = await app.sms.zpracujWebhook(req.body, req.headers);
+        if (app.sms.zpracujWebhook) zmeny = await app.sms.zpracujWebhook(req.body, req.headers);
+        if (app.sms.prichoziZWebhooku) zpravy = app.sms.prichoziZWebhooku(req.body, req.headers);
       } catch (e) {
         req.log.warn({ err: e }, 'webhook SMS: odmítnuto');
         return reply.code(400).send({ ok: false });
       }
-      const n = await fronta.zapisDorucenky(zmeny);
-      return reply.send({ ok: true, zmen: n });
+      const n = (await fronta.zapisDorucenky(zmeny)) + (await odchozi.zapisDorucenky(zmeny));
+      // příchozí SMS: zpracovat postupně, chyba jedné nesmí shodit ostatní (brána by webhook opakovala)
+      for (const z of zpravy) {
+        await prichozi.zpracuj(z).catch((e) => req.log.error({ err: e }, 'příchozí SMS: zpracování selhalo'));
+      }
+      return reply.send({ ok: true, zmen: n, prichozich: zpravy.length });
     });
   });
 
-  if (!volby.planovac) fronta.vypniPlanovac();
+  // hlídání brány jen u SMSGate (telefon na úřadě); komerční brány mají vlastní dohled
+  const branaCfg =
+    app.env.SMSGATE_URL &&
+    app.env.SMSGATE_USER &&
+    (app.env.SMS_PROVIDER === 'smsgate' ||
+      (mapaPresmerovani(app.env).size > 0 && app.env.SMS_PRESMEROVANI_PROVIDER === 'smsgate'))
+      ? {
+          zaklad: new SmsGate({
+            url: app.env.SMSGATE_URL,
+            user: app.env.SMSGATE_USER,
+            pass: app.env.SMSGATE_PASS ?? '',
+          }).zakladApi,
+          user: app.env.SMSGATE_USER,
+          pass: app.env.SMSGATE_PASS ?? '',
+          limitMin: app.env.BRANA_LIMIT_MIN,
+          notify: seznam(app.env.BRANA_NOTIFY),
+        }
+      : null;
+
+  if (!volby.planovac) {
+    fronta.vypniPlanovac();
+    odchozi.vypniPlanovac();
+  }
   if (volby.planovac) {
-    app.addHook('onReady', async () => fronta.kopni());
+    app.addHook('onReady', async () => {
+      fronta.kopni();
+      odchozi.kopni();
+    });
+    const odchoziCron = new Cron('* * * * *', { protect: true }, async () => {
+      await odchozi.uklidZaseknute().catch((e) => app.log.warn({ err: e }, 'odchozí: úklid zaseknutých'));
+      odchozi.kopni();
+    });
+    const odchoziDorucenky = new Cron('2-59/5 * * * *', { protect: true }, async () => {
+      await odchozi.aktualizujDorucenky().catch((e) => app.log.warn({ err: e }, 'odchozí: doručenky'));
+    });
+    const hlidac = branaCfg ? new HlidaniBrany(app.db, app.mail, branaCfg, app.log) : null;
+    const branaCron = hlidac
+      ? new Cron('3-59/10 * * * *', { protect: true }, async () => {
+          await hlidac.kontrola().catch((e) => app.log.warn({ err: e }, 'hlídání brány'));
+        })
+      : null;
+    app.addHook('onClose', async () => {
+      odchoziCron.stop();
+      odchoziDorucenky.stop();
+      branaCron?.stop();
+      odchozi.zastav();
+    });
     const kazdouMinutu = new Cron('* * * * *', { protect: true }, async () => {
       await fronta.uklidZaseknute().catch((e) => app.log.warn({ err: e }, 'fronta: úklid zaseknutých'));
       fronta.kopni();
@@ -87,6 +180,13 @@ async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }
  */
 export function tajemstviWebhooku(env: Pick<Env, 'SESSION_SECRET' | 'SMS_WEBHOOK_TOKEN'>): string {
   return env.SMS_WEBHOOK_TOKEN || hmac(env.SESSION_SECRET, 'webhook-sms').slice(0, 40);
+}
+
+function seznam(s: string | undefined): string[] {
+  return String(s ?? '')
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean);
 }
 
 export default fp(infokanalModul, { name: 'infokanalModul' });

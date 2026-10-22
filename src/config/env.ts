@@ -95,6 +95,24 @@ const EnvSchema = z.object({
   IK_SMS_INTERVAL_MIN_MS: z.coerce.number().default(1000),
   IK_SMS_INTERVAL_MAX_MS: z.coerce.number().default(3000),
   IK_EMAIL_INTERVAL_MS: z.coerce.number().default(500),
+  // interní API pro aplikace (hlavička x-api-secret); prázdné = API vypnuté
+  INTERNI_API_SECRET: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().min(24).optional()),
+  // rezervace (příchozí SMS „ODVOZ …“ → spolujízda): základ adresy aplikace po vnitřní síti
+  APLIKACE_REZERVACE_URL: z.string().optional(),
+  // přímá adresa pro předání SMS ODVOZ (přebije APLIKACE_REZERVACE_URL + /api/sms/prichozi) a tajemství x-hook-secret
+  SPOLUJIZDA_HOOK_URL: z.string().optional(),
+  SPOLUJIZDA_HOOK_SECRET: z.string().optional(),
+  // komu přeposílat neznámé příchozí SMS (navíc ke správcům s e-mailem), čárkami
+  INFOKANAL_NOTIFY: z.string().optional(),
+  // hlídání SMS brány SMSGate: komu psát (čárkami; prázdné = správci) a po kolika minutách ticha
+  BRANA_NOTIFY: z.string().optional(),
+  BRANA_LIMIT_MIN: z.coerce.number().int().min(5).default(60),
+  // podpisový klíč webhooků SMSGate (X-Signature); prázdné = ověřuje jen tajná adresa
+  SMSGATE_WEBHOOK_KLIC: z.string().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

@@ -6,7 +6,7 @@
   <dl class="seznam">
     <dt><%= it.t('infokanal.stav') %></dt><dd><%= it.t('infokanal.stav_' + it.h.stav) %><% if (it.h.naplanovano_na) { %> (<%= it.fmtDatum(it.h.naplanovano_na) %>)<% } %></dd>
     <dt><%= it.t('infokanal.kategorie_pole') %></dt><dd><%= it.h.kategorie %></dd>
-    <dt><%= it.t('infokanal.cil') %></dt><dd><%= it.h.cil === 'casti' ? it.h.cil_detail.join(', ') : it.t('infokanal.cil_vse') %></dd>
+    <dt><%= it.t('infokanal.cil') %></dt><dd><%= it.h.cil === 'casti' ? it.h.cil_detail.join(', ') : it.h.cil === 'vybrani' ? 'vybraní příjemci' : it.t('infokanal.cil_vse') %></dd>
     <dt><%= it.t('infokanal.autor') %></dt><dd><%= ((it.h.jmeno || '') + ' ' + (it.h.prijmeni || '')).trim() || it.h.zdroj_automatu || '—' %></dd>
     <dt><%= it.t('infokanal.vytvoreno_kdy') %></dt><dd><%= it.fmtDatum(it.h.vytvoreno_at) %></dd>
   </dl>
@@ -21,7 +21,11 @@
   <h2><%= it.t('infokanal.prijemci') %></h2>
   <ul>
   <% it.h.stavy.forEach(function (s) { %><li><%= s.kanal === 'sms' ? 'SMS' : 'E-mail' %> — <%= it.t('infokanal.' + s.stav) %>: <strong><%= s.n %></strong></li><% }) %>
+  <% if (it.h.souhrn && !it.h.stavy.length) { %>
+    <% ;['sms', 'email'].forEach(function (k) { Object.keys(it.h.souhrn[k] || {}).forEach(function (st) { %><li><%= k === 'sms' ? 'SMS' : 'E-mail' %> — <%= it.t('infokanal.' + st) %>: <strong><%= it.h.souhrn[k][st] %></strong></li><% }) }) %>
+  <% } %>
   </ul>
+  <% if (it.h.souhrn) { %><p class="napoveda">Převedeno z VlastiKanálu — jednotliví příjemci se nepřevádějí, jen počty.<% if (it.h.souhrn.web_url) { %> Článek: <a href="<%= it.h.souhrn.web_url %>"><%= it.h.souhrn.web_url %></a><% } %></p><% } %>
   <div class="tabulka-obal">
   <table class="tabulka kompaktni">
     <thead><tr><th>Kanál</th><th>Kontakt</th><th><%= it.t('infokanal.stav') %></th><th>Odesláno</th><th>Chyba</th></tr></thead>

@@ -28,6 +28,18 @@ export interface SmsPoskytovatel {
   ): Promise<{ branaId: string; stav: StavDoruceni }[]>;
   /** Hromadné stažení doručenek (brány, které nemají dotaz na jednu zprávu, např. SMSbrána inbox). */
   stahniDorucenky?(): Promise<{ branaId: string; stav: StavDoruceni }[]>;
+  /**
+   * Příchozí SMS z webhooku brány (START/STOP/ODVOZ, odpovědi občanů). Tělo je SUROVÝ text požadavku (kvůli
+   * podpisu). Vyhodí výjimku při neplatném podpisu; zprávy, které nejsou příchozí SMS, vrátí jako [].
+   */
+  prichoziZWebhooku?(telo: unknown, hlavicky: Record<string, string | string[] | undefined>): PrichoziSms[];
+}
+
+export interface PrichoziSms {
+  /** odesílatel v E.164 */
+  od: string;
+  text: string;
+  prijato: Date | null;
 }
 
 export class SmsChyba extends Error {
