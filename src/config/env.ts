@@ -95,6 +95,13 @@ const EnvSchema = z.object({
   IK_SMS_INTERVAL_MIN_MS: z.coerce.number().default(1000),
   IK_SMS_INTERVAL_MAX_MS: z.coerce.number().default(3000),
   IK_EMAIL_INTERVAL_MS: z.coerce.number().default(500),
+  // Automatické výstrahy infokanálu (ČHMÚ, ČEZ, SčVK podle obec.yml → vystrahy). 0 = vypnuto (nic se nestahuje ani neposílá).
+  VYSTRAHY: z
+    .string()
+    .optional()
+    .transform((v) => v === undefined || v === '' || v === '1' || v === 'true'),
+  // další adresy (čárkami) pro e-maily o výstrahách vedle správců (role admin a spravce s e-mailem)
+  VYSTRAHY_NOTIFY: z.string().default(''),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

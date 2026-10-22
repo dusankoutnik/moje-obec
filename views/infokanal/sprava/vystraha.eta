@@ -1,0 +1,19 @@
+<% layout('/layout') %>
+<% const v = it.v %>
+<p><a href="/infokanal/sprava/vystrahy">← <%= it.t('vystrahy.sprava') %></a></p>
+<h1><%= v.titulek %></h1>
+<dl class="seznam">
+  <dt><%= it.t('vystrahy.zdroj') %></dt><dd><%= v.zdrojNazev %></dd>
+  <dt><%= it.t('vystrahy.termin') %></dt><dd><%= v.kdy %></dd>
+  <dt><%= it.t('vystrahy.stav') %></dt><dd><%= it.t('vystrahy.stav_' + v.stav) %><% if (v.zruseno_at) { %> · <%= it.t('vystrahy.zruseno') %><% } %></dd>
+  <% if (v.hlaseni_id) { %><dt><%= it.t('vystrahy.hlaseni') %></dt><dd><a href="/infokanal/sprava/hlaseni/<%= v.hlaseni_id %>">🤖 <%= it.t('vystrahy.hlaseni') %></a></dd><% } %>
+</dl>
+<% if (v.stav === 'ceka') { %>
+<div class="akce">
+<form method="post" action="/infokanal/sprava/vystrahy/<%= v.id %>/rozeslat"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko" type="submit"><%= it.t('vystrahy.rozeslat') %></button></form>
+<form method="post" action="/infokanal/sprava/vystrahy/<%= v.id %>/zahodit"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko sekundarni" type="submit"><%= it.t('vystrahy.zahodit') %></button></form>
+</div>
+<% } %>
+<% if (v.sms_text) { %><h2><%= it.t('vystrahy.sms') %></h2><pre class="sms"><%= it.obec.texty.sms_prefix %><%= v.sms_text %></pre><% } %>
+<% if (v.email_predmet) { %><h2><%= it.t('vystrahy.email') %>: <%= v.email_predmet %></h2><pre class="sms"><%= v.email_text %></pre><% } %>
+<% if (v.odkaz) { %><p><a href="<%= v.odkaz %>" rel="noopener noreferrer"><%= it.t('vystrahy.podrobnosti') %></a></p><% } %>

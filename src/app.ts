@@ -40,6 +40,7 @@ import webMapa from './moduly/web/mapa.js';
 import kvizModul from './moduly/kviz/index.js';
 import podatelnaModul from './moduly/podatelna/index.js';
 import odstavkyModul from './moduly/odstavky/index.js';
+import vystrahyModul from './moduly/infokanal/vystrahy/index.js';
 
 /** vrátí true, pokud požadavek obsloužil (odpověď odeslána) */
 /** service worker, který po starém webu uklidí: smaže keše, odregistruje se a obnoví otevřená okna */
@@ -330,6 +331,7 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   if (obec.moduly.kviz) await app.register(kvizModul);
   if (obec.moduly.podatelna) await app.register(podatelnaModul);
   if (obec.moduly.odstavky) await app.register(odstavkyModul, { planovac: volby.planovac !== false });
+  if (obec.moduly.infokanal) await app.register(vystrahyModul, { planovac: volby.planovac !== false });
 
   app.addHook('onClose', async () => {
     if (!volby.db) await db.destroy();

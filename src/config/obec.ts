@@ -12,6 +12,11 @@ const AdresaSchema = z.object({
 // odkaz z dlaždice statistik: vlastní cesta (/…, ne //…) nebo https://
 const ODKAZ_FAKTA = /^(\/(?!\/)[^\s]*|https:\/\/[^\s]+)$/;
 
+/** zdroj automatických výstrah: chybí = vypnutý; prázdný klíč v YAML („cez:“) = zapnutý s výchozím nastavením */
+function zdrojVystrah<T extends z.ZodType>(s: T) {
+  return z.preprocess((v) => (v === null ? {} : v), s.optional());
+}
+
 export const ObecSchema = z.object({
   obec: z.object({
     nazev: z.string().min(1),
@@ -183,6 +188,25 @@ export const ObecSchema = z.object({
       kontakt: z.string().default('/kontakt'),
       // nepovinné: stránka se zásadami cookies (prázdné = odkaz se v patičce nezobrazí)
       zasady_cookies: z.string().default(''),
+    })
+    .prefault({}),
+  // automatické výstrahy infokanálu; zdroj, který v profilu chybí, je vypnutý (vypínač pro celé: env VYSTRAHY=0)
+  vystrahy: z
+    .object({
+      // výstrahy ČHMÚ (CAP) pro obvod obce s rozšířenou působností; orp prázdné = obec.orp_cisorp
+      chmu: zdrojVystrah(
+        z.object({
+          orp: z.string().regex(/^\d*$/, 'kód ORP jsou jen číslice').default(''),
+          // jak se oblast jmenuje v textu e-mailu („Turnovsko“); prázdné = „ORP <kód>“
+          oblast: z.string().default(''),
+        }),
+      ),
+      // plánované odstávky elektřiny ČEZ (stejná data jako modul odstavky); kod_obce prázdné = odstavky/obec
+      cez: zdrojVystrah(
+        z.object({ kod_obce: z.string().regex(/^\d*$/, 'kód obce jsou jen číslice').default('') }),
+      ),
+      // výpadky vody SčVK (plánované odstávky a havárie); obec = název obce, jak ho píše scvk.cz
+      scvk: zdrojVystrah(z.object({ obec: z.string().default('') })),
     })
     .prefault({}),
 });

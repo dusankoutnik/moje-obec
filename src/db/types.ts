@@ -536,4 +536,40 @@ export interface Database {
   ik_optouty: IkOptoutyTable;
   ik_hlaseni: IkHlaseniTable;
   ik_prijemci: IkPrijemciTable;
+  ik_vystrahy: IkVystrahyTable;
+  ik_vystrahy_zdroje: IkVystrahyZdrojeTable;
+}
+
+// ---- automatické výstrahy infokanálu (migrace 0019) ----
+export type ZdrojVystrahy = 'chmu' | 'cez' | 'scvk';
+export type StavVystrahy = 'ceka' | 'odeslano' | 'zahozeno' | 'preskoceno';
+export interface IkVystrahyTable {
+  id: Generated<number>;
+  zdroj: ZdrojVystrahy;
+  externi_id: string;
+  stupen: string | null;
+  titulek: string;
+  plati_od: TimestampNullable;
+  plati_do: TimestampNullable;
+  sms_text: string | null;
+  email_predmet: string | null;
+  email_text: string | null;
+  detail: JSONColumnType<Record<string, unknown>>;
+  stav: StavVystrahy;
+  hlaseni_id: string | null;
+  pripomenuto_at: TimestampNullable;
+  zruseno_at: TimestampNullable;
+  rozhodl_id: string | null;
+  rozhodnuto_at: TimestampNullable;
+  vytvoreno_at: TimestampGenerated;
+}
+export type Vystraha = Selectable<IkVystrahyTable>;
+export interface IkVystrahyZdrojeTable {
+  zdroj: string;
+  posledni_ok: TimestampNullable;
+  posledni_pokus: TimestampNullable;
+  posledni_chyba: string | null;
+  chyba_od: TimestampNullable;
+  alarm_at: TimestampNullable;
+  razitko: string | null;
 }
