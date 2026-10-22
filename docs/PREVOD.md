@@ -112,3 +112,5 @@ konzistentní snímek (`better-sqlite3 .backup()`), ne `cp` samotného `.db`.
 3. Webhooky SMSGate přepojit na platformu: `node dist/scripts/smsgate-webhook.js` (výpis) →
    `--zapsat` → starý webhook VlastiKanálu `--smazat <id>`.
 4. `texty.sms_prefix` v `obec.yml` (dřív `VLASTIKANAL: `).
+
+Výstrahy: tabulka `vystrahy` → `ik_vystrahy` (viz `src/moduly/infokanal/prevod.ts`).
