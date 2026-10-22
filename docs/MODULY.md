@@ -181,6 +181,29 @@ jako **přístupný text** místo obrázkového banneru `ppo.cezdistribuce.cz/ov
   bezstavy.cz pokrývá jen ČEZ. Jiný distributor = nový převodník v `cez.ts`-stylu, pokud bude mít použitelný zdroj.
 - **Navazuje:** automatické rozesílání odstávek infokanálem (P1 výše) může použít stejný převod `prevedOdpoved()`.
 
+## Obecní web — akce propojené s rezervacemi (hotovo 22. 10. 2026)
+
+Návrh a rozhodnutí: `docs/AKCE-PROPOJENI.md`. Jedna akce = jeden záznam obsahu typu `akce`; termín v rezervačním
+systému (`REZERVACE_KALENDAR_URL`, položky `r<id>`, série `s<id>`, předprodej `e<id>`) se k ní připojí přes
+`web_obsah.rezervace_ref`.
+
+- **Synchronizace** (`src/moduly/web/akce-propojeni.ts`, cron à 10 min + při otevření správy): veřejný termín bez
+  propojení → návrh propojení s podobnou akcí ve stejný den, jinak **koncept** akce (nikdy zveřejněný; vypíná
+  `web.akce_koncepty: false`). Série = jeden koncept.
+- **Správa → Akce → Akce ke zpracování** (`/sprava/web/akce/zpracovani`, role `web`, počet na dashboardu): nové
+  koncepty (Doplnit a zveřejnit / propojit s existující / Jen v kalendáři), návrhy propojení, změněné termíny
+  (Převzít termín / Ponechat), zrušené rezervace (Odpojit), seznam termínů „jen v kalendáři“. Vše s auditem
+  (`web.akce_propojeni`, `web.akce_ignorovani`, `web.akce_termin` …).
+- **Editor akce:** „Propojit s rezervací“, „Zobrazit i v Aktualitách jako pozvánku“ (`v_aktualitach`), kategorie.
+- **Veřejný web:** termín propojený se zveřejněnou akcí se v `/akce` a na úvodu neukazuje dvakrát (místo něj akce
+  z webu, u série s nejbližším výskytem); pozvánky jsou v `/aktuality`, v kategoriích i v RSS (řazení podle data
+  zveřejnění, odkaz `/akce/<slug>`).
+- **Rozesílka z příspěvku:** u zveřejněné aktuality i akce tlačítko „Rozeslat infokanálem“ (jen se zapnutým
+  infokanálem a rolí redaktor) → předvyplněné hlášení (`/infokanal/sprava/nove?obsah=<id>`), po odeslání
+  `web_obsah.hlaseni_id` a „Rozesláno …, N příjemcům“ v editoru.
+- **Statistiky úvodu:** každá dlaždice je odkaz; `obec.fakta[].odkaz` (cesta `/…` nebo `https://…`),
+  `web.stat_zpravy_kategorie` (slug kategorie zpráv za měsíc), pět nejbližších akcí.
+
 ## Rezervace + platby (P1)
 
 Z Rezervací Vlastibořic (nejrozsáhlejší modul): zdroje (sál, posilovna, hřiště, štěpkovač) s kalendářem denním/týdenním, kapacita > 1 (posilovna, počet osob), celý den vs. čas, opakování (série), schvalování úřadem (karty), ceník rezident/nerezident (rezervace úřadu = 0), ruční sleva; **měsíční vyúčtování** = „Výzva k úhradě“ (obec není plátce DPH, žádné faktury), PDF, QR platba (SPD), VS, veřejná stránka platby tokenem, potvrzení o zaplacení, splatnost 14 dní, cron 1. den měsíce, SMS fallback bez e-mailu; report pro účetní (rozpočtová skladba, pohledávky, CSV/PDF); předprodej vstupenek bez registrace (QR, storno 96 h, platba na místě, VIP, pokladní listina); evidence přístupů k zámkům (TTLock: PIN/otisk/čip/eKlíč) a proces aktivace posilovny; spolujízda (jízdy, poptávky, odběry, počítadlo); klimatizace/SMS připomínky topení. Zákon: 128/2000 Sb. (záměry), účetnictví obce. Doporučené pořadí: kalendář + schvalování → ceník → vyúčtování/QR → zámky → předprodej → spolujízda.

@@ -4,6 +4,18 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (akce propojené s rezervacemi)
+
+- Akce webu propojené s termíny rezervačního systému (`web_obsah.rezervace_ref`, migrace 0014): synchronizace
+  à 10 min zakládá koncepty akcí (`web.akce_koncepty`), nabízí propojení s podobnou akcí, hlídá změnu termínu
+  a zrušení; správa „Akce ke zpracování“ (`/sprava/web/akce/zpracovani`) s počtem na dashboardu.
+- Editor akce: propojení s rezervací, pozvánka v Aktualitách (`v_aktualitach`), kategorie.
+- Kalendář `/akce` a úvod: propojený termín se zobrazí jako akce webu (bez duplicity), série s nejbližším výskytem.
+- `/aktuality`, kategorie a RSS obsahují i pozvánky na akce.
+- Rozesílka zveřejněné aktuality nebo akce infokanálem s předvyplněným hlášením a evidencí u příspěvku.
+- Statistiky úvodu: každá dlaždice je odkaz (`obec.fakta[].odkaz`), zprávy podle `web.stat_zpravy_kategorie`,
+  pět nejbližších akcí.
+
 ### Přidáno
 
 - Modul **úřední deska**: dokumenty s přílohami, kategorie se zákonným minimem dní, automatické sejmutí podle data, archiv, RSS, předčasné sejmutí s důvodem, koš; rozpočtová dokumentace s nahrazováním starších dokumentů (`/rozpocet`); povinně zveřejňované informace podle vyhl. 515/2020 Sb. (`/povinne-informace`); „vyvěsit + rozeslat“ přes infokanál.

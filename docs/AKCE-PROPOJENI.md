@@ -51,3 +51,33 @@ Každé číslo je odkaz: fakta z `obec.yml` mají nepovinné `odkaz` (obyvatel 
 počet aktualit kategorie z `web.stat_zpravy_kategorie` (Vlastibořice `obecni-urad`) s odkazem na
 `/aktuality?kategorie=…`; nadmořská výška u Vlastibořic vypuštěna, místo ní **pět** nejbližších akcí,
 každá odkazuje na svou akci (`/akce/<slug>`, jinak na `/akce`).
+
+## Rozhodnutí při implementaci (22. 10. 2026)
+
+- **Migrace 0014** přidává kromě `rezervace_ref`, `v_aktualitach` a `web_akce_ignorovane` ještě sloupec
+  **`web_obsah.rezervace_termin`** — podpis termínu z rezervací v okamžiku propojení / převzetí. Změna se hlásí,
+  když se podpis v API liší od uloženého, ne když se liší od data akce: redaktor smí na webu záměrně uvést jiný čas
+  (např. otevření sálu). Tlačítko **„Ponechat termín na webu“** změnu vezme na vědomí (uloží nový podpis).
+- **Série:** podpis = den v týdnu + čas (nejbližší výskyt se posouvá každý týden, to změna není). V kalendáři
+  a na úvodu se propojená zveřejněná akce série ukazuje s nejbližším výskytem a textem opakování z rezervací, na
+  detailu akce taky; mezi proběhlými se neukazuje, dokud série v rezervacích běží.
+- **Jednorázová propojená akce** se v kalendáři ukazuje s termínem z webu (rozhoduje redaktor).
+- **Zrušená rezervace** = propojený termín v API chybí, zdroj při posledním stažení odpověděl a akce ještě
+  neproběhla. Nabízí se „Odpojit od rezervace“; akce sama se nikdy nemaže ani neskrývá.
+- **Koncepty ze synchronizace** (zdroj `rezervace`, nikdy nezveřejněné) si změnu termínu v rezervacích převezmou
+  samy — na webu ještě nejsou. Koncept smazaný ručně do koše se znovu nezakládá (odkaz zůstává u záznamu v koši);
+  při obnově z koše, kdy termín mezitím propojila jiná akce, se obnovená akce odpojí. „Jen v kalendáři“ jde ve
+  správě vrátit („zpracovat znovu“).
+- **Propojení v editoru** platí hned po uložení (i u rozpracované změny zveřejněné akce) — není součástí konceptu
+  ani revizí; zatržítko „Zobrazit i v Aktualitách“ součástí konceptu je (projeví se až zveřejněním). Akce dostala
+  v editoru i výběr **kategorie** (pozvánka se řadí pod ni v Aktualitách).
+- **Shoda pro návrh propojení:** stejný den (u vícedenní akce kterýkoli její den) a buď společné slovo názvu
+  (aspoň 4 znaky, bez diakritiky) / jeden název obsahuje druhý, nebo překryv času (jen když obě mají konkrétní
+  čas; bez konce se počítá 2 h). Celodenní termín se páruje jen podle názvu.
+- **Vypnuté koncepty** (`web.akce_koncepty: false`): termíny bez akce se ve správě vypíšou s tlačítky „Založit
+  akci“ a „Jen v kalendáři“.
+- **Rozesílka z příspěvku:** kategorie akce = první existující ze slugů `pozvanky`, `kultura`, `hlaseni`;
+  aktuality `hlaseni`. Pole pro článek se při rozesílce příspěvku nezobrazují (článek už je). Při opakované
+  rozesílce se u příspěvku zapíše poslední hlášení. SMS se zkracuje na 1 SMS i s předponou obce a odkazem.
+- **Statistiky:** popisek zpráv za měsíc zůstal „zpráv za poslední měsíc“ i při kategorii (cíl odkazu ukazuje,
+  o jakou kategorii jde). Dlaždice je jeden odkaz `<a>` s popiskem i číslem (seznam `<ul>` místo `<dl>`).
