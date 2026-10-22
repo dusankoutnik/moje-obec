@@ -17,6 +17,8 @@ export interface OdstavkyNastaveni {
   kodObce: string;
   /** stránka ČEZ Distribuce pro obec (odkaz z banneru ČEZ), jinak obecná stránka o odstávkách */
   odkazCez: string;
+  /** je nastavený obrázkový banner ČEZ (podává se z /odstavky/banner.png) */
+  banner?: boolean;
   /** User-Agent dotazů (identifikace instalace — API je neoficiální, chováme se slušně) */
   userAgent: string;
 }
@@ -43,6 +45,7 @@ export interface StavOdstavek {
   posledniUspech: Date | null;
   chyba: string | null;
   odkazCez: string;
+  banner: boolean;
 }
 
 const PRAZDNE: Ulozeno = {
@@ -181,6 +184,7 @@ export class OdstavkySluzba {
       posledniUspech: naDatum(d.posledniUspech),
       chyba: d.chyba,
       odkazCez: this.nastaveni.odkazCez,
+      banner: !!this.nastaveni.banner,
     };
   }
 }

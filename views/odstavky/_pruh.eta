@@ -1,6 +1,10 @@
 <% /* karta na titulce — vykresluje se jen, když je nějaká budoucí nebo probíhající odstávka */ %>
 <% const s = it.odstavky %>
 <section class="panel odstavky-pruh" aria-labelledby="h-odstavky">
+  <% const prvni = s.aktualni.find(function (o) { return !o.zruseno }) %>
+  <% if (s.banner && prvni) { %>
+  <a class="odst-banner" href="<%= s.odkazCez %>" rel="noopener noreferrer"><img src="/odstavky/banner.png" width="250" height="250" alt="ČEZ Distribuce: plánovaná odstávka ve vaší obci, <%= it.terminOdstavky(prvni.od, prvni.do) %>. Více informací na webu ČEZ Distribuce."></a>
+  <% } %>
   <h2 id="h-odstavky"><span aria-hidden="true">⚡ </span><%= it.t('odstavky.titulek') %></h2>
   <ul class="odst-seznam">
     <% s.aktualni.forEach(function (o) { %><%~ include('/odstavky/_polozka', Object.assign({}, it, { o: o, h: 'h3' })) %><% }) %>

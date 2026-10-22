@@ -28,11 +28,39 @@ async function odstavkyModul(app: FastifyInstance, volby: { planovac: boolean })
     {
       kodObce,
       odkazCez: app.obec.odstavky.cez.odkaz || CEZ_WEB,
+      banner: !!app.obec.odstavky.cez.banner,
       userAgent: `Moje obec 2.0 (${app.env.BASE_URL})`,
     },
     app.log,
   );
   app.decorate('odstavky', sluzba);
+
+  // Obrázkový banner ČEZ: stáhne ho server (keš 1 h, při chybě poslední známý), návštěvník nic od ČEZ nenačítá.
+  // Jen když je nějaká aktuální odstávka — jinak 404 a šablona ho nevykreslí.
+  const bannerUrl = app.obec.odstavky.cez.banner;
+  let bannerKes: { data: Buffer; typ: string; at: number } | null = null;
+  app.get('/odstavky/banner.png', async (_req, reply) => {
+    if (!bannerUrl) return reply.code(404).send();
+    const stav = await sluzba.stav();
+    if (!stav.aktualni.some((o) => !o.zruseno)) return reply.code(404).send();
+    if (!bannerKes || Date.now() - bannerKes.at > 3600_000) {
+      try {
+        const r = await fetch(bannerUrl, {
+          headers: { 'user-agent': `Moje obec 2.0 (${app.env.BASE_URL})` },
+          signal: AbortSignal.timeout(10_000),
+        });
+        const typ = r.headers.get('content-type') ?? '';
+        const data = Buffer.from(await r.arrayBuffer());
+        if (r.ok && /^image\/(png|jpeg|webp|gif)/.test(typ) && data.length < 1_000_000)
+          bannerKes = { data, typ, at: Date.now() };
+        else app.log.warn({ status: r.status, typ }, 'banner ČEZ: neočekávaná odpověď');
+      } catch (e) {
+        app.log.warn({ err: e }, 'banner ČEZ: stažení selhalo');
+      }
+    }
+    if (!bannerKes) return reply.code(404).send();
+    return reply.header('cache-control', 'public, max-age=900').type(bannerKes.typ).send(bannerKes.data);
+  });
 
   app.get('/odstavky', async (_req, reply) => {
     return reply.view('odstavky/index', {

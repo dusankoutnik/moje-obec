@@ -2884,6 +2884,29 @@ button.kviz-odpoved:active {
   margin: 0 0 32px;
   border-left: 6px solid var(--akcent);
 }
+.odstavky-pruh::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+.odst-banner {
+  float: right;
+  margin: 0 0 12px 20px;
+  line-height: 0;
+}
+.odst-banner img {
+  width: 200px;
+  height: auto;
+  border-radius: 6px;
+}
+@media (max-width: 600px) {
+  .odst-banner {
+    float: none;
+    display: block;
+    margin: 0 0 12px;
+    text-align: center;
+  }
+}
 .odstavky-pruh h2,
 .odstavky-stranka h2 {
   color: var(--primarni);

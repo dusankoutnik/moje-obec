@@ -125,6 +125,12 @@ export const ObecSchema = z.object({
             .string()
             .regex(/^(https:\/\/\S+)?$/, 'odkaz musí začínat https://')
             .default(''),
+          // obrázkový banner ČEZ pro obce (…/v1/<klíč>/b/250); server ho stáhne a podá z /odstavky/banner.png,
+          // prohlížeč návštěvníka nic od ČEZ nenačítá. Prázdné = jen textová karta.
+          banner: z
+            .string()
+            .regex(/^(https:\/\/\S+)?$/, 'banner musí začínat https://')
+            .default(''),
         })
         .prefault({}),
     })
