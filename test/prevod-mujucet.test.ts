@@ -390,7 +390,13 @@ describe('interní API uživatelů', () => {
       body: JSON.stringify({ rezident: true, kdo: 3 }),
     });
     expect(ok.status).toBe(200);
-    expect(await ok.json()).toMatchObject({ ok: true, cislo: 2, rezident: true, rezident_posouzen_by: 3, blokovan: false });
+    expect(await ok.json()).toMatchObject({
+      ok: true,
+      cislo: 2,
+      rezident: true,
+      rezident_posouzen_by: 3,
+      blokovan: false,
+    });
     const a = await t.db
       .selectFrom('audit_log')
       .selectAll()

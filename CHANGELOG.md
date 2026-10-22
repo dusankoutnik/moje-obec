@@ -4,6 +4,17 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (účty z MůjÚčtu, 22. 10. 2026)
+
+- Migrace 0017: `uzivatele.cislo` (číslo účtu = id v MůjÚčtu, sekvence pro nové), `rezident_posouzen_at/_by`,
+  `navic jsonb`; `oidc_klienti.auth_metoda`.
+- Claim `mujucet_id` ve scope `obec`; OIDC klienti `rezervace` a `eknihy` z env (`OIDC_REZERVACE_SECRET`,
+  `OIDC_EKNIHY_SECRET`, `OIDC_KLIENTI`), první strana bez souhlasu.
+- end_session (odhlášení z aplikace) ukončí i sezení platformy.
+- Interní API `/api/interni/uzivatel/:cislo`, `/api/interni/uzivatele?role=`, `POST …/rezident` (`INTERNI_API_SECRET`).
+- Převodní skript `src/scripts/prevod-mujucet.ts` (`--nanecisto`, `--anonymizovat`, `--sloucit-telefonem`,
+  `--redaktor-bez-webu`); hesla MůjÚčtu (scrypt N=16384) se ověří nativně a po přihlášení přepočítají. Návod `docs/PREVOD.md`.
+
 ### Přidáno (text dokumentů a vyhledávání v nich)
 
 - Text nahraných dokumentů pro vyhledávání (migrace 0015, `soubory_text`): textová vrstva PDF (`pdftotext`),
