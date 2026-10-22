@@ -94,7 +94,10 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
         popisek: t('web.stat_deska'),
         odkaz: '/uredni-deska',
       });
-    if (app.obec.moduly.infokanal) {
+    if (
+      app.obec.moduly.infokanal &&
+      (!app.hasDecorator('moduly') || (await app.moduly.zapnuto('infokanal')))
+    ) {
       const n = (await app.infokanal.statistiky()).celkem;
       if (n > 0)
         statistiky.push({

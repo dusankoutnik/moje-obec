@@ -116,6 +116,11 @@ export const ObecSchema = z.object({
       podatelna: z.boolean().default(false),
       // plánované odstávky elektřiny ČEZ Distribuce na titulce a /odstavky (jen obce na území ČEZ Distribuce)
       odstavky: z.boolean().default(false),
+      // části rezervačního systému (aplikace za proxy /rezervace): předprodej vstupenek a spolujízda
+      predprodej: z.boolean().default(true),
+      spolujizda: z.boolean().default(true),
+      // knihovna e-knih (aplikace za proxy /eknihy); starší klíč `knihovna` se bere jako totéž
+      eknihy: z.boolean().default(false),
     })
     .prefault({}),
   // obecní web (modul web)

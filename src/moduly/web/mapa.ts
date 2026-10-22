@@ -109,7 +109,7 @@ async function webMapa(app: FastifyInstance) {
       .where('smazano_at', 'is', null)
       .execute();
     polozky.push(...galerie.map((g) => ({ url: `/galerie/${g.slug}`, lastmod: g.upraveno_at })));
-    const m = app.obec.moduly;
+    const m = app.hasDecorator('moduly') ? (await app.moduly.obecProSablony()).moduly : app.obec.moduly;
     polozky.push(
       ...['/aktuality', '/akce', '/galerie', '/videa', '/dokumenty', '/dotace'].map((url) => ({ url })),
     );
@@ -144,7 +144,7 @@ async function webMapa(app: FastifyInstance) {
       .orderBy('titulek')
       .execute();
     const { menu, mimoMenu } = stromMapy(radky);
-    const m = app.obec.moduly;
+    const m = app.hasDecorator('moduly') ? (await app.moduly.obecProSablony()).moduly : app.obec.moduly;
     const sluzby: { titulek: string; url: string }[] = [
       { titulek: t('web.aktuality'), url: '/aktuality' },
       { titulek: t('web.akce'), url: '/akce' },

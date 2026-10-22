@@ -4,7 +4,7 @@ import { sql } from 'kysely';
 import type { FastifyInstance } from 'fastify';
 import { vytvorApp } from '../src/app.js';
 import { nactiEnv } from '../src/config/env.js';
-import { obecZObjektu } from '../src/config/obec.js';
+import { obecZObjektu, type ObecProfil } from '../src/config/obec.js';
 import { vytvorDb, type Db } from '../src/db/index.js';
 import { KonzoleSms } from '../src/lib/sms/konzole.js';
 import { KonzoleMail } from '../src/lib/mail.js';
@@ -77,7 +77,9 @@ export async function vycistiDb(db: Db, url = TEST_DB_URL) {
   await sql`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`.execute(db);
 }
 
-export async function spustTestApp(volby: { vycistit?: boolean } = {}): Promise<TestApp> {
+export async function spustTestApp(
+  volby: { vycistit?: boolean; env?: Record<string, string>; obec?: ObecProfil } = {},
+): Promise<TestApp> {
   const port = await volnyPort();
   const base = `http://127.0.0.1:${port}`;
   const env = nactiEnv({
@@ -97,13 +99,22 @@ export async function spustTestApp(volby: { vycistit?: boolean } = {}): Promise<
     IK_EMAIL_INTERVAL_MS: '1',
     // kvíz: malý testovací balík (vymyšlená data), ne skutečná banka z kviz-otazky/
     KVIZ_VEREJNE: new URL('./fixtures/kviz', import.meta.url).pathname,
+    ...volby.env,
   });
   const db = vytvorDb(TEST_DB_URL, 4);
   if (volby.vycistit !== false) await vycistiDb(db);
   const sms = new KonzoleSms();
   const mail = new KonzoleMail();
   const log = pino({ level: process.env.LADENI ? 'error' : 'silent' }) as unknown as FastifyBaseLogger;
-  const app = await vytvorApp({ env, obec: testovaciObec, db, sms, mail, log, planovac: false });
+  const app = await vytvorApp({
+    env,
+    obec: volby.obec ?? testovaciObec,
+    db,
+    sms,
+    mail,
+    log,
+    planovac: false,
+  });
   await app.listen({ port, host: '127.0.0.1' });
   return {
     app,
