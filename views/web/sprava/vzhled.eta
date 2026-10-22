@@ -120,6 +120,14 @@
       <label class="zatrzitko"><input type="radio" name="pozadi_rezim" value="<%= r %>" <%= it.v.pozadiRezim === r ? 'checked' : '' %>> <%= it.t('web.pozadi_' + r) %></label>
       <% }) %>
     </div>
+    <p class="vh" id="efekt-h"><%= it.t('web.efekt_menu') %></p>
+    <div role="radiogroup" aria-labelledby="efekt-h" aria-describedby="efekt-n">
+      <strong aria-hidden="true"><%= it.t('web.efekt_menu') %></strong>
+      <% ;['odlesk', 'hladina', 'dychani', 'zadny'].forEach(function (e) { %>
+      <label class="zatrzitko"><input type="radio" name="efekt_menu" value="<%= e %>" <%= it.v.efektMenu === e ? 'checked' : '' %>> <%= it.t('web.efekt_' + e) %></label>
+      <% }) %>
+    </div>
+    <p class="napoveda" id="efekt-n"><%= it.t('web.efekt_napoveda') %></p>
   </fieldset>
 
   <fieldset>

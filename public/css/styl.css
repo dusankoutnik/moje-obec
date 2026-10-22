@@ -1533,22 +1533,73 @@ body.web {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   transition: transform 0.18s ease;
 }
+/* efekty tlačítek menu — volí se ve Správě → Vzhled (třída efekt-* na <body>) */
 .pilulka > ul > li > a::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.28) 50%, transparent 65%);
-  transform: translateX(-130%);
-  animation: shimmer var(--d, 7s) ease-in-out var(--o, 0s) infinite;
   pointer-events: none;
 }
-@keyframes shimmer {
+/* decentní odlesk: úzký slabý pruh, dlouhé pauzy */
+.efekt-odlesk .pilulka > ul > li > a::after {
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.13) 50%, transparent 58%);
+  transform: translateX(-130%);
+  animation: odlesk calc(var(--d, 7s) * 2) ease-in-out var(--o, 0s) infinite;
+}
+@keyframes odlesk {
   0%,
-  72% {
+  82% {
     transform: translateX(-130%);
   }
   100% {
     transform: translateX(130%);
+  }
+}
+/* vodní hladina: dvě vrstvy měkkého světla, které se pomalu přelévají proti sobě */
+.efekt-hladina .pilulka > ul > li > a::after {
+  background:
+    radial-gradient(60% 90% at 30% 110%, rgba(255, 255, 255, 0.16), transparent 70%),
+    radial-gradient(55% 80% at 70% -10%, rgba(255, 255, 255, 0.11), transparent 70%),
+    repeating-linear-gradient(172deg, transparent 0 7px, rgba(255, 255, 255, 0.045) 7px 9px);
+  background-size:
+    220% 100%,
+    240% 100%,
+    100% 260%;
+  animation: hladina calc(var(--d, 7s) * 1.6) ease-in-out var(--o, 0s) infinite alternate;
+}
+@keyframes hladina {
+  0% {
+    background-position:
+      0% 50%,
+      100% 50%,
+      0 0;
+  }
+  50% {
+    background-position:
+      60% 40%,
+      40% 60%,
+      0 30%;
+  }
+  100% {
+    background-position:
+      100% 55%,
+      0% 45%,
+      0 60%;
+  }
+}
+/* dýchání: velmi pomalé zjasnění a ztmavnutí */
+.efekt-dychani .pilulka > ul > li > a::after {
+  background: rgba(255, 255, 255, 0.09);
+  opacity: 0;
+  animation: dychani calc(var(--d, 7s) * 1.2) ease-in-out var(--o, 0s) infinite;
+}
+@keyframes dychani {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
   }
 }
 .pilulka > ul > li > a:hover,

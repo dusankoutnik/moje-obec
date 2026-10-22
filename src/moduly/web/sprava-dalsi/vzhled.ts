@@ -16,7 +16,7 @@ import {
   rodinaRezu,
   slozeniSady,
 } from '../pisma.js';
-import { STYLY_NAZVU, type NazevStyl, type UlozenyVzhled } from '../vzhled.js';
+import { EFEKTY_MENU, STYLY_NAZVU, type EfektMenu, type NazevStyl, type UlozenyVzhled } from '../vzhled.js';
 import type { WebSluzby } from '../index.js';
 import { kontextSpravy, type Telo, jeden, vice } from './spolecne.js';
 
@@ -97,6 +97,8 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
     const rezim = jeden(b.pozadi_rezim);
     if (rezim === 'pevne' || rezim === 'nahodne' || rezim === 'stridani') z.pozadi_rezim = rezim;
     if (b.pozadi_pevne !== undefined) z.pozadi_pevne = jeden(b.pozadi_pevne) || null;
+    const efekt = jeden(b.efekt_menu);
+    if ((EFEKTY_MENU as string[]).includes(efekt)) z.efekt_menu = efekt as EfektMenu;
     if (b.motto !== undefined) z.motto = jeden(b.motto).slice(0, 200);
     if (b.nazev !== undefined) z.nazev = jeden(b.nazev).trim().slice(0, 60);
     const styl = jeden(b.nazev_styl);

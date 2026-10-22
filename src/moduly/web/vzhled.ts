@@ -17,6 +17,9 @@ import {
 } from './pisma.js';
 
 export type RezimPozadi = 'pevne' | 'nahodne' | 'stridani';
+/** efekt na tlačítkách hlavního menu (Správa → Vzhled); při „omezit pohyb“ v systému se nehýbe nic */
+export type EfektMenu = 'odlesk' | 'hladina' | 'dychani' | 'zadny';
+export const EFEKTY_MENU: EfektMenu[] = ['odlesk', 'hladina', 'dychani', 'zadny'];
 
 export interface UlozenyVzhled {
   barva?: string;
@@ -38,6 +41,7 @@ export interface UlozenyVzhled {
   pismo_titulek?: string;
   pozadi_rezim?: RezimPozadi;
   pozadi_pevne?: string | null;
+  efekt_menu?: EfektMenu;
   predchozi?: Omit<UlozenyVzhled, 'predchozi'> | null;
 }
 
@@ -60,6 +64,7 @@ export interface Vzhled {
   pozadi: string[];
   pozadiRezim: RezimPozadi;
   pozadiPevne: string | null;
+  efektMenu: EfektMenu;
   /** CSS proměnné barev a písma + @font-face (vkládá se do <head>) */
   css: string;
   ulozeno: UlozenyVzhled;
@@ -120,6 +125,7 @@ export class VzhledSluzba {
       pozadi: pozadi.map((id) => url(id)),
       pozadiRezim: u.pozadi_rezim ?? 'stridani',
       pozadiPevne: u.pozadi_pevne && pozadi.includes(u.pozadi_pevne) ? url(u.pozadi_pevne) : null,
+      efektMenu: u.efekt_menu && EFEKTY_MENU.includes(u.efekt_menu) ? u.efekt_menu : 'odlesk',
       css: fontFace([pismo]) + cssPisma(pismo) + barvyCss,
       ulozeno: u,
     };

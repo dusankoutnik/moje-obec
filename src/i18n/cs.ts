@@ -856,6 +856,13 @@ export const cs = {
     pozadi_stridani: 'Střídat — pomalu se prolínají (každých 25 s)',
     pozadi_nahodne: 'Náhodná fotka při každém načtení stránky',
     pozadi_pevne: 'Pořád stejná (vybraná výše)',
+    efekt_menu: 'Efekt na tlačítkách menu',
+    efekt_odlesk: 'Decentní odlesk — občas přes tlačítko přejde jemný pruh světla',
+    efekt_hladina: 'Vodní hladina — pomalu se vlnící světlo jako odraz vody',
+    efekt_dychani: 'Dýchání — tlačítka velmi zvolna zjasňují a tmavnou',
+    efekt_zadny: 'Bez efektu',
+    efekt_napoveda:
+      'Návštěvníci, kteří mají v počítači nebo telefonu zapnuté „omezit pohyb“, uvidí vždy klidná tlačítka.',
     pozadi_alt: 'Fotografie obce {obec}',
     znak_ikona: 'Ze znaku se vytváří i ikona v záložce prohlížeče.',
     vzhled_nahled: 'Náhled celého webu',
