@@ -31,6 +31,7 @@
 
   skupina('Rezervace a služby', [
     rezFinance ? { ikona: '🛡️', nazev: t('sprava.admin_rezervaci'), href: '/rezervace/admin', popis: 'Úvod administrace rezervací se všemi sekcemi.' } : null,
+    rezSpravce ? { ikona: '🧰', nazev: 'Věci a prostory', href: '/rezervace/admin/zdroje', popis: 'Co se půjčuje: přidat, přejmenovat, kusy, skrýt.' } : null,
     rezSpravce ? { ikona: '📅', nazev: 'Rezervace', href: '/rezervace/admin/rezervace', popis: 'Přehled a úpravy rezervací.', cislo: S ? S.future + ' nadcházejících' : '' } : null,
     rezSpravce ? { ikona: '👥', nazev: 'Uživatelé rezervací', href: '/rezervace/admin/uzivatele', popis: 'Rezidenti, posilovna, zámky a čipy.', cislo: S ? S.users + ' účtů' : '' } : null,
     rezSpravce && A.spolujizda ? { ikona: '🚗', nazev: 'Spolujízda', href: '/rezervace/admin/spolujizda', popis: 'Jízdy a poptávky.', cislo: S ? S.trips + ' nadcházejících jízd' : '' } : null,
