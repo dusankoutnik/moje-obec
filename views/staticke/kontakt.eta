@@ -2,6 +2,7 @@
 <% var o = it.obec.obec; %>
 <h1><%= it.titulek %><%~ include('/web/_edit', { id: it.doplnek && it.doplnek.id, muzeEditovat: it.muzeEditovatWeb, t: it.t }) %></h1>
 <div class="sloupce">
+<div class="kontakt-levy">
 <section class="karta">
   <h2><%= it.t('web.obecni_urad') %><% if (it.obec.moduly.web) { %><%~ include('/web/_edit', { href: '/sprava/web/kontakt', muzeEditovat: it.muzeEditovatWeb, t: it.t }) %><% } %></h2>
   <address class="adresa">
@@ -18,6 +19,31 @@
   <p><% o.kontakt.uredni_hodiny.split('\n').forEach(function (r) { %><%= r %><br><% }) %></p>
   <% } %>
 </section>
+<section class="karta kontakt-formular" id="zprava" aria-labelledby="zprava-h">
+  <h2 id="zprava-h">Napište nám</h2>
+  <p class="napoveda">Zpráva přijde starostce, místostarostovi a na e-mail obecního úřadu. Odpovíme na váš e-mail.</p>
+  <% var F = it.formular ? it.formular.f : {}, CH = it.formular ? it.formular.chyby : {}; %>
+  <% if (CH.odeslani) { %><div class="flash flash-chyba" role="alert"><%= CH.odeslani %></div><% } %>
+  <form method="post" action="/kontakt/zprava" class="formular" novalidate>
+    <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <div class="past" aria-hidden="true"><label for="kf-web">Nevyplňujte</label><input id="kf-web" name="web" tabindex="-1" autocomplete="off"></div>
+    <label for="kf-jmeno">Jméno a příjmení</label>
+    <input id="kf-jmeno" name="jmeno" required maxlength="120" autocomplete="name" value="<%= F.jmeno || (it.uzivatel ? ((it.uzivatel.jmeno || '') + ' ' + (it.uzivatel.prijmeni || '')).trim() : '') %>"<% if (CH.jmeno) { %> aria-invalid="true" aria-describedby="kf-jmeno-ch"<% } %>>
+    <% if (CH.jmeno) { %><p class="chyba-pole" id="kf-jmeno-ch"><%= CH.jmeno %></p><% } %>
+    <label for="kf-email">E-mail pro odpověď</label>
+    <input id="kf-email" name="email" type="email" required maxlength="160" autocomplete="email" value="<%= F.email || (it.uzivatel && it.uzivatel.email ? it.uzivatel.email : '') %>"<% if (CH.email) { %> aria-invalid="true" aria-describedby="kf-email-ch"<% } %>>
+    <% if (CH.email) { %><p class="chyba-pole" id="kf-email-ch"><%= CH.email %></p><% } %>
+    <label for="kf-telefon">Telefon <small>(nepovinné)</small></label>
+    <input id="kf-telefon" name="telefon" type="tel" maxlength="25" autocomplete="tel" value="<%= F.telefon || '' %>"<% if (CH.telefon) { %> aria-invalid="true" aria-describedby="kf-telefon-ch"<% } %>>
+    <% if (CH.telefon) { %><p class="chyba-pole" id="kf-telefon-ch"><%= CH.telefon %></p><% } %>
+    <label for="kf-zprava">Zpráva</label>
+    <textarea id="kf-zprava" name="zprava" rows="6" required maxlength="5000"<% if (CH.zprava) { %> aria-invalid="true" aria-describedby="kf-zprava-ch"<% } %>><%= F.zprava || '' %></textarea>
+    <% if (CH.zprava) { %><p class="chyba-pole" id="kf-zprava-ch"><%= CH.zprava %></p><% } %>
+    <p class="napoveda">Úřední podání (žádosti, odvolání) posílejte přes <a href="/podatelna">elektronickou podatelnu</a> nebo datovou schránku. Údaje z formuláře použijeme jen k vyřízení zprávy — <a href="/ochrana-osobnich-udaju">zásady ochrany osobních údajů</a>.</p>
+    <button class="tlacitko" type="submit">Odeslat zprávu</button>
+  </form>
+</section>
+</div>
 <% if (o.lide.length) { %>
 <section class="karta">
   <% var zo = o.zastupitelstvo; %>

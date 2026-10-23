@@ -183,7 +183,6 @@ describe('s aplikací', () => {
       '/uredni-deska',
       '/povinne-informace',
       '/prohlaseni-o-pristupnosti',
-      '/kontakt',
     ]) {
       const r = await fetch(t.base + url, { headers: { accept: 'text/html' } });
       expect(r.status, url).toBe(200);
@@ -191,6 +190,9 @@ describe('s aplikací', () => {
     }
     const ik = await fetch(`${t.base}/infokanal`, { headers: { accept: 'text/html' } });
     expect(ik.headers.getSetCookie().join(' ')).toContain('mo_sezeni');
+    // Kontakt má od 2026-10-23 kontaktní formulář (CSRF) → technická cookie sezení jako u podatelny
+    const ko = await fetch(`${t.base}/kontakt`, { headers: { accept: 'text/html' } });
+    expect(ko.headers.getSetCookie().join(' ')).toContain('mo_sezeni');
   });
 
   it('bezpečnostní hlavičky a robots.txt se sitemap', async () => {

@@ -2,6 +2,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { sql } from 'kysely';
 import { nactiDoplnek, presmerovaniDoplnku } from '../moduly/web/doplnky.js';
+import kontaktFormular from './kontakt-formular.js';
 
 export default async function webRoutes(app: FastifyInstance) {
   // titulní stránka: se zapnutým modulem „web“ obecní web, jinak rozcestník služeb platformy
@@ -56,10 +57,14 @@ export default async function webRoutes(app: FastifyInstance) {
       doplnek: await doplnek('/ochrana-osobnich-udaju'),
     }),
   );
-  app.get('/kontakt', async (_req, reply) =>
-    reply.view('staticke/kontakt', {
+  await app.register(kontaktFormular);
+  app.get('/kontakt', async (req, reply) => {
+    const formular = req.session?.kontaktFormular ?? null;
+    if (formular) req.session.kontaktFormular = null;
+    return reply.view('staticke/kontakt', {
       titulek: app.t('staticke.kontakt_titulek'),
       doplnek: await doplnek('/kontakt'),
-    }),
-  );
+      formular,
+    });
+  });
 }
