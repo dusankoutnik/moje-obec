@@ -4,6 +4,17 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (počasí, 23. 10. 2026)
+
+- Modul `pocasi` (`moduly.pocasi`, `pocasi: { lat, lon, nazev }` v `obec.yml`): předpověď MET Norway Locationforecast
+  2.0 compact stahovaná serverem (User-Agent s `BASE_URL`, souřadnice na 4 místa, `Expires` + nejvýš jednou za 30 min,
+  `If-Modified-Since`/304), uložená v `nastaveni.pocasi_met`; převod na 48 h po hodinách a 7 místních dní.
+- Dlaždice na titulce (`views/pocasi/_dlazdice.eta`) s výstrahou ČHMÚ z `ik_vystrahy`; umístění
+  `UlozenyVzhled.pocasi_umisteni` (`uvod` / `pod-odkazy` / `skryto`) ve Správě → Vzhled včetně náhledu.
+- Stránka `/pocasi` s inline SVG grafem teploty a srážek, tabulkou po 3 h a týdenní předpovědí.
+- Ikony `metno/weathericons` (MIT) v `public/img/pocasi/`, české popisy všech symbolů.
+- Počasí mezi Moduly obce (vypnutí za běhu), mimo `/api/moduly` (lišta aplikací).
+
 ### Přidáno (jednotná hlavička webu pro aplikace za proxy, 22. 10. 2026)
 
 - `GET /api/interni/hlavicka?modul=&aktivni=` (`INTERNI_API_SECRET`, bez `X-Forwarded-For`): celá stránka webu bez

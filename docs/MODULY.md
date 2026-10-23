@@ -284,6 +284,38 @@ jako **přístupný text** místo obrázkového banneru `ppo.cezdistribuce.cz/ov
   bezstavy.cz pokrývá jen ČEZ. Jiný distributor = nový převodník v `cez.ts`-stylu, pokud bude mít použitelný zdroj.
 - **Navazuje:** automatické rozesílání odstávek infokanálem (P1 výše) může použít stejný převod `prevedOdpoved()`.
 
+## Počasí — předpověď MET Norway (hotovo 23. 10. 2026)
+
+Modul `pocasi` (`src/moduly/pocasi/`, zapíná se `moduly.pocasi` + souřadnice `pocasi.lat/lon`, za běhu Správa → Moduly
+obce): dlaždice s předpovědí na titulce a stránka `/pocasi`.
+
+- **Zdroj:** MET Norway Locationforecast 2.0 `compact` (`api.met.no`, data yr.no, licence **CC BY 4.0** — uvedeno na
+  dlaždici i stránce s odkazem). Podmínky API dodržené: `User-Agent: ObecniWebOdVoltu/2.0 <BASE_URL>`, souřadnice na
+  4 desetinná místa, další dotaz až po `Expires` a nejdřív 30 min po posledním (cron :04/:34 + po startu),
+  `If-Modified-Since` → 304 bez přenosu dat; 403/429 = hodinová pauza. Poslední odpověď v `nastaveni.pocasi_met`
+  (přežije restart, žádná migrace); výpadek zdroje nic nesmaže, data starší než **12 h** se na titulce nezobrazují
+  (stránka `/pocasi` je ukáže s upozorněním).
+- **Převod (`met.ts`):** hodiny = body s `next_1_hours` od běžící hodiny (max. 48); dny = místní den Europe/Prague
+  (správně i 25hodinový den při konci letního času): max/min ze všech okamžitých teplot dne, součet srážek bez
+  dvojího započtení (hodinové, kde jsou, dál šestihodinové — blok se počítá ke dni svého začátku), nejvyšší vítr
+  (m/s → km/h), symbol = šestihodinový souhrn bodu nejblíž poledni (denní varianta ikony). Český popis pro všech
+  83 symbolů (`popisSymbolu`, „… a bouřky“).
+- **Ikony:** `metno/weathericons` (MIT) v `public/img/pocasi/` — soubory přejmenované bez překlepu MET
+  (`lightssleet…` → `lightsleet…`). Ikona má `alt` s českým popisem; u „Teď“, kde popis stojí hned vedle jako text,
+  je `alt=""` (nečte se dvakrát).
+- **Titulka:** dnes (aktuální teplota, popis, max/min, srážky, vítr) + zítra a pozítří (na telefonu jen zítra),
+  „Předpověď na 7 dní ›“, zdroj a čas aktualizace. **Výstraha ČHMÚ** (z `ik_vystrahy`, plní ji infokanál; platná teď
+  nebo začínající do 24 h, ne zahozená/přeskočená, nejzávažnější první) jako barevný pruh nahoře s odkazem na
+  `/infokanal/vystrahy`. Pozn.: žluté výstrahy čekající na rozhodnutí správce (`stav = ceka`) se v dlaždici ukazují,
+  na `/infokanal/vystrahy` ne (tam jsou jen rozeslané).
+- **Umístění = Správa → Obecní web → Vzhled** (`UlozenyVzhled.pocasi_umisteni`): `uvod` (skleněná dlaždice v úvodním
+  bloku pod statistikami; na telefonu, kde je úvod jen s názvem obce, se místo ní ukáže karta pod rychlými odkazy),
+  `pod-odkazy` (výchozí — bílá karta pod rychlými odkazy nad kartou odstávek), `skryto`. Funguje i Náhled ze sezení.
+- **Stránka `/pocasi`:** výstrahy ČHMÚ, teď, hodinový graf na 48 h (inline SVG: čára teploty, sloupce srážek, popisky
+  po 6 h a u extrémů, `role="img"` + `<title>/<desc>`), tabulka po 3 hodinách v `<details>`, 7 dní, zdroj.
+- **V `/api/moduly` není** (tvar zafixovaný s aplikacemi pro horní lištu — počasí je doplněk webu, ne služba).
+- **Testy:** `test/pocasi.test.ts` nad uloženou odpovědí `test/fixtures/met-compact.json` (Vlastibořice 23. 10. 2026).
+
 ## Obecní web — akce propojené s rezervacemi (hotovo 22. 10. 2026)
 
 Návrh a rozhodnutí: `docs/AKCE-PROPOJENI.md`. Jedna akce = jeden záznam obsahu typu `akce`; termín v rezervačním

@@ -2,6 +2,11 @@
 
 Přehled změn platformy Obecní web od Voltu 2.0 pro pilotní obec, nejnovější nahoře. Technické podrobnosti jsou v CHANGELOG.md.
 
+## 23. 10. 2026
+
+- **Počasí na webu:** na titulce je dlaždice s předpovědí na dnes, zítra a pozítří (na telefonu dnes a zítra) — teplota, srážky, vítr a obrázek počasí. Když ČHMÚ vydá pro naše území výstrahu, ukáže se nahoře v dlaždici jako barevný pruh. Na stránce **Počasí** je předpověď po hodinách na dva dny (graf i tabulka) a na celý týden. Předpověď je od norského meteorologického ústavu (yr.no) a obnovuje se každou půlhodinu; váš prohlížeč se přitom nikam cizím nepřipojuje.
+- Kde má dlaždice na titulce být (v úvodu s fotkou, pod rychlými odkazy, nebo vůbec), si správce vybere ve Správě → Vzhled a může si to předem prohlédnout v náhledu.
+
 ## 22. 10. 2026
 
 - **Rezervace a eKnihy vypadají jako web obce:** aplikace dostávají od webu hotovou hlavičku se znakem, hledáním, velikostí písma a účtem, stejné plovoucí menu, patičku, fotky obce v pozadí i bílou kartu obsahu. Pod hlavním menu mají své podmenu (na telefonu se posouvá do strany). Odhlášení v hlavičce odhlásí ze všeho najednou. Tmavá lišta „Moje obec“ nad aplikacemi tím končí — odkazy na služby jsou v hlavním menu pod položkou Moje obec.

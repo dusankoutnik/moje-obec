@@ -62,6 +62,24 @@ Modul zapnete v `obec.yml` (`moduly.kviz: true`). Veřejné otázky jsou v obraz
 (např. volume `./kviz:/app/kviz-instance:ro` + `KVIZ_BALIKY=/app/kviz-instance`). Balíky se načítají při startu;
 po úpravě souboru stačí Správa → Kvíz → „Načíst balíky znovu“.
 
+### Počasí — předpověď MET Norway
+
+Modul zapnete v `obec.yml` (`moduly.pocasi: true`) a doplníte souřadnice středu obce (WGS84, stupně):
+
+```yaml
+pocasi:
+  lat: 50.6186 # Vlastibořice
+  lon: 15.0519
+  nazev: '' # název v nadpisu; prázdné = obec.kratky_nazev
+```
+
+Předpověď stahuje server z `api.met.no` (Locationforecast 2.0 compact, data yr.no, licence CC BY 4.0) nejvýš jednou
+za 30 minut a podle hlavičky `Expires`; s `If-Modified-Since` (odpověď 304) se data znovu nepřenášejí. Do API se
+posílá jen zaokrouhlená poloha (4 desetinná místa) a `User-Agent` s adresou webu (`BASE_URL`) — podmínka MET Norway.
+Server musí smět ven na `https://api.met.no`. Prohlížeč návštěvníka nic od MET nenačítá (ikony jsou v `public/img/pocasi/`).
+Bez souřadnic se modul nezapne (varování v logu). Za běhu ho jde vypnout ve Správě → Moduly obce; umístění dlaždice
+na titulce (v úvodu / pod rychlými odkazy / skryto) se volí ve Správě → Obecní web → Vzhled.
+
 ### Text dokumentů (vyhledávání v PDF a Wordu)
 
 Obraz Dockeru obsahuje `poppler-utils` (pdftotext, pdftoppm, pdfinfo), `tesseract-ocr` s češtinou a angličtinou
