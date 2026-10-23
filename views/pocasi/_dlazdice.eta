@@ -4,7 +4,7 @@
 <% /* „nebe“ podle počasí teď (jako widget v telefonu): barva pozadí + jemná animace, jen dekorace */ %>
 <% const sym = h.symbol || 'cloudy', noc = /_night$/.test(sym) %>
 <% const nebe = /thunder/.test(sym) ? 'bourka' : /snow|sleet/.test(sym) ? 'snih' : /rain/.test(sym) ? 'dest' : /fog/.test(sym) ? 'mlha' : /^clearsky/.test(sym) ? (noc ? 'jasno-noc' : 'jasno-den') : /^(fair|partlycloudy)/.test(sym) ? (noc ? 'polojasno-noc' : 'polojasno-den') : 'zatazeno' %>
-<section class="pocasi-dlazdice pocasi-<%= it.varianta %> poc-nebe poc-nebe-<%= nebe %><%= it.trida ? ' ' + it.trida : '' %>" aria-labelledby="<%= it.idp %>-h">
+<section class="pocasi-dlazdice pocasi-<%= it.varianta %><%= it.trida ? ' ' + it.trida : '' %> poc-nebe poc-nebe-<%= nebe %>" aria-labelledby="<%= it.idp %>-h">
   <div class="poc-nebe-vrstva" aria-hidden="true"></div>
   <% if (it.pocasi.vystrahy.length) { %><%~ include('/pocasi/_vystraha', Object.assign({}, it, { v: it.pocasi.vystrahy[0] })) %><% } %>
   <h2 id="<%= it.idp %>-h"><%= it.t('pocasi.nadpis_dlazdice') %> <span class="poc-misto"><%= s.nazev %></span></h2>
