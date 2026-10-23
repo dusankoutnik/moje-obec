@@ -30,7 +30,6 @@
   ], !!it.sms);
 
   skupina('Rezervace a služby', [
-    rezFinance ? { ikona: '🛡️', nazev: t('sprava.admin_rezervaci'), href: '/rezervace/admin', popis: 'Úvod administrace rezervací se všemi sekcemi.' } : null,
     rezSpravce ? { ikona: '🧰', nazev: 'Věci a prostory', href: '/rezervace/admin/zdroje', popis: 'Co se půjčuje: přidat, přejmenovat, kusy, skrýt.' } : null,
     rezSpravce ? { ikona: '📅', nazev: 'Rezervace', href: '/rezervace/admin/rezervace', popis: 'Přehled a úpravy rezervací.', cislo: S ? S.future + ' nadcházejících' : '' } : null,
     rezSpravce ? { ikona: '👥', nazev: 'Uživatelé rezervací', href: '/rezervace/admin/uzivatele', popis: 'Rezidenti, posilovna, zámky a čipy.', cislo: S ? S.users + ' účtů' : '' } : null,
@@ -56,6 +55,7 @@
     jeAdmin ? { ikona: '🔌', nazev: 'API a integrace', href: '/sprava/api', popis: 'Tokeny pro programy, které na web samy zapisují.' } : null,
     jeAdmin ? { ikona: '🔐', nazev: t('sprava.klienti'), href: '/sprava/klienti', popis: t('sprava.klienti_text') } : null,
     it.jeSpravce ? { ikona: '🧾', nazev: t('sprava.audit'), href: '/sprava/audit', popis: t('sprava.audit_text') } : null,
+    jeAdmin && maRez ? { ikona: '📜', nazev: 'Audit rezervací', href: '/rezervace/admin/log', popis: 'Změny v rezervacích, zámcích a předprodeji.' } : null,
   ]);
 %>
 <h1><%= t('sprava.titulek') %></h1>
