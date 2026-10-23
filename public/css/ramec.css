@@ -872,43 +872,49 @@ body.zakladni .panel-hlavni {
 .podmenu-seznam {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 7px 0;
   flex: 1;
   min-width: 0;
   display: flex;
-  align-items: stretch;
-  gap: 2px;
+  align-items: center;
+  gap: 6px;
 }
 .podmenu-seznam > li {
   display: flex;
 }
+/* položky podmenu jako tlačítka hlavního menu, jen světle šedé (2026-10-23, Dušan) */
 .podmenu-seznam a,
 .podmenu-seznam button {
   display: inline-flex;
   align-items: center;
   gap: 0.3em;
-  padding: 10px 12px;
-  min-height: 48px;
+  padding: 0.45em 0.95em;
+  min-height: 40px;
   font: inherit;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
   white-space: nowrap;
-  background: none;
-  border: 0;
-  border-bottom: 3px solid transparent;
-  border-radius: 0;
+  background: #e6e9e6;
+  border: 1px solid #d3d8d4;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 .podmenu-seznam > li > a:hover,
-.podmenu-seznam > li > button:hover {
-  color: var(--primarni);
-  background: var(--svetla);
+.podmenu-seznam > li > button:hover,
+.podmenu-seznam > li > button[aria-expanded='true'] {
+  background: #d6dbd7;
+  color: var(--tmava, #132016);
 }
 .podmenu-seznam > li > a[aria-current='page'],
 .podmenu-seznam > li > button[aria-current] {
-  color: var(--primarni);
-  border-bottom-color: var(--primarni);
+  background: var(--primarni);
+  border-color: var(--primarni);
+  color: #fff;
 }
 .podmenu-seznam .ma-rozbal > button::after {
   content: '▾';
@@ -940,6 +946,10 @@ body.zakladni .panel-hlavni {
 }
 .podmenu-rozbal a {
   display: block;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  white-space: normal;
   padding: 0.5em 0.75em;
   min-height: 44px;
   border-radius: var(--radius);
