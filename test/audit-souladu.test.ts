@@ -294,5 +294,17 @@ describe('s aplikací', () => {
     expect(x).toContain(`<loc>${t.base}/uredni-deska</loc>`);
     expect(x).toContain(`<loc>${t.base}/povinne-informace</loc>`);
     expect(x).toContain(`<loc>${t.base}/aktuality</loc>`);
+    expect(x).toContain(`<loc>${t.base}/odstavky</loc>`);
+  });
+
+  it('kanonická adresa a Open Graph: bez dotazu a koncového lomítka, ne u noindex a chybových stránek', async () => {
+    const kanon = (html: string) => html.match(/<link rel="canonical" href="([^"]*)">/)?.[1];
+    const uvod = await (await fetch(`${t.base}/?p=1`)).text();
+    expect(kanon(uvod)).toBe(`${t.base}/`);
+    expect(uvod).toContain(`<meta property="og:url" content="${t.base}/">`);
+    expect(uvod).toContain('<meta property="og:locale" content="cs_CZ">');
+    expect(kanon(await (await fetch(`${t.base}/kontakt?utm_source=x`)).text())).toBe(`${t.base}/kontakt`);
+    expect(kanon(await (await fetch(`${t.base}/hledat?q=obec`)).text())).toBeUndefined();
+    expect(kanon(await (await fetch(`${t.base}/neexistuje-xyz`)).text())).toBeUndefined();
   });
 });

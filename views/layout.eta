@@ -4,7 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><%= it.titulek ? it.titulek + ' — ' : '' %><%= it.obec.obec.nazev %></title>
-<meta name="description" content="<%= it.popis || (it.vzhled && it.vzhled.motto) || it.t('uvod.perex') %>">
+<% var popis = it.popis || (it.vzhled && it.vzhled.motto) || it.t('uvod.perex'); %>
+<meta name="description" content="<%= popis %>">
+<% if (it.vzhled && !it.noindex && !it.status) { %>
+<% var kanon = it.baseUrl + (it.cesta === '/' ? '/' : it.cesta.replace(/\/$/, '')); var obrazek = it.vzhled.fotoUrl || it.vzhled.znakUrl; %>
+<link rel="canonical" href="<%= kanon %>">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:site_name" content="<%= it.obec.obec.nazev %>">
+<meta property="og:title" content="<%= it.titulek || it.obec.obec.nazev %>">
+<meta property="og:description" content="<%= popis %>">
+<meta property="og:url" content="<%= kanon %>">
+<% if (obrazek) { %><meta property="og:image" content="<%= obrazek.startsWith('/') ? it.baseUrl + obrazek : obrazek %>">
+<meta name="twitter:card" content="summary_large_image"><% } %>
+<% } %>
 <link rel="stylesheet" href="/static/css/styl.css?v=<%= it.v %>">
 <% if (it.vzhled) { %><style><%~ it.vzhled.css %></style><% } %>
 <% if (it.fontyNavic) { %><style><%~ it.fontyNavic %></style><% } %>
