@@ -1,0 +1,3 @@
+<% /* pruh s nejzávažnější výstrahou ČHMÚ (it.v), odkaz na výstrahy infokanálu */ %>
+<% const v = it.v %>
+<p class="poc-vystraha poc-v-<%= v.stupen %>"><a href="<%= it.obec.moduly.infokanal ? '/infokanal/vystrahy' : '/pocasi#h-vystrahy' %>"><strong><%= it.t('pocasi.vystraha_' + v.stupen) %>:</strong> <%= v.titulek %><% if (!v.plati && v.od) { %> · <%= it.t('pocasi.vystraha_od', { kdy: it.kratkyDen(v.od) + ' ' + it.fmtHodina(v.od) }) %><% } %><% if (v.do) { %> · <%= it.t('pocasi.vystraha_do', { kdy: it.kratkyDen(v.do) + ' ' + it.fmtHodina(v.do) }) %><% } %> <span aria-hidden="true">›</span></a></p>

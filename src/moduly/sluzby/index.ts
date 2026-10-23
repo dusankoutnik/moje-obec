@@ -65,13 +65,20 @@ export function vytvorModuly(app: FastifyInstance) {
 }
 
 export function popisyProApi(app: FastifyInstance, stav: StavModulu) {
-  return MODULY.map((m) => ({
+  return MODULY.filter((m) => !m.mimoListu).map((m) => ({
     klic: m.klic,
     nazev: nazevModulu(app, m.klic),
     url: m.url,
     zapnuto: stav[m.klic],
     ...(m.rodic ? { rodic: m.rodic } : {}),
   }));
+}
+
+/** stav jen modulů horní lišty (tvar /api/moduly zafixovaný s aplikacemi — doplňky webu jako počasí v něm nejsou) */
+function proListu(stav: StavModulu): Partial<StavModulu> {
+  const v: Partial<StavModulu> = {};
+  for (const m of MODULY) if (!m.mimoListu) v[m.klic] = stav[m.klic];
+  return v;
 }
 
 async function sluzbyModul(app: FastifyInstance) {
@@ -103,7 +110,7 @@ async function sluzbyModul(app: FastifyInstance) {
         .header('access-control-allow-origin', '*')
         // tvar zafixovaný s aplikacemi (lišta): všech šest modulů s příznakem `zapnuto`; Obec a Můj účet si
         // aplikace přidávají samy
-        .send({ moduly: popisyProApi(app, stav), zapnuto: stav })
+        .send({ moduly: popisyProApi(app, stav), zapnuto: proListu(stav) })
     );
   });
 
@@ -125,7 +132,14 @@ async function sluzbyModul(app: FastifyInstance) {
           : t('moduly_obce.nedostupny_platforma', { klic: m.klic }),
       nastaveno: nastaveno[m.klic],
       zapnuto: stav[m.klic],
-      sprava: m.klic === 'infokanal' ? '/infokanal/sprava' : m.klic === 'kviz' ? '/sprava/kviz' : null,
+      sprava:
+        m.klic === 'infokanal'
+          ? '/infokanal/sprava'
+          : m.klic === 'kviz'
+            ? '/sprava/kviz'
+            : m.klic === 'pocasi'
+              ? '/sprava/web/vzhled'
+              : null,
     }));
     return reply.view('sprava/moduly', { titulek: t('moduly_obce.titulek'), radky });
   });

@@ -2391,6 +2391,261 @@ button.kviz-odpoved:active {
   font-size: 0.88rem;
 }
 
+/* ---------- předpověď počasí (modul pocasi) ---------- */
+.pocasi-dlazdice {
+  text-align: left;
+}
+.pocasi-karta {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--stin);
+  padding: 1.1rem 1.4rem 0.9rem;
+  margin: 0 0 32px;
+}
+/* v úvodu: skleněná dlaždice jako statistiky, bílý text */
+.pocasi-sklo {
+  margin: 1.2rem auto 0;
+  max-width: 1060px;
+  padding: 1rem 1.4rem 0.8rem;
+  border-radius: 1rem;
+  background: var(--sklo-husty);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .pocasi-sklo {
+    background: var(--sklo);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+}
+.pocasi-sklo a {
+  color: #fff;
+}
+.pocasi-sklo a:hover {
+  color: var(--na-tmave);
+}
+.pocasi-dlazdice h2 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+}
+.pocasi-karta h2 {
+  color: var(--primarni);
+}
+.pocasi-sklo h2 {
+  color: var(--na-tmave);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.poc-misto {
+  font-weight: 400;
+}
+.poc-obsah {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 28px;
+}
+.poc-dnes {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1 1 260px;
+}
+.poc-dnes img {
+  flex: none;
+}
+.poc-dnes p,
+.poc-dalsi p,
+.poc-tyden p {
+  margin: 0;
+}
+.poc-teplota {
+  font-family: var(--pismo-nadpis);
+  font-size: 2.3rem;
+  font-weight: 700;
+  line-height: 1.05;
+}
+.poc-popis {
+  font-weight: 600;
+  text-transform: none;
+}
+.poc-popis::first-letter {
+  text-transform: uppercase;
+}
+.poc-den-nazev {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+.poc-detail {
+  font-size: 0.9rem;
+}
+.pocasi-karta .poc-detail,
+.pocasi-karta .poc-min,
+.pocasi-stranka .poc-detail,
+.pocasi-stranka .poc-min {
+  color: var(--text-tlumeny);
+}
+.poc-dalsi,
+.poc-tyden {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 10px 22px;
+  flex-wrap: wrap;
+}
+.poc-dalsi li,
+.poc-tyden li {
+  text-align: center;
+  min-width: 96px;
+}
+.poc-dalsi img,
+.poc-tyden img {
+  display: block;
+  margin: 2px auto;
+}
+.poc-maxmin strong {
+  font-size: 1.15rem;
+}
+.poc-dal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 16px;
+  margin: 10px 0 0;
+}
+.poc-dal a {
+  font-weight: 700;
+}
+.poc-zdroj {
+  font-size: 0.8rem;
+}
+.pocasi-karta .poc-zdroj {
+  color: var(--text-tlumeny);
+}
+/* pruh výstrahy ČHMÚ — barvy podle stupně, kontrast textu ≥ 4,5 : 1 */
+.poc-vystraha {
+  margin: 0 0 10px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+.poc-vystraha a {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.poc-vystraha a:hover {
+  text-decoration: underline;
+  color: inherit;
+}
+.poc-v-yellow {
+  background: #ffd600;
+  color: #1a1a1a;
+}
+.poc-v-orange {
+  background: #c2410c;
+  color: #fff;
+}
+.poc-v-red {
+  background: #b91c1c;
+  color: #fff;
+}
+.pocasi-sklo .poc-vystraha a,
+.pocasi-sklo .poc-vystraha a:hover {
+  color: inherit;
+}
+.pocasi-stranka {
+  margin: 0 0 24px;
+}
+.pocasi-stranka h2 {
+  color: var(--primarni);
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+}
+.poc-stara {
+  border-left: 6px solid var(--akcent);
+}
+.poc-tyden li {
+  flex: 1 1 110px;
+  padding: 8px 4px;
+  border-radius: 10px;
+  background: var(--zelena-svetla);
+}
+.poc-graf {
+  margin: 0 0 8px;
+}
+.poc-graf svg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 1;
+  min-height: 180px;
+  display: block;
+}
+.poc-linka {
+  stroke: #d5dbd6;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.poc-pulnoc {
+  stroke: #8a958c;
+}
+.poc-osa {
+  fill: #4a554c;
+  font-size: 12px;
+}
+.poc-osa-den {
+  font-weight: 700;
+  fill: #222;
+}
+.poc-cara {
+  stroke: var(--primarni);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.poc-bod {
+  fill: var(--primarni);
+}
+.poc-extrem {
+  font-size: 14px;
+  font-weight: 700;
+  fill: #222;
+}
+.poc-sloupec {
+  fill: #2f6fb3;
+  opacity: 0.75;
+}
+.poc-tabulka summary {
+  cursor: pointer;
+  color: var(--primarni);
+  font-weight: 600;
+  padding: 6px 0;
+}
+.poc-tabulka td img {
+  vertical-align: middle;
+}
+.jen-telefon {
+  display: none;
+}
+@media (max-width: 600px) {
+  .jen-telefon {
+    display: block;
+  }
+  .jen-pocitac,
+  .poc-pozitri {
+    display: none;
+  }
+  .poc-dalsi li {
+    min-width: 80px;
+  }
+}
+
 /* devlog „Co je nového“ */
 .devlog h2 {
   margin-top: 1.6rem;

@@ -77,6 +77,8 @@ moduly:
   podatelna: false
   # plánované odstávky elektřiny ČEZ Distribuce na titulce a /odstavky (jen obce v území ČEZ Distribuce)
   odstavky: false
+  # předpověď počasí MET Norway (yr.no) na titulce a /pocasi — potřebuje souřadnice v sekci pocasi níže
+  pocasi: false
   # aplikace za proxy platformy (/rezervace, /eknihy) — jen s APLIKACE_REZERVACE_URL / APLIKACE_EKNIHY_URL v .env;
   # tady je výchozí stav, za běhu se zapínají ve Správě → Moduly obce
   rezervace: false
@@ -111,6 +113,14 @@ odstavky:
     kod_obce: ''
     # stránka ČEZ pro obec = odkaz „…/ovm/<klíč obce>/redirect“ z banneru ČEZ pro obce; prázdné = obecná stránka ČEZ
     odkaz: ''
+
+# Předpověď počasí (modul pocasi). Data: MET Norway (api.met.no, data yr.no, licence CC BY 4.0), server je stahuje
+# nejvýš jednou za 30 minut, prohlížeč návštěvníka nic od MET nenačítá. Souřadnice = střed obce (WGS84), např. z mapy.
+pocasi:
+  lat: 50.6186
+  lon: 15.0519
+  # název v nadpisu dlaždice a stránky; prázdné = obec.kratky_nazev
+  nazev: ''
 
 # Automatické výstrahy infokanálu (výchozí vypnuto; zdroj zapnete uvedením klíče, např. „cez:“). Vypínač pro celé: VYSTRAHY=0.
 # vystrahy:

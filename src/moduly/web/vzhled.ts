@@ -31,6 +31,9 @@ export type EfektMenu = 'odlesk' | 'hladina' | 'dychani' | 'zadny';
 export const EFEKTY_MENU: EfektMenu[] = ['odlesk', 'hladina', 'dychani', 'zadny'];
 export type SilaEfektu = 'slaba' | 'stredni' | 'vyrazna';
 export const SILY_EFEKTU: SilaEfektu[] = ['slaba', 'stredni', 'vyrazna'];
+/** kde je na titulce dlaždice počasí (modul pocasi): v úvodním bloku, pod rychlými odkazy, nebo nikde */
+export type UmisteniPocasi = 'uvod' | 'pod-odkazy' | 'skryto';
+export const UMISTENI_POCASI: UmisteniPocasi[] = ['uvod', 'pod-odkazy', 'skryto'];
 
 export interface UlozenyVzhled {
   barva?: string;
@@ -56,6 +59,7 @@ export interface UlozenyVzhled {
   efekt_sila?: SilaEfektu;
   /** ztmavení fotky na pozadí 0–0,8 (sklo a podklad textu se dopočítají podle kontrastu) */
   zavoj?: number;
+  pocasi_umisteni?: UmisteniPocasi;
   predchozi?: Omit<UlozenyVzhled, 'predchozi'> | null;
 }
 
@@ -80,6 +84,7 @@ export interface Vzhled {
   pozadiPevne: string | null;
   efektMenu: EfektMenu;
   efektSila: SilaEfektu;
+  pocasiUmisteni: UmisteniPocasi;
   /** ztmavení fotky a z něj dopočítané sklo a podklad textu */
   pruhlednosti: Pruhlednosti;
   /** CSS proměnné barev a písma + @font-face (vkládá se do <head>) */
@@ -150,6 +155,8 @@ export class VzhledSluzba {
       pozadiPevne: u.pozadi_pevne && pozadi.includes(u.pozadi_pevne) ? url(u.pozadi_pevne) : null,
       efektMenu: u.efekt_menu && EFEKTY_MENU.includes(u.efekt_menu) ? u.efekt_menu : 'odlesk',
       efektSila: u.efekt_sila && SILY_EFEKTU.includes(u.efekt_sila) ? u.efekt_sila : 'stredni',
+      pocasiUmisteni:
+        u.pocasi_umisteni && UMISTENI_POCASI.includes(u.pocasi_umisteni) ? u.pocasi_umisteni : 'pod-odkazy',
       pruhlednosti: pr,
       css: fontFace([pismo]) + cssPisma(pismo) + barvyCss,
       ulozeno: u,

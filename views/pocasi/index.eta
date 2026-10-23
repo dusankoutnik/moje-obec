@@ -1,0 +1,77 @@
+<% layout('/layout') %>
+<% const s = it.pocasi.stav, ted = it.pocasi.ted, g = it.graf %>
+<h1><%= it.t('pocasi.titulek', { misto: s.nazev }) %></h1>
+
+<section class="panel pocasi-stranka" aria-labelledby="h-vystrahy">
+  <h2 id="h-vystrahy"><%= it.t('pocasi.vystrahy') %></h2>
+  <% if (!it.pocasi.vystrahy.length) { %><p class="prazdne"><%= it.t('pocasi.zadne_vystrahy') %></p><% } else { %>
+  <% it.pocasi.vystrahy.forEach(function (v) { %><%~ include('/pocasi/_vystraha', Object.assign({}, it, { v: v })) %><% }) %>
+  <% } %>
+  <% if (it.obec.moduly.infokanal) { %><p><a href="/infokanal/vystrahy"><%= it.t('pocasi.vystrahy_odkaz') %> ›</a></p><% } %>
+</section>
+
+<% if (!s.ted) { %>
+<section class="panel pocasi-stranka"><p class="prazdne"><%= it.t('pocasi.nenacteno') %></p></section>
+<% } else { %>
+<% if (s.stara && s.aktualizovano) { %><p class="panel poc-stara"><%= it.t('pocasi.stara', { kdy: it.fmtDatum(s.aktualizovano) }) %></p><% } %>
+<section class="panel pocasi-stranka" aria-labelledby="h-ted">
+  <h2 id="h-ted"><%= it.t('pocasi.ted') %></h2>
+  <div class="poc-dnes">
+    <img src="/static/img/pocasi/<%= s.ted.symbol || 'cloudy' %>.svg" alt="" width="96" height="96">
+    <div>
+      <p class="poc-teplota"><%= it.fmtTeplota(s.ted.teplota) %></p>
+      <p class="poc-popis"><%= s.ted.popis %></p>
+      <% if (s.dny[0]) { %><p class="poc-detail"><%= it.t('pocasi.dnes') %>: <%= it.t('pocasi.max_min', { max: it.fmtTeplota(s.dny[0].max), min: it.fmtTeplota(s.dny[0].min) }) %> · <%= it.t('pocasi.srazky') %> <%= it.fmtSrazky(s.dny[0].srazky) %> · <%= it.t('pocasi.vitr') %> <%= it.t('pocasi.vitr_hodnota', { n: s.ted.vitr === null ? '–' : s.ted.vitr }) %></p><% } %>
+    </div>
+  </div>
+</section>
+
+<% if (s.hodiny.length) { %>
+<section class="panel pocasi-stranka" aria-labelledby="h-hodiny">
+  <h2 id="h-hodiny"><%= it.t('pocasi.hodinova') %></h2>
+  <% if (g) { %>
+  <figure class="poc-graf">
+    <svg viewBox="0 0 <%= g.W %> <%= g.H %>" role="img" aria-labelledby="graf-t graf-d" preserveAspectRatio="none">
+      <title id="graf-t"><%= it.t('pocasi.hodinova') %></title>
+      <desc id="graf-d"><%= it.t('pocasi.graf_popis') %></desc>
+      <% g.linky.forEach(function (l) { %><line class="poc-linka" x1="<%= g.ml %>" x2="<%= g.W - g.mr %>" y1="<%= l.y %>" y2="<%= l.y %>"/><text class="poc-osa" x="<%= g.ml - 6 %>" y="<%= l.y %>" text-anchor="end" dominant-baseline="middle"><%= l.popisek %></text><% }) %>
+      <% g.casy.forEach(function (c) { %><line class="poc-linka<%= c.pulnoc ? ' poc-pulnoc' : '' %>" x1="<%= c.x %>" x2="<%= c.x %>" y1="16" y2="<%= g.dole %>"/><text class="poc-osa<%= c.pulnoc ? ' poc-osa-den' : '' %>" x="<%= c.x %>" y="<%= g.H - 10 %>" text-anchor="middle"><%= c.text %></text><% }) %>
+      <% g.sloupce.forEach(function (b) { %><rect class="poc-sloupec" x="<%= b.x %>" y="<%= b.y %>" width="<%= b.w %>" height="<%= b.h %>" rx="2"/><% }) %>
+      <polyline class="poc-cara" points="<%= g.cara %>" fill="none"/>
+      <% g.extremy.forEach(function (e) { %><circle class="poc-bod" cx="<%= e.cx %>" cy="<%= e.cy %>" r="4"/><text class="poc-extrem" x="<%= e.x %>" y="<%= e.y %>" text-anchor="middle"><%= e.text %></text><% }) %>
+    </svg>
+    <figcaption class="poznamka"><%= it.t('pocasi.graf_srazky', { max: g.maxSrazky }) %></figcaption>
+  </figure>
+  <% } %>
+  <details class="poc-tabulka">
+    <summary><%= it.t('pocasi.tabulka') %></summary>
+    <div class="tabulka-obal">
+    <table>
+      <thead><tr><th scope="col"><%= it.t('pocasi.cas') %></th><th scope="col"><%= it.t('pocasi.pocasi') %></th><th scope="col"><%= it.t('pocasi.teplota') %></th><th scope="col"><%= it.t('pocasi.srazky') %></th><th scope="col"><%= it.t('pocasi.vitr') %></th></tr></thead>
+      <tbody>
+        <% it.po3.forEach(function (h) { %>
+        <tr><th scope="row"><%= it.kratkyDen(h.cas) %> <%= it.fmtHodina(h.cas) %></th><td><img src="/static/img/pocasi/<%= h.symbol %>.svg" alt="" width="28" height="28"> <%= h.popis %></td><td><%= it.fmtTeplota(h.teplota) %></td><td><%= it.fmtSrazky(h.srazky) %></td><td><%= it.t('pocasi.vitr_hodnota', { n: h.vitr === null ? '–' : h.vitr }) %></td></tr>
+        <% }) %>
+      </tbody>
+    </table>
+    </div>
+  </details>
+</section>
+<% } %>
+
+<section class="panel pocasi-stranka" aria-labelledby="h-tyden">
+  <h2 id="h-tyden"><%= it.t('pocasi.tydenni') %></h2>
+  <ul class="poc-tyden">
+    <% s.dny.forEach(function (d) { %>
+    <li>
+      <p class="poc-den-nazev"><%= it.nazevDne(d, ted, it.t) %><% if (d.castecny) { %> <small>(<%= it.t('pocasi.zbytek_dne') %>)</small><% } %></p>
+      <img src="/static/img/pocasi/<%= d.symbol %>.svg" alt="<%= d.popis %>" width="52" height="52">
+      <p class="poc-maxmin"><span class="vh"><%= it.t('pocasi.nejvys') %> </span><strong><%= it.fmtTeplota(d.max) %></strong> <span class="vh"><%= it.t('pocasi.nejniz') %> </span><span class="poc-min"><%= it.fmtTeplota(d.min) %></span></p>
+      <p class="poc-detail"><%= it.t('pocasi.srazky') %> <%= it.fmtSrazky(d.srazky) %><br><%= it.t('pocasi.vitr') %> <%= it.t('pocasi.vitr_hodnota', { n: d.vitrMax === null ? '–' : d.vitrMax }) %></p>
+    </li>
+    <% }) %>
+  </ul>
+</section>
+<% } %>
+
+<p class="odst-zdroj"><a href="<%= it.metWeb %>" rel="noopener noreferrer"><%= it.t('pocasi.zdroj') %></a> (<a href="<%= it.metLicence %>" rel="noopener noreferrer">CC BY 4.0</a>). <%= it.t('pocasi.ikony') %><% if (s.aktualizovano) { %> <%= it.t('pocasi.aktualizovano', { kdy: it.fmtDatum(s.aktualizovano) }) %><% } %><% if (s.chyba) { %> <%= it.t('pocasi.zdroj_chyba') %><% } %></p>

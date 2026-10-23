@@ -20,10 +20,12 @@ import {
   EFEKTY_MENU,
   SILY_EFEKTU,
   STYLY_NAZVU,
+  UMISTENI_POCASI,
   type EfektMenu,
   type NazevStyl,
   type SilaEfektu,
   type UlozenyVzhled,
+  type UmisteniPocasi,
 } from '../vzhled.js';
 import type { WebSluzby } from '../index.js';
 import { kontextSpravy, type Telo, jeden, vice } from './spolecne.js';
@@ -79,6 +81,8 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
       maPredchozi: !!v.ulozeno.predchozi,
       nahledAktivni: !!req.session.nahledVzhledu,
       kontrastBile: kontrast(v.barva, '#ffffff'),
+      // volba umístění dlaždice počasí jen když je modul počasí na instalaci (obec.yml + souřadnice)
+      pocasiDostupne: !!app.pocasi,
     });
   });
 
@@ -109,6 +113,8 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
     if ((EFEKTY_MENU as string[]).includes(efekt)) z.efekt_menu = efekt as EfektMenu;
     const sila = jeden(b.efekt_sila);
     if ((SILY_EFEKTU as string[]).includes(sila)) z.efekt_sila = sila as SilaEfektu;
+    const pocasi = jeden(b.pocasi_umisteni);
+    if ((UMISTENI_POCASI as string[]).includes(pocasi)) z.pocasi_umisteni = pocasi as UmisteniPocasi;
     // ztmavení fotky v procentech (posuvník 0–80) → 0–0,8; sklo a podklad textu dopočítá vzhled podle kontrastu
     if (b.zavoj !== undefined) {
       const n = Number(jeden(b.zavoj));

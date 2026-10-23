@@ -143,6 +143,16 @@
       <% }) %>
     </div>
     <p class="napoveda" id="efekt-n"><%= it.t('web.efekt_napoveda') %></p>
+    <% if (it.pocasiDostupne) { %>
+    <p class="vh" id="pocasi-h"><%= it.t('pocasi.umisteni') %></p>
+    <div role="radiogroup" aria-labelledby="pocasi-h" aria-describedby="pocasi-n">
+      <strong aria-hidden="true"><%= it.t('pocasi.umisteni') %></strong>
+      <% ;['uvod', 'pod-odkazy', 'skryto'].forEach(function (u) { %>
+      <label class="zatrzitko"><input type="radio" name="pocasi_umisteni" value="<%= u %>" <%= it.v.pocasiUmisteni === u ? 'checked' : '' %>> <%= it.t('pocasi.umisteni_' + u) %></label>
+      <% }) %>
+    </div>
+    <p class="napoveda" id="pocasi-n"><%= it.t('pocasi.umisteni_napoveda') %></p>
+    <% } %>
   </fieldset>
 
   <fieldset>

@@ -14,6 +14,9 @@
       </ul>
     </section>
     <% } %>
+    <% if (it.pocasi && it.vzhled.pocasiUmisteni === 'uvod') { %>
+    <div class="vstup" style="--z:.5s"><%~ include('/pocasi/_dlazdice', Object.assign({}, it, { varianta: 'sklo', idp: 'poc-uvod', trida: 'jen-pocitac' })) %></div>
+    <% } %>
     <a class="hero-dolu vstup" style="--z:.56s" href="#rychle"><span class="vh"><%= it.t('web.dolu') %></span><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></a>
   </div>
 </section>
@@ -30,6 +33,9 @@
     </ul>
   </nav>
 
+  <% if (it.pocasi && it.vzhled.pocasiUmisteni !== 'skryto') { %>
+  <%~ include('/pocasi/_dlazdice', Object.assign({}, it, { varianta: 'karta', idp: 'poc-karta', trida: it.vzhled.pocasiUmisteni === 'uvod' ? 'jen-telefon' : '' })) %>
+  <% } %>
   <% if (it.odstavky) { %><%~ include('/odstavky/_pruh', it) %><% } %>
 
   <section class="sekce" aria-labelledby="h-aktuality">

@@ -121,6 +121,8 @@ export const ObecSchema = z.object({
       podatelna: z.boolean().default(false),
       // plánované odstávky elektřiny ČEZ Distribuce na titulce a /odstavky (jen obce na území ČEZ Distribuce)
       odstavky: z.boolean().default(false),
+      // předpověď počasí MET Norway (yr.no) na titulce a /pocasi; potřebuje souřadnice v sekci pocasi
+      pocasi: z.boolean().default(false),
       // části rezervačního systému (aplikace za proxy /rezervace): předprodej vstupenek a spolujízda
       predprodej: z.boolean().default(true),
       spolujizda: z.boolean().default(true),
@@ -167,6 +169,16 @@ export const ObecSchema = z.object({
             .default(''),
         })
         .prefault({}),
+    })
+    .prefault({}),
+  // předpověď počasí (modul pocasi) — MET Norway Locationforecast, stahuje server nejvýš jednou za 30 min
+  pocasi: z
+    .object({
+      // souřadnice obce (WGS84, stupně); do API se posílají zaokrouhlené na 4 desetinná místa
+      lat: z.number().min(-90).max(90).nullable().default(null),
+      lon: z.number().min(-180).max(180).nullable().default(null),
+      // název místa v nadpisu („Počasí ve Vlastibořicích“); prázdné = obec.kratky_nazev
+      nazev: z.string().default(''),
     })
     .prefault({}),
   texty: z

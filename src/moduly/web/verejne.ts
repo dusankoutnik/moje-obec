@@ -12,6 +12,7 @@ import type { WebSluzby } from './index.js';
 import { rozdelPodleVidei } from './videa.js';
 import { odkazAkce } from './akce-externi.js';
 import { pomocniciOdstavek } from '../odstavky/index.js';
+import { pomocniciPocasi } from '../pocasi/index.js';
 import { klicVysledku, vysledkyZDokumentu, type VysledekHledani } from './hledani-dokumentu.js';
 
 /** akce webu + akce z rezervací, seřazené podle začátku */
@@ -163,10 +164,18 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
     });
     // plánované odstávky elektřiny (modul odstavky) — jen budoucí a probíhající; žádná = na titulce nic
     const odstavky = app.odstavky ? await app.odstavky.stav() : null;
+    // předpověď počasí (modul pocasi): jen čerstvá data (≤ 12 h); umístění volí šablona podle vzhledu
+    let pocasi = null;
+    if (app.pocasi && (await app.moduly.zapnuto('pocasi'))) {
+      const stav = await app.pocasi.stav();
+      if (!stav.stara) pocasi = { stav, vystrahy: await app.pocasi.vystrahy(), ted: app.pocasi.hodiny() };
+    }
     return reply.view('web/uvod', {
       titulek: '',
       odstavky: odstavky?.aktualni.length ? odstavky : null,
       ...pomocniciOdstavek,
+      pocasi,
+      ...pomocniciPocasi,
       aktuality: aktuality.radky,
       akce,
       deska,

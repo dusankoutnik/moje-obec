@@ -11,3 +11,5 @@ test-results/
 playwright-report/
 # uložené odpovědi zdrojů výstrah — přesně tak, jak je zdroj posílá
 test/fixtures/vystrahy/
+# uložená odpověď MET Norway — přesně tak, jak ji API posílá
+test/fixtures/met-compact.json

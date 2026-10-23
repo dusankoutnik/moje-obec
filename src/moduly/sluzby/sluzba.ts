@@ -1,4 +1,5 @@
-// Moduly obce zapínatelné ve správě (Správa → Moduly obce): rezervace, předprodej, spolujízda, eKnihy, infokanál, kvíz.
+// Moduly obce zapínatelné ve správě (Správa → Moduly obce): rezervace, předprodej, spolujízda, eKnihy, infokanál, kvíz,
+// počasí.
 // Výchozí stav je z obec.yml (`moduly`), změny ze správy se ukládají do nastaveni.moduly. Platformní moduly (infokanál,
 // kvíz) se registrují při startu podle obec.yml; vypnutí za běhu je jen skryje (guard v index.ts) — bez restartu.
 // Aplikace za proxy (rezervace, eKnihy) jsou dostupné, jen když je nastavená jejich vnitřní adresa v env.
@@ -7,7 +8,15 @@ import type { ObecProfil } from '../../config/obec.js';
 import type { Db } from '../../db/index.js';
 import { zapisAudit } from '../../lib/audit.js';
 
-export const KLICE_MODULU = ['rezervace', 'predprodej', 'spolujizda', 'eknihy', 'infokanal', 'kviz'] as const;
+export const KLICE_MODULU = [
+  'rezervace',
+  'predprodej',
+  'spolujizda',
+  'eknihy',
+  'infokanal',
+  'kviz',
+  'pocasi',
+] as const;
 export type KlicModulu = (typeof KLICE_MODULU)[number];
 export type StavModulu = Record<KlicModulu, boolean>;
 
@@ -21,6 +30,8 @@ export interface PopisModulu {
   rodic?: KlicModulu;
   /** platformní modul (registrovaný v aplikaci) nebo aplikace za proxy */
   druh: 'platforma' | 'aplikace';
+  /** není v horní liště aplikací (/api/moduly) — jen doplněk webu, ne samostatná služba */
+  mimoListu?: boolean;
 }
 
 export const MODULY: readonly PopisModulu[] = [
@@ -42,6 +53,7 @@ export const MODULY: readonly PopisModulu[] = [
   { klic: 'infokanal', url: '/infokanal', cesty: ['/infokanal'], druh: 'platforma' },
   { klic: 'eknihy', url: '/eknihy/', cesty: ['/eknihy'], druh: 'aplikace' },
   { klic: 'kviz', url: '/kviz', cesty: ['/kviz'], druh: 'platforma' },
+  { klic: 'pocasi', url: '/pocasi', cesty: ['/pocasi'], druh: 'platforma', mimoListu: true },
 ];
 
 /** leží cesta pod prefixem? (/kviz, /kviz/…, /kviz?… — ne /kvizy) */
@@ -80,6 +92,8 @@ export class ModulySluzba {
         return this.obec.moduly.infokanal;
       case 'kviz':
         return this.obec.moduly.kviz;
+      case 'pocasi':
+        return this.obec.moduly.pocasi;
     }
   }
 
@@ -173,6 +187,7 @@ export class ModulySluzba {
         ...this.obec.moduly,
         infokanal: s.infokanal,
         kviz: s.kviz,
+        pocasi: s.pocasi,
         rezervace: s.rezervace,
         predprodej: s.predprodej,
         spolujizda: s.spolujizda,
