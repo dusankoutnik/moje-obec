@@ -15,11 +15,16 @@ z balíčků npm, žádné CDN):
 | Nunito                | `@fontsource/nunito`                | SIL OFL 1.1                                                                       | písmo webu       |
 | Genos                 | `@fontsource/genos`                 | SIL OFL 1.1                                                                       | písmo webu       |
 | Quill 2               | `quill`                             | BSD-3-Clause                                                                      | editor ve správě |
+| Ikony počasí          | `metno/weathericons` (GitHub)       | MIT (© 2015–2017 Yr; text v `public/img/pocasi/LICENSE.txt`)                      | modul počasí     |
 
 Na serveru (do prohlížeče se neposílá) navíc běží `fflate` (MIT) — čtení ZIP archivů kancelářských formátů
 (docx, xlsx, pptx, odt) kvůli textu dokumentů pro vyhledávání — a systémové nástroje z Debianu v obrazu Dockeru:
 `poppler-utils` (GPL-2.0-or-later), `tesseract-ocr` (Apache-2.0) s jazykovými daty `tesseract-ocr-ces`/`-eng`
 (Apache-2.0) a `antiword` (GPL-2.0). Volají se jako samostatné procesy, kód platformy se s nimi nespojuje.
+
+Data předpovědi počasí (modul `pocasi`) jsou od MET Norway (yr.no) pod licencí CC BY 4.0 — zdroj se uvádí na
+dlaždici i na stránce `/pocasi`. Ikony jsou stažené ze `https://github.com/metno/weathericons` (`weather/svg/`)
+a přejmenované bez překlepu v názvu (`lightssleet…`/`lightssnow…` → `lightsleet…`/`lightsnow…`).
 
 Z písem se vydávají jen soubory `*.woff2` podmnožin latin a latin-ext (čeština ověřena na glyfech:
 á č ď é ě í ň ó ř š ť ú ů ý ž, velká písmena, „ “ –). Texty licencí jsou v příslušných balíčcích
