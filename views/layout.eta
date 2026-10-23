@@ -135,6 +135,7 @@
 <!--PODMENU-->
 <main id="obsah" tabindex="-1" class="obal aplikace"><div class="panel-hlavni"><!--OBSAH--></div></main>
 <% } else { %>
+<% if (it.uzivatel && (it.cesta === '/ucet' || it.cesta.indexOf('/ucet/') === 0)) { %><%~ include('/ucty/_podmenu', it) %><% } %>
 <main id="obsah" tabindex="-1" class="<%= it.plnaSirka ? 'plna' : 'obal' %>">
   <% if (it.plnaSirka) { %>
     <% if (it.flash) { %><div class="obal"><div class="flash flash-<%= it.flash.typ %>" role="<%= it.flash.typ === 'chyba' ? 'alert' : 'status' %>"><%= it.flash.text %><% if (it.flash.odkaz) { %> <a href="<%= it.flash.odkaz.url %>"><%= it.flash.odkaz.text %> →</a><% } %></div></div><% } %>

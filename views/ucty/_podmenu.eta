@@ -1,0 +1,15 @@
+<% /* Podmenu „Můj účet“ (2026-10-23, Dušan): stejné na /ucet* webu i na stránce rezervací /rezervace/ucet */ %>
+<% var m = it.obec.moduly, c = it.cesta; %>
+<% function cur(h, presne) { return (presne ? c === h : (c === h || c.indexOf(h + '/') === 0)) ? ' aria-current="page"' : ''; } %>
+<nav class="podmenu" aria-label="<%= it.t('ucet.titulek') %>">
+  <div class="podmenu-in">
+    <a class="podmenu-znacka" href="/ucet">👤 <%= it.t('ucet.titulek') %></a>
+    <ul class="podmenu-seznam">
+      <li><a href="/ucet"<%~ cur('/ucet', true) %>>Přehled</a></li>
+      <% if (m.rezervace) { %><li><a href="/ucet/platby"<%~ cur('/ucet/platby') %>>💳 Platby a vyúčtování</a></li>
+      <li><a href="/rezervace/ucet">📅 Moje rezervace a výzvy</a></li><% } %>
+      <% if (m.eknihy) { %><li><a href="/eknihy/moje">📚 Moje knihovna</a></li><% } %>
+      <% if (m.infokanal) { %><li><a href="/ucet#odber">📣 Odběr hlášení</a></li><% } %>
+    </ul>
+  </div>
+</nav>
