@@ -15,6 +15,9 @@ import { bezDiakritiky } from '../../lib/kontakty.js';
 export interface FrontaKonfigurace {
   smsIntervalMinMs: number;
   smsIntervalMaxMs: number;
+  /** krizová hlášení (výchozí = běžné tempo) */
+  smsKrizoveMinMs?: number;
+  smsKrizoveMaxMs?: number;
   emailIntervalMs: number;
   maxPokusu?: number;
   baseUrl: string;
@@ -242,7 +245,10 @@ export class RozesilaciFronta {
       k === 'email'
         ? this.cfg.emailIntervalMs
         : p.krizove
-          ? Math.min(this.cfg.smsIntervalMinMs, 500)
+          ? this.nahodne(
+              this.cfg.smsKrizoveMinMs ?? this.cfg.smsIntervalMinMs,
+              this.cfg.smsKrizoveMaxMs ?? this.cfg.smsIntervalMaxMs,
+            )
           : this.nahodne(this.cfg.smsIntervalMinMs, this.cfg.smsIntervalMaxMs);
     this.naplanuj(k, prodleva);
     return true;

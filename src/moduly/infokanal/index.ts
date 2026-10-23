@@ -34,6 +34,8 @@ async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }
     {
       smsIntervalMinMs: app.env.IK_SMS_INTERVAL_MIN_MS,
       smsIntervalMaxMs: app.env.IK_SMS_INTERVAL_MAX_MS,
+      smsKrizoveMinMs: app.env.IK_SMS_KRIZOVE_MIN_MS,
+      smsKrizoveMaxMs: app.env.IK_SMS_KRIZOVE_MAX_MS,
       emailIntervalMs: app.env.IK_EMAIL_INTERVAL_MS,
       baseUrl: app.env.BASE_URL,
       smsPrefix: app.obec.texty.sms_prefix,

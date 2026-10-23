@@ -94,6 +94,9 @@ const EnvSchema = z.object({
   TEXT_MAX_ZNAKU: z.coerce.number().int().min(1000).default(2_000_000),
   IK_SMS_INTERVAL_MIN_MS: z.coerce.number().default(1000),
   IK_SMS_INTERVAL_MAX_MS: z.coerce.number().default(3000),
+  // krizová hlášení: rychleji než běžná, ale ne dávkou — GSM brána na telefonu by SIM riskovala blokaci (2026-10-23)
+  IK_SMS_KRIZOVE_MIN_MS: z.coerce.number().default(2000),
+  IK_SMS_KRIZOVE_MAX_MS: z.coerce.number().default(4000),
   IK_EMAIL_INTERVAL_MS: z.coerce.number().default(500),
   // aplikace obce za proxy platformy (/rezervace/*, /eknihy/*): vnitřní adresa, např. http://rezervace:3000.
   // Prázdné = aplikace na této instalaci není a modul se ve správě nenabízí.
