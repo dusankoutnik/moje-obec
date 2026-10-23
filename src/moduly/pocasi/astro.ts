@@ -23,6 +23,8 @@ export interface Astro {
   faze: Faze;
   /** osvětlená část Měsíce v procentech */
   osvetleni: number;
+  /** fáze 0…1 (0 nov, 0,5 úplněk) — pro kreslení Měsíce */
+  fazeCislo: number;
 }
 
 const platne = (d: Date | undefined) => (d && Number.isFinite(d.getTime()) ? d : null);
@@ -55,5 +57,6 @@ export function astro(ted: Date, lat: number, lon: number): Astro {
     mesicZapad: prvni(zapady),
     faze: fazeZCisla(osv.phase),
     osvetleni: Math.round(osv.fraction * 100),
+    fazeCislo: Math.round(osv.phase * 1000) / 1000,
   };
 }
