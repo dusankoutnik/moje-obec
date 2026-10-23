@@ -50,6 +50,11 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
   odeslaném e-mailu, cron v časové zóně Europe/Prague; adresa `/velikost` je rezervovaná.
 - Atributy poskládané v escapovaném výstupu šablon (`aria-current=&quot;page&quot;`) — aktivní položka menu se neoznačovala.
 - Převod času na Europe/Prague ignoroval sekundy.
+- Veřejné stránky webu mají kanonickou adresu (`<link rel="canonical">` z `BASE_URL`, bez dotazu a koncového
+  lomítka) a Open Graph / Twitter card (titulek, popis, úvodní fotka nebo znak obce) — web dostupný na více
+  hostech se ve vyhledávačích nezdvojuje a odkaz sdílený na sociálních sítích má náhled. Stránky s `noindex`
+  a chybové stránky je nemají.
+- Sitemap obsahuje i `/odstavky` (zapnutý modul) a detaily aktivních dotací `/dotace/<id>`.
 
 ## [0.1.0] — 2026-10-13 — etapa 0: základy
 

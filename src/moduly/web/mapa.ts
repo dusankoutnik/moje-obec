@@ -119,6 +119,8 @@ async function webMapa(app: FastifyInstance) {
       const deska = await app.deska.aktualni({}, ted);
       polozky.push(...deska.map((d) => ({ url: `/uredni-deska/${d.id}`, lastmod: d.upraveno_at })));
     }
+    polozky.push(...(await app.web.dotace.aktivni()).map((d) => ({ url: `/dotace/${d.id}` })));
+    if (m.odstavky) polozky.push({ url: '/odstavky' });
     if (m.infokanal) polozky.push({ url: '/infokanal' });
     if (m.kviz) polozky.push({ url: '/kviz' });
     polozky.push(

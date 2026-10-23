@@ -61,6 +61,7 @@ export default fp(async function sablony(app: FastifyInstance) {
         fmtDatum: formatujDatum,
         fmtTelefon: formatujTelefon,
         v: VERZE_STATIKY,
+        baseUrl: app.env.BASE_URL.replace(/\/$/, ''),
         ...layout,
         ...data,
       });
