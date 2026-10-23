@@ -1020,9 +1020,18 @@ body.zakladni .panel-hlavni {
 }
 
 /* slogan Voltu za logem v patičce (2026-10-23, Dušan) */
+.paticka-vyrobce {
+  /* logo i slogan na jedné účaří: obrázek sedí spodní hranou na účaří textu */
+  align-items: baseline;
+  text-decoration: none;
+}
 .paticka-vyrobce .paticka-slogan {
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  vertical-align: middle;
+  text-decoration: none;
+}
+.paticka-vyrobce:hover .paticka-slogan,
+.paticka-vyrobce:focus-visible .paticka-slogan {
+  text-decoration: underline;
 }
