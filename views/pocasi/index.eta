@@ -21,7 +21,7 @@
     <div>
       <p class="poc-teplota"><%= it.fmtTeplota(s.ted.teplota) %></p>
       <p class="poc-popis"><%= s.ted.popis %></p>
-      <% if (s.dny[0]) { %><p class="poc-detail"><%= it.t('pocasi.dnes') %>: <%= it.t('pocasi.max_min', { max: it.fmtTeplota(s.dny[0].max), min: it.fmtTeplota(s.dny[0].min) }) %> · <%= it.t('pocasi.srazky') %> <%= it.fmtSrazky(s.dny[0].srazky) %> · <%= it.t('pocasi.vitr') %> <%= it.t('pocasi.vitr_hodnota', { n: s.ted.vitr === null ? '–' : s.ted.vitr }) %></p><% } %>
+      <% if (s.dny[0]) { %><p class="poc-detail"><%= it.t('pocasi.dnes') %>: <%= it.t('pocasi.max_min', { max: it.fmtTeplota(s.dny[0].max), min: it.fmtTeplota(s.dny[0].min) }) %> · <%= it.t('pocasi.srazky') %> <%= it.fmtSrazky(s.dny[0].srazky) %> · <%= it.t('pocasi.vitr') %> <%= it.t('pocasi.vitr_hodnota', { n: s.dny[0].vitrMax === null ? '–' : s.dny[0].vitrMax }) %></p><% } %>
     </div>
   </div>
 </section>
@@ -74,4 +74,4 @@
 </section>
 <% } %>
 
-<p class="odst-zdroj"><a href="<%= it.metWeb %>" rel="noopener noreferrer"><%= it.t('pocasi.zdroj') %></a> (<a href="<%= it.metLicence %>" rel="noopener noreferrer">CC BY 4.0</a>). <%= it.t('pocasi.ikony') %><% if (s.aktualizovano) { %> <%= it.t('pocasi.aktualizovano', { kdy: it.fmtDatum(s.aktualizovano) }) %><% } %><% if (s.chyba) { %> <%= it.t('pocasi.zdroj_chyba') %><% } %></p>
+<p class="odst-zdroj"><a href="<%= it.metWeb %>" rel="noopener noreferrer"><%= it.t('pocasi.zdroj_met') %></a>, <%= it.t('pocasi.licence') %> <a href="<%= it.metLicence %>" rel="noopener noreferrer">CC BY 4.0</a>. <%= it.t('pocasi.ikony') %><% if (s.aktualizovano) { %> <%= it.t('pocasi.aktualizovano', { kdy: it.fmtDatum(s.aktualizovano) }) %><% } %><% if (s.chyba) { %> <%= it.t('pocasi.zdroj_chyba') %><% } %></p>

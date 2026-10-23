@@ -1398,6 +1398,8 @@ export const cs = {
     stara: 'Předpověď je stará (poslední aktualizace {kdy}) — zdroj teď neodpovídá.',
     aktualizovano: 'Aktualizováno {kdy}.',
     zdroj: 'Předpověď: MET Norway (yr.no), licence CC BY 4.0',
+    zdroj_met: 'Předpověď: MET Norway (yr.no)',
+    licence: 'licence',
     zdroj_chyba: 'Poslední pokus o aktualizaci se nepovedl, zobrazují se poslední známé údaje.',
     ikony: 'Ikony: Yr / metno weathericons (MIT).',
     umisteni: 'Počasí na titulce',

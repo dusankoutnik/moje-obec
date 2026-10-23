@@ -22,10 +22,12 @@ const fmtCas = new Intl.DateTimeFormat('cs-CZ', { timeZone: PASMO, hour: 'numeri
 
 /** teplota s typografickým minusem: „−3 °C“ */
 export const fmtTeplota = (x: number | null, jednotka = true) =>
-  x === null ? '–' : `${Math.round(x) < 0 ? '−' : ''}${Math.abs(Math.round(x))}${jednotka ? ' °C' : '°'}`;
+  x === null
+    ? '–'
+    : `${Math.round(x) < 0 ? '−' : ''}${Math.abs(Math.round(x))}${jednotka ? '\u00a0°C' : '°'}`;
 /** srážky „0,4 mm“ */
 export const fmtSrazky = (x: number | null) =>
-  x === null ? '–' : `${(Math.round(x * 10) / 10).toLocaleString('cs-CZ')} mm`;
+  x === null ? '–' : `${(Math.round(x * 10) / 10).toLocaleString('cs-CZ')}\u00a0mm`;
 export const fmtHodina = (d: Date) => fmtCas.format(d);
 
 /** „dnes“, „zítra“, nebo „sobota 25. 10.“ */

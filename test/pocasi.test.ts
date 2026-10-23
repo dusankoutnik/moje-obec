@@ -233,7 +233,7 @@ describe('titulka a stránka /pocasi', () => {
     expect(text).not.toContain('pocasi-sklo');
     expect(text.indexOf('id="rychle"')).toBeLessThan(text.indexOf('poc-karta-h'));
     expect(text.indexOf('poc-karta-h')).toBeLessThan(text.indexOf('h-aktuality'));
-    expect(text).toContain('<p class="poc-teplota">12 °C</p>');
+    expect(text).toContain('<p class="poc-teplota">12\u00a0°C</p>');
     expect(text).toContain('zítra');
     expect(text).toContain('alt="');
     expect(text).toContain('href="/pocasi"');
