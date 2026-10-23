@@ -17,6 +17,8 @@ export interface PocasiNastaveni {
   lat: number;
   lon: number;
   nazev: string;
+  /** nadmořská výška obce z profilu (přepíše výšku bodu předpovědi z MET) */
+  vyska?: number | null;
   userAgent: string;
 }
 
@@ -187,7 +189,20 @@ export class PocasiSluzba {
     const d = await this.nacti();
     const ted = this.hodiny();
     const aktualizovano = datum(d.posledniUspech);
-    let p: Predpoved = { ted: null, hodiny: [], dny: [], modelZ: null };
+    let p: Predpoved = {
+      ted: null,
+      hodiny: [],
+      dny: [],
+      modelZ: null,
+      podminky: {
+        vyska: null,
+        tlak: null,
+        tlakZmena3h: null,
+        tlakTrend: null,
+        vlhkost: null,
+        smerVetru: null,
+      },
+    };
     if (d.odpoved) {
       // převod jednou za hodinu (výsledek závisí na aktuální hodině)
       const klic = `${d.posledniUspech}|${Math.floor(ted.getTime() / 3600_000)}`;
@@ -196,6 +211,7 @@ export class PocasiSluzba {
     }
     return {
       ...p,
+      podminky: { ...p.podminky, vyska: this.nastaveni.vyska ?? p.podminky.vyska },
       nazev: this.nastaveni.nazev,
       aktualizovano,
       chyba: d.chyba,

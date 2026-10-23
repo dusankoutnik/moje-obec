@@ -15,7 +15,8 @@ z balíčků npm, žádné CDN):
 | Nunito                | `@fontsource/nunito`                | SIL OFL 1.1                                                                       | písmo webu       |
 | Genos                 | `@fontsource/genos`                 | SIL OFL 1.1                                                                       | písmo webu       |
 | Quill 2               | `quill`                             | BSD-3-Clause                                                                      | editor ve správě |
-| Ikony počasí          | `metno/weathericons` (GitHub)       | MIT (© 2015–2017 Yr; text v `public/img/pocasi/LICENSE.txt`)                      | modul počasí     |
+
+- **Ikony počasí: Meteocons** (Bas Milius, https://github.com/basmilius/weather-icons) — licence MIT, `public/img/pocasi/` (statické) a `public/img/pocasi/anim/` (animované). Text licence v `public/img/pocasi/LICENSE.txt`.
 
 Na serveru (do prohlížeče se neposílá) navíc běží `fflate` (MIT) — čtení ZIP archivů kancelářských formátů
 (docx, xlsx, pptx, odt) kvůli textu dokumentů pro vyhledávání — a systémové nástroje z Debianu v obrazu Dockeru:

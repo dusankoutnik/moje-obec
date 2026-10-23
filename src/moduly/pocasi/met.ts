@@ -18,6 +18,8 @@ export interface MetBod {
   };
 }
 export interface MetOdpoved {
+  /** [lon, lat, nadmořská výška bodu předpovědi v m] */
+  geometry?: { coordinates?: number[] };
   properties: { meta?: { updated_at?: string }; timeseries: MetBod[] };
 }
 
@@ -127,6 +129,36 @@ export interface Predpoved {
   dny: Den[];
   /** čas výpočtu modelu MET (meta.updated_at) */
   modelZ: Date | null;
+  /** drobné údaje pod nadpisem dlaždice (2026-10-23, Dušan) */
+  podminky: Podminky;
+}
+
+export interface Podminky {
+  /** nadmořská výška bodu předpovědi z MET (profil obce ji může přepsat) */
+  vyska: number | null;
+  /** tlak přepočtený na hladinu moře, hPa */
+  tlak: number | null;
+  /** změna tlaku v příštích 3 hodinách (hPa) a slovní trend */
+  tlakZmena3h: number | null;
+  tlakTrend: 'rychle-stoupa' | 'stoupa' | 'stali' | 'klesa' | 'rychle-klesa' | null;
+  vlhkost: number | null;
+  /** odkud vítr vane: S, SV, V, JV, J, JZ, Z, SZ */
+  smerVetru: string | null;
+}
+
+const SMERY = ['S', 'SV', 'V', 'JV', 'J', 'JZ', 'Z', 'SZ'];
+export function smerVetru(stupne: number | null): string | null {
+  if (stupne === null) return null;
+  return SMERY[Math.round((((stupne % 360) + 360) % 360) / 45) % 8]!;
+}
+/** trend tlaku za 3 h podle běžných meteorologických prahů (≥ 3 hPa = rychlá změna) */
+export function trendTlaku(zmena: number | null): Podminky['tlakTrend'] {
+  if (zmena === null) return null;
+  if (zmena <= -3) return 'rychle-klesa';
+  if (zmena <= -1) return 'klesa';
+  if (zmena >= 3) return 'rychle-stoupa';
+  if (zmena >= 1) return 'stoupa';
+  return 'stali';
 }
 
 const kmh = (ms: number | undefined) => (typeof ms === 'number' ? Math.round(ms * 3.6) : null);
@@ -238,7 +270,26 @@ export function prevedMet(j: MetOdpoved, ted: Date, volby: { hodin?: number; dnu
     });
   }
   const upd = j.properties.meta?.updated_at ? new Date(j.properties.meta.updated_at) : null;
+  const det = (x: (typeof budouci)[number] | undefined, k: string) => cislo(x?.b.data.instant.details[k]);
+  const p0 = budouci[0];
+  const p3 = p0 ? budouci.find((x) => x.t.getTime() >= p0.t.getTime() + 3 * HODINA) : undefined;
+  const tlak = det(p0, 'air_pressure_at_sea_level');
+  const tlak3 = det(p3, 'air_pressure_at_sea_level');
+  const zmena = tlak !== null && tlak3 !== null ? Math.round((tlak3 - tlak) * 10) / 10 : null;
+  const vyska = cislo(j.geometry?.coordinates?.[2]);
+  const podminky: Podminky = {
+    vyska: vyska === null ? null : Math.round(vyska),
+    tlak: tlak === null ? null : Math.round(tlak),
+    tlakZmena3h: zmena,
+    tlakTrend: trendTlaku(zmena),
+    vlhkost: (() => {
+      const v = det(p0, 'relative_humidity');
+      return v === null ? null : Math.round(v);
+    })(),
+    smerVetru: smerVetru(det(p0, 'wind_from_direction')),
+  };
   return {
+    podminky,
     ted: ted1,
     hodiny,
     dny: vysledek,

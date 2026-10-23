@@ -1,6 +1,6 @@
 // Modul „pocasi“: předpověď počasí MET Norway (yr.no) — dlaždice na titulce (umístění ve Správě → Vzhled) a stránka
 // /pocasi (48 h po hodinách, 7 dní). Data stahuje server (nejvýš jednou za 30 min, podle Expires), prohlížeč
-// návštěvníka nic od MET nenačítá; ikony metno/weathericons (MIT) jsou v public/img/pocasi/. Výstrahy ČHMÚ
+// návštěvníka nic od MET nenačítá; ikony Meteocons (MIT, Bas Milius) jsou v public/img/pocasi/ (animované v anim/). Výstrahy ČHMÚ
 // z infokanálu (tabulka ik_vystrahy).
 import type { FastifyInstance } from 'fastify';
 import { Cron } from 'croner';
@@ -149,6 +149,7 @@ async function pocasiModul(app: FastifyInstance, volby: { planovac: boolean }) {
       lat: p.lat,
       lon: p.lon,
       nazev: p.nazev || app.obec.obec.kratky_nazev,
+      vyska: p.vyska,
       // podmínka MET Norway: identifikace aplikace a kontakt (adresa webu)
       userAgent: `ObecniWebOdVoltu/2.0 ${app.env.BASE_URL}`,
     },

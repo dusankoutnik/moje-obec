@@ -179,6 +179,8 @@ export const ObecSchema = z.object({
       lon: z.number().min(-180).max(180).nullable().default(null),
       // název místa v nadpisu („Počasí ve Vlastibořicích“); prázdné = obec.kratky_nazev
       nazev: z.string().default(''),
+      // nadmořská výška obce v m (drobný údaj v dlaždici); prázdné = výška bodu předpovědi z MET
+      vyska: z.number().int().min(-500).max(9000).nullable().default(null),
     })
     .prefault({}),
   texty: z

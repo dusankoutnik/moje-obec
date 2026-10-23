@@ -4,9 +4,15 @@
 <section class="pocasi-dlazdice pocasi-<%= it.varianta %><%= it.trida ? ' ' + it.trida : '' %>" aria-labelledby="<%= it.idp %>-h">
   <% if (it.pocasi.vystrahy.length) { %><%~ include('/pocasi/_vystraha', Object.assign({}, it, { v: it.pocasi.vystrahy[0] })) %><% } %>
   <h2 id="<%= it.idp %>-h"><%= it.t('pocasi.nadpis_dlazdice') %> <span class="poc-misto"><%= s.nazev %></span></h2>
+  <% const pm = s.podminky, cast = [] %>
+  <% if (pm.vyska !== null) cast.push(it.t('pocasi.vyska', { n: pm.vyska })) %>
+  <% if (pm.tlak !== null) cast.push(it.t('pocasi.tlak', { n: pm.tlak }) + (pm.tlakTrend ? ', ' + it.t('pocasi.tlak_trend_' + pm.tlakTrend.replace(/-/g, '_')) : '')) %>
+  <% if (pm.vlhkost !== null) cast.push(it.t('pocasi.vlhkost', { n: pm.vlhkost })) %>
+  <% if (pm.smerVetru) cast.push(it.t('pocasi.vitr_od', { smer: pm.smerVetru })) %>
+  <% if (cast.length) { %><p class="poc-meta"><%= cast.join(' · ') %></p><% } %>
   <div class="poc-obsah">
     <div class="poc-dnes">
-      <img src="/static/img/pocasi/<%= h.symbol || 'cloudy' %>.svg" alt="" width="72" height="72">
+      <picture><source srcset="/static/img/pocasi/anim/<%= h.symbol || 'cloudy' %>.svg" media="(prefers-reduced-motion: no-preference)"><img src="/static/img/pocasi/<%= h.symbol || 'cloudy' %>.svg" alt="" width="80" height="80"></picture>
       <div>
         <p class="poc-den-nazev"><%= it.t('pocasi.ted') %></p>
         <p class="poc-teplota"><%= it.fmtTeplota(h.teplota) %></p>
@@ -15,10 +21,11 @@
       </div>
     </div>
     <ul class="poc-dalsi">
-      <% dny.slice(1, 3).forEach(function (d, i) { %>
-      <li class="<%= i === 1 ? 'poc-pozitri' : '' %>">
+      <% /* až 6 dalších dní; kolik se jich vejde, ukáže CSS (řádek s pevnou výškou, co se zalomí, je skryté) */ %>
+      <% dny.slice(1, 7).forEach(function (d) { %>
+      <li>
         <p class="poc-den-nazev"><%= it.nazevDne(d, ted, it.t) %></p>
-        <img src="/static/img/pocasi/<%= d.symbol %>.svg" alt="<%= d.popis %>" width="44" height="44">
+        <img src="/static/img/pocasi/<%= d.symbol %>.svg" alt="<%= d.popis %>" width="52" height="52">
         <p class="poc-maxmin"><span class="vh"><%= it.t('pocasi.nejvys') %> </span><strong><%= it.fmtTeplota(d.max) %></strong> <span class="vh"><%= it.t('pocasi.nejniz') %> </span><span class="poc-min"><%= it.fmtTeplota(d.min) %></span></p>
         <p class="poc-detail"><span class="vh"><%= it.t('pocasi.srazky') %> </span><%= it.fmtSrazky(d.srazky) %></p>
       </li>

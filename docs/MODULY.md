@@ -300,7 +300,7 @@ obce): dlaždice s předpovědí na titulce a stránka `/pocasi`.
   dvojího započtení (hodinové, kde jsou, dál šestihodinové — blok se počítá ke dni svého začátku), nejvyšší vítr
   (m/s → km/h), symbol = šestihodinový souhrn bodu nejblíž poledni (denní varianta ikony). Český popis pro všech
   83 symbolů (`popisSymbolu`, „… a bouřky“).
-- **Ikony:** `metno/weathericons` (MIT) v `public/img/pocasi/` — soubory přejmenované bez překlepu MET
+- **Ikony:** Meteocons (Bas Milius, MIT) v `public/img/pocasi/` pod názvy `symbol_code` MET (35 ikon pro 83 symbolů; fair → partly-cloudy, partlycloudy → overcast-day/night, cloudy → overcast, light/heavy srážky → drizzle/extreme, přeháňky → partly-cloudy-_-déšť/sníh, bouřky → thunderstorms-_); `anim/` = animované, „Teď“ je animuje jen při `prefers-reduced-motion: no-preference`. Na titulce až 6 dalších dní — kolik se vejde podle šířky (řádek s pevnou výškou, zalomené dny skryté).
   (`lightssleet…` → `lightsleet…`). Ikona má `alt` s českým popisem; u „Teď“, kde popis stojí hned vedle jako text,
   je `alt=""` (nečte se dvakrát).
 - **Titulka:** dnes (aktuální teplota, popis, max/min, srážky, vítr) + zítra a pozítří (na telefonu jen zítra),

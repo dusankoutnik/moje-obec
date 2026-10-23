@@ -1,6 +1,10 @@
-The MIT License (MIT)
+Ikony počasí: Meteocons (Bas Milius), https://github.com/basmilius/weather-icons — licence MIT.
+Soubory jsou pojmenované podle symbol_code MET Norway; mapování symbolů na ikony je v docs/MODULY.md (sekce Počasí).
+anim/ = animované verze (zobrazují se jen bez systémového omezení pohybu).
 
-Copyright (c) 2015-2017 Yr
+MIT License
+
+Copyright (c) 2020-2024 Bas Milius
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -110,7 +110,7 @@ describe('profil obce', () => {
     const zaklad = { obec: { nazev: 'Obec X', kratky_nazev: 'X', casti: ['X'] } };
     const o = obecZObjektu(zaklad);
     expect(o.moduly.pocasi).toBe(false);
-    expect(o.pocasi).toEqual({ lat: null, lon: null, nazev: '' });
+    expect(o.pocasi).toEqual({ lat: null, lon: null, nazev: '', vyska: null });
     expect(() => obecZObjektu({ ...zaklad, pocasi: { lat: 91, lon: 15 } })).toThrow();
   });
 });
@@ -375,5 +375,20 @@ describe('modul vypnutý v obec.yml', () => {
     expect(t.app.pocasi).toBeUndefined();
     expect((await new Prohlizec(t.base).get('/pocasi')).res.status).toBe(404);
     expect((await new Prohlizec(t.base).get('/')).text).not.toContain('pocasi-dlazdice');
+  });
+});
+
+import { smerVetru, trendTlaku } from '../src/moduly/pocasi/met.js';
+describe('drobné údaje dlaždice', () => {
+  it('trend tlaku a směr větru', () => {
+    expect(trendTlaku(-3.4)).toBe('rychle-klesa');
+    expect(trendTlaku(-1.2)).toBe('klesa');
+    expect(trendTlaku(0.4)).toBe('stali');
+    expect(trendTlaku(1.5)).toBe('stoupa');
+    expect(trendTlaku(3)).toBe('rychle-stoupa');
+    expect(smerVetru(0)).toBe('S');
+    expect(smerVetru(225)).toBe('JZ');
+    expect(smerVetru(359)).toBe('S');
+    expect(smerVetru(null)).toBe(null);
   });
 });

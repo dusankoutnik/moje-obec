@@ -17,7 +17,7 @@
 <section class="panel pocasi-stranka" aria-labelledby="h-ted">
   <h2 id="h-ted"><%= it.t('pocasi.ted') %></h2>
   <div class="poc-dnes">
-    <img src="/static/img/pocasi/<%= s.ted.symbol || 'cloudy' %>.svg" alt="" width="96" height="96">
+    <picture><source srcset="/static/img/pocasi/anim/<%= s.ted.symbol || 'cloudy' %>.svg" media="(prefers-reduced-motion: no-preference)"><img src="/static/img/pocasi/<%= s.ted.symbol || 'cloudy' %>.svg" alt="" width="104" height="104"></picture>
     <div>
       <p class="poc-teplota"><%= it.fmtTeplota(s.ted.teplota) %></p>
       <p class="poc-popis"><%= s.ted.popis %></p>

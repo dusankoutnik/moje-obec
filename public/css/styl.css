@@ -2642,14 +2642,12 @@ button.kviz-odpoved:active {
   .jen-telefon {
     display: block;
   }
-  .jen-pocitac,
-  .poc-pozitri {
+  .jen-pocitac {
     display: none;
   }
-  /* telefon: dnes a zítra vedle sebe */
+  /* telefon: dnes nahoře, další dny pod ním přes celou šířku (vejdou se 3–4) */
   .poc-obsah {
-    flex-wrap: nowrap;
-    align-items: flex-start;
+    flex-wrap: wrap;
     gap: 10px;
   }
   .poc-dnes {
@@ -2664,10 +2662,11 @@ button.kviz-odpoved:active {
     font-size: 1.9rem;
   }
   .poc-dalsi {
-    flex: none;
+    flex-basis: 100%;
+    justify-content: space-between;
   }
   .poc-dalsi li {
-    min-width: 72px;
+    min-width: 70px;
   }
 }
 
@@ -2888,4 +2887,49 @@ button.kviz-odpoved:active {
 .zavoj-volba output {
   font-weight: 700;
   margin-left: 0.5em;
+}
+
+/* Počasí: počet dní podle šířky (2026-10-23, Dušan) — dny jsou v jednom řádku s pevnou výškou; co se
+   nevejde, zalomí se do dalšího řádku a je skryté. Vždy se tedy ukážou nejbližší dny, kolik se jich vejde. */
+.poc-obsah {
+  flex-wrap: nowrap;
+}
+.poc-dnes {
+  flex: none;
+}
+.poc-dalsi {
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  row-gap: 0;
+  max-height: 8.6em;
+  overflow: hidden;
+}
+.poc-dalsi li {
+  height: 8.6em;
+}
+@media (max-width: 600px) {
+  .poc-obsah {
+    flex-wrap: wrap;
+  }
+  .poc-dalsi {
+    justify-content: space-between;
+  }
+}
+
+/* Počasí: drobné údaje pod nadpisem dlaždice (výška, tlak a trend, vlhkost, vítr) */
+.poc-meta {
+  margin: -4px 0 10px;
+  font-size: 0.82rem;
+  opacity: 0.92;
+}
+.pocasi-karta .poc-meta {
+  color: var(--text-tlumeny);
+  opacity: 1;
+}
+
+/* Počasí: zdroj a čas aktualizace drobněji (2026-10-23, Dušan) */
+.pocasi-dlazdice .poc-zdroj {
+  font-size: 0.72rem;
 }
