@@ -24,6 +24,7 @@
       <% if (s.dny[0]) { %><p class="poc-detail"><%= it.t('pocasi.dnes') %>: <%= it.t('pocasi.max_min', { max: it.fmtTeplota(s.dny[0].max), min: it.fmtTeplota(s.dny[0].min) }) %> · <%= it.t('pocasi.srazky') %> <%= it.fmtSrazky(s.dny[0].srazky) %> · <%= it.t('pocasi.vitr') %> <%= it.t('pocasi.vitr_hodnota', { n: s.dny[0].vitrMax === null ? '–' : s.dny[0].vitrMax }) %></p><% } %>
     </div>
   </div>
+  <%~ include('/pocasi/_astro', it) %>
 </section>
 
 <% if (s.hodiny.length) { %>

@@ -14,6 +14,7 @@
   <% if (pm.vlhkost !== null) cast.push(it.t('pocasi.vlhkost', { n: pm.vlhkost })) %>
   <% if (pm.smerVetru) cast.push(it.t('pocasi.vitr_od', { smer: pm.smerVetru })) %>
   <% if (cast.length) { %><p class="poc-meta"><%= cast.join(' · ') %></p><% } %>
+  <%~ include('/pocasi/_astro', it) %>
   <div class="poc-obsah">
     <div class="poc-dnes">
       <picture><source srcset="/static/img/pocasi/anim/<%= h.symbol || 'cloudy' %>.svg" media="(prefers-reduced-motion: no-preference)"><img src="/static/img/pocasi/<%= h.symbol || 'cloudy' %>.svg" alt="" width="80" height="80"></picture>

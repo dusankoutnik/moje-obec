@@ -5,6 +5,7 @@
 import type { FastifyBaseLogger } from 'fastify';
 import { sql } from 'kysely';
 import type { Db } from '../../db/index.js';
+import { astro, type Astro } from './astro.js';
 import { jeOdpovedMet, MET_API, prevedMet, type MetOdpoved, type Predpoved } from './met.js';
 
 export const KLIC_NASTAVENI = 'pocasi_met';
@@ -50,7 +51,8 @@ export interface StavPocasi extends Predpoved {
   aktualizovano: Date | null;
   chyba: string | null;
   /** data starší než 12 h (nebo žádná) — titulka dlaždici nevykreslí */
-  stara: boolean;
+  stara: boolean; /** Slunce a Měsíc dnes (počítané lokálně) */
+  astro: Astro;
 }
 
 const PRAZDNE: Ulozeno = {
@@ -215,6 +217,7 @@ export class PocasiSluzba {
       nazev: this.nastaveni.nazev,
       aktualizovano,
       chyba: d.chyba,
+      astro: astro(ted, this.nastaveni.lat, this.nastaveni.lon),
       stara: !aktualizovano || !p.ted || ted.getTime() - aktualizovano.getTime() > STARI_MS,
     };
   }

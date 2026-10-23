@@ -81,6 +81,30 @@ export const PISMA: Pismo[] = [
     meritko: 1.2,
   },
   {
+    id: 'libertinus',
+    nazev: 'Libertinus (Linux Biolinum + Libertine)',
+    popis: 'Knižní klasika z Linuxu — bezpatkový Biolinum v textu, patkové Libertine v nadpisech.',
+    telo: r('Libertinus Sans', 'libertinus-sans', [400, 700]),
+    nadpis: r('Libertinus Serif', 'libertinus-serif', [600, 700]),
+    meritko: 1.06,
+  },
+  {
+    id: 'fira',
+    nazev: 'Fira Sans',
+    popis: 'Jasné, technické a přitom vlídné (Mozilla) — dobře se čte i na telefonu.',
+    telo: r('Fira Sans', 'fira-sans', [400, 600, 700]),
+    nadpis: r('Fira Sans', 'fira-sans', [700]),
+    meritko: 1,
+  },
+  {
+    id: 'lora',
+    nazev: 'Lora + Open Sans',
+    popis: 'Elegantní patkové nadpisy (Lora) s neutrálním textem (Open Sans).',
+    telo: r('Open Sans', 'open-sans', [400, 600, 700]),
+    nadpis: r('Lora', 'lora', [700]),
+    meritko: 1,
+  },
+  {
     id: 'outdoor',
     nazev: 'Genos + Rubik Dirt',
     popis: 'Genos a „ušpiněný“ ozdobný titulek — sportovní a turistický styl.',
@@ -177,6 +201,96 @@ export const RODINY: Rodina[] = [
     meritko: 1.2,
   },
   {
+    id: 'libertinus-sans',
+    nazev: 'Libertinus Sans (Linux Biolinum)',
+    popis: 'klasické, knižní bezpatkové',
+    telo: r('Libertinus Sans', 'libertinus-sans', [400, 700]),
+    nadpis: r('Libertinus Sans', 'libertinus-sans', [700]),
+    titulek: r('Libertinus Sans', 'libertinus-sans', [700]),
+    meritko: 1.06,
+  },
+  {
+    id: 'libertinus-serif',
+    nazev: 'Libertinus Serif (Linux Libertine)',
+    popis: 'patkové, knižní',
+    telo: r('Libertinus Serif', 'libertinus-serif', [400, 600, 700]),
+    nadpis: r('Libertinus Serif', 'libertinus-serif', [700]),
+    titulek: r('Libertinus Serif', 'libertinus-serif', [700]),
+    meritko: 1.06,
+  },
+  {
+    id: 'fira',
+    nazev: 'Fira Sans',
+    popis: 'jasné, technické',
+    telo: r('Fira Sans', 'fira-sans', [400, 600, 700]),
+    nadpis: r('Fira Sans', 'fira-sans', [700]),
+    titulek: r('Fira Sans', 'fira-sans', [800]),
+    meritko: 1,
+  },
+  {
+    id: 'open-sans',
+    nazev: 'Open Sans',
+    popis: 'neutrální, velmi rozšířené',
+    telo: r('Open Sans', 'open-sans', [400, 600, 700]),
+    nadpis: r('Open Sans', 'open-sans', [700]),
+    titulek: r('Open Sans', 'open-sans', [800]),
+    meritko: 1,
+  },
+  {
+    id: 'noto-sans',
+    nazev: 'Noto Sans',
+    popis: 'univerzální, střídmé',
+    telo: r('Noto Sans', 'noto-sans', [400, 600, 700]),
+    nadpis: r('Noto Sans', 'noto-sans', [700]),
+    titulek: r('Noto Sans', 'noto-sans', [800]),
+    meritko: 1,
+  },
+  {
+    id: 'pt-sans',
+    nazev: 'PT Sans',
+    popis: 'úřední, mírně úzké',
+    telo: r('PT Sans', 'pt-sans', [400, 700]),
+    nadpis: r('PT Sans', 'pt-sans', [700]),
+    titulek: r('PT Sans', 'pt-sans', [700]),
+    meritko: 1.04,
+  },
+  {
+    id: 'alegreya-sans',
+    nazev: 'Alegreya Sans',
+    popis: 'kaligrafické, literární',
+    telo: r('Alegreya Sans', 'alegreya-sans', [400, 500, 700]),
+    nadpis: r('Alegreya Sans', 'alegreya-sans', [700]),
+    titulek: r('Alegreya Sans', 'alegreya-sans', [800]),
+    meritko: 1.06,
+  },
+  {
+    id: 'montserrat',
+    nazev: 'Montserrat',
+    popis: 'geometrické, výrazné nadpisy',
+    telo: r('Montserrat', 'montserrat', [400, 600, 700]),
+    nadpis: r('Montserrat', 'montserrat', [700]),
+    titulek: r('Montserrat', 'montserrat', [800]),
+    meritko: 0.96,
+  },
+  {
+    id: 'lora',
+    nazev: 'Lora',
+    popis: 'patkové, elegantní',
+    telo: r('Lora', 'lora', [400, 600, 700]),
+    nadpis: r('Lora', 'lora', [700]),
+    titulek: r('Lora', 'lora', [700]),
+    meritko: 1,
+  },
+  {
+    id: 'roboto-slab',
+    nazev: 'Roboto Slab',
+    popis: 'tučné patky, plakátové',
+    telo: r('Roboto Slab', 'roboto-slab', [400, 600, 700]),
+    nadpis: r('Roboto Slab', 'roboto-slab', [700]),
+    titulek: r('Roboto Slab', 'roboto-slab', [800]),
+    meritko: 0.98,
+  },
+  {
     id: 'rubik-dirt',
     nazev: 'Rubik Dirt',
     popis: 'ošoupané, ozdobné — jen velký titulek',
@@ -224,8 +338,8 @@ export function pismoPodleId(id: string | null | undefined): Pismo {
 }
 
 const ZALOHA = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
-const zasobnik = (rez: Rez) =>
-  `'${rez.rodina}', ${rez.rodina === 'Merriweather' ? 'Georgia, serif' : ZALOHA}`;
+const PATKOVA = new Set(['Merriweather', 'Libertinus Serif', 'Lora', 'Roboto Slab']);
+const zasobnik = (rez: Rez) => `'${rez.rodina}', ${PATKOVA.has(rez.rodina) ? 'Georgia, serif' : ZALOHA}`;
 
 /** @font-face pro dané dvojice (prohlížeč stahuje jen písma, která stránka opravdu použije) */
 export function fontFace(pisma: Pismo[]): string {

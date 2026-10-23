@@ -1,0 +1,12 @@
+<% /* Slunce a Měsíc dnes: ikona + čas; text pro čtečky v alt/title, fáze Měsíce slovy */ %>
+<% const a = it.pocasi.stav.astro %>
+<% const ikona = (n, popis) => `<img src="/static/img/pocasi/astro/${n}.svg" alt="${popis}" title="${popis}" width="28" height="28">` %>
+<% const cas = (d) => d ? it.fmtHodina(d) : '–' %>
+<% const faze = it.t('pocasi.faze_' + a.faze) %>
+<ul class="poc-astro">
+  <li><%~ ikona('sunrise', it.t('pocasi.slunce_vychod')) %><%= cas(a.slunceVychod) %></li>
+  <li><%~ ikona('sunset', it.t('pocasi.slunce_zapad')) %><%= cas(a.slunceZapad) %></li>
+  <li class="poc-astro-faze"><%~ ikona(a.faze, faze + ', ' + it.t('pocasi.mesic_osvetleni', { n: a.osvetleni })) %><%= faze %></li>
+  <% if (a.mesicVychod) { %><li><%~ ikona('moonrise', it.t('pocasi.mesic_vychod')) %><%= cas(a.mesicVychod) %></li><% } %>
+  <% if (a.mesicZapad) { %><li><%~ ikona('moonset', it.t('pocasi.mesic_zapad')) %><%= cas(a.mesicZapad) %></li><% } %>
+</ul>
