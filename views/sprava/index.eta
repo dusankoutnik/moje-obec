@@ -62,7 +62,7 @@
 <% skupiny.forEach(function (g) { %>
 <section class="sprava-skupina" aria-label="<%= g.nazev %>">
   <h2><%= g.nazev %></h2>
-  <% if (g.dl.length) { %>
+  <% if (g.dl.length || (g.pod && it.sms)) { %>
   <ul class="dlazdice-mini">
     <% g.dl.forEach(function (d) { %>
     <li<% if (d.id) { %> id="<%= d.id %>"<% } %>>
@@ -72,21 +72,17 @@
       <% if (d.akce) { %><a class="dm-akce" href="<%= d.akce.href %>">+ <%= d.akce.text %></a><% } %>
     </li>
     <% }) %>
-  </ul>
-  <% } %>
-  <% if (g.pod && it.sms) { %>
-  <div class="karta sms-karta" id="sms-prehled"><h3><%= t('sprava.sms_nadpis') %></h3>
-    <p class="cislo"><%= it.sms.limit > 0 ? t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) : t('sprava.sms_kody_bez_limitu', { n: it.sms.kodu24h }) %></p>
-    <% if (it.sms.limit > 0) { %><meter min="0" max="<%= it.sms.limit %>" high="<%= Math.ceil(it.sms.limit * 0.8) %>" value="<%= Math.min(it.sms.kodu24h, it.sms.limit) %>" aria-label="<%= t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) %>"></meter><% } %>
-    <% if (it.sms.vycerpano) { %><p class="flash flash-chyba" role="status"><%= t('sprava.sms_vycerpano', { datum: it.fmtDatum(it.sms.vycerpano.at), n: it.sms.vycerpano.pocet }) %></p><% } %>
-    <% if (it.sms.fronta) { %>
-    <p><%= t('sprava.sms_fronta', { kanal: it.obec.texty.nazev_infokanalu }) %>:
-      <%= t('sprava.sms_ceka') %> <strong><%= it.sms.fronta.ceka %></strong> ·
-      <%= t('sprava.sms_odesila') %> <strong><%= it.sms.fronta.odesilaSe %></strong> ·
-      <%= t('sprava.sms_odeslano') %> <strong><%= it.sms.fronta.odeslano24h %></strong> ·
-      <%= t('sprava.sms_vzdano') %> <strong><%= it.sms.fronta.vzdano24h %></strong></p>
+    <% if (g.pod && it.sms) { %>
+    <li class="dm-siroka" id="sms-prehled">
+      <span class="dm-hlavni dm-bez-odkazu"><span class="dm-ikona" aria-hidden="true">📱</span><span class="dm-nazev"><%= t('sprava.sms_nadpis') %></span></span>
+      <span class="dm-popis">Přihlašovací kódy poslané za posledních 24 hodin (denní limit chrání před zneužitím) a stav rozesílky hlášení.</span>
+      <span class="dm-cislo"><%= it.sms.limit > 0 ? t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) : t('sprava.sms_kody_bez_limitu', { n: it.sms.kodu24h }) %></span>
+      <% if (it.sms.limit > 0) { %><meter min="0" max="<%= it.sms.limit %>" high="<%= Math.ceil(it.sms.limit * 0.8) %>" value="<%= Math.min(it.sms.kodu24h, it.sms.limit) %>" aria-label="<%= t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) %>"></meter><% } %>
+      <% if (it.sms.vycerpano) { %><span class="flash flash-chyba" role="status"><%= t('sprava.sms_vycerpano', { datum: it.fmtDatum(it.sms.vycerpano.at), n: it.sms.vycerpano.pocet }) %></span><% } %>
+      <% if (it.sms.fronta) { %><span class="dm-popis"><%= t('sprava.sms_fronta', { kanal: it.obec.texty.nazev_infokanalu }) %>: <%= t('sprava.sms_ceka') %> <strong><%= it.sms.fronta.ceka %></strong> · <%= t('sprava.sms_odesila') %> <strong><%= it.sms.fronta.odesilaSe %></strong> · <%= t('sprava.sms_odeslano') %> <strong><%= it.sms.fronta.odeslano24h %></strong> · <%= t('sprava.sms_vzdano') %> <strong><%= it.sms.fronta.vzdano24h %></strong></span><% } %>
+    </li>
     <% } %>
-  </div>
+  </ul>
   <% } %>
 </section>
 <% }) %>
