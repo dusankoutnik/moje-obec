@@ -178,12 +178,7 @@ describe('s aplikací', () => {
   });
 
   it('veřejné stránky bez formuláře nezakládají cookie; přihlášení a odběr ano', async () => {
-    for (const url of [
-      '/',
-      '/uredni-deska',
-      '/povinne-informace',
-      '/prohlaseni-o-pristupnosti',
-    ]) {
+    for (const url of ['/', '/uredni-deska', '/povinne-informace', '/prohlaseni-o-pristupnosti']) {
       const r = await fetch(t.base + url, { headers: { accept: 'text/html' } });
       expect(r.status, url).toBe(200);
       expect(r.headers.getSetCookie().join(' '), url).not.toContain('mo_sezeni');
