@@ -17,6 +17,7 @@ export const cs = {
     patika_kontakt: 'Kontakt',
     patika_zdroj: 'Otevřený software Obecní web od Voltu 2.0 (EUPL-1.2)',
     patika_vyrobce: 'Obecní web od Voltu 2.0',
+    patika_slogan: 'Spojujeme Evropu',
     patika_vyrobce_logo: 'Volt',
     chyba_404: 'Stránka nenalezena',
     chyba_404_text: 'Takovou stránku tu nemáme. Zkontrolujte adresu nebo se vraťte na úvod.',
