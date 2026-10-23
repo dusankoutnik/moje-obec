@@ -144,11 +144,12 @@ export const SCHEMATA: Schema[] = [
 ];
 
 /** průhlednosti přes fotku: gradient shora/dole, sklo panelů; text přímo na fotce má vlastní podklad SKLO_TEXT
- *  (2026-10-22, Dušan: „fotka je málo vidět“ — závoj zesvětlen z 0,72/0,9, čitelnost drží podklad pod textem) */
-export const GRADIENT_HORE = 0.4;
-export const GRADIENT_DOLE = 0.6;
-export const SKLO = 0.55;
-export const SKLO_TEXT = 0.6;
+ *  (2026-10-22, Dušan: „fotka je málo vidět“ — závoj zesvětlen z 0,72/0,9; 2026-10-23 znovu z 0,4/0,6 na 0,28/0,45, sklo 0,55→0,62 a podklad textu 0,6→0,62 kvůli kontrastu AA;
+ *  čitelnost drží podklad pod textem) */
+export const GRADIENT_HORE = 0.28;
+export const GRADIENT_DOLE = 0.45;
+export const SKLO = 0.62;
+export const SKLO_TEXT = 0.62;
 
 export function schemaPodleId(id: string | null | undefined): Schema | undefined {
   return SCHEMATA.find((s) => s.id === id);

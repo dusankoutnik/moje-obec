@@ -101,10 +101,10 @@ main {
   --aktivni-text: #132016;
   --tmava: #132016;
   --svetla: #e8f3e9;
-  --gradient-hore: rgba(19, 32, 22, 0.4);
-  --gradient-dole: rgba(19, 32, 22, 0.6);
-  --sklo: rgba(19, 32, 22, 0.55);
-  --sklo-text: rgba(19, 32, 22, 0.6);
+  --gradient-hore: rgba(19, 32, 22, 0.28);
+  --gradient-dole: rgba(19, 32, 22, 0.45);
+  --sklo: rgba(19, 32, 22, 0.62);
+  --sklo-text: rgba(19, 32, 22, 0.62);
   --sklo-husty: rgba(19, 32, 22, 0.82);
   --sklo-okraj: rgba(255, 255, 255, 0.18);
   --radius: 0.625rem;
