@@ -2933,3 +2933,10 @@ button.kviz-odpoved:active {
 .pocasi-dlazdice .poc-zdroj {
   font-size: 0.72rem;
 }
+
+/* Počasí: bílé mráčky Meteocons na bílé kartě a na stránce /pocasi nebyly vidět (2026-10-23, Dušan) —
+   na světlém podkladu jemný šedomodrý obrys a stín; na skle (tmavé) se nic nemění */
+.pocasi-karta img,
+.pocasi-stranka img {
+  filter: drop-shadow(0 0 1px rgba(40, 60, 80, 0.55)) drop-shadow(0 2px 3px rgba(40, 60, 80, 0.3));
+}
