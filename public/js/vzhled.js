@@ -22,6 +22,12 @@
       if (vlastni) vlastni.checked = true;
     });
   });
+  var zavoj = form.querySelector('#zavoj');
+  var zavojHodnota = form.querySelector('#zavoj-hodnota');
+  if (zavoj && zavojHodnota)
+    zavoj.addEventListener('input', function () {
+      zavojHodnota.textContent = zavoj.value + ' %';
+    });
   var nazev = form.querySelector('#nazev');
   if (nazev)
     nazev.addEventListener('input', function () {

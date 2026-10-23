@@ -120,6 +120,14 @@
       <label class="zatrzitko"><input type="radio" name="pozadi_rezim" value="<%= r %>" <%= it.v.pozadiRezim === r ? 'checked' : '' %>> <%= it.t('web.pozadi_' + r) %></label>
       <% }) %>
     </div>
+    <% var PR = it.v.pruhlednosti; %>
+    <div class="zavoj-volba">
+      <label for="zavoj"><strong>Ztmavení fotky na pozadí</strong> <output id="zavoj-hodnota" for="zavoj"><%= Math.round(PR.hore * 100) %> %</output></label>
+      <input type="range" id="zavoj" name="zavoj" min="0" max="80" step="1" value="<%= Math.round(PR.hore * 100) %>" aria-describedby="zavoj-n">
+      <p class="napoveda" id="zavoj-n">Menší číslo = fotka je víc vidět. Skleněné panely (menu, karty) a podklad pod textem se po uložení nebo v náhledu
+        <strong>dopočítají samy</strong> tak, aby text měl vždy zákonný kontrast aspoň 4,5 : 1 (WCAG 2.1 AA): čím světlejší fotka, tím hustší sklo.
+        Teď: sklo <strong><%= Math.round(PR.sklo * 100) %> %</strong>, podklad textu <strong><%= Math.round(PR.skloText * 100) %> %</strong>, fotka dole <%= Math.round(PR.dole * 100) %> %.</p>
+    </div>
     <p class="vh" id="efekt-h"><%= it.t('web.efekt_menu') %></p>
     <div role="radiogroup" aria-labelledby="efekt-h" aria-describedby="efekt-n">
       <strong aria-hidden="true"><%= it.t('web.efekt_menu') %></strong>

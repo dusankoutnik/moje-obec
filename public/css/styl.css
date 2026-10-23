@@ -2594,3 +2594,18 @@ button.kviz-odpoved:active {
 .kontakt-formular textarea {
   width: 100%;
 }
+
+/* Správa vzhledu: posuvník ztmavení fotky (2026-10-23) */
+.zavoj-volba {
+  margin: 12px 0 16px;
+}
+.zavoj-volba input[type='range'] {
+  width: min(420px, 100%);
+  display: block;
+  margin: 6px 0;
+  accent-color: var(--primarni);
+}
+.zavoj-volba output {
+  font-weight: 700;
+  margin-left: 0.5em;
+}

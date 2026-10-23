@@ -65,3 +65,9 @@ export function pres(horni: Rgb01, alfa: number, spodni: Rgb01): Rgb01 {
 
 export const BILA: Rgb01 = [1, 1, 1];
 export const CERNA: Rgb01 = [0, 0, 0];
+
+/** '#rrggbb' → sRGB 0–1 (pro výpočty kontrastu u vlastní barvy) */
+export function hexNaSrgb(hex: string): Rgb01 {
+  const h = hex.replace('#', '');
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255) as Rgb01;
+}

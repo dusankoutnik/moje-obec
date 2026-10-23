@@ -2,7 +2,13 @@
 // (WCAG 2.1 AA) — počítáno, ne odhadnuto. Včetně nejhoršího případu textu přes úplně bílou fotku.
 import { describe, expect, it } from 'vitest';
 import { oklchNaHex, vGamutu } from '../src/lib/oklch.js';
-import { cssSchematu, overSchema, SCHEMATA } from '../src/moduly/web/schemata.js';
+import {
+  cssSchematu,
+  overSchema,
+  pruhlednostiSchematu,
+  SCHEMATA,
+  type Pruhlednosti,
+} from '../src/moduly/web/schemata.js';
 
 describe('barevná schémata', () => {
   it('jsou aspoň 6 a mají unikátní id', () => {
@@ -49,5 +55,29 @@ describe('šablony', () => {
     };
     projdi('views');
     expect(chyby).toEqual([]);
+  });
+
+  it('ztmavení fotky 0–80 %: sklo a podklad textu se dopočítají tak, aby kontrast vždy prošel', () => {
+    for (const sch of SCHEMATA)
+      for (let z = 0; z <= 0.8001; z += 0.05) {
+        const p = pruhlednostiSchematu(sch, z);
+        for (const d of overSchema(sch, p))
+          expect(d.kontrast, `${sch.id} závoj ${z.toFixed(2)}: ${d.nazev}`).toBeGreaterThanOrEqual(d.min);
+        // nejmenší možné: o setinu průhlednější sklo už neprojde (pokud není na spodní hranici 0,3)
+        if (p.sklo > 0.3) {
+          const slabsi: Pruhlednosti = { ...p, sklo: Math.round((p.sklo - 0.01) * 100) / 100 };
+          expect(
+            overSchema(sch, slabsi).some((d) => d.kontrast < d.min),
+            `${sch.id} ${z}: sklo není nejmenší`,
+          ).toBe(true);
+        }
+      }
+  });
+  it('světlejší fotka = hustší sklo', () => {
+    const sch = SCHEMATA[0]!;
+    expect(pruhlednostiSchematu(sch, 0.1).sklo).toBeGreaterThanOrEqual(pruhlednostiSchematu(sch, 0.6).sklo);
+    expect(cssSchematu(sch, ':root', pruhlednostiSchematu(sch, 0.2))).toMatch(
+      /--gradient-hore:rgba\([^)]*, 0\.2\)/,
+    );
   });
 });

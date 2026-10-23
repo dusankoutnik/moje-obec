@@ -146,10 +146,54 @@ export const SCHEMATA: Schema[] = [
 /** průhlednosti přes fotku: gradient shora/dole, sklo panelů; text přímo na fotce má vlastní podklad SKLO_TEXT
  *  (2026-10-22, Dušan: „fotka je málo vidět“ — závoj zesvětlen z 0,72/0,9; 2026-10-23 znovu z 0,4/0,6 na 0,28/0,45, sklo 0,55→0,62 a podklad textu 0,6→0,62 kvůli kontrastu AA;
  *  čitelnost drží podklad pod textem) */
+/** výchozí ztmavení fotky; sklo a podklad textu se počítají v pruhlednostiProZavoj (konstanty níže = záloha) */
 export const GRADIENT_HORE = 0.28;
 export const GRADIENT_DOLE = 0.45;
 export const SKLO = 0.62;
 export const SKLO_TEXT = 0.62;
+
+/** průhlednosti vrstev přes fotku na pozadí (0–1) */
+export interface Pruhlednosti {
+  /** ztmavení fotky nahoře a dole (gradient) */
+  hore: number;
+  dole: number;
+  /** skleněné panely (menu, karty na fotce) */
+  sklo: number;
+  /** podklad pod textem přímo na fotce (název obce, úvod) */
+  skloText: number;
+}
+export const ZAVOJ_MIN = 0;
+export const ZAVOJ_MAX = 0.8;
+const MIN_KONTRAST = 4.5;
+/** sklo nikdy průhlednější než tohle — jinak by přestalo vypadat jako sklo */
+const SKLO_MIN = 0.3;
+
+/**
+ * Ztmavení fotky (správa vzhledu) → průhlednosti vrstev. Sklo a podklad pod textem se dopočítají jako NEJMENŠÍ
+ * hodnoty, při kterých má veškerý text na fotce kontrast ≥ 4,5 : 1 (WCAG 2.1 AA) i v nejhorším případě
+ * (úplně bílá fotka). Čím světlejší fotka, tím hustší sklo — kontrast se tak nikdy nerozbije
+ * (2026-10-23, Dušan: „zesvětlení nebo ztmavení spustí skript, který zkontroluje kontrast a nastaví sklo“).
+ */
+export function pruhlednostiProZavoj(tmava: Rgb01, naTmave: Rgb01, zavoj: number): Pruhlednosti {
+  const r2 = (x: number) => Math.round(x * 100) / 100;
+  const hore = r2(Math.min(ZAVOJ_MAX, Math.max(ZAVOJ_MIN, zavoj)));
+  const dole = r2(Math.min(0.95, hore * 1.6));
+  const fotka = pres(tmava, hore, BILA);
+  const nejmensi = (ok: (alfa: number) => boolean) => {
+    for (let i = Math.round(SKLO_MIN * 100); i <= 98; i++) if (ok(i / 100)) return i / 100;
+    return 0.98;
+  };
+  const sklo = nejmensi((a) => kontrastRgb(naTmave, pres(tmava, a, fotka)) >= MIN_KONTRAST);
+  const skloText = nejmensi((a) => {
+    const pod = pres(tmava, a, fotka);
+    return kontrastRgb(naTmave, pod) >= MIN_KONTRAST && kontrastRgb(BILA, pod) >= MIN_KONTRAST;
+  });
+  return { hore, dole, sklo, skloText };
+}
+
+export function pruhlednostiSchematu(s: Schema, zavoj = GRADIENT_HORE): Pruhlednosti {
+  return pruhlednostiProZavoj(oklchNaSrgb(s.tmava), oklchNaSrgb(s.naTmave), zavoj);
+}
 
 export function schemaPodleId(id: string | null | undefined): Schema | undefined {
   return SCHEMATA.find((s) => s.id === id);
@@ -157,20 +201,23 @@ export function schemaPodleId(id: string | null | undefined): Schema | undefined
 
 /** nejhorší podklad pod textem přes fotku: úplně bílá fotka pod gradientem v nejsvětlejším místě
  *  a pod textovým podkladem (--sklo-text u nadpisů a hero) */
-export function nejhorsiPodklad(s: Schema): Rgb01 {
+export function nejhorsiPodklad(s: Schema, p: Pruhlednosti = pruhlednostiSchematu(s)): Rgb01 {
   const t = oklchNaSrgb(s.tmava);
-  return pres(t, SKLO_TEXT, pres(t, GRADIENT_HORE, BILA));
+  return pres(t, p.skloText, pres(t, p.hore, BILA));
 }
 /** fotka jen pod gradientem (pod sklem lišty a menu) */
-function fotkaPodGradientem(s: Schema): Rgb01 {
-  return pres(oklchNaSrgb(s.tmava), GRADIENT_HORE, BILA);
+function fotkaPodGradientem(s: Schema, p: Pruhlednosti): Rgb01 {
+  return pres(oklchNaSrgb(s.tmava), p.hore, BILA);
 }
 
 /** dvojice barev, které se na webu potkávají, s požadovaným kontrastem */
-export function kontrolniDvojice(s: Schema): { nazev: string; popredi: Rgb01; pozadi: Rgb01; min: number }[] {
+export function kontrolniDvojice(
+  s: Schema,
+  p: Pruhlednosti = pruhlednostiSchematu(s),
+): { nazev: string; popredi: Rgb01; pozadi: Rgb01; min: number }[] {
   const c = oklchNaSrgb;
-  const hero = nejhorsiPodklad(s);
-  const sklo = pres(c(s.tmava), SKLO, fotkaPodGradientem(s));
+  const hero = nejhorsiPodklad(s, p);
+  const sklo = pres(c(s.tmava), p.sklo, fotkaPodGradientem(s, p));
   const tmava = c(s.tmava);
   return [
     { nazev: 'bílý text na primární (tlačítka, menu)', popredi: BILA, pozadi: c(s.primarni), min: 4.5 },
@@ -192,12 +239,16 @@ export function kontrolniDvojice(s: Schema): { nazev: string; popredi: Rgb01; po
   ];
 }
 
-export function overSchema(s: Schema) {
-  return kontrolniDvojice(s).map((d) => ({ ...d, kontrast: kontrastRgb(d.popredi, d.pozadi) }));
+export function overSchema(s: Schema, p: Pruhlednosti = pruhlednostiSchematu(s)) {
+  return kontrolniDvojice(s, p).map((d) => ({ ...d, kontrast: kontrastRgb(d.popredi, d.pozadi) }));
 }
 
 /** CSS proměnné schématu: hex záloha + OKLCH v @supports (moderní prohlížeče) */
-export function cssSchematu(s: Schema, selektor = ':root'): string {
+export function cssSchematu(
+  s: Schema,
+  selektor = ':root',
+  p: Pruhlednosti = pruhlednostiSchematu(s),
+): string {
   const tmavaText = s.tmava;
   const hex = {
     '--primarni': oklchNaHex(s.primarni),
@@ -215,10 +266,10 @@ export function cssSchematu(s: Schema, selektor = ':root'): string {
   const zaklad = Object.entries(hex)
     .map(([k, v]) => `${k}:${v}`)
     .concat([
-      `--gradient-hore:${rgba(s.tmava, GRADIENT_HORE)}`,
-      `--gradient-dole:${rgba(s.tmava, GRADIENT_DOLE)}`,
-      `--sklo:${rgba(s.tmava, SKLO)}`,
-      `--sklo-text:${rgba(s.tmava, SKLO_TEXT)}`,
+      `--gradient-hore:${rgba(s.tmava, p.hore)}`,
+      `--gradient-dole:${rgba(s.tmava, p.dole)}`,
+      `--sklo:${rgba(s.tmava, p.sklo)}`,
+      `--sklo-text:${rgba(s.tmava, p.skloText)}`,
       `--sklo-husty:${rgba(s.tmava, 0.82)}`,
       `--primarni-pruhledna:${rgba(s.primarni, 0.45)}`,
       // původní proměnné stylu (správa, formuláře) navázané na schéma

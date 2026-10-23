@@ -5,7 +5,16 @@ import type { ObecProfil } from '../../config/obec.js';
 import type { Db } from '../../db/index.js';
 import { paleta, type Paleta } from '../../lib/barvy.js';
 import { zapisAudit } from '../../lib/audit.js';
-import { cssSchematu, schemaPodleId, type Schema } from './schemata.js';
+import {
+  cssSchematu,
+  GRADIENT_HORE,
+  pruhlednostiProZavoj,
+  pruhlednostiSchematu,
+  schemaPodleId,
+  type Pruhlednosti,
+  type Schema,
+} from './schemata.js';
+import { hexNaSrgb } from '../../lib/oklch.js';
 import {
   cssPisma,
   fontFace,
@@ -45,6 +54,8 @@ export interface UlozenyVzhled {
   pozadi_pevne?: string | null;
   efekt_menu?: EfektMenu;
   efekt_sila?: SilaEfektu;
+  /** ztmavení fotky na pozadí 0–0,8 (sklo a podklad textu se dopočítají podle kontrastu) */
+  zavoj?: number;
   predchozi?: Omit<UlozenyVzhled, 'predchozi'> | null;
 }
 
@@ -69,6 +80,8 @@ export interface Vzhled {
   pozadiPevne: string | null;
   efektMenu: EfektMenu;
   efektSila: SilaEfektu;
+  /** ztmavení fotky a z něj dopočítané sklo a podklad textu */
+  pruhlednosti: Pruhlednosti;
   /** CSS proměnné barev a písma + @font-face (vkládá se do <head>) */
   css: string;
   ulozeno: UlozenyVzhled;
@@ -110,9 +123,15 @@ export class VzhledSluzba {
     const velikost = jeVelikost(u.velikost) ? u.velikost : this.obec.vzhled.velikost;
     const pozadi = (u.pozadi_ids ?? []).filter((id) => pripona.has(id));
     const p = paleta(barva);
+    const zavoj = typeof u.zavoj === 'number' && Number.isFinite(u.zavoj) ? u.zavoj : GRADIENT_HORE;
+    // vlastní barva: tmavá vrstva #0f1410, světlý text bílý
+    const pr = schema
+      ? pruhlednostiSchematu(schema, zavoj)
+      : pruhlednostiProZavoj(hexNaSrgb('#0f1410'), hexNaSrgb('#ffffff'), zavoj);
+    const tm = (a: number) => `rgba(15,20,16,${a})`;
     const barvyCss = schema
-      ? cssSchematu(schema)
-      : `:root{--primarni:${p.primarni};--na-tmave:#ffffff;--akcent:#ffd600;--aktivni:#ffffff;--aktivni-text:${p.tmava};--tmava:#151a16;--svetla:${p.svetla};--gradient-hore:rgba(15,20,16,.4);--gradient-dole:rgba(15,20,16,.6);--sklo:rgba(15,20,16,.55);--sklo-text:rgba(15,20,16,.6);--sklo-husty:rgba(15,20,16,.82);--primarni-pruhledna:${p.primarni}73;--zelena:${p.primarni};--zelena-tmava:${p.tmava};--zelena-svetla:${p.svetla}}`;
+      ? cssSchematu(schema, ':root', pr)
+      : `:root{--primarni:${p.primarni};--na-tmave:#ffffff;--akcent:#ffd600;--aktivni:#ffffff;--aktivni-text:${p.tmava};--tmava:#151a16;--svetla:${p.svetla};--gradient-hore:${tm(pr.hore)};--gradient-dole:${tm(pr.dole)};--sklo:${tm(pr.sklo)};--sklo-text:${tm(pr.skloText)};--sklo-husty:rgba(15,20,16,.82);--primarni-pruhledna:${p.primarni}73;--zelena:${p.primarni};--zelena-tmava:${p.tmava};--zelena-svetla:${p.svetla}}`;
     return {
       barva,
       schema,
@@ -131,6 +150,7 @@ export class VzhledSluzba {
       pozadiPevne: u.pozadi_pevne && pozadi.includes(u.pozadi_pevne) ? url(u.pozadi_pevne) : null,
       efektMenu: u.efekt_menu && EFEKTY_MENU.includes(u.efekt_menu) ? u.efekt_menu : 'odlesk',
       efektSila: u.efekt_sila && SILY_EFEKTU.includes(u.efekt_sila) ? u.efekt_sila : 'stredni',
+      pruhlednosti: pr,
       css: fontFace([pismo]) + cssPisma(pismo) + barvyCss,
       ulozeno: u,
     };
