@@ -1,6 +1,6 @@
 # Co je nového (devlog)
 
-Přehled změn platformy Web od Voltu 2.0 pro pilotní obec, nejnovější nahoře. Technické podrobnosti jsou v CHANGELOG.md.
+Přehled změn platformy Obecní web od Voltu 2.0 pro pilotní obec, nejnovější nahoře. Technické podrobnosti jsou v CHANGELOG.md.
 
 ## 22. 10. 2026
 
@@ -32,7 +32,7 @@ Přehled změn platformy Web od Voltu 2.0 pro pilotní obec, nejnovější naho�
 - **Rozeslat jedním tlačítkem:** zveřejněnou zprávu nebo pozvánku jde poslat občanům SMS a e-mailem — text se
   předvyplní sám a u příspěvku je vidět, kdy a kolika lidem odešel.
 - **Čísla na úvodu jsou klikací** a vedou tam, kde se o nich dozvíte víc; nově je tam pět nejbližších akcí.
-- **Nový název:** platforma se jmenuje **Web od Voltu 2.0**, v patičce je logo Voltu s odkazem na Volt Česko.
+- **Nový název:** platforma se jmenuje **Obecní web od Voltu 2.0**, v patičce je logo Voltu s odkazem na Volt Česko.
 - **Vzhled:** fotka obce v pozadí je víc vidět; texty přímo na fotce mají vlastní tmavý podklad, aby zůstaly čitelné.
 - **Efekty tlačítek menu** ve Správě → Vzhled: decentní odlesk, vodní hladina, dýchání nebo bez efektu, a k tomu síla efektu. Kdo má v zařízení zapnuté „omezit pohyb“, vidí tlačítka vždy v klidu.
 - **Odstávky elektřiny:** v kartě na titulce je i obrázkový banner ČEZ (stahuje ho náš server, návštěvník nic z cizího serveru nenačítá).

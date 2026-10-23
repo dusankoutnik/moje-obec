@@ -1,7 +1,7 @@
 // Všechny texty rozhraní na jednom místě. Zatím jen čeština; další jazyk = další soubor se stejnými klíči.
 export const cs = {
   app: {
-    nazev: 'Web od Voltu',
+    nazev: 'Obecní web od Voltu',
     skip: 'Přeskočit na obsah',
     menu: 'Hlavní nabídka',
     domu: 'Úvod',
@@ -15,8 +15,8 @@ export const cs = {
     patika_pristupnost: 'Prohlášení o přístupnosti',
     patika_gdpr: 'Ochrana osobních údajů',
     patika_kontakt: 'Kontakt',
-    patika_zdroj: 'Otevřený software Web od Voltu 2.0 (EUPL-1.2)',
-    patika_vyrobce: 'Web od Voltu 2.0',
+    patika_zdroj: 'Otevřený software Obecní web od Voltu 2.0 (EUPL-1.2)',
+    patika_vyrobce: 'Obecní web od Voltu 2.0',
     patika_vyrobce_logo: 'Volt',
     chyba_404: 'Stránka nenalezena',
     chyba_404_text: 'Takovou stránku tu nemáme. Zkontrolujte adresu nebo se vraťte na úvod.',

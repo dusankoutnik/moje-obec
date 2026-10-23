@@ -1,7 +1,7 @@
 {
   "name": "web-od-voltu",
   "version": "0.1.0",
-  "description": "Web od Voltu 2.0 — otevřená platforma pro weby a služby malých českých obcí",
+  "description": "Obecní web od Voltu 2.0 — otevřená platforma pro weby a služby malých českých obcí",
   "private": true,
   "license": "EUPL-1.2",
   "type": "module",

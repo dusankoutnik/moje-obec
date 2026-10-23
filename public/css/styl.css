@@ -1,4 +1,4 @@
-/* Web od Voltu 2.0 — styly OBSAHU pro všechny moduly (rámec webu — hlavička, menu, pozadí, patička — je v ramec.css,
+/* Obecní web od Voltu 2.0 — styly OBSAHU pro všechny moduly (rámec webu — hlavička, menu, pozadí, patička — je v ramec.css,
    web linkuje oba soubory). Jeden styl pro všechny moduly. Mobil první, WCAG 2.1 AA (kontrasty ≥ 4,5:1, viditelný fokus),
    funguje bez JavaScriptu. Barvy jako proměnné — obec si je může přebarvit v obec.yml v příští etapě. */
 a {

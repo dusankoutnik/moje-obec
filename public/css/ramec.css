@@ -1,4 +1,4 @@
-/* Web od Voltu 2.0 — RÁMEC WEBU: proměnné, základ stránky (html, body, .obal), pozadí s fotkami, hlavička, hlavní
+/* Obecní web od Voltu 2.0 — RÁMEC WEBU: proměnné, základ stránky (html, body, .obal), pozadí s fotkami, hlavička, hlavní
    plovoucí menu (desktop i mobil), podmenu aplikací, pás dárců, patička, tlačítko Administrace, tisk.
    Jeden zdroj pro web (styl.css ho doplňuje styly obsahu) i pro hlavičku aplikací za proxy (rezervace, eKnihy —
    GET /api/interni/hlavicka, docs/HLAVICKA-APLIKACI.md). NESMÍ stylovat obecné prvky obsahu (table, input, button,

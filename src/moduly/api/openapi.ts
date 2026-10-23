@@ -58,7 +58,7 @@ export function openapi(baseUrl: string, nazevObce: string) {
       title: `API webu — ${nazevObce}`,
       version: '1.0.0',
       description:
-        'Zápis příspěvků, úřední desky a zpravodaje na web obce (Web od Voltu 2.0). Lidský popis: ' +
+        'Zápis příspěvků, úřední desky a zpravodaje na web obce (Obecní web od Voltu 2.0). Lidský popis: ' +
         baseUrl +
         '/api',
       license: { name: 'EUPL-1.2', identifier: 'EUPL-1.2' },

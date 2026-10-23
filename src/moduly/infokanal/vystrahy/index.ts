@@ -17,7 +17,7 @@ declare module 'fastify' {
 
 async function vystrahyModul(app: FastifyInstance, volby: { planovac: boolean }) {
   const k = app.obec.vystrahy;
-  const ua = `Web od Voltu 2.0 (${app.env.BASE_URL})`;
+  const ua = `Obecní web od Voltu 2.0 (${app.env.BASE_URL})`;
   // ČEZ: stejná data (a stejná keš) jako modul odstavky; když modul odstavky není zapnutý, vlastní instance
   // nad stejným uložením (dotazy jen v časech kontroly výstrah)
   let odstavky: OdstavkySluzba | null = null;

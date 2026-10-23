@@ -77,7 +77,7 @@ dokumenty ve stavu „nepodporováno“ a Správa → Obecní web → Text dokum
 
 ```bash
 docker compose up -d
-docker compose logs -f app      # čekejte na „Web od Voltu 2.0 běží“
+docker compose logs -f app      # čekejte na „Obecní web od Voltu 2.0 běží“
 curl -s https://obec.example.cz/healthz   # {"stav":"ok",…}
 ```
 
@@ -173,7 +173,7 @@ docker compose exec -T db pg_restore -U platforma -d platforma --clean --if-exis
 # soubory obce
 docker run --rm -v web-od-voltu_app_data:/data -v "$PWD/zalohy":/z alpine sh -c 'tar xzf /z/soubory-2026-10-13.tar.gz -C /data'
 docker compose start app
-docker compose logs -f app     # migrace doběhnou, čekejte na „Web od Voltu 2.0 běží“
+docker compose logs -f app     # migrace doběhnou, čekejte na „Obecní web od Voltu 2.0 běží“
 ```
 
 Na novém serveru: nejdřív vrátit `.env` a `obec.yml` (a případně `caddy_data`), `docker compose up -d db`, obnovit databázi a soubory jako výše, pak `docker compose up -d`.
