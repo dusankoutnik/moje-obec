@@ -2487,3 +2487,101 @@ button.kviz-odpoved:active {
 .sprava-cisla small {
   display: block;
 }
+
+/* Přehled administrace: skupiny malých dlaždic (2026-10-23, Dušan: „naházené halabala“, „zmenšit“) */
+.sprava-skupina {
+  margin: 22px 0 6px;
+}
+.sprava-skupina > h2 {
+  font-size: 1.05rem;
+  margin: 0 0 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--linka);
+  color: var(--text-tlumeny);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.dlazdice-mini {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+.dlazdice-mini > li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--linka);
+  border-radius: var(--radius);
+  background: var(--bila);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.dlazdice-mini > li:hover,
+.dlazdice-mini > li:focus-within {
+  border-color: var(--primarni);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+.dm-hlavni {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--primarni);
+  text-decoration: none;
+  line-height: 1.25;
+}
+/* celá dlaždice klikací přes hlavní odkaz; akce (+ …) zůstává nad ním */
+.dm-hlavni::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.dm-hlavni:hover .dm-nazev {
+  text-decoration: underline;
+}
+.dm-ikona {
+  font-size: 1.15rem;
+}
+.dm-popis {
+  font-size: 0.85rem;
+  color: var(--text-tlumeny);
+  line-height: 1.35;
+}
+.dm-cislo {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.dm-akce {
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.sms-karta {
+  margin-top: 10px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+.sms-karta p {
+  margin: 4px 0;
+}
+.sms-karta .cislo {
+  font-size: 1rem;
+  margin: 2px 0;
+}
+.sms-karta meter {
+  width: min(320px, 100%);
+}
+.sms-karta h3 {
+  margin-top: 0;
+  font-size: 1rem;
+}

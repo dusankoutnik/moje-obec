@@ -174,6 +174,7 @@ export const cs = {
       'Dobrý den,\n\nváš kód pro potvrzení e-mailu k účtu {obec} je: {kod}\n\nKód platí 10 minut. Pokud jste o změnu nežádali, tento e-mail ignorujte.\n',
   },
   sprava: {
+    admin_rezervaci: 'Administrace rezervací',
     titulek: 'Administrace',
     uzivatele: 'Uživatelé',
     uzivatele_text: 'Účty občanů, role a blokace.',

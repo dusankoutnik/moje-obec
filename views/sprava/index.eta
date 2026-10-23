@@ -1,75 +1,92 @@
 <% layout('/layout') %>
-<h1><%= it.t('sprava.titulek') %></h1>
-<div class="karty">
-  <% if (it.jeSpravce) { %>
-  <article class="karta"><h2><a href="/sprava/uzivatele"><%= it.t('sprava.uzivatele') %></a></h2><p><%= it.t('sprava.uzivatele_text') %></p><p class="cislo"><%= it.t('sprava.pocet', { n: it.pocet }) %></p></article>
+<%
+  // Přehled administrace (2026-10-23, Dušan): malé dlaždice rozdělené do skupin; prázdná skupina se nevypisuje.
+  // Dlaždice: { ikona, nazev, href, popis, cislo?, akce?: { href, text }, id? }
+  var t = it.t, A = it.aplikace, S = A ? A.souhrn : null;
+  var skupiny = [];
+  function skupina(nazev, dl, pod) { dl = dl.filter(Boolean); if (dl.length || pod) skupiny.push({ nazev: nazev, dl: dl, pod: pod }); }
+  var maRez = A && A.rezervace, rezSpravce = maRez && A.spravce, rezFinance = maRez && (A.spravce || A.ucetni);
+
+  skupina('K vyřízení', [
+    A && A.ucty ? { id: 'schvalovani', ikona: '🕐', nazev: 'Schvalování', href: '/sprava/schvalovani', popis: 'Žádosti o rezervace a posilovnu, nové účty k posouzení, účty bez jména.',
+      cislo: (S ? S.pending + ' rezervací · ' + S.gymRequested + ' posilovna · ' : '') + A.ucty.kPosouzeni + ' k posouzení · ' + A.ucty.bezJmena + ' bez jména' } : null,
+    A && A.ucty ? { ikona: '📞', nazev: 'Změny telefonu', href: '/sprava/ucty/zmeny-telefonu', popis: 'Žádosti o změnu přihlašovacího telefonu.' } : null,
+    it.podatelnaNevyrizene !== null && it.podatelnaNevyrizene !== undefined ? { ikona: '📨', nazev: t('podatelna.titulek'), href: '/sprava/podatelna', popis: t('sprava.podatelna_text'), cislo: t('sprava.podatelna_nevyrizene', { n: it.podatelnaNevyrizene }) } : null,
+    it.jeWeb && it.obec.moduly.web && it.akceKeZpracovani ? { ikona: '📆', nazev: 'Akce ke zpracování', href: '/sprava/web/akce/zpracovani', popis: 'Veřejné rezervace, ze kterých může vzniknout pozvánka.', cislo: t('propojeni.dashboard', { n: it.akceKeZpracovani }) } : null,
+    it.textDokumentu && (it.textDokumentu.ceka || it.textDokumentu.pocty.chyba) ? { id: 'text-dokumentu', ikona: '🔎', nazev: t('text.titulek'), href: '/sprava/web/text-dokumentu', popis: t('text.hledame_i_dokumenty'), cislo: t('text.dashboard', { ceka: it.textDokumentu.ceka, chyby: it.textDokumentu.pocty.chyba }) } : null,
+  ]);
+
+  skupina('Obsah webu', [
+    it.jeWeb && it.obec.moduly.web ? { ikona: '📰', nazev: t('web.sprava_titulek'), href: '/sprava/web', popis: t('sprava.web_text'), akce: { href: '/sprava/web/novy?typ=aktualita', text: t('web.napsat_aktualitu') } } : null,
+    it.jeDeska && it.obec.moduly.deska ? { ikona: '📋', nazev: t('deska.titulek'), href: '/sprava/deska', popis: t('sprava.deska_text'), akce: { href: '/sprava/deska/novy', text: t('deska.novy') } } : null,
+    it.jeDeska && it.jeSpravce && it.obec.moduly.deska ? { ikona: '⚖️', nazev: t('pi.titulek'), href: '/sprava/povinne-informace', popis: 'Struktura podle vyhlášky 515/2020 Sb.' } : null,
+    it.jeWeb && it.obec.moduly.web ? { ikona: '☎️', nazev: t('web.kontakt_obce'), href: '/sprava/web/kontakt', popis: t('web.kontakt_obce_text') } : null,
+    it.jeSpravce && it.obec.moduly.web ? { ikona: '🎨', nazev: t('web.vzhled'), href: '/sprava/web/vzhled', popis: t('web.vzhled_text') } : null,
+    it.jeKviz && it.obecStaticka.moduly.kviz ? { ikona: '🧠', nazev: t('kviz.sprava_titulek'), href: '/sprava/kviz', popis: t('kviz.sprava_karta') } : null,
+  ]);
+
+  skupina('Zprávy občanům', [
+    it.jeRedaktor && it.obecStaticka.moduly.infokanal ? { ikona: '📣', nazev: it.obec.texty.nazev_infokanalu, href: '/infokanal/sprava', popis: t('sprava.infokanal_text'), akce: { href: '/infokanal/sprava/nove', text: t('infokanal.nove_hlaseni') } } : null,
+  ], !!it.sms);
+
+  skupina('Rezervace a služby', [
+    rezFinance ? { ikona: '🛡️', nazev: t('sprava.admin_rezervaci'), href: '/rezervace/admin', popis: 'Úvod administrace rezervací se všemi sekcemi.' } : null,
+    rezSpravce ? { ikona: '📅', nazev: 'Rezervace', href: '/rezervace/admin/rezervace', popis: 'Přehled a úpravy rezervací.', cislo: S ? S.future + ' nadcházejících' : '' } : null,
+    rezSpravce ? { ikona: '👥', nazev: 'Uživatelé rezervací', href: '/rezervace/admin/uzivatele', popis: 'Rezidenti, posilovna, zámky a čipy.', cislo: S ? S.users + ' účtů' : '' } : null,
+    rezSpravce && A.spolujizda ? { ikona: '🚗', nazev: 'Spolujízda', href: '/rezervace/admin/spolujizda', popis: 'Jízdy a poptávky.', cislo: S ? S.trips + ' nadcházejících jízd' : '' } : null,
+    rezFinance && A.predprodej ? { ikona: '🎫', nazev: 'Předprodej', href: '/rezervace/admin/predprodej', popis: 'Vstupenky a potvrzování plateb.', cislo: S ? S.tickets.paid + ' prodáno · ' + S.tickets.held + ' čeká na platbu' : '' } : null,
+    maRez && !A.spravce && A.ucetni ? { ikona: '👥', nazev: 'Uživatelé rezervací', href: '/rezervace/admin/uzivatele', popis: 'Evidence zámků a čipů.' } : null,
+  ]);
+
+  skupina('Finance', [
+    rezFinance ? { ikona: '💰', nazev: 'Vyúčtování', href: '/rezervace/admin/vyuctovani', popis: 'Výzvy k úhradě a platby.', cislo: S ? S.unpaid.c + ' nezaplaceno (' + Math.round(S.unpaid.s).toLocaleString('cs-CZ') + ' Kč)' : '' } : null,
+    rezFinance ? { ikona: '📊', nazev: 'Report', href: '/rezervace/admin/report', popis: 'Výnosy, rozpočtová skladba, pohledávky.' } : null,
+    rezFinance ? { ikona: '🏷️', nazev: 'Ceník', href: '/rezervace/admin/cenik', popis: 'Ceny a rozpočtové kódy.' } : null,
+  ]);
+
+  skupina('Lidé a účty', [
+    it.jeSpravce ? { ikona: '🪪', nazev: t('sprava.uzivatele'), href: '/sprava/uzivatele', popis: t('sprava.uzivatele_text'), cislo: t('sprava.pocet', { n: it.pocet }) } : null,
+    A && A.ucty ? { ikona: '📈', nazev: 'Statistiky', href: '/sprava/statistiky', popis: 'Souhrnná čísla účtů a aplikací — bez jmen.' } : null,
+  ]);
+
+  var jeAdmin = it.uzivatel.role.includes('admin');
+  skupina('Systém', [
+    jeAdmin ? { ikona: '🧩', nazev: t('moduly_obce.titulek'), href: '/sprava/moduly', popis: t('moduly_obce.karta') } : null,
+    jeAdmin ? { ikona: '🔌', nazev: 'API a integrace', href: '/sprava/api', popis: 'Tokeny pro programy, které na web samy zapisují.' } : null,
+    jeAdmin ? { ikona: '🔐', nazev: t('sprava.klienti'), href: '/sprava/klienti', popis: t('sprava.klienti_text') } : null,
+    it.jeSpravce ? { ikona: '🧾', nazev: t('sprava.audit'), href: '/sprava/audit', popis: t('sprava.audit_text') } : null,
+  ]);
+%>
+<h1><%= t('sprava.titulek') %></h1>
+<% if (maRez && !S) { %><p class="napoveda" role="status">Rezervace teď neodpovídají — počty se ukážou, až zase poběží.</p><% } %>
+<% skupiny.forEach(function (g) { %>
+<section class="sprava-skupina" aria-label="<%= g.nazev %>">
+  <h2><%= g.nazev %></h2>
+  <% if (g.dl.length) { %>
+  <ul class="dlazdice-mini">
+    <% g.dl.forEach(function (d) { %>
+    <li<% if (d.id) { %> id="<%= d.id %>"<% } %>>
+      <a class="dm-hlavni" href="<%= d.href %>"><span class="dm-ikona" aria-hidden="true"><%= d.ikona %></span><span class="dm-nazev"><%= d.nazev %></span></a>
+      <span class="dm-popis"><%= d.popis %></span>
+      <% if (d.cislo) { %><span class="dm-cislo"><%= d.cislo %></span><% } %>
+      <% if (d.akce) { %><a class="dm-akce" href="<%= d.akce.href %>">+ <%= d.akce.text %></a><% } %>
+    </li>
+    <% }) %>
+  </ul>
   <% } %>
-  <% if (it.jeRedaktor && it.obecStaticka.moduly.infokanal) { %>
-  <article class="karta"><h2><a href="/infokanal/sprava"><%= it.obec.texty.nazev_infokanalu %></a></h2><p><%= it.t('sprava.infokanal_text') %></p><a class="tlacitko" href="/infokanal/sprava/nove"><%= it.t('infokanal.nove_hlaseni') %></a></article>
-  <% } %>
-  <% if (it.jeWeb && it.obec.moduly.web) { %>
-  <article class="karta"><h2><a href="/sprava/web"><%= it.t('web.sprava_titulek') %></a></h2><p><%= it.t('sprava.web_text') %></p><% if (it.akceKeZpracovani) { %><p class="cislo"><a href="/sprava/web/akce/zpracovani"><%= it.t('propojeni.dashboard', { n: it.akceKeZpracovani }) %></a></p><% } %><a class="tlacitko" href="/sprava/web/novy?typ=aktualita"><%= it.t('web.napsat_aktualitu') %></a></article>
-  <% } %>
-  <% if (it.jeSpravce && it.obec.moduly.web) { %>
-  <article class="karta"><h2><a href="/sprava/web/vzhled">🎨 <%= it.t('web.vzhled') %></a></h2><p><%= it.t('web.vzhled_text') %></p><a class="tlacitko" href="/sprava/web/vzhled"><%= it.t('web.vzhled_zmenit') %></a></article>
-  <% } %>
-  <% if (it.jeDeska && it.obec.moduly.deska) { %>
-  <article class="karta"><h2><a href="/sprava/deska"><%= it.t('deska.titulek') %></a></h2><p><%= it.t('sprava.deska_text') %></p><a class="tlacitko" href="/sprava/deska/novy"><%= it.t('deska.novy') %></a><% if (it.jeSpravce) { %> <a href="/sprava/povinne-informace"><%= it.t('pi.titulek') %></a><% } %></article>
-  <% } %>
-  <% if (it.textDokumentu && (it.textDokumentu.ceka || it.textDokumentu.pocty.chyba)) { %>
-  <article class="karta" id="text-dokumentu"><h2><a href="/sprava/web/text-dokumentu">🔎 <%= it.t('text.titulek') %></a></h2><p><%= it.t('text.hledame_i_dokumenty') %></p><p class="cislo"><%= it.t('text.dashboard', { ceka: it.textDokumentu.ceka, chyby: it.textDokumentu.pocty.chyba }) %></p></article>
-  <% } %>
-  <% if (it.podatelnaNevyrizene !== null && it.podatelnaNevyrizene !== undefined) { %>
-  <article class="karta"><h2><a href="/sprava/podatelna">📨 <%= it.t('podatelna.titulek') %></a></h2><p><%= it.t('sprava.podatelna_text') %></p><p class="cislo"><%= it.t('sprava.podatelna_nevyrizene', { n: it.podatelnaNevyrizene }) %></p></article>
-  <% } %>
-  <% if (it.jeKviz && it.obecStaticka.moduly.kviz) { %>
-  <article class="karta"><h2><a href="/sprava/kviz">🧠 <%= it.t('kviz.sprava_titulek') %></a></h2><p><%= it.t('kviz.sprava_karta') %></p><a class="tlacitko" href="/kviz"><%= it.t('kviz.hrat') %></a></article>
-  <% } %>
-  <% if (it.sms) { %>
-  <article class="karta" id="sms-prehled"><h2><%= it.t('sprava.sms_nadpis') %></h2>
-    <p class="cislo"><%= it.sms.limit > 0 ? it.t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) : it.t('sprava.sms_kody_bez_limitu', { n: it.sms.kodu24h }) %></p>
-    <% if (it.sms.limit > 0) { %><meter min="0" max="<%= it.sms.limit %>" high="<%= Math.ceil(it.sms.limit * 0.8) %>" value="<%= Math.min(it.sms.kodu24h, it.sms.limit) %>" aria-label="<%= it.t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) %>"></meter><% } %>
-    <% if (it.sms.vycerpano) { %><p class="flash flash-chyba" role="status"><%= it.t('sprava.sms_vycerpano', { datum: it.fmtDatum(it.sms.vycerpano.at), n: it.sms.vycerpano.pocet }) %></p><% } %>
+  <% if (g.pod && it.sms) { %>
+  <div class="karta sms-karta" id="sms-prehled"><h3><%= t('sprava.sms_nadpis') %></h3>
+    <p class="cislo"><%= it.sms.limit > 0 ? t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) : t('sprava.sms_kody_bez_limitu', { n: it.sms.kodu24h }) %></p>
+    <% if (it.sms.limit > 0) { %><meter min="0" max="<%= it.sms.limit %>" high="<%= Math.ceil(it.sms.limit * 0.8) %>" value="<%= Math.min(it.sms.kodu24h, it.sms.limit) %>" aria-label="<%= t('sprava.sms_kody', { n: it.sms.kodu24h, limit: it.sms.limit }) %>"></meter><% } %>
+    <% if (it.sms.vycerpano) { %><p class="flash flash-chyba" role="status"><%= t('sprava.sms_vycerpano', { datum: it.fmtDatum(it.sms.vycerpano.at), n: it.sms.vycerpano.pocet }) %></p><% } %>
     <% if (it.sms.fronta) { %>
-    <p><%= it.t('sprava.sms_fronta', { kanal: it.obec.texty.nazev_infokanalu }) %>:
-      <%= it.t('sprava.sms_ceka') %> <strong><%= it.sms.fronta.ceka %></strong> ·
-      <%= it.t('sprava.sms_odesila') %> <strong><%= it.sms.fronta.odesilaSe %></strong> ·
-      <%= it.t('sprava.sms_odeslano') %> <strong><%= it.sms.fronta.odeslano24h %></strong> ·
-      <%= it.t('sprava.sms_vzdano') %> <strong><%= it.sms.fronta.vzdano24h %></strong></p>
+    <p><%= t('sprava.sms_fronta', { kanal: it.obec.texty.nazev_infokanalu }) %>:
+      <%= t('sprava.sms_ceka') %> <strong><%= it.sms.fronta.ceka %></strong> ·
+      <%= t('sprava.sms_odesila') %> <strong><%= it.sms.fronta.odesilaSe %></strong> ·
+      <%= t('sprava.sms_odeslano') %> <strong><%= it.sms.fronta.odeslano24h %></strong> ·
+      <%= t('sprava.sms_vzdano') %> <strong><%= it.sms.fronta.vzdano24h %></strong></p>
     <% } %>
-  </article>
+  </div>
   <% } %>
-  <% const A = it.aplikace; if (A) { const S = A.souhrn; %>
-  <% if (A.ucty) { %>
-  <article class="karta" id="schvalovani"><h2><a href="/sprava/schvalovani">🕐 Schvalování</a></h2><p>Žádosti o rezervace a posilovnu, nové účty k posouzení rezidenta, účty bez jména.</p>
-    <p class="cislo"><% if (S) { %><%= S.pending %> rezervací · <%= S.gymRequested %> posilovna · <% } %><%= A.ucty.kPosouzeni %> k posouzení · <%= A.ucty.bezJmena %> bez jména</p></article>
-  <article class="karta"><h2><a href="/sprava/ucty/zmeny-telefonu">📞 Změny telefonu</a></h2><p>Žádosti občanů o změnu přihlašovacího telefonu ke schválení.</p></article>
-  <article class="karta"><h2><a href="/sprava/statistiky">📈 Statistiky</a></h2><p>Souhrnná čísla účtů a aplikací — jen agregáty, bez jmen.</p></article>
-  <% } %>
-  <% if (A.rezervace) { %>
-  <% if (A.spravce) { %>
-  <article class="karta"><h2><a href="/rezervace/admin/rezervace">📅 Rezervace</a></h2><p>Přehled a úpravy rezervací.</p><% if (S) { %><p class="cislo"><%= S.future %> nadcházejících</p><% } %></article>
-  <article class="karta"><h2><a href="/rezervace/admin/uzivatele">👥 Uživatelé rezervací</a></h2><p>Rezidenti, posilovna, zámky a čipy.</p><% if (S) { %><p class="cislo"><%= S.users %> účtů</p><% } %></article>
-  <% if (A.spolujizda) { %><article class="karta"><h2><a href="/rezervace/admin/spolujizda">🚗 Spolujízda</a></h2><p>Jízdy a poptávky.</p><% if (S) { %><p class="cislo"><%= S.trips %> nadcházejících jízd</p><% } %></article><% } %>
-  <% } %>
-  <% if (A.spravce || A.ucetni) { %>
-  <article class="karta"><h2><a href="/rezervace/admin/vyuctovani">💰 Vyúčtování</a></h2><p>Výzvy k úhradě a platby.</p><% if (S) { %><p class="cislo"><%= S.unpaid.c %> nezaplaceno (<%= Math.round(S.unpaid.s).toLocaleString('cs-CZ') %> Kč)</p><% } %></article>
-  <% if (A.predprodej) { %><article class="karta"><h2><a href="/rezervace/admin/predprodej">🎫 Předprodej</a></h2><p>Vstupenky a potvrzování plateb.</p><% if (S) { %><p class="cislo"><%= S.tickets.paid %> prodáno · <%= S.tickets.held %> čeká na platbu</p><% } %></article><% } %>
-  <article class="karta"><h2><a href="/rezervace/admin/report">📊 Report</a></h2><p>Výnosy, rozpočtová skladba, pohledávky.</p></article>
-  <article class="karta"><h2><a href="/rezervace/admin/cenik">🏷️ Ceník</a></h2><p>Ceny a rozpočtové kódy.</p></article>
-  <% if (!A.spravce) { %><article class="karta"><h2><a href="/rezervace/admin/uzivatele">👥 Uživatelé rezervací</a></h2><p>Evidence zámků a čipů.</p></article><% } %>
-  <% } %>
-  <% if (!S) { %><p class="napoveda" role="status">Rezervace teď neodpovídají — počty se ukážou, až zase poběží.</p><% } %>
-  <% } %>
-  <% } %>
-  <% if (it.jeSpravce) { %>
-  <article class="karta"><h2><a href="/sprava/audit"><%= it.t('sprava.audit') %></a></h2><p><%= it.t('sprava.audit_text') %></p></article>
-  <% } %>
-  <% if (it.uzivatel.role.includes('admin')) { %>
-  <article class="karta"><h2><a href="/sprava/moduly">🧩 <%= it.t('moduly_obce.titulek') %></a></h2><p><%= it.t('moduly_obce.karta') %></p></article>
-  <article class="karta"><h2><a href="/sprava/api">🔌 API a integrace</a></h2><p>Tokeny pro programy, které na web samy zapisují (zpravodaj, kalendář).</p></article>
-  <% } %>
-  <% if (it.uzivatel.role.includes('admin')) { %>
-  <article class="karta"><h2><a href="/sprava/klienti"><%= it.t('sprava.klienti') %></a></h2><p><%= it.t('sprava.klienti_text') %></p></article>
-  <% } %>
-</div>
+</section>
+<% }) %>
