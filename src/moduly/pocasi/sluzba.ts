@@ -211,7 +211,7 @@ export class PocasiSluzba {
       .selectFrom('ik_vystrahy')
       .select(['titulek', 'stupen', 'plati_od', 'plati_do', 'stav'])
       .where('zdroj', '=', 'chmu')
-      .where('stav', 'in', ['ceka', 'odeslano'])
+      .where('stav', '=', 'odeslano') // jen rozeslané — odkaz vede na /infokanal/vystrahy, kde nerozeslané nejsou
       .where('zruseno_at', 'is', null)
       .where((eb) => eb.or([eb('plati_do', 'is', null), eb('plati_do', '>', ted)]))
       .where((eb) => eb.or([eb('plati_od', 'is', null), eb('plati_od', '<=', za24)]))
