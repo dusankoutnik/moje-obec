@@ -11,8 +11,10 @@ import {
   pruhlednostiProZavoj,
   pruhlednostiSchematu,
   schemaPodleId,
+  vlastniSchema,
   type Pruhlednosti,
   type Schema,
+  type VlastniBarvy,
 } from './schemata.js';
 import { hexNaSrgb } from '../../lib/oklch.js';
 import {
@@ -34,11 +36,18 @@ export const SILY_EFEKTU: SilaEfektu[] = ['slaba', 'stredni', 'vyrazna'];
 /** kde je na titulce dlaždice počasí (modul pocasi): v úvodním bloku, pod rychlými odkazy, nebo nikde */
 export type UmisteniPocasi = 'uvod' | 'pod-odkazy' | 'skryto';
 export const UMISTENI_POCASI: UmisteniPocasi[] = ['uvod', 'pod-odkazy', 'skryto'];
+/** co dlaždice počasí ukazuje vedle „Teď“, než si návštěvník přepne (přepínač v rohu dlaždice) */
+export type ZobrazeniPocasi = 'dny' | 'hodiny';
+export const ZOBRAZENI_POCASI: ZobrazeniPocasi[] = ['dny', 'hodiny'];
 
 export interface UlozenyVzhled {
   barva?: string;
-  /** id schématu, nebo 'vlastni' = barva z pole barva */
+  /** id schématu, 'vlastni' = jedna barva z pole barva, 'vlastni-schema' = barvy ze schema_vlastni */
   schema?: string;
+  schema_vlastni?: VlastniBarvy;
+  /** logo a slogan Voltu v patičce (výchozí zobrazit) */
+  volt_logo?: boolean;
+  pocasi_zobrazeni?: ZobrazeniPocasi;
   pismo?: string;
   velikost?: Velikost;
   znak_id?: string | null;
@@ -85,6 +94,8 @@ export interface Vzhled {
   efektMenu: EfektMenu;
   efektSila: SilaEfektu;
   pocasiUmisteni: UmisteniPocasi;
+  pocasiZobrazeni: ZobrazeniPocasi;
+  voltLogo: boolean;
   /** ztmavení fotky a z něj dopočítané sklo a podklad textu */
   pruhlednosti: Pruhlednosti;
   /** CSS proměnné barev a písma + @font-face (vkládá se do <head>) */
@@ -121,7 +132,11 @@ export class VzhledSluzba {
       id && pripona.has(id) ? urlFotky(id, pripona.get(id)) : '';
     const barva = u.barva || this.obec.vzhled.barva;
     const schema =
-      u.schema === 'vlastni' ? null : (schemaPodleId(u.schema ?? this.obec.vzhled.schema) ?? null);
+      u.schema === 'vlastni'
+        ? null
+        : u.schema === 'vlastni-schema' && u.schema_vlastni
+          ? vlastniSchema(u.schema_vlastni).schema
+          : (schemaPodleId(u.schema ?? this.obec.vzhled.schema) ?? null);
     const pismo =
       (u.pismo === 'vlastni' ? slozPismo(u.pismo_telo, u.pismo_nadpis, u.pismo_titulek) : null) ??
       pismoPodleId(u.pismo ?? this.obec.vzhled.pismo);
@@ -157,6 +172,9 @@ export class VzhledSluzba {
       efektSila: u.efekt_sila && SILY_EFEKTU.includes(u.efekt_sila) ? u.efekt_sila : 'stredni',
       pocasiUmisteni:
         u.pocasi_umisteni && UMISTENI_POCASI.includes(u.pocasi_umisteni) ? u.pocasi_umisteni : 'pod-odkazy',
+      pocasiZobrazeni:
+        u.pocasi_zobrazeni && ZOBRAZENI_POCASI.includes(u.pocasi_zobrazeni) ? u.pocasi_zobrazeni : 'dny',
+      voltLogo: u.volt_logo !== false,
       pruhlednosti: pr,
       css: fontFace([pismo]) + cssPisma(pismo) + barvyCss,
       ulozeno: u,

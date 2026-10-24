@@ -2995,3 +2995,70 @@ button.kviz-odpoved:active {
   margin: 14px 0 0;
   font-size: 0.95rem;
 }
+
+/* Správa → Vzhled: vlastní barevné schéma */
+.vzhled-formular label.volba-siroka {
+  margin-top: 12px;
+}
+.vlastni-schema {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px 18px;
+  margin: 12px 0 6px;
+}
+.vs-role {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.vs-role small {
+  color: var(--text-tlumeny, #555);
+}
+.vs-kontrola {
+  margin: 8px 0 16px;
+}
+
+/* Počasí: přepínač Dny / Hodiny v pravém horním rohu dlaždice (selektor se dvěma třídami přebije
+   .poc-nebe > :not(.poc-nebe-vrstva) { position: relative }) */
+.pocasi-dlazdice .poc-prepinac {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 2px;
+  background: rgba(0, 0, 0, 0.28);
+}
+.pocasi-karta .poc-prepinac {
+  background: var(--svetla);
+}
+.poc-prepinac button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: inherit;
+}
+.poc-prepinac button[aria-pressed='true'] {
+  background: var(--primarni);
+  color: #fff;
+}
+.pocasi-sklo .poc-prepinac button[aria-pressed='true'] {
+  background: var(--na-tmave);
+  color: var(--tmava);
+}
+.poc-prepinac button:focus-visible {
+  outline: 2px solid var(--akcent);
+  outline-offset: 2px;
+}
+.poc-dalsi[hidden] {
+  display: none;
+}
+.pocasi-dlazdice:has(.poc-prepinac:not([hidden])) h2 {
+  padding-right: 9.5rem;
+}

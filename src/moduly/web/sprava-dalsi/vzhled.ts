@@ -2,7 +2,15 @@
 import type { FastifyInstance } from 'fastify';
 import { kontrast, paleta } from '../../../lib/barvy.js';
 import { oklchNaHex } from '../../../lib/oklch.js';
-import { SCHEMATA, schemaPodleId } from '../schemata.js';
+import {
+  hexVlastniho,
+  overSchema,
+  ROLE_VLASTNIHO,
+  SCHEMATA,
+  schemaPodleId,
+  vlastniSchema,
+  type VlastniBarvy,
+} from '../schemata.js';
 import {
   fontFace,
   fontFaceRezu,
@@ -21,7 +29,9 @@ import {
   SILY_EFEKTU,
   STYLY_NAZVU,
   UMISTENI_POCASI,
+  ZOBRAZENI_POCASI,
   type EfektMenu,
+  type ZobrazeniPocasi,
   type NazevStyl,
   type SilaEfektu,
   type UlozenyVzhled,
@@ -83,6 +93,18 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
       kontrastBile: kontrast(v.barva, '#ffffff'),
       // volba umístění dlaždice počasí jen když je modul počasí na instalaci (obec.yml + souřadnice)
       pocasiDostupne: !!app.pocasi,
+      // vlastní barevné schéma: barvy do formuláře (uložené, nebo odvozené z aktuálního vzhledu) + kontrola kontrastu
+      vlastni: (() => {
+        const ul = v.ulozeno.schema_vlastni;
+        const sch = ul ? vlastniSchema(ul).schema : v.schema;
+        const hex = sch ? hexVlastniho(sch) : null;
+        return {
+          barvy: ul ?? hex ?? { primarni: v.barva, akcent: '#ffd600', tmava: '#151a16' },
+          rucne: { na_tmave: !!ul?.na_tmave, aktivni: !!ul?.aktivni },
+          vysledek: ul ? hexVlastniho(vlastniSchema(ul).schema) : null,
+          kontrola: ul ? overSchema(vlastniSchema(ul).schema) : [],
+        };
+      })(),
     });
   });
 
@@ -90,7 +112,27 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
   function volbyVzhledu(b: Telo): UlozenyVzhled {
     const z: UlozenyVzhled = {};
     const schema = jeden(b.schema);
-    if (schema === 'vlastni' || schemaPodleId(schema)) z.schema = schema;
+    if (schema === 'vlastni' || schema === 'vlastni-schema' || schemaPodleId(schema)) z.schema = schema;
+    // barvy vlastního schématu (nepovinné role jen se zatržítkem „nastavit ručně“)
+    const hex = (x: unknown) => {
+      const h = jeden(x).toLowerCase();
+      return /^#[0-9a-f]{6}$/.test(h) ? h : undefined;
+    };
+    if (hex(b.vs_primarni) && hex(b.vs_akcent) && hex(b.vs_tmava)) {
+      const vb: VlastniBarvy = {
+        primarni: hex(b.vs_primarni)!,
+        akcent: hex(b.vs_akcent)!,
+        tmava: hex(b.vs_tmava)!,
+      };
+      for (const r of ROLE_VLASTNIHO.slice(3)) {
+        const h = hex(b[`vs_${r}`]);
+        if (jeden(b[`vs_${r}_rucne`]) === 'ano' && h) vb[r] = h;
+      }
+      z.schema_vlastni = vb;
+    }
+    if (b.volt_logo_odeslano !== undefined) z.volt_logo = jeden(b.volt_logo) === 'ano';
+    const zobr = jeden(b.pocasi_zobrazeni);
+    if ((ZOBRAZENI_POCASI as string[]).includes(zobr)) z.pocasi_zobrazeni = zobr as ZobrazeniPocasi;
     const barva = jeden(b.barva).toLowerCase();
     if (/^#[0-9a-f]{6}$/.test(barva)) z.barva = barva;
     if (PISMA.some((p) => p.id === jeden(b.pismo))) z.pismo = jeden(b.pismo);
@@ -156,15 +198,27 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
     req.session.nahledVzhledu = null;
     const novy = await s.vzhled.nacti();
     const p = paleta(novy.barva);
+    const upravy =
+      novy.ulozeno.schema === 'vlastni-schema' && novy.ulozeno.schema_vlastni
+        ? vlastniSchema(novy.ulozeno.schema_vlastni).upravy
+        : [];
     req.session.flash = chyby.length
       ? { typ: 'chyba', text: chyby.join(' ') }
-      : !novy.schema && p.upravena
+      : upravy.length
         ? {
             typ: 'info',
-            text: t('web.barva_upravena', { barva: p.primarni }),
+            text: t('web.vs_upraveno', {
+              seznam: upravy.map((u) => `${t('web.vs_role_' + u.role)} ${u.z} → ${u.na}`).join(', '),
+            }),
             odkaz: { url: '/', text: t('web.zobrazit') },
           }
-        : { typ: 'ok', text: t('web.vzhled_ulozen'), odkaz: { url: '/', text: t('web.zobrazit') } };
+        : !novy.schema && p.upravena
+          ? {
+              typ: 'info',
+              text: t('web.barva_upravena', { barva: p.primarni }),
+              odkaz: { url: '/', text: t('web.zobrazit') },
+            }
+          : { typ: 'ok', text: t('web.vzhled_ulozen'), odkaz: { url: '/', text: t('web.zobrazit') } };
     return reply.redirect('/sprava/web/vzhled');
   });
 

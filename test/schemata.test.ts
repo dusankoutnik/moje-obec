@@ -1,13 +1,15 @@
 // Barevná schémata: všechny barvy v sRGB gamutu a kontrast všech dvojic, které se na webu potkávají, ≥ 4,5 : 1
 // (WCAG 2.1 AA) — počítáno, ne odhadnuto. Včetně nejhoršího případu textu přes úplně bílou fotku.
 import { describe, expect, it } from 'vitest';
-import { oklchNaHex, vGamutu } from '../src/lib/oklch.js';
+import { hexNaSrgb, oklchNaHex, srgbNaOklch, vGamutu } from '../src/lib/oklch.js';
 import {
   cssSchematu,
   overSchema,
   pruhlednostiSchematu,
   SCHEMATA,
+  vlastniSchema,
   type Pruhlednosti,
+  type VlastniBarvy,
 } from '../src/moduly/web/schemata.js';
 
 describe('barevná schémata', () => {
@@ -79,5 +81,34 @@ describe('šablony', () => {
     expect(cssSchematu(sch, ':root', pruhlednostiSchematu(sch, 0.2))).toMatch(
       /--gradient-hore:rgba\([^)]*, 0\.2\)/,
     );
+  });
+});
+
+describe('vlastní barevné schéma', () => {
+  it('OKLCH ↔ sRGB tam a zpět', () => {
+    for (const hex of ['#2e7d32', '#ffd600', '#151a16', '#c2410c', '#1e40af']) {
+      expect(oklchNaHex(srgbNaOklch(hexNaSrgb(hex)))).toBe(hex);
+    }
+  });
+
+  const pripady: [string, VlastniBarvy][] = [
+    ['rozumné barvy', { primarni: '#1e5aa8', akcent: '#ffd23f', tmava: '#101828' }],
+    ['všechno světlé', { primarni: '#a8e6ff', akcent: '#fff7d6', tmava: '#cfd8dc' }],
+    ['všechno tmavé', { primarni: '#0b1d0b', akcent: '#2d2d00', tmava: '#000000' }],
+    [
+      'šedé + ruční role',
+      { primarni: '#888888', akcent: '#777777', tmava: '#666666', na_tmave: '#555555', aktivni: '#999999' },
+    ],
+  ];
+  for (const [nazev, barvy] of pripady)
+    it(`${nazev}: po doladění projde kontrolou AA`, () => {
+      const { schema } = vlastniSchema(barvy);
+      const spatne = overSchema(schema).filter((d) => d.kontrast < d.min);
+      expect(spatne.map((d) => `${d.nazev} ${d.kontrast.toFixed(2)}`)).toEqual([]);
+    });
+
+  it('rozumné barvy se neupravují (hlavní barva zůstane)', () => {
+    const { upravy } = vlastniSchema({ primarni: '#1e5aa8', akcent: '#ffd23f', tmava: '#101828' });
+    expect(upravy.filter((u) => u.role === 'primarni')).toEqual([]);
   });
 });

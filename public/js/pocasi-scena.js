@@ -63,6 +63,7 @@
       posunCasu = cil.getTime() - nyni.getTime();
     }
     var MESIC_DRAHA = 12.4 * 3600e3; // přibližná doba Měsíce nad obzorem, když druhý čas padne na jiný den
+    var TVARY_LISTI = ['mandle', 'javor', 'dub', 'lipa', 'briza', 'kastan'];
     var LISTI = sklo
       ? ['138,75,20', '122,90,18', '110,47,18', '96,70,30']
       : ['196,106,31', '178,120,30', '170,70,30', '140,100,40'];
@@ -159,6 +160,7 @@
         rot: rnd(0, 6.3),
         vr: rnd(-1.6, 1.6),
         c: LISTI[Math.floor(Math.random() * LISTI.length)],
+        tvar: TVARY_LISTI[Math.floor(Math.random() * TVARY_LISTI.length)],
       };
     }
 
@@ -390,22 +392,137 @@
       }
     }
 
+    // tvary listí: polovina obrysu v jednotkách (špička nahoře y = -1, řapík dole), druhá půlka se zrcadlí;
+    // hladke = body se spojují oblouky (laloky dubu, lípa), jinak lomená čára (zuby javoru)
+    var OBRYSY = {
+      javor: {
+        body: [
+          [0, -1],
+          [0.16, -0.62],
+          [0.42, -0.86],
+          [0.38, -0.4],
+          [0.86, -0.46],
+          [0.62, -0.1],
+          [0.82, 0.18],
+          [0.36, 0.14],
+          [0.2, 0.42],
+          [0, 0.32],
+        ],
+      },
+      dub: {
+        hladke: true,
+        body: [
+          [0, -1],
+          [0.3, -0.86],
+          [0.2, -0.62],
+          [0.48, -0.5],
+          [0.3, -0.24],
+          [0.56, -0.04],
+          [0.32, 0.2],
+          [0.44, 0.44],
+          [0.14, 0.62],
+          [0, 0.78],
+        ],
+      },
+      lipa: {
+        hladke: true,
+        body: [
+          [0, -1],
+          [0.42, -0.62],
+          [0.72, -0.12],
+          [0.62, 0.3],
+          [0.3, 0.5],
+          [0.06, 0.38],
+          [0, 0.48],
+        ],
+      },
+      briza: {
+        body: [
+          [0, -1],
+          [0.14, -0.72],
+          [0.22, -0.74],
+          [0.3, -0.42],
+          [0.4, -0.42],
+          [0.48, -0.1],
+          [0.56, -0.08],
+          [0.5, 0.22],
+          [0.26, 0.52],
+          [0, 0.66],
+        ],
+      },
+    };
+
+    function obrys(o, s) {
+      var b = o.body,
+        i;
+      var cesta = b.concat(
+        b
+          .slice(0, -1)
+          .reverse()
+          .map(function (p) {
+            return [-p[0], p[1]];
+          }),
+      );
+      g.beginPath();
+      g.moveTo(cesta[0][0] * s, cesta[0][1] * s);
+      if (o.hladke) {
+        for (i = 1; i < cesta.length - 1; i += 1) {
+          var mx = ((cesta[i][0] + cesta[i + 1][0]) / 2) * s,
+            my = ((cesta[i][1] + cesta[i + 1][1]) / 2) * s;
+          g.quadraticCurveTo(cesta[i][0] * s, cesta[i][1] * s, mx, my);
+        }
+        g.lineTo(cesta[cesta.length - 1][0] * s, cesta[cesta.length - 1][1] * s);
+      } else for (i = 1; i < cesta.length; i++) g.lineTo(cesta[i][0] * s, cesta[i][1] * s);
+      g.closePath();
+      g.fill();
+    }
+
     function list(l) {
+      var barva = 'rgba(' + l.c + ',' + (sklo ? 0.9 : 0.55) + ')';
+      var s = l.s * (l.tvar === 'mandle' ? 1 : 1.25);
       g.save();
       g.translate(l.x, l.y);
       g.rotate(l.rot);
-      g.fillStyle = 'rgba(' + l.c + ',' + (sklo ? 0.9 : 0.55) + ')';
-      g.beginPath();
-      g.moveTo(0, -l.s);
-      g.quadraticCurveTo(l.s * 0.75, -l.s * 0.2, 0, l.s);
-      g.quadraticCurveTo(-l.s * 0.75, -l.s * 0.2, 0, -l.s);
-      g.fill();
-      g.strokeStyle = 'rgba(' + l.c + ',' + (sklo ? 0.9 : 0.55) + ')';
+      g.fillStyle = barva;
+      g.strokeStyle = barva;
       g.lineWidth = 1;
-      g.beginPath();
-      g.moveTo(0, l.s);
-      g.lineTo(0, l.s * 1.35);
-      g.stroke();
+      if (l.tvar === 'kastan') {
+        // kaštan: pět podlouhlých lístků do vějíře z jednoho bodu
+        for (var i = -2; i <= 2; i++) {
+          g.save();
+          g.rotate(i * 0.55);
+          g.beginPath();
+          g.ellipse(
+            0,
+            -s * (0.55 - Math.abs(i) * 0.08),
+            s * 0.2,
+            s * (0.55 - Math.abs(i) * 0.08),
+            0,
+            0,
+            6.2832,
+          );
+          g.fill();
+          g.restore();
+        }
+        g.beginPath();
+        g.moveTo(0, 0);
+        g.lineTo(0, s * 0.6);
+        g.stroke();
+      } else {
+        if (OBRYSY[l.tvar]) obrys(OBRYSY[l.tvar], s);
+        else {
+          g.beginPath();
+          g.moveTo(0, -s);
+          g.quadraticCurveTo(s * 0.75, -s * 0.2, 0, s);
+          g.quadraticCurveTo(-s * 0.75, -s * 0.2, 0, -s);
+          g.fill();
+        }
+        // řapík
+        g.beginPath();
+        g.moveTo(0, s * 0.4);
+        g.lineTo(0, s * 1.25);
+        g.stroke();
+      }
       g.restore();
     }
 
@@ -548,7 +665,39 @@
     prepni();
   }
 
+  // přepínač Dny / Hodiny v rohu dlaždice (bez JS zůstává výchozí pohled ze správy; volba se pamatuje)
+  function prepinac(sekce) {
+    var p = sekce.querySelector('.poc-prepinac');
+    if (!p) return;
+    var zvol = function (pohled, ulozit) {
+      sekce.querySelectorAll('.poc-dalsi[data-pohled]').forEach(function (ul) {
+        ul.hidden = ul.getAttribute('data-pohled') !== pohled;
+      });
+      p.querySelectorAll('button').forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.getAttribute('data-pohled') === pohled));
+      });
+      if (ulozit)
+        try {
+          localStorage.setItem('pocasi.pohled', pohled);
+        } catch {
+          /* soukromý režim */
+        }
+    };
+    try {
+      var ulozeno = localStorage.getItem('pocasi.pohled');
+      if (ulozeno === 'dny' || ulozeno === 'hodiny') zvol(ulozeno, false);
+    } catch {
+      /* bez úložiště */
+    }
+    p.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-pohled]');
+      if (b) zvol(b.getAttribute('data-pohled'), true);
+    });
+    p.hidden = false;
+  }
+
   function start() {
+    document.querySelectorAll('.pocasi-dlazdice').forEach(prepinac);
     var s = document.querySelectorAll('.pocasi-dlazdice[data-scena]');
     for (var i = 0; i < s.length; i++) if (s[i].offsetParent !== null) scena(s[i]);
   }

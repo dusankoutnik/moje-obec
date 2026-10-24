@@ -9,6 +9,9 @@ import {
   oklchNaHex,
   oklchNaSrgb,
   pres,
+  hexNaSrgb,
+  srgbNaOklch,
+  vGamutu,
   type Oklch,
   type Rgb01,
 } from '../../lib/oklch.js';
@@ -289,3 +292,106 @@ export function cssSchematu(
   ].join(';');
   return `${selektor}{${zaklad}}@supports (color: oklch(0 0 0)){${selektor}{${moderni}}}`;
 }
+
+// ---------- vlastní barevné schéma (2026-10-24, Dušan: „ne jen jednu barvu“) ----------
+/** barvy zadané obcí v hex; nepovinné role se dopočítají z hlavní barvy */
+export interface VlastniBarvy {
+  primarni: string;
+  akcent: string;
+  tmava: string;
+  na_tmave?: string;
+  aktivni?: string;
+}
+export const ROLE_VLASTNIHO: (keyof VlastniBarvy)[] = ['primarni', 'akcent', 'tmava', 'na_tmave', 'aktivni'];
+export interface UpravaBarvy {
+  role: keyof VlastniBarvy | 'aktivni_text';
+  z: string;
+  na: string;
+}
+
+const hexOk = (x: unknown): x is string => typeof x === 'string' && /^#[0-9a-f]{6}$/i.test(x);
+const naOklch = (hex: string) => srgbNaOklch(hexNaSrgb(hex));
+
+/** posouvá světlost (krok 0,01) a při výjezdu z gamutu ubírá sytost, dokud podmínka neplatí */
+function dolad(o: Oklch, smer: 1 | -1, ok: (x: Oklch) => boolean): Oklch {
+  let [l, c] = o;
+  const h = o[2];
+  for (let i = 0; i < 100 && !ok([l, c, h]); i++) {
+    l = Math.min(0.99, Math.max(0.05, l + smer * 0.01));
+    while (c > 0.005 && !vGamutu([l, c, h])) c *= 0.92;
+  }
+  while (c > 0.005 && !vGamutu([l, c, h])) c *= 0.92;
+  return [l, c, h];
+}
+
+/**
+ * Vlastní schéma ze zadaných barev. Každou roli kvůli kontrastu WCAG 2.1 AA (4,5 : 1) případně doladí — posune
+ * jen světlost (odstín zůstane), např. příliš světlou hlavní barvu ztmaví, aby na ní byl čitelný bílý text.
+ * Vrací schéma a seznam úprav (pro hlášku ve správě). Výsledek projde stejnou kontrolou jako hotová schémata.
+ */
+export function vlastniSchema(b: VlastniBarvy): { schema: Schema; upravy: UpravaBarvy[] } {
+  const prim0 = naOklch(hexOk(b.primarni) ? b.primarni : '#2e7d32');
+  const akc0 = naOklch(hexOk(b.akcent) ? b.akcent : '#ffd600');
+  const tm0 = naOklch(hexOk(b.tmava) ? b.tmava : '#151a16');
+  const nt0: Oklch = hexOk(b.na_tmave)
+    ? naOklch(b.na_tmave)
+    : [0.88, Math.min(0.12, prim0[1] * 0.8), prim0[2]];
+  const c = oklchNaSrgb;
+  // tmavá: patička, závoj, text na akcentu — dost tmavá pro bílý i světlý text
+  const tmava = dolad([tm0[0], Math.min(tm0[1], 0.06), tm0[2]], -1, (x) => x[0] <= 0.26);
+  const svetla: Oklch = [0.96, Math.min(0.025, prim0[1]), prim0[2]];
+  const primarni = dolad(
+    prim0,
+    -1,
+    (x) => kontrastRgb(BILA, c(x)) >= 4.5 && kontrastRgb(c(x), c(svetla)) >= 4.5,
+  );
+  const akcent = dolad(akc0, 1, (x) => kontrastRgb(c(tmava), c(x)) >= 4.5);
+  const naTmave = dolad(nt0, 1, (x) => {
+    const zkus: Schema = { ...ZAKLAD, primarni, akcent, tmava, svetla, naTmave: x, aktivni: akcent };
+    return overSchema(zkus).every((d) => !/světlá primární/.test(d.nazev) || d.kontrast >= d.min);
+  });
+  let aktivni: Oklch = hexOk(b.aktivni) ? naOklch(b.aktivni) : akcent;
+  const sBilou = kontrastRgb(BILA, c(aktivni));
+  const sTmavou = kontrastRgb(c(tmava), c(aktivni));
+  const aktivniText: 'bila' | 'tmava' = sBilou > sTmavou ? 'bila' : 'tmava';
+  aktivni =
+    aktivniText === 'bila'
+      ? dolad(aktivni, -1, (x) => kontrastRgb(BILA, c(x)) >= 4.5)
+      : dolad(aktivni, 1, (x) => kontrastRgb(c(tmava), c(x)) >= 4.5);
+  const schema: Schema = {
+    id: 'vlastni-schema',
+    nazev: 'Vlastní schéma',
+    popis: '',
+    primarni,
+    naTmave,
+    akcent,
+    aktivni,
+    aktivniText,
+    tmava,
+    svetla,
+  };
+  const upravy: UpravaBarvy[] = [];
+  const porovnej = (role: keyof VlastniBarvy, zadano: string | undefined, vysledek: Oklch) => {
+    const na = oklchNaHex(vysledek);
+    if (hexOk(zadano) && na.toLowerCase() !== zadano.toLowerCase()) upravy.push({ role, z: zadano, na });
+  };
+  porovnej('primarni', b.primarni, primarni);
+  porovnej('akcent', b.akcent, akcent);
+  porovnej('tmava', b.tmava, tmava);
+  porovnej('na_tmave', b.na_tmave, naTmave);
+  porovnej('aktivni', b.aktivni, aktivni);
+  return { schema, upravy };
+}
+
+/** hex podoba vlastního schématu (pro formulář ve správě) */
+export function hexVlastniho(s: Schema): Required<VlastniBarvy> {
+  return {
+    primarni: oklchNaHex(s.primarni),
+    akcent: oklchNaHex(s.akcent),
+    tmava: oklchNaHex(s.tmava),
+    na_tmave: oklchNaHex(s.naTmave),
+    aktivni: oklchNaHex(s.aktivni),
+  };
+}
+
+const ZAKLAD: Schema = SCHEMATA[0]!;

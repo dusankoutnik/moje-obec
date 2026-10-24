@@ -15,7 +15,7 @@
     <legend><span class="krok">1</span> <%= it.t('web.vzhled_schema') %></legend>
     <p class="napoveda"><%= it.t('web.vzhled_schema_napoveda') %></p>
     <div class="volby-mrizka">
-      <% var aktSchema = it.v.schema ? it.v.schema.id : 'vlastni'; %>
+      <% var aktSchema = it.v.ulozeno.schema === 'vlastni-schema' ? 'vlastni-schema' : it.v.schema ? it.v.schema.id : 'vlastni'; %>
       <% it.schemata.forEach(function (s) { %>
       <label class="volba">
         <input type="radio" name="schema" value="<%= s.id %>" <%= aktSchema === s.id ? 'checked' : '' %>>
@@ -38,6 +38,43 @@
         <span class="volba-text"><strong><%= it.t('web.vzhled_vlastni') %></strong><span><%= it.t('web.vzhled_vlastni_popis') %></span></span>
       </label>
     </div>
+    <% var VB = it.vlastni.barvy, VY = it.vlastni.vysledek || VB; %>
+    <label class="volba volba-siroka">
+      <input type="radio" name="schema" value="vlastni-schema" <%= aktSchema === 'vlastni-schema' ? 'checked' : '' %>>
+      <span class="miniatura" style="background: <%= VY.tmava %>" aria-hidden="true">
+        <span class="mini-pruh" style="background: <%= VY.akcent %>"></span>
+        <span class="mini-nazev" style="color: <%= VY.na_tmave || '#fff' %>">Aa obec</span>
+        <span class="mini-tlacitka">
+          <span style="background: <%= VY.primarni %>; color: #fff">Obec</span>
+          <span style="background: <%= VY.akcent %>; color: <%= VY.tmava %>">Zprávy</span>
+        </span>
+      </span>
+      <span class="volba-text"><strong><%= it.t('web.vs_nazev') %></strong><span><%= it.t('web.vs_popis') %></span></span>
+    </label>
+    <div class="vlastni-schema" aria-describedby="vs-n">
+      <% ;['primarni', 'akcent', 'tmava', 'na_tmave', 'aktivni'].forEach(function (r) { var nep = r === 'na_tmave' || r === 'aktivni'; %>
+      <div class="vs-role">
+        <label for="vs_<%= r %>"><%= it.t('web.vs_role_' + r) %></label>
+        <input id="vs_<%= r %>" name="vs_<%= r %>" type="color" value="<%= VB[r] || VY[r] || '#888888' %>" class="barva-vstup">
+        <small><%= it.t('web.vs_napoveda_' + r) %></small>
+        <% if (nep) { %><label class="zatrzitko"><input type="checkbox" name="vs_<%= r %>_rucne" value="ano" <%= it.vlastni.rucne[r] ? 'checked' : '' %>> <%= it.t('web.vs_rucne') %></label><% } %>
+      </div>
+      <% }) %>
+    </div>
+    <p class="napoveda" id="vs-n"><%= it.t('web.vs_kontrast_napoveda') %></p>
+    <% if (it.vlastni.kontrola.length) { %>
+    <details class="vs-kontrola">
+      <summary><%= it.t('web.vs_kontrola', { ok: it.vlastni.kontrola.filter(function (d) { return d.kontrast >= d.min; }).length, n: it.vlastni.kontrola.length }) %></summary>
+      <table class="tabulka">
+        <thead><tr><th scope="col"><%= it.t('web.vs_dvojice') %></th><th scope="col"><%= it.t('web.vs_pomer') %></th></tr></thead>
+        <tbody>
+        <% it.vlastni.kontrola.forEach(function (d) { %>
+          <tr><td><%= d.nazev %></td><td><%= d.kontrast >= d.min ? '✓' : '✗' %> <%= d.kontrast.toFixed(2).replace('.', ',') %> : 1</td></tr>
+        <% }) %>
+        </tbody>
+      </table>
+    </details>
+    <% } %>
     <label for="barva"><%= it.t('web.barva_obce') %></label>
     <input id="barva" name="barva" type="color" value="<%= it.v.barva %>" aria-describedby="barva-n" class="barva-vstup">
     <p class="napoveda" id="barva-n"><%= it.t('web.barva_napoveda') %> <%= it.t('web.kontrast', { k: String(it.v.paleta.kontrast).replace('.', ',') }) %></p>
@@ -152,7 +189,18 @@
       <% }) %>
     </div>
     <p class="napoveda" id="pocasi-n"><%= it.t('pocasi.umisteni_napoveda') %></p>
+    <p class="vh" id="pocasi-z-h"><%= it.t('pocasi.zobrazeni') %></p>
+    <div role="radiogroup" aria-labelledby="pocasi-z-h">
+      <strong aria-hidden="true"><%= it.t('pocasi.zobrazeni') %></strong>
+      <% ;['dny', 'hodiny'].forEach(function (z) { %>
+      <label class="zatrzitko"><input type="radio" name="pocasi_zobrazeni" value="<%= z %>" <%= it.v.pocasiZobrazeni === z ? 'checked' : '' %>> <%= it.t('pocasi.zobrazeni_' + z) %></label>
+      <% }) %>
+    </div>
+    <p class="napoveda"><%= it.t('pocasi.zobrazeni_napoveda') %></p>
     <% } %>
+    <input type="hidden" name="volt_logo_odeslano" value="1">
+    <label class="zatrzitko"><input type="checkbox" name="volt_logo" value="ano" <%= it.v.voltLogo ? 'checked' : '' %>> <%= it.t('web.volt_logo') %></label>
+    <p class="napoveda"><%= it.t('web.volt_logo_napoveda') %></p>
   </fieldset>
 
   <fieldset>
