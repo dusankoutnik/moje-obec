@@ -86,7 +86,38 @@
       paprsky = /jasno-den|polojasno-den/.test(druh),
       blesk = { dalsi: rnd(3, 7), trva: 0, cesta: null };
 
-    var maMraky = /zatazeno|polojasno|dest|snih|bourka|mlha/.test(druh);
+    // oblačnost 0–1: z MET (cloud_area_fraction aktuální hodiny), jinak odhad podle kategorie symbolu
+    var oblAttr = parseFloat(sekce.getAttribute('data-oblacnost') || '');
+    var ODHAD = {
+      'jasno-den': 5,
+      'jasno-noc': 5,
+      'polojasno-den': 45,
+      'polojasno-noc': 45,
+      zatazeno: 90,
+      dest: 95,
+      bourka: 95,
+      snih: 90,
+      mlha: 100,
+    };
+    var KRYTI = Math.min(
+      1,
+      Math.max(0, (isFinite(oblAttr) ? oblAttr : ODHAD[druh] != null ? ODHAD[druh] : 50) / 100),
+    );
+    // srážky mm/h: mrholení řidší déšť, liják hustší
+    var srazky = parseFloat(sekce.getAttribute('data-srazky') || '');
+    var HUSTOTA_DESTE = !isFinite(srazky)
+      ? 1
+      : srazky < 0.5
+        ? 0.5
+        : srazky >= 4
+          ? 2
+          : srazky >= 1.5
+            ? 1.4
+            : 1;
+    // jak moc prosvítá Slunce / Měsíc (za zataženo nic)
+    var PRUSVIT = Math.pow(1 - KRYTI, 1.5);
+    paprsky = paprsky && KRYTI < 0.6;
+    var maMraky = druh === 'mlha' || KRYTI >= 0.08;
     var maDest = druh === 'dest' || druh === 'bourka';
     var maSnih = druh === 'snih';
     var maHvezdy = sklo && /noc/.test(druh);
@@ -105,17 +136,19 @@
     function naplnit() {
       var plocha = (W * H) / 100000; // počet částic podle velikosti dlaždice
       mraky = [];
-      var nM = druh === 'mlha' ? 6 : druh === 'polojasno-den' || druh === 'polojasno-noc' ? 3 : 5;
+      // počet, velikost a hustota mraků podle oblačnosti (polojasno pár obláčků, zataženo souvislá vrstva)
+      var nM = druh === 'mlha' ? 6 : Math.max(1, Math.round(KRYTI * 11 * Math.max(1, W / 1000)));
+      var tezke = maDest || druh === 'snih';
       for (var i = 0; i < (maMraky ? nM : 0); i++)
         mraky.push({
           x: rnd(-0.2, 1.1) * W,
-          y: druh === 'mlha' ? rnd(0.1, 0.95) * H : rnd(0.05, 0.75) * H,
-          s: druh === 'mlha' ? rnd(1.6, 2.6) : rnd(0.7, 1.3),
-          v: rnd(5, 12) * (Math.random() < 0.5 ? 1 : 0.8),
-          a: druh === 'mlha' ? rnd(0.25, 0.4) : rnd(0.35, 0.55),
+          y: druh === 'mlha' ? rnd(0.1, 0.95) * H : rnd(0.0, 0.35 + KRYTI * 0.5) * H,
+          s: druh === 'mlha' ? rnd(1.6, 2.6) : rnd(0.6, 1.0) * (0.8 + KRYTI * 0.9),
+          v: rnd(5, 12) * (Math.random() < 0.5 ? 1 : 0.8) * (maDest ? 1.4 : 1),
+          a: druh === 'mlha' ? rnd(0.25, 0.4) : rnd(0.25, 0.4) + KRYTI * 0.3 + (tezke ? 0.1 : 0),
         });
       kapky = [];
-      for (i = 0; i < (maDest ? Math.round(55 * plocha) + 20 : 0); i++)
+      for (i = 0; i < (maDest ? Math.round((55 * plocha + 20) * HUSTOTA_DESTE) : 0); i++)
         kapky.push({ x: rnd(0, W), y: rnd(-H, H), d: rnd(9, 16), v: rnd(380, 520), a: rnd(0.4, 0.7) });
       vlocky = [];
       for (i = 0; i < (maSnih ? Math.round(45 * plocha) + 20 : 0); i++)
@@ -320,8 +353,16 @@
         g.fillStyle = gr;
         g.fillRect(0, 0, W, H);
       }
-      // Slunce
-      if (fS !== null) {
+      // zataženo: obloha potemní (bílý text na skle tím jen získá kontrast; v kartě jen náznak)
+      if (KRYTI > 0.5 && noc < 1) {
+        g.fillStyle = sklo
+          ? 'rgba(10,14,20,' + 0.3 * (KRYTI - 0.5) * (1 - noc) + ')'
+          : 'rgba(60,70,90,' + 0.08 * (KRYTI - 0.5) + ')';
+        g.fillRect(0, 0, W, H);
+      }
+      // Slunce (za mraky slábne, za zataženo se neukáže)
+      if (fS !== null && PRUSVIT > 0.04) {
+        g.globalAlpha = PRUSVIT;
         var r = Math.min(30, H * 0.11),
           s = bodNaDraze(fS, r * 2);
         var gs = g.createRadialGradient(s.x, s.y, 0, s.x, s.y, r * 3);
@@ -333,13 +374,16 @@
         g.beginPath();
         g.arc(s.x, s.y, r * 3, 0, 6.2832);
         g.fill();
+        g.globalAlpha = 1;
       }
       // Měsíc ve skutečné fázi
       var fM = drahaMesice(ted);
-      if (fM !== null) {
+      if (fM !== null && PRUSVIT > 0.04) {
+        g.globalAlpha = PRUSVIT;
         var rm = Math.min(26, H * 0.09),
           m = bodNaDraze(fM, rm * 2);
         kresliMesic(m.x, m.y, rm);
+        g.globalAlpha = 1;
       }
     }
     function kresliMesic(x, y, r) {

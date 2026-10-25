@@ -101,6 +101,8 @@ export interface Hodina {
   popis: string;
   /** vítr km/h */
   vitr: number | null;
+  /** oblačnost 0–100 % (cloud_area_fraction) — kolik mraků kreslí scéna dlaždice */
+  oblacnost?: number | null;
 }
 
 export interface Den {
@@ -189,6 +191,7 @@ export function prevedMet(j: MetOdpoved, ted: Date, volby: { hodin?: number; dnu
       symbol: sym,
       popis: popisSymbolu(sym),
       vitr: kmh(b.data.instant.details.wind_speed),
+      oblacnost: cislo(b.data.instant.details.cloud_area_fraction),
     });
   }
   const prvni = budouci[0];
@@ -204,6 +207,7 @@ export function prevedMet(j: MetOdpoved, ted: Date, volby: { hodin?: number; dnu
             symbol: s ? normalizujSymbol(s) : null,
             popis: s ? popisSymbolu(s) : '',
             vitr: kmh(prvni.b.data.instant.details.wind_speed),
+            oblacnost: cislo(prvni.b.data.instant.details.cloud_area_fraction),
           };
         })()
       : null;
