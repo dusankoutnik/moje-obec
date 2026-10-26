@@ -12,6 +12,7 @@
   </dl>
   <% if (it.h.sms_text) { %><h3>SMS (<%= it.segmentu %>×)</h3><pre class="sms"><%= it.obec.texty.sms_prefix %><%= it.h.sms_text %></pre><% } %>
   <% if (it.h.email_predmet) { %><h3>E-mail: <%= it.h.email_predmet %></h3><pre class="sms"><%= it.h.email_text %></pre><% } %>
+  <% if (it.h.prilohy && it.h.prilohy.length) { %><h3><%= it.t('infokanal.detail_prilohy') %></h3><ul><% it.h.prilohy.forEach(function (p) { %><li><a href="/soubory/<%= p.id %>/<%= encodeURIComponent(p.nazev) %>"><%= p.nazev %></a></li><% }) %></ul><% } %>
   <% if (it.h.clanek_titulek) { %><h3>Článek: <%= it.h.clanek_titulek %></h3><pre class="sms"><%= it.h.clanek_html %></pre><% } %>
   <% if (it.h.stav === 'odesila_se' || it.h.stav === 'naplanovano') { %>
   <form method="post" action="/infokanal/sprava/hlaseni/<%= it.h.id %>/zrusit"><input type="hidden" name="_csrf" value="<%= it.csrf %>"><button class="tlacitko nebezpecne" type="submit"><%= it.t('infokanal.zrusit_hlaseni') %></button></form>
@@ -25,7 +26,7 @@
     <% ;['sms', 'email'].forEach(function (k) { Object.keys(it.h.souhrn[k] || {}).forEach(function (st) { %><li><%= k === 'sms' ? 'SMS' : 'E-mail' %> — <%= it.t('infokanal.' + st) %>: <strong><%= it.h.souhrn[k][st] %></strong></li><% }) }) %>
   <% } %>
   </ul>
-  <% if (it.h.souhrn) { %><p class="napoveda">Převedeno z VlastiKanálu — jednotliví příjemci se nepřevádějí, jen počty.<% if (it.h.souhrn.web_url) { %> Článek: <a href="<%= it.h.souhrn.web_url %>"><%= it.h.souhrn.web_url %></a><% } %></p><% } %>
+  <% if (it.h.souhrn) { %><p class="napoveda">Převedeno z předchozí aplikace — jednotliví příjemci se nepřevádějí, jen počty.<% if (it.h.souhrn.web_url) { %> Článek: <a href="<%= it.h.souhrn.web_url %>"><%= it.h.souhrn.web_url %></a><% } %></p><% } %>
   <div class="tabulka-obal">
   <table class="tabulka kompaktni">
     <thead><tr><th>Kanál</th><th>Kontakt</th><th><%= it.t('infokanal.stav') %></th><th>Odesláno</th><th>Chyba</th></tr></thead>

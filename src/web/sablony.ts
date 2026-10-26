@@ -7,6 +7,7 @@ import fp from 'fastify-plugin';
 import { formatujTelefon, maskujTelefon } from '../lib/kontakty.js';
 import { filtrujMenu, type PolozkaMenu } from '../moduly/sluzby/sluzba.js';
 import { maRoli } from '../moduly/ucty/sluzba.js';
+import { nazevInfokanalu } from '../moduly/infokanal/nazev.js';
 
 export const VIEWS_DIR = path.resolve(import.meta.dirname, '..', '..', 'views');
 // logo výrobce v patičce (Volt) — vykreslí se, jen když soubor existuje (public/img/volt-logo.svg nebo .png)
@@ -82,6 +83,12 @@ export default fp(async function sablony(app: FastifyInstance) {
             );
         }
       }
+      // název infokanálu navenek (Správa → Vzhled, i v náhledu vzhledu) — šablony ho berou z obec.texty
+      const vzhledLayoutu = layout.vzhled as { nazevInfokanalu?: string } | undefined;
+      obec = {
+        ...obec,
+        texty: { ...obec.texty, nazev_infokanalu: vzhledLayoutu?.nazevInfokanalu || nazevInfokanalu(app) },
+      };
       return eta.renderAsync(sablona, {
         t: app.t,
         obec,

@@ -219,6 +219,11 @@
     <label for="motto"><%= it.t('web.motto') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
     <input id="motto" name="motto" maxlength="200" value="<%= it.v.motto %>" aria-describedby="motto-n">
     <p class="napoveda" id="motto-n"><%= it.t('web.motto_napoveda') %></p>
+    <% if (it.obecStaticka.moduly.infokanal) { %>
+    <label for="nazev_infokanalu"><%= it.t('web.nazev_infokanalu') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+    <input id="nazev_infokanalu" name="nazev_infokanalu" maxlength="40" value="<%= it.v.nazevInfokanalu %>" placeholder="<%= it.nazevInfokanaluVychozi %>" aria-describedby="nazev-ik-n">
+    <p class="napoveda" id="nazev-ik-n"><%= it.t('web.nazev_infokanalu_napoveda', { vychozi: it.nazevInfokanaluVychozi }) %></p>
+    <% } %>
   </fieldset>
 
   <div class="tlacitka-dole">

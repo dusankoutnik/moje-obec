@@ -10,6 +10,7 @@ import { vyzadujRoli } from '../ucty/opravneni.js';
 import { maRoli, smiUpravitUcet } from '../ucty/sluzba.js';
 import { AplikaceKlient, RezervaceAdmin, type SouhrnRezervaci, type StatistikyEknih } from './aplikace.js';
 import { AdministraceSluzba } from './sluzba.js';
+import { nazevInfokanalu } from '../infokanal/nazev.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -214,7 +215,7 @@ async function administraceModul(app: FastifyInstance, volby: { planovac: boolea
       titulek: 'Statistiky',
       ucty: zakladni.ucty,
       infokanal: ik,
-      infokanalNazev: app.obec.texty.nazev_infokanalu,
+      infokanalNazev: nazevInfokanalu(app),
       rezervaceZapnute: rez,
       rezervace: souhrn,
       eknihyZapnute: ekn,

@@ -5,6 +5,7 @@ import type { KanalPreference } from '../../db/types.js';
 import { normalizujEmail, normalizujTelefon, formatujTelefon, bezDiakritiky } from '../../lib/kontakty.js';
 import type { InfokanalSluzba } from './sluzba.js';
 import { hlidejLimit } from '../../lib/limit.js';
+import { nazevInfokanalu } from './nazev.js';
 
 const KANALY: KanalPreference[] = ['sms', 'smisene', 'email'];
 
@@ -60,7 +61,7 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
       if (o && o.overen_at && !o.odhlasen_at) {
         // odběr už má — nastavení (kanál, kategorie) je jen v Mém účtu, žádná druhá stránka s týmž formulářem (2026-10-22)
         return reply.view('infokanal/index', {
-          titulek: t('infokanal.titulek'),
+          titulek: nazevInfokanalu(app),
           kategorie,
           f: {},
           kanaly: KANALY,
@@ -76,7 +77,7 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
       };
     }
     return reply.view('infokanal/index', {
-      titulek: t('infokanal.titulek'),
+      titulek: nazevInfokanalu(app),
       kategorie,
       f: predvyplneno,
       kanaly: KANALY,
@@ -91,7 +92,7 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
       const kategorie = await sluzba.kategorie();
       const vykresli = (chyba: string) =>
         reply.view('infokanal/index', {
-          titulek: t('infokanal.titulek'),
+          titulek: nazevInfokanalu(app),
           kategorie,
           f: b,
           kanaly: KANALY,
@@ -177,7 +178,7 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
       const kategorie = await sluzba.kategorie();
       if (!telefon)
         return reply.view('infokanal/index', {
-          titulek: t('infokanal.titulek'),
+          titulek: nazevInfokanalu(app),
           kategorie,
           f: req.body,
           kanaly: KANALY,

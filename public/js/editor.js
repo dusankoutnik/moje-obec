@@ -274,6 +274,8 @@
       });
     });
     quill.clipboard.dangerouslyPasteHTML(ta.value || '');
+    // instance pro jiné skripty stránky (kopírování textu mezi poli hlášení, public/js/hlaseni.js)
+    ta.editorQuill = quill;
     // popisky tlačítek pro čtečky a klávesnici
     obal.querySelectorAll('.ql-toolbar button, .ql-toolbar .ql-picker-label').forEach(function (b) {
       var c = Array.prototype.find.call(b.classList, function (x) {

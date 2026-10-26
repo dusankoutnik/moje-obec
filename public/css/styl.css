@@ -903,6 +903,41 @@ dl.seznam dd {
 .dlazdice.hlavni span:not(.ikona) {
   color: var(--bila);
 }
+/* dlaždice s odkazem a malým formulářem (Aktuality + počet obyvatel): odkaz a formulář jsou sourozenci */
+.dlazdice-odkaz {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  color: inherit;
+}
+.dlazdice-odkaz:hover strong,
+.dlazdice-odkaz:focus-visible strong {
+  text-decoration: underline;
+}
+.obyvatele-formular {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--linka);
+}
+.obyvatele-formular label {
+  font-weight: 600;
+  font-size: 0.93rem;
+  margin: 0 0 4px;
+}
+.obyvatele-radek {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.obyvatele-radek input {
+  width: 8em;
+  margin: 0;
+}
+.obyvatele-formular .napoveda {
+  display: block;
+  margin-top: 4px;
+}
 .tlacitko.male {
   min-height: 36px;
   padding: 5px 12px;
@@ -1647,6 +1682,19 @@ a.stat-in:hover .stat-hodnota {
 }
 .kratky-seznam li:last-child {
   border-bottom: 0;
+}
+/* formulář hlášení infokanálu: kopírování textu mezi poli (SMS → e-mail → článek), přílohy */
+.kopirovani:not([hidden]) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 6px;
+}
+.prilohy-hlaseni .kratky-seznam li {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
 }
 .dotace-uvod h2 {
   font-size: 0.85rem;

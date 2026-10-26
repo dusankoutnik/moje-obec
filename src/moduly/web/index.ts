@@ -20,6 +20,7 @@ import { upozorniNaKonecDotaci, zalozVychoziMenu } from './udrzba.js';
 import { jeVelikost } from './pisma.js';
 import { maRoli } from '../ucty/sluzba.js';
 import { bezpecnyNavrat } from '../../lib/navrat.js';
+import obyvateleRoutes from './obyvatele.js';
 
 export const COOKIE_VELIKOST = 'mo_velikost';
 
@@ -63,6 +64,8 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
   };
   app.decorate('web', s);
   await zalozVychoziMenu(app);
+  // vzhled načíst hned — název infokanálu z něj berou i e-maily a texty bez požadavku (src/moduly/infokanal/nazev.ts)
+  await s.vzhled.nacti().catch(() => undefined);
 
   // menu, vzhled (případně náhled ze sezení), velikost písma návštěvníka, fotka pozadí a pás dárců
   app.dataLayoutu.push(async (req) => {
@@ -114,6 +117,7 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
   await app.register(webSpravaDalsi, s);
   await app.register(webSpravaVidea, s);
   await app.register(webKontaktObce);
+  await app.register(obyvateleRoutes);
   await app.register(webSpravaAkce, s);
 
   if (volby.planovac) {

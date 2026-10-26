@@ -8,6 +8,7 @@ import { vyzadujRoli } from '../../ucty/opravneni.js';
 import { CEZ_WEB } from '../../odstavky/cez.js';
 import { OdstavkySluzba } from '../../odstavky/sluzba.js';
 import { VystrahySluzba } from './sluzba.js';
+import { nazevInfokanalu } from '../nazev.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -44,7 +45,9 @@ async function vystrahyModul(app: FastifyInstance, volby: { planovac: boolean })
       baseUrl: app.env.BASE_URL,
       obec: obecNazev,
       casti: app.obec.obec.casti,
-      nazevKanalu: app.obec.texty.nazev_infokanalu,
+      get nazevKanalu() {
+        return nazevInfokanalu(app);
+      },
       oblast: k.chmu?.oblast || `ORP ${orp}`,
       chmuOrp: orp,
       scvkObec: k.scvk ? k.scvk.obec || obecNazev : '',

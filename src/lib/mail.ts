@@ -8,6 +8,8 @@ export interface Zprava {
   text: string;
   html?: string;
   replyTo?: string;
+  /** přílohy ze souborů na disku (hlášení infokanálu) */
+  prilohy?: { nazev: string; cesta: string; mime: string }[];
 }
 
 export interface MailPoskytovatel {
@@ -55,6 +57,7 @@ export class SmtpMail implements MailPoskytovatel {
       text: z.text,
       html: z.html,
       replyTo: z.replyTo,
+      attachments: z.prilohy?.map((p) => ({ filename: p.nazev, path: p.cesta, contentType: p.mime })),
     });
     return { id: info.messageId ?? null };
   }

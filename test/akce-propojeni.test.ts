@@ -420,7 +420,7 @@ describe('synchronizace a správa akcí z rezervací', () => {
     expect(editor2.text).toContain(`href="/infokanal/sprava/hlaseni/${po.hlaseni_id}"`);
     // bez role redaktor tlačítko není
     const jenWeb = await prihlasSRoli(t, '777 610 002', ['web']);
-    expect((await jenWeb.get(`/sprava/web/obsah/${a.id}`)).text).not.toContain('Rozeslat infokanálem');
+    expect((await jenWeb.get(`/sprava/web/obsah/${a.id}`)).text).not.toContain('Vytvořit zprávu');
   });
 
   it('statistiky úvodu: každé číslo je odkaz, zprávy podle kategorie, pět nejbližších akcí', async () => {

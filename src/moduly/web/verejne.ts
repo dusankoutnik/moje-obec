@@ -16,6 +16,7 @@ import { pomocniciOdstavek } from '../odstavky/index.js';
 import { pomocniciPocasi } from '../pocasi/index.js';
 import { klicVysledku, vysledkyZDokumentu, type VysledekHledani } from './hledani-dokumentu.js';
 import { strankovani } from '../../lib/strankovani.js';
+import { rucniObyvatele } from './obyvatele.js';
 
 /** volby „Na stránce“ v seznamu aktualit (první = výchozí) */
 const NA_STRANKU = [12, 24, 48, 96];
@@ -100,19 +101,22 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       const c = /^\d+$/.test(f.hodnota) ? Number(f.hodnota) : undefined;
       statistiky.push({ hodnota: f.hodnota, cislo: c, popisek: f.popisek, odkaz: f.odkaz });
     }
-    // počet obyvatel z posledního čísla zpravodaje (API /api/v1/zpravodaj) má přednost před obec.yml
-    const zeZpravodaje = await obyvatelZeZpravodaje(app.db).catch(() => null);
-    if (zeZpravodaje) {
+    // počet obyvatel: ruční hodnota z administrace (obyvatele.ts) → poslední číslo zpravodaje (API
+    // /api/v1/zpravodaj) → obec.yml
+    const rucne = await rucniObyvatele(app.db).catch(() => null);
+    const obyvatele = rucne
+      ? { obyvatel: rucne.pocet, titulek: undefined, url: undefined }
+      : await obyvatelZeZpravodaje(app.db).catch(() => null);
+    if (obyvatele) {
       const st = {
-        hodnota: String(zeZpravodaje.obyvatel),
-        cislo: zeZpravodaje.obyvatel,
+        hodnota: String(obyvatele.obyvatel),
+        cislo: obyvatele.obyvatel,
         popisek: 'obyvatel',
-        titulek: zeZpravodaje.titulek,
+        titulek: obyvatele.titulek,
       };
       const i = statistiky.findIndex((x) => /obyvatel/i.test(x.popisek));
-      if (i >= 0)
-        statistiky[i] = { ...statistiky[i]!, ...st, odkaz: statistiky[i]!.odkaz ?? zeZpravodaje.url };
-      else statistiky.unshift({ ...st, odkaz: zeZpravodaje.url });
+      if (i >= 0) statistiky[i] = { ...statistiky[i]!, ...st, odkaz: statistiky[i]!.odkaz ?? obyvatele.url };
+      else statistiky.unshift({ ...st, odkaz: obyvatele.url });
     }
     if (app.obec.moduly.deska)
       statistiky.push({

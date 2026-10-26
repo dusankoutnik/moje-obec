@@ -57,6 +57,8 @@ export interface UlozenyVzhled {
   /** název obce v hlavičce a v úvodu (výchozí z obec.yml) */
   nazev?: string;
   nazev_styl?: NazevStyl;
+  /** jak se navenek jmenuje modul infokanálu (menu, nadpisy, e-maily); prázdné = obec.yml / „Hlášení obce“ */
+  nazev_infokanalu?: string;
   pozadi_ids?: string[];
   /** vlastní kombinace písem (pismo = 'vlastni'): id z katalogu RODINY */
   pismo_telo?: string;
@@ -88,6 +90,8 @@ export interface Vzhled {
   motto: string;
   nazev: string;
   nazevStyl: NazevStyl;
+  /** uložený název infokanálu ('' = výchozí, viz src/moduly/infokanal/nazev.ts) */
+  nazevInfokanalu: string;
   pozadi: string[];
   pozadiRezim: RezimPozadi;
   pozadiPevne: string | null;
@@ -107,6 +111,8 @@ const urlFotky = (id: string, pripona = 'jpg') => `/soubory/${id}/foto.${pripona
 
 export class VzhledSluzba {
   private cache: Vzhled | null = null;
+  /** poslední známý uložený název infokanálu — synchronně pro e-maily a texty fronty (nazev.ts) */
+  private nazevIk = '';
   constructor(
     private db: Db,
     private obec: ObecProfil,
@@ -165,6 +171,7 @@ export class VzhledSluzba {
       motto: u.motto ?? this.obec.vzhled.motto,
       nazev: u.nazev?.trim() || this.obec.obec.kratky_nazev,
       nazevStyl: u.nazev_styl && STYLY_NAZVU.includes(u.nazev_styl) ? u.nazev_styl : 'normalni',
+      nazevInfokanalu: u.nazev_infokanalu?.trim() ?? '',
       pozadi: pozadi.map((id) => url(id)),
       pozadiRezim: u.pozadi_rezim ?? 'stridani',
       pozadiPevne: u.pozadi_pevne && pozadi.includes(u.pozadi_pevne) ? url(u.pozadi_pevne) : null,
@@ -182,7 +189,10 @@ export class VzhledSluzba {
   }
 
   async nacti(): Promise<Vzhled> {
-    if (!this.cache) this.cache = await this.sestav(await this.ulozene());
+    if (!this.cache) {
+      this.cache = await this.sestav(await this.ulozene());
+      this.nazevIk = this.cache.nazevInfokanalu;
+    }
     return this.cache;
   }
 
@@ -209,6 +219,11 @@ export class VzhledSluzba {
     return true;
   }
 
+  /** uložený název infokanálu bez čekání na DB ('' = není nastaven nebo vzhled ještě není načtený) */
+  nazevInfokanaluTed(): string {
+    return this.nazevIk;
+  }
+
   private async zapis(v: UlozenyVzhled) {
     await this.db
       .insertInto('nastaveni')
@@ -218,5 +233,6 @@ export class VzhledSluzba {
       )
       .execute();
     this.cache = null;
+    this.nazevIk = v.nazev_infokanalu?.trim() ?? '';
   }
 }

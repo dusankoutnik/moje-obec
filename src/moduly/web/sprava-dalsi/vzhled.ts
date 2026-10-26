@@ -40,6 +40,7 @@ import {
 import type { WebSluzby } from '../index.js';
 import { vyzadujRoli } from '../../ucty/opravneni.js';
 import { kontextSpravy, type Telo, jeden, vice } from './spolecne.js';
+import { nazevInfokanalu, VYCHOZI_NAZEV_INFOKANALU } from '../../infokanal/nazev.js';
 
 export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby) {
   const { t, ulozObrazky } = kontextSpravy(app);
@@ -56,6 +57,8 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
     return reply.view('web/sprava/vzhled', {
       titulek: t('web.vzhled'),
       v,
+      // název infokanálu, když ho vzhled nenastaví (obec.yml, jinak „Hlášení obce“)
+      nazevInfokanaluVychozi: app.obec.texty.nazev_infokanalu.trim() || VYCHOZI_NAZEV_INFOKANALU,
       schemata: SCHEMATA.map((sch) => ({
         ...sch,
         hex: {
@@ -167,6 +170,8 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
     }
     if (b.motto !== undefined) z.motto = jeden(b.motto).slice(0, 200);
     if (b.nazev !== undefined) z.nazev = jeden(b.nazev).trim().slice(0, 60);
+    if (b.nazev_infokanalu !== undefined)
+      z.nazev_infokanalu = jeden(b.nazev_infokanalu).replace(/\s+/g, ' ').trim().slice(0, 40);
     const styl = jeden(b.nazev_styl);
     if (STYLY_NAZVU.includes(styl as NazevStyl)) z.nazev_styl = styl as NazevStyl;
     return z;
@@ -197,8 +202,23 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
       req.session.nahledVzhledu = { ...(req.session.nahledVzhledu ?? {}), ...zmena };
       return reply.redirect('/');
     }
+    const nazevIkPred = nazevInfokanalu(app);
     await s.vzhled.uloz(zmena, req.uzivatel!.id, req.ip);
     req.session.nahledVzhledu = null;
+    // přejmenování infokanálu: položky menu webu s odkazem na /infokanal, které nesly dosavadní název, se přejmenují
+    // taky (vlastní název položky, který redaktor zadal jinak, zůstane)
+    const nazevIkPo = nazevInfokanalu(app);
+    if (nazevIkPo !== nazevIkPred) {
+      const r = await app.db
+        .updateTable('web_obsah')
+        .set({ titulek: nazevIkPo })
+        .where('typ', '=', 'odkaz')
+        .where('odkaz_url', 'in', ['/infokanal', '/infokanal/'])
+        .where('titulek', '=', nazevIkPred)
+        .where('smazano_at', 'is', null)
+        .executeTakeFirst();
+      if (Number(r.numUpdatedRows)) s.obsah.zmena();
+    }
     const novy = await s.vzhled.nacti();
     const p = paleta(novy.barva);
     const upravy =

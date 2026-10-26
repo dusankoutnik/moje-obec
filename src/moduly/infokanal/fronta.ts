@@ -8,6 +8,7 @@ import type { Db } from '../../db/index.js';
 import type { Hlaseni, IkPrijemciTable } from '../../db/types.js';
 import type { Logger } from '../../lib/logger.js';
 import type { MailPoskytovatel } from '../../lib/mail.js';
+import { prilohyEmailem, prilohyHtml, prilohyText } from './obsah.js';
 import type { SmsPoskytovatel } from '../../lib/sms/typy.js';
 import { SmsChyba } from '../../lib/sms/typy.js';
 import { bezDiakritiky } from '../../lib/kontakty.js';
@@ -24,6 +25,8 @@ export interface FrontaKonfigurace {
   smsPrefix: string;
   nazevKanalu: string;
   nazevObce: string;
+  /** cesta souboru přílohy na disku (úložiště obce); bez ní jdou přílohy jen jako odkazy */
+  cestaSouboru?: (id: string) => string;
 }
 
 type Kanal = 'sms' | 'email';
@@ -209,6 +212,7 @@ export class RozesilaciFronta {
             predmet: h.email_predmet ?? '',
             text: this.emailTelo(h, odberatel?.token),
             html: this.emailHtml(h, odberatel?.token),
+            prilohy: this.souboryPriloh(h),
           })
         ).id;
     } catch (e) {
@@ -330,11 +334,19 @@ export class RozesilaciFronta {
     return bezDiakritiky(`${this.cfg.smsPrefix}${h.sms_text ?? ''}`);
   }
 
+  /** soubory příloh k e-mailu — jen když jsou dohromady malé (jinak zůstanou odkazy v textu) */
+  souboryPriloh(h: Hlaseni): { nazev: string; cesta: string; mime: string }[] | undefined {
+    const p = h.prilohy ?? [];
+    if (!this.cfg.cestaSouboru || !prilohyEmailem(p)) return undefined;
+    return p.map((x) => ({ nazev: x.nazev, cesta: this.cfg.cestaSouboru!(x.id), mime: x.mime }));
+  }
+
   emailTelo(h: Hlaseni, token?: string): string {
     const odhlasit = token
       ? `\n\nOdhlášení nebo úprava odběru: ${this.cfg.baseUrl}/infokanal/odhlasit/${token}`
       : '';
-    return `${h.email_text ?? ''}\n\n—\n${this.cfg.nazevKanalu} — ${this.cfg.nazevObce}\n${this.cfg.baseUrl}/infokanal${odhlasit}`;
+    const prilohy = prilohyText(h.prilohy ?? [], 'Přílohy', this.cfg.baseUrl);
+    return `${h.email_text ?? ''}${prilohy ? `\n\n${prilohy}` : ''}\n\n—\n${this.cfg.nazevKanalu} — ${this.cfg.nazevObce}\n${this.cfg.baseUrl}/infokanal${odhlasit}`;
   }
 
   emailHtml(h: Hlaseni, token?: string): string {
@@ -346,10 +358,14 @@ export class RozesilaciFronta {
         .split(/\n{2,}/)
         .map((o) => `<p>${o.replace(/\n/g, '<br>')}</p>`)
         .join('');
+    const prilohy = prilohyHtml(h.prilohy ?? [], 'Přílohy', this.cfg.baseUrl).replace(
+      '<h2>',
+      '<h2 style="font-size:16px">',
+    );
     const odhlasit = token
       ? `<br>Odhlášení nebo úprava odběru: <a href="${this.cfg.baseUrl}/infokanal/odhlasit/${token}">${this.cfg.baseUrl}/infokanal/odhlasit/${token}</a>`
       : '';
-    return `<!doctype html><html lang="cs"><body style="font-family:sans-serif;max-width:640px;margin:0 auto;padding:16px;color:#1a1a1a"><h1 style="font-size:20px">${esc(h.email_predmet ?? '')}</h1>${telo}<hr style="border:0;border-top:1px solid #ccc;margin:24px 0"><p style="font-size:13px;color:#555">${esc(this.cfg.nazevKanalu)} — ${esc(this.cfg.nazevObce)}<br><a href="${this.cfg.baseUrl}/infokanal">${this.cfg.baseUrl}/infokanal</a>${odhlasit}</p></body></html>`;
+    return `<!doctype html><html lang="cs"><body style="font-family:sans-serif;max-width:640px;margin:0 auto;padding:16px;color:#1a1a1a"><h1 style="font-size:20px">${esc(h.email_predmet ?? '')}</h1>${telo}${prilohy}<hr style="border:0;border-top:1px solid #ccc;margin:24px 0"><p style="font-size:13px;color:#555">${esc(this.cfg.nazevKanalu)} — ${esc(this.cfg.nazevObce)}<br><a href="${this.cfg.baseUrl}/infokanal">${this.cfg.baseUrl}/infokanal</a>${odhlasit}</p></body></html>`;
   }
 
   private nahodne(min: number, max: number) {
