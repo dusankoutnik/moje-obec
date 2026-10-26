@@ -1,7 +1,9 @@
 // Úložiště sezení pro @fastify/session v Postgresu (tabulka sezeni) — odhlášení = smazání řádku, žádné „visící“ cookie.
 import type { SessionStore } from '@fastify/session';
 import type { Session } from 'fastify';
+import { sql } from 'kysely';
 import type { Db } from '../db/index.js';
+import { zkratProhlizec } from '../lib/prohlizec.js';
 
 type CbSet = Parameters<SessionStore['set']>[2];
 type CbGet = Parameters<SessionStore['get']>[1];
@@ -52,4 +54,29 @@ export class PostgresSessionStore implements SessionStore {
   async uklid(): Promise<void> {
     await this.db.deleteFrom('sezeni').where('expires_at', '<', new Date()).execute();
   }
+}
+
+// Poslední aktivita sezení pro přehled přihlášených zařízení: zapisuje se nejvýš jednou za AKTIVITA_MIN minut
+// (paměť procesu + podmínka v SQL), spolu se zkráceným popisem prohlížeče při prvním zápisu.
+const AKTIVITA_MIN = 5;
+const naposledy = new Map<string, number>();
+
+export async function zaznamenejAktivitu(db: Db, sid: string | undefined, ua: string | undefined) {
+  if (!sid) return;
+  const ted = Date.now();
+  const posledni = naposledy.get(sid);
+  if (posledni && ted - posledni < AKTIVITA_MIN * 60_000) return;
+  if (naposledy.size > 10_000) naposledy.clear();
+  naposledy.set(sid, ted);
+  await db
+    .updateTable('sezeni')
+    .set({
+      aktivita_at: new Date(ted),
+      prohlizec: sql<string | null>`coalesce(prohlizec, ${zkratProhlizec(ua)})`,
+    })
+    .where('sid', '=', sid)
+    .where((eb) =>
+      eb.or([eb('aktivita_at', 'is', null), eb('aktivita_at', '<', new Date(ted - AKTIVITA_MIN * 60_000))]),
+    )
+    .execute();
 }

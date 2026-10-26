@@ -25,11 +25,18 @@ export interface BranaKonfigurace {
   fetch?: typeof fetch;
 }
 
-interface StavBrany {
+export interface StavBrany {
   alarm?: string | null; // ISO lastSeen při vyhlášení poplachu
   pripominka?: string | null;
   chybaOd?: string | null; // ISO začátku nedostupnosti cloudu, 'hlaseno' po upozornění
+  /** pro stránku Stav systému: kdy se telefon naposledy ozval cloudu a kdy proběhla kontrola */
+  posledniKontakt?: string | null;
+  kontrolaAt?: string | null;
+  /** počet SMS čekajících v bráně (zjišťuje se jen při výpadku) */
+  cekajici?: number | null;
 }
+
+export const KLIC_STAVU_BRANY = 'infokanal_brana';
 
 export type VysledekKontroly =
   | { stav: 'ok'; ticho: number }
@@ -37,7 +44,7 @@ export type VysledekKontroly =
   | { stav: 'obnoveno' }
   | { stav: 'chyba' };
 
-const KLIC = 'infokanal_brana';
+const KLIC = KLIC_STAVU_BRANY;
 const cas = (d: Date) =>
   d.toLocaleString('cs-CZ', {
     timeZone: 'Europe/Prague',
@@ -137,6 +144,7 @@ export class HlidaniBrany {
       lastSeen = await this.posledniKontakt();
     } catch (e) {
       this.log.warn({ err: e }, 'hlídání brány: stav nelze zjistit');
+      s.kontrolaAt = ted.toISOString();
       if (!s.chybaOd) {
         await this.ulozStav({ ...s, chybaOd: ted.toISOString() });
       } else if (s.chybaOd !== 'hlaseno' && ted.getTime() - Date.parse(s.chybaOd) > chybaH * 3600e3) {
@@ -150,6 +158,8 @@ export class HlidaniBrany {
       return { stav: 'chyba' };
     }
     if (s.chybaOd) s.chybaOd = null;
+    s.posledniKontakt = lastSeen.toISOString();
+    s.kontrolaAt = ted.toISOString();
 
     const ticho = (ted.getTime() - lastSeen.getTime()) / 60_000;
     if (ticho > this.cfg.limitMin) {
@@ -158,6 +168,7 @@ export class HlidaniBrany {
         !s.pripominka || ted.getTime() - Date.parse(s.pripominka) >= pripominkaH * 3600e3 - 5 * 60e3;
       if (pripomenout && !noc) {
         const n = await this.cekajicich(lastSeen);
+        s.cekajici = n;
         await this.posli(
           s.pripominka ? 'stále offline' : 'telefon je offline — SMS neodcházejí',
           `Telefon SMS brány se naposledy ozval ${cas(lastSeen)}, tedy před ${Math.round((ticho / 60) * 10) / 10} h.\n` +
@@ -175,7 +186,14 @@ export class HlidaniBrany {
     }
     if (s.alarm) {
       const zacatek = new Date(s.alarm);
-      await this.ulozStav({ alarm: null, pripominka: null, chybaOd: null });
+      await this.ulozStav({
+        alarm: null,
+        pripominka: null,
+        chybaOd: null,
+        posledniKontakt: s.posledniKontakt,
+        kontrolaAt: s.kontrolaAt,
+        cekajici: null,
+      });
       // výpadek začal i skončil v nočním klidu → nikdo o něm nevěděl, není co odvolávat
       if (!s.pripominka) return { stav: 'obnoveno' };
       await this.posli(

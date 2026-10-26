@@ -1,6 +1,7 @@
 // Vestavěný OpenID Connect provider (knihovna oidc-provider, certifikovaná). Issuer = <BASE_URL>/oidc.
 // Interní moduly i externí aplikace se přihlašují stejně — Authorization Code + PKCE.
 import Provider, { type Configuration, type KoaContextWithOIDC } from 'oidc-provider';
+import { platneRole } from '../role-platnost.js';
 import { exportJWK, generateKeyPair, type JWK } from 'jose';
 import type { Db } from '../../../db/index.js';
 import type { Env } from '../../../config/env.js';
@@ -220,6 +221,7 @@ export async function vytvorProvider(db: Db, env: Env, obec: ObecProfil): Promis
     findAccount: async (_ctx, sub) => {
       const u = await db.selectFrom('uzivatele').selectAll().where('id', '=', sub).executeTakeFirst();
       if (!u || u.blokovan_at) return undefined;
+      u.role = await platneRole(db, u); // vypršená dočasná role nejde aplikacím do claims
       return {
         accountId: u.id,
         async claims() {

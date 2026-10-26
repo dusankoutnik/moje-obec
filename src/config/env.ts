@@ -21,6 +21,10 @@ const EnvSchema = z.object({
   // testovací instalace: odkaz „Co je nového“ (/devlog) v patičce
   DEVLOG: bool,
   DATABASE_URL: z.string().min(1),
+  // stránka Administrace → Systém → Stav systému: verze kódu (předává se při sestavení obrazu:
+  // --build-arg GIT_COMMIT=$(git rev-parse --short HEAD)) a adresář se zálohami (jen čtení, ukáže stáří poslední)
+  GIT_COMMIT: z.string().optional(),
+  ZALOHY_DIR: z.string().optional(),
   SESSION_SECRET: z.string().min(32),
   OIDC_COOKIE_SECRET: z.string().min(32),
   OIDC_PLATFORMA_SECRET: z.string().min(16),

@@ -59,3 +59,50 @@ export class SmtpMail implements MailPoskytovatel {
     return { id: info.messageId ?? null };
   }
 }
+
+/** poslední úspěšné a neúspěšné odeslání v tomto procesu (stránka Stav systému; po restartu prázdné) */
+export interface StavMailu {
+  posledniOk: Date | null;
+  posledniChyba: { at: Date; zprava: string } | null;
+  odeslano: number;
+  chyb: number;
+}
+
+export const stavMailu: StavMailu = { posledniOk: null, posledniChyba: null, odeslano: 0, chyb: 0 };
+
+/** text chyby bez e-mailových adres (odpovědi SMTP serveru je často obsahují) */
+export function bezAdres(text: string): string {
+  return text.replace(/[^\s<>"'@]+@[^\s<>"'@]+/g, '…@…').slice(0, 300);
+}
+
+/**
+ * Obal poskytovatele, který si pamatuje výsledek odeslání; ostatní vlastnosti (např. KonzoleMail.odeslane) propouští.
+ * Obalená funkce se drží v uzávěru — i když někdo `posli` přepíše (testy), obal nevolá sám sebe.
+ */
+export function sledujMail<T extends MailPoskytovatel>(mail: T): T {
+  const obaly = new WeakMap<object, MailPoskytovatel['posli']>();
+  const obal =
+    (f: MailPoskytovatel['posli'], cil: T): MailPoskytovatel['posli'] =>
+    async (z: Zprava) => {
+      try {
+        const r = await f.call(cil, z);
+        stavMailu.posledniOk = new Date();
+        stavMailu.odeslano++;
+        return r;
+      } catch (e) {
+        stavMailu.posledniChyba = { at: new Date(), zprava: bezAdres(String((e as Error)?.message ?? e)) };
+        stavMailu.chyb++;
+        throw e;
+      }
+    };
+  return new Proxy(mail, {
+    get(cil, klic, prijemce) {
+      const v: unknown = Reflect.get(cil, klic, prijemce);
+      if (klic !== 'posli' || typeof v !== 'function') return v;
+      const f = v as MailPoskytovatel['posli'];
+      let o = obaly.get(f);
+      if (!o) obaly.set(f, (o = obal(f, cil)));
+      return o;
+    },
+  });
+}
