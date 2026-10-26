@@ -1,5 +1,25 @@
 # Stav projektu — etapa 1 (18. 10. 2026)
 
+## Hlášení obce: kopírování, přílohy, název, počet obyvatel (26. 10. 2026)
+
+- **Formulář hlášení** (`/infokanal/sprava/nove`): e-mail a článek v editoru (formátování; e-mail jde jako HTML
+  + text, odkazy v textu „text (adresa)“), tlačítka **Zkopírovat text ze SMS / z e-mailu**, **Nadpis podle
+  předmětu** (`public/js/hlaseni.js`, bez JS skrytá). **Přílohy** (nejvýš 5, typy a 30 MB jako jinde, úložiště
+  obce): v e-mailu vždy odkazy, do 5 MB dohromady i jako soubory; pod článkem z hlášení seznam příloh; u rozesílky
+  příspěvku webu jdou jen e-mailem. Po chybě formuláře zůstávají (jen vlastní soubory nahrané do 24 h).
+  Migrace **0030** (`ik_hlaseni.prilohy`), `src/moduly/infokanal/obsah.ts`.
+- **Editor příspěvku:** karta „Vytvořit zprávu (název)“ hned pod zveřejněním; u nezveřejněného nebo nového
+  příspěvku neaktivní s vysvětlením (hlášení odkazuje na veřejnou adresu).
+- **Název infokanálu navenek:** Správa → Obecní web → Vzhled → „Jak se jmenují hlášení obce“
+  (`web_vzhled.nazev_infokanalu`); pořadí Vzhled → `obec.yml texty.nazev_infokanalu` → „Hlášení obce“, jediné
+  místo `src/moduly/infokanal/nazev.ts` (šablony přes `it.obec.texty.nazev_infokanalu`, e-maily, výstrahy,
+  administrace). Při přejmenování se přejmenují i položky menu webu na `/infokanal` se starým názvem.
+  Předpona SMS se nemění.
+- **Počet obyvatel:** pole v dlaždici Aktuality na `/sprava/web` (správce obce a výš), `nastaveni.pocet_obyvatel`,
+  audit `web.obyvatele`; pořadí ruční hodnota → Zpravodaj → `obec.yml`.
+- Ověření: `test/hlaseni-formular.test.ts` (10 testů), celkem 539; axe 0 porušení (formulář hlášení, Obecní web,
+  nový příspěvek, Vzhled, `/infokanal`).
+
 ## Text dokumentů a vyhledávání v nich (22. 10. 2026)
 
 - Zadání a rozhodnutí: `docs/HLEDANI-DOKUMENTY.md` (sekce „Rozhodnutí při implementaci“), popis v `docs/MODULY.md`.

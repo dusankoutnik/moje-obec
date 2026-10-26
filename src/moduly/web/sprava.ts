@@ -16,6 +16,8 @@ import type { WebSluzby } from './index.js';
 import { rozdelPodleVidei } from './videa.js';
 import { sPodrubrikami } from './rubriky.js';
 import { PRAZDNA_POLE, poleProEditor, TYPY, type PoleObsahu } from './obsah.js';
+import { obyvateleZProfilu, rucniObyvatele } from './obyvatele.js';
+import { obyvatelZeZpravodaje } from '../api/zpravodaj.js';
 
 type Telo = Record<string, string | string[] | undefined>;
 const jeden = (v: unknown) =>
@@ -134,6 +136,14 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
       akceKeZpracovani,
       jeSpravce: maRoli(req.uzivatel, 'spravce'),
       jeProvozovatel: maRoli(req.uzivatel, 'provozovatel'),
+      // pole „Počet obyvatel“ v dlaždici Aktuality — správce obce a výš (obyvatele.ts)
+      obyvatele: maRoli(req.uzivatel, 'spravce')
+        ? {
+            rucne: await rucniObyvatele(app.db),
+            zeZpravodaje: (await obyvatelZeZpravodaje(app.db).catch(() => null))?.obyvatel ?? null,
+            zProfilu: obyvateleZProfilu(app),
+          }
+        : null,
     });
   });
 
@@ -216,17 +226,19 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
       verejnaUrl: o && o.stav === 'zverejneno' ? await s.obsah.url(o) : null,
       nabidka,
       propojenyTermin,
-      rozesilka: await infoRozesilky(req, o),
+      rozesilka: await infoRozesilky(req, typ, o),
       editor: true,
       ...pomocnici,
       ...extra,
     });
   }
 
-  /** rozesílka infokanálem u zveřejněné aktuality/akce: smí-li uživatel rozesílat a co už odešlo */
-  async function infoRozesilky(req: FastifyRequest, o: WebObsah | null) {
-    if (!o || (o.typ !== 'aktualita' && o.typ !== 'akce') || !app.obec.moduly.infokanal) return null;
+  /** rozesílka infokanálem u aktuality/akce: smí-li uživatel rozesílat (jen zveřejněný příspěvek) a co už odešlo */
+  async function infoRozesilky(req: FastifyRequest, typ: TypObsahu, o: WebObsah | null) {
+    if ((typ !== 'aktualita' && typ !== 'akce') || !app.obec.moduly.infokanal) return null;
     if (!maRoli(req.uzivatel, 'redaktor')) return null;
+    // nový nebo nezveřejněný příspěvek: tlačítko se ukáže neaktivní s vysvětlením (hlášení odkazuje na veřejnou adresu)
+    if (!o) return { muze: false, hlaseni: null };
     const hlaseni = o.hlaseni_id
       ? await app.db
           .selectFrom('ik_hlaseni')
