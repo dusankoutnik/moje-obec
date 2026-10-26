@@ -18,6 +18,7 @@ import { uklidZamku } from '../../lib/zamky.js';
 import interakceRoutes from './interakce.js';
 import uctyRoutes from './routes.js';
 import spravaRoutes from './sprava.js';
+import spravaRoliRoutes from './sprava-role.js';
 import ucetKartyRoutes from './ucet-karty.js';
 import { CSP_OIDC, zakladniHlavicky } from '../../web/hlavicky.js';
 
@@ -74,6 +75,7 @@ async function uctyModul(app: FastifyInstance) {
   await app.register(interakceRoutes, { provider, ucty });
   await app.register(uctyRoutes, { klient, ucty });
   await app.register(spravaRoutes, { ucty });
+  await app.register(spravaRoliRoutes, { ucty });
   await app.register(ucetKartyRoutes, { ucty });
   await app.register(interniRoutes, { ucty });
 

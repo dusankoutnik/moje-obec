@@ -1,0 +1,82 @@
+<% layout('/layout') %>
+<p><a href="/sprava">← <%= it.t('sprava.titulek') %></a></p>
+<h1><%= it.t('sprava.role_titulek') %></h1>
+<p><%= it.t('sprava.role_uvod') %></p>
+<% if (!it.jeProvozovatel) { %><p class="napoveda"><%= it.t('sprava.role_jen_cteni') %></p><% } %>
+<nav aria-label="<%= it.t('sprava.role_titulek') %>">
+  <ul class="role-obsah">
+    <% it.role.forEach(function (r) { %><li><a href="#role-<%= r.id %>"><%= r.nazev %></a> (<%= r.clenove.length %>)</li><% }) %>
+  </ul>
+</nav>
+<% it.role.forEach(function (r) { %>
+<section class="karta role-karta" id="role-<%= r.id %>" aria-labelledby="role-<%= r.id %>-nadpis">
+  <h2 id="role-<%= r.id %>-nadpis"><%= r.nazev %> <small class="napoveda"><code><%= r.id %></code></small></h2>
+  <p><%= r.popis %></p>
+  <h3><%= it.t('sprava.role_opravnuje') %></h3>
+  <ul>
+    <% r.opravneni.forEach(function (o) { %><li><%= o %></li><% }) %>
+  </ul>
+  <% if (r.zahrnujeNazvy.length) { %><p><%= it.t('sprava.role_zahrnuje', { role: r.zahrnujeNazvy.join(', ') }) %></p><% } %>
+  <% if (r.dediNazvy.length) { %><p class="napoveda"><%= it.t('sprava.role_dedi', { role: r.dediNazvy.join(', ') }) %></p><% } %>
+  <h3><%= it.t('sprava.role_clenove', { n: r.clenove.length }) %></h3>
+  <% if (!r.clenove.length) { %>
+  <p><%= it.t('sprava.role_zadni_clenove') %></p>
+  <% } else { %>
+  <div class="tabulka-obal">
+  <table class="tabulka">
+    <thead><tr><th scope="col"><%= it.t('sprava.role_jmeno') %></th><th scope="col"><%= it.t('ucet.telefon') %></th><% if (it.jeProvozovatel) { %><th scope="col"><span class="vh"><%= it.t('sprava.akce') %></span></th><% } %></tr></thead>
+    <tbody>
+    <% r.clenove.forEach(function (u) { %>
+      <tr<% if (u.blokovan_at) { %> class="blokovan"<% } %>>
+        <td><a href="/sprava/uzivatele/<%= u.id %>"><%= u.nazev %></a><% if (u.blokovan_at) { %> · <%= it.t('sprava.role_blokovan') %><% } %></td>
+        <td><%= it.fmtTelefonSkryty(u.telefon) %></td>
+        <% if (it.jeProvozovatel) { %>
+        <td>
+          <form method="post" action="/sprava/role/<%= r.id %>/odebrat" data-confirm="<%= it.t('sprava.role_odebrat_potvrzeni', { role: r.nazev, jmeno: u.nazev }) %>">
+            <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+            <input type="hidden" name="uzivatel" value="<%= u.id %>">
+            <button class="tlacitko sekundarni" type="submit" aria-label="<%= it.t('sprava.role_odebrat_popisek', { role: r.nazev, jmeno: u.nazev }) %>"><%= it.t('sprava.role_odebrat') %></button>
+          </form>
+        </td>
+        <% } %>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+  </div>
+  <% } %>
+  <% if (it.jeProvozovatel) { %>
+  <h3><%= it.t('sprava.role_pridat') %></h3>
+  <form method="get" action="/sprava/role#role-<%= r.id %>" class="formular inline-form">
+    <input type="hidden" name="pridat" value="<%= r.id %>">
+    <label for="q-<%= r.id %>"><%= it.t('sprava.role_hledat') %></label>
+    <input id="q-<%= r.id %>" name="q" maxlength="80" value="<%= it.pridat === r.id ? it.q : '' %>" aria-describedby="q-<%= r.id %>-napoveda">
+    <button class="tlacitko sekundarni" type="submit"><%= it.t('sprava.hledat') %></button>
+    <span class="napoveda" id="q-<%= r.id %>-napoveda"><%= it.t('sprava.role_hledat_napoveda') %></span>
+  </form>
+  <% if (it.pridat === r.id && it.q) { %>
+  <h4><%= it.t('sprava.role_vysledky') %></h4>
+  <% if (!it.nalezene.length) { %>
+  <p role="status"><%= it.t('sprava.role_nic_nenalezeno') %></p>
+  <% } else { %>
+  <ul class="role-nalezene">
+    <% it.nalezene.forEach(function (u) { %>
+    <li>
+      <a href="/sprava/uzivatele/<%= u.id %>"><%= u.nazev %></a>, <%= it.fmtTelefonSkryty(u.telefon) %><% if (u.blokovan_at) { %> · <%= it.t('sprava.role_blokovan') %><% } %>
+      <% if (u.role.includes(r.id)) { %>
+      — <%= it.t('sprava.role_ma') %>
+      <% } else { %>
+      <form method="post" action="/sprava/role/<%= r.id %>/pridat" class="inline-form">
+        <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+        <input type="hidden" name="uzivatel" value="<%= u.id %>">
+        <button class="tlacitko" type="submit" aria-label="<%= it.t('sprava.role_pridat_popisek', { role: r.nazev, jmeno: u.nazev }) %>"><%= it.t('sprava.role_pridat') %></button>
+      </form>
+      <% } %>
+    </li>
+    <% }) %>
+  </ul>
+  <% } %>
+  <% } %>
+  <% } %>
+</section>
+<% }) %>

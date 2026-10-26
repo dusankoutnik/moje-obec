@@ -214,7 +214,7 @@ describe('titulka a stránka /pocasi', () => {
   let spr: Prohlizec;
   beforeAll(async () => {
     t = await spustTestApp();
-    spr = await prihlasSRoli(t, '777600091', ['spravce']);
+    spr = await prihlasSRoli(t, '777600091', ['provozovatel']);
     const s = t.app.pocasi!;
     s.hodiny = () => TED;
     s.fetchFn = falesnyFetch([odpoved(FIXTURA, 200, hlavickyMet(TED))]).f;

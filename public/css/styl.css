@@ -3062,3 +3062,30 @@ button.kviz-odpoved:active {
 .pocasi-dlazdice:has(.poc-prepinac:not([hidden])) h2 {
   padding-right: 9.5rem;
 }
+
+/* Administrace → Systém → Role (2026-10-26) */
+.role-obsah {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding: 0;
+  list-style: none;
+}
+.role-karta {
+  margin-top: 24px;
+}
+.role-nalezene {
+  padding: 0;
+  list-style: none;
+}
+.role-nalezene li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--linka);
+}
+.role-nalezene .inline-form {
+  display: inline-flex;
+}

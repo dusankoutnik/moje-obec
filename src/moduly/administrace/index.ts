@@ -7,7 +7,7 @@ import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import type { Uzivatel } from '../../db/types.js';
 import { vyzadujRoli } from '../ucty/opravneni.js';
-import { maRoli } from '../ucty/sluzba.js';
+import { maRoli, smiUpravitUcet } from '../ucty/sluzba.js';
 import { AplikaceKlient, RezervaceAdmin, type SouhrnRezervaci, type StatistikyEknih } from './aplikace.js';
 import { AdministraceSluzba } from './sluzba.js';
 
@@ -166,6 +166,10 @@ async function administraceModul(app: FastifyInstance, volby: { planovac: boolea
     async (req, reply) => {
       const cil = await app.ucty.podleId(req.params.id).catch(() => undefined);
       if (!cil) return reply.callNotFound();
+      if (!smiUpravitUcet(req.uzivatel, cil)) {
+        zpet(req, 'chyba', t('sprava.chraneny_nelze'));
+        return reply.redirect('/sprava/schvalovani');
+      }
       const ano = req.body?.rezident === '1';
       await sluzba.posoudit(cil, ano, req.uzivatel!, req.ip);
       zpet(req, 'ok', ano ? 'Nastaveno: rezident.' : 'Posouzeno — není rezident.');
@@ -179,6 +183,10 @@ async function administraceModul(app: FastifyInstance, volby: { planovac: boolea
     async (req, reply) => {
       const cil = await app.ucty.podleId(req.params.id).catch(() => undefined);
       if (!cil) return reply.callNotFound();
+      if (!smiUpravitUcet(req.uzivatel, cil)) {
+        zpet(req, 'chyba', t('sprava.chraneny_nelze'));
+        return reply.redirect('/sprava/schvalovani');
+      }
       const r = await sluzba.nastavJmeno(
         cil,
         String(req.body?.jmeno ?? ''),

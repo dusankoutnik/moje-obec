@@ -3,6 +3,7 @@ import { sql } from 'kysely';
 import type { Db } from '../../db/index.js';
 import type { Role, Uzivatel } from '../../db/types.js';
 import { ROLE } from '../../db/types.js';
+import { CHRANENE_ROLE, efektivniRole, roleProAplikace } from './role.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { hashujHeslo, overHeslo, overHesloNaprazdno, potrebujeRehash } from '../../lib/krypto.js';
 import {
@@ -17,14 +18,26 @@ import {
 
 export { ROLE };
 
-// Oprávnění: admin smí vše; správce obce má i práva redaktora. Ostatní role jsou přesné.
+// Oprávnění: role zahrnují práva jiných rolí podle src/moduly/ucty/role.ts (provozovatel ⊃ admin ⊃ všechny
+// ostatní kromě provozovatele; správce obce ⊃ web, deska, redaktor). Ostatní role jsou přesné.
 export function maRoli(u: Uzivatel | null | undefined, ...pozadovane: Role[]): boolean {
   if (!u) return false;
-  const role = new Set<Role>(u.role ?? []);
-  if (role.has('admin')) return true;
-  // správce obce smí všechno obsahové; vstupné a účetní se mu automaticky nedávají
-  if (role.has('spravce')) for (const r of ['web', 'deska', 'redaktor'] as const) role.add(r);
+  const role = efektivniRole(u.role);
   return pozadovane.some((r) => role.has(r));
+}
+
+/** chráněný účet (role provozovatel) — měnit ho smí jen držitel chráněné role */
+export function jeChraneny(cil: Pick<Uzivatel, 'role'>): boolean {
+  return (cil.role ?? []).some((r) => CHRANENE_ROLE.includes(r));
+}
+
+/**
+ * Smí aktor úředně měnit cizí účet (údaje, blokace, role, rezident, telefon)? Chráněný účet (provozovatel) jen
+ * provozovatel. Vlastní práva aktora (vyzadujRoli) a pravidlo „účet admina blokuje jen admin“ se kontrolují zvlášť.
+ */
+export function smiUpravitUcet(aktor: Uzivatel | null | undefined, cil: Pick<Uzivatel, 'role'>): boolean {
+  if (!aktor) return false;
+  return !jeChraneny(cil) || maRoli(aktor, 'provozovatel');
 }
 
 export function jeUrad(u: Uzivatel | null | undefined): boolean {
@@ -54,7 +67,7 @@ export function profilUzivatele(u: Uzivatel) {
     rezident: u.rezident,
     rezident_posouzen_at: u.rezident_posouzen_at?.toISOString() ?? null,
     rezident_posouzen_by: u.rezident_posouzen_by,
-    role: u.role,
+    role: roleProAplikace(u.role),
     gdpr_souhlas_at: u.gdpr_souhlas_at?.toISOString() ?? null,
     blokovan: !!u.blokovan_at,
     vytvoren_at: u.vytvoren_at.toISOString(),
@@ -72,8 +85,9 @@ export class UctySluzba {
     return this.db.selectFrom('uzivatele').selectAll().where('cislo', '=', cislo).executeTakeFirst();
   }
 
-  /** neblokované účty s některou z rolí (přesná shoda; admin se k ostatním nepřidává) */
+  /** neblokované účty s některou z rolí (přesná shoda; admin se k ostatním nepřidává — jen provozovatel k adminovi) */
   podleRole(role: Role[]) {
+    if (role.includes('admin') && !role.includes('provozovatel')) role = [...role, 'provozovatel'];
     return this.db
       .selectFrom('uzivatele')
       .selectAll()
@@ -353,8 +367,20 @@ export class UctySluzba {
   }
 
   // --- správa úřadem ---
-  async nastavRole(cilId: string, role: Role[], aktor: Uzivatel, ip?: string | null) {
-    const platne = role.filter((r): r is Role => (ROLE as readonly string[]).includes(r));
+  /** nastaví role účtu (neznámé zahodí); kontrolu pravidel dělá volající přes kontrolaZmenyRoli */
+  async nastavRole(
+    cilId: string,
+    role: Role[],
+    aktor: Uzivatel,
+    ip?: string | null,
+    detail: Record<string, unknown> = {},
+  ) {
+    const platne = [...new Set(role.filter((r): r is Role => (ROLE as readonly string[]).includes(r)))];
+    const puvodni = await this.db
+      .selectFrom('uzivatele')
+      .select('role')
+      .where('id', '=', cilId)
+      .executeTakeFirst();
     await this.db
       .updateTable('uzivatele')
       .set({ role: platne, upraven_at: new Date() })
@@ -363,9 +389,42 @@ export class UctySluzba {
     await zapisAudit(this.db, {
       uzivatelId: aktor.id,
       akce: 'sprava.role',
-      detail: { cil: cilId, role: platne },
+      detail: { cil: cilId, role: platne, puvodne: puvodni?.role ?? [], ...detail },
       ip,
     });
+  }
+
+  /** počet neblokovaných účtů s rolí provozovatel (pojistka, aby instalace nezůstala bez provozovatele) */
+  async pocetProvozovatelu(): Promise<number> {
+    const r = await this.db
+      .selectFrom('uzivatele')
+      .select((eb) => eb.fn.countAll<number>().as('n'))
+      .where('blokovan_at', 'is', null)
+      .where(sql<boolean>`'provozovatel' = ANY(role)`)
+      .executeTakeFirstOrThrow();
+    return Number(r.n);
+  }
+
+  /**
+   * Smí aktor změnit role cíle z jeho současných na `nove`? Vrací null (smí) nebo klíč chyby:
+   * jen administrátor přiděluje role; vlastní role mění jen provozovatel; roli provozovatel přidělí/odebere
+   * jen provozovatel; chráněný účet mění jen provozovatel; poslední provozovatel si roli neodebere.
+   */
+  async kontrolaZmenyRoli(
+    aktor: Uzivatel,
+    cil: Uzivatel,
+    nove: Role[],
+  ): Promise<null | 'nema_pravo' | 'sam_sobe' | 'jen_provozovatel' | 'chraneny' | 'posledni_provozovatel'> {
+    if (!maRoli(aktor, 'admin')) return 'nema_pravo';
+    const buh = maRoli(aktor, 'provozovatel');
+    if (cil.id === aktor.id && !buh) return 'sam_sobe';
+    if (jeChraneny(cil) && !buh) return 'chraneny';
+    const mel = cil.role.includes('provozovatel');
+    const bude = nove.includes('provozovatel');
+    if (mel !== bude && !buh) return 'jen_provozovatel';
+    if (mel && !bude && !cil.blokovan_at && (await this.pocetProvozovatelu()) <= 1)
+      return 'posledni_provozovatel';
+    return null;
   }
 
   async blokuj(cilId: string, blokovat: boolean, aktor: Uzivatel, ip?: string | null) {

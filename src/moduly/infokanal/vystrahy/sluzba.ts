@@ -166,7 +166,7 @@ export class VystrahySluzba {
       .select('email')
       .where('email', 'is not', null)
       .where('blokovan_at', 'is', null)
-      .where(sql<boolean>`role && ARRAY['admin','spravce']::text[]`)
+      .where(sql<boolean>`role && ARRAY['admin','spravce','provozovatel']::text[]`)
       .execute();
     const adresy = new Set(
       [...spravci.map((s) => s.email!), ...this.nastaveni.notify]

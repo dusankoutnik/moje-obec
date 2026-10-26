@@ -136,7 +136,7 @@ docker run --rm --network web -v $PWD:/app -v /tmp/kontrola:/out -w /app node:22
 docker stop kontrola-chrome
 ```
 
-Výsledek: `*.png` a `axe.json` (porušení podle pravidel). Stránky lze vybrat proměnnými `STRANKY` a `ADMIN`. `SCHEMATA=vlastiborice:ubuntu,outdoor:outdoor,…` projde barevná schémata (a písma) přes náhled vzhledu a ověří stránky `STRANKY_SCHEMATA`. U dev instalace za HTTP heslem: veřejná adresa + `AUTH=uzivatel:heslo`.
+Výsledek: `*.png` a `axe.json` (porušení podle pravidel). Stránky lze vybrat proměnnými `STRANKY` a `ADMIN`. `SCHEMATA=vlastiborice:ubuntu,outdoor:outdoor,…` projde barevná schémata (a písma) přes náhled vzhledu a ověří stránky `STRANKY_SCHEMATA` — účet z `ADMIN` musí mít roli `provozovatel` (vzhled od 2026-10-26 nevidí správce ani admin). U dev instalace za HTTP heslem: veřejná adresa + `AUTH=uzivatel:heslo`.
 
 ## Import ze starých webů
 

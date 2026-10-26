@@ -462,9 +462,12 @@ describe('přesměrování, hledání, vzhled, práva, infokanál', () => {
   });
 
   it('vzhled: příliš světlá barva se ztmaví a propíše do CSS', async () => {
-    const f = await spr.get('/sprava/web/vzhled');
+    // vzhled webu smí jen provozovatel (2026-10-26); správce obce dostane 403
+    const buh = await prihlasSRoli(t, '777500009', ['provozovatel']);
+    expect((await spr.get('/sprava/web/vzhled')).res.status).toBe(403);
+    const f = await buh.get('/sprava/web/vzhled');
     const r = await postSoubory(
-      spr,
+      buh,
       '/sprava/web/vzhled',
       { _csrf: csrfZ(f.text), barva: '#9bd19b', motto: 'Obec pod lesem' },
       [{ pole: 'znak', nazev: 'znak.png', data: await png('#cc0000', 200, 240) }],

@@ -7,8 +7,10 @@ type TimestampGenerated = ColumnType<Date, Date | string | undefined, Date | str
 type TimestampNullable = ColumnType<Date | null, Date | string | null | undefined, Date | string | null>;
 
 // web = obsah webu · deska = úřední deska a rozpočet · redaktor = hlášení infokanálu (jako v MůjÚčtu)
-// vstupne = kontrola vstupenek (připraveno) · kviz = správa kvízu · spravce = vše obsahové + vzhled a účty · admin = vše
-export type Role = 'web' | 'deska' | 'redaktor' | 'kviz' | 'ucetni' | 'vstupne' | 'spravce' | 'admin';
+// vstupne = kontrola vstupenek (připraveno) · kviz = správa kvízu · spravce = vše obsahové a účty · admin = vše
+// kromě vzhledu webu a správy rolí · provozovatel („Bůh“) = vše; popisy a odvozená práva: src/moduly/ucty/role.ts
+export type Role =
+  'web' | 'deska' | 'redaktor' | 'kviz' | 'ucetni' | 'vstupne' | 'spravce' | 'admin' | 'provozovatel';
 export const ROLE: readonly Role[] = [
   'web',
   'deska',
@@ -18,6 +20,7 @@ export const ROLE: readonly Role[] = [
   'vstupne',
   'spravce',
   'admin',
+  'provozovatel',
 ] as const;
 
 export interface UzivateleTable {

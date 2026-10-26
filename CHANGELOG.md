@@ -4,6 +4,21 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (role provozovatel a stránka Role, 26. 10. 2026)
+
+- Role `provozovatel` („Bůh — provozovatel“, migrace 0023) nad administrátorem: všechna práva admina, vzhled webu
+  a správa členů rolí. Účet s ní je chráněný (blokace, role, rezident, jméno, změna telefonu jen provozovatelem);
+  roli přiděluje jen provozovatel, poslední provozovatel si ji neodebere. Aplikacím se hlásí i jako `admin`.
+- Definice rolí na jednom místě (`src/moduly/ucty/role.ts`: název, popis, oprávnění, zahrnutá práva); `maRoli`
+  z nich počítá práva tranzitivně.
+- Administrace → Systém → Role (`/sprava/role`): co která role otevírá, odvozená práva a členové s maskovaným
+  telefonem; provozovatel členy vyhledá, přidá a odebere (audit `sprava.role` se zdrojem `stranka-role`).
+
+### Změněno (26. 10. 2026)
+
+- Vzhled webu (dlaždice i všechny routy včetně náhledu a vrácení) jen pro provozovatele — správce obce a admin 403.
+- Audit `sprava.role` ukládá i původní role (`puvodne`) a zdroj změny.
+
 ### Přidáno (počasí, 23. 10. 2026)
 
 - Modul `pocasi` (`moduly.pocasi`, `pocasi: { lat, lon, nazev }` v `obec.yml`): předpověď MET Norway Locationforecast

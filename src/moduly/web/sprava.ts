@@ -71,6 +71,7 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
       pocetPresmerovani,
       akceKeZpracovani,
       jeSpravce: maRoli(req.uzivatel, 'spravce'),
+      jeProvozovatel: maRoli(req.uzivatel, 'provozovatel'),
     });
   });
 

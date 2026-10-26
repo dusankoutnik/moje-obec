@@ -21,7 +21,7 @@
     it.jeDeska && it.obec.moduly.deska ? { ikona: '📋', nazev: t('deska.titulek'), href: '/sprava/deska', popis: t('sprava.deska_text'), akce: { href: '/sprava/deska/novy', text: t('deska.novy') } } : null,
     it.jeDeska && it.jeSpravce && it.obec.moduly.deska ? { ikona: '⚖️', nazev: t('pi.titulek'), href: '/sprava/povinne-informace', popis: 'Struktura podle vyhlášky 515/2020 Sb.' } : null,
     it.jeWeb && it.obec.moduly.web ? { ikona: '☎️', nazev: t('web.kontakt_obce'), href: '/sprava/web/kontakt', popis: t('web.kontakt_obce_text') } : null,
-    it.jeSpravce && it.obec.moduly.web ? { ikona: '🎨', nazev: t('web.vzhled'), href: '/sprava/web/vzhled', popis: t('web.vzhled_text') } : null,
+    it.jeProvozovatel && it.obec.moduly.web ? { ikona: '🎨', nazev: t('web.vzhled'), href: '/sprava/web/vzhled', popis: t('web.vzhled_text') } : null,
     it.jeKviz && it.obecStaticka.moduly.kviz ? { ikona: '🧠', nazev: t('kviz.sprava_titulek'), href: '/sprava/kviz', popis: t('kviz.sprava_karta') } : null,
   ]);
 
@@ -49,8 +49,10 @@
     A && A.ucty ? { ikona: '📈', nazev: 'Statistiky', href: '/sprava/statistiky', popis: 'Souhrnná čísla účtů a aplikací — bez jmen.' } : null,
   ]);
 
-  var jeAdmin = it.uzivatel.role.includes('admin');
+  // admin = i provozovatel (počítá to server přes maRoli, ne šablona z pole rolí)
+  var jeAdmin = it.jeAdmin;
   skupina('Systém', [
+    it.jeSpravce ? { ikona: '🎭', nazev: t('sprava.role_titulek'), href: '/sprava/role', popis: t('sprava.role_karta') } : null,
     jeAdmin ? { ikona: '🧩', nazev: t('moduly_obce.titulek'), href: '/sprava/moduly', popis: t('moduly_obce.karta') } : null,
     jeAdmin ? { ikona: '🔌', nazev: 'API a integrace', href: '/sprava/api', popis: 'Tokeny pro programy, které na web samy zapisují.' } : null,
     jeAdmin ? { ikona: '🔐', nazev: t('sprava.klienti'), href: '/sprava/klienti', popis: t('sprava.klienti_text') } : null,

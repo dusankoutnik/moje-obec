@@ -3,14 +3,27 @@ import type { FastifyInstance } from 'fastify';
 import { ROLE, type Role, type Uzivatel } from '../../db/types.js';
 import { prehledSms } from '../../lib/provoz.js';
 import { vyzadujRoli } from './opravneni.js';
-import { maRoli, type UctySluzba } from './sluzba.js';
+import { DEFINICE_ROLI } from './role.js';
+import { jeChraneny, maRoli, smiUpravitUcet, type UctySluzba } from './sluzba.js';
 
-/** smí aktor blokovat/odblokovat cíl? Sám sebe nikdy (odblokovat by se pak nedal), účet admina jen admin. */
+/**
+ * Smí aktor blokovat/odblokovat cíl? Sám sebe nikdy (odblokovat by se pak nedal), účet admina jen admin,
+ * chráněný účet (provozovatel) jen provozovatel.
+ */
 export function smiBlokovat(aktor: Uzivatel, cil: Pick<Uzivatel, 'id' | 'role'>): boolean {
   if (aktor.id === cil.id) return false;
   if ((cil.role ?? []).includes('admin') && !maRoli(aktor, 'admin')) return false;
-  return true;
+  return smiUpravitUcet(aktor, cil);
 }
+
+/** klíč chyby z UctySluzba.kontrolaZmenyRoli → text pro flash */
+export const CHYBY_ROLI = {
+  nema_pravo: 'sprava.role_nema_pravo',
+  sam_sobe: 'sprava.sam_sobe',
+  jen_provozovatel: 'sprava.role_jen_provozovatel',
+  chraneny: 'sprava.chraneny_nelze',
+  posledni_provozovatel: 'sprava.role_posledni_provozovatel',
+} as const;
 
 export default async function spravaRoutes(app: FastifyInstance, z: { ucty: UctySluzba }) {
   const { ucty } = z;
@@ -25,6 +38,9 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
       titulek: t('sprava.titulek'),
       pocet,
       jeSpravce: maRoli(u, 'spravce'),
+      jeAdmin: maRoli(u, 'admin'),
+      // vzhled webu a správa rolí — jen provozovatel
+      jeProvozovatel: maRoli(u, 'provozovatel'),
       // rozpočet SMS a fronta infokanálu — jen správcům (agregáty, bez kontaktů)
       sms: maRoli(u, 'spravce')
         ? await prehledSms(app.db, app.env.SMS_DENNI_LIMIT_KODU, app.obec.moduly.infokanal)
@@ -84,12 +100,19 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
       return reply.view('sprava/uzivatel', {
         titulek: t('sprava.detail'),
         u,
-        role: ROLE,
+        role: DEFINICE_ROLI.filter((d) => (ROLE as readonly string[]).includes(d.id)),
         historie,
         zamky: await ucty.zamkyUctu(u),
         ted: new Date(),
         jeAdmin: maRoli(req.uzivatel, 'admin'),
+        jeProvozovatel: maRoli(req.uzivatel, 'provozovatel'),
         samSobe: req.uzivatel!.id === u.id,
+        chraneny: jeChraneny(u),
+        smiUpravit: smiUpravitUcet(req.uzivatel, u),
+        // formulář rolí: admin u cizího nechráněného účtu, provozovatel všude (i u sebe)
+        smiMenitRole:
+          maRoli(req.uzivatel, 'provozovatel') ||
+          (maRoli(req.uzivatel, 'admin') && req.uzivatel!.id !== u.id && !jeChraneny(u)),
         smiBlokovat: smiBlokovat(req.uzivatel!, u),
       });
     },
@@ -110,15 +133,21 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
         await ucty.blokuj(cil.id, req.body.akce === 'blokovat', aktor, req.ip);
         req.session.flash = { typ: 'ok', text: t('app.ulozeno') };
       } else if (req.body.akce === 'odemknout') {
+        if (!smiUpravitUcet(aktor, cil)) {
+          req.session.flash = { typ: 'chyba', text: t('sprava.chraneny_nelze') };
+          return reply.redirect(`/sprava/uzivatele/${cil.id}`);
+        }
         await ucty.odemkni(cil, aktor, req.ip);
         req.session.flash = { typ: 'ok', text: t('sprava.zamek_zrusen') };
       } else if (req.body.akce === 'role') {
         if (!maRoli(aktor, 'admin')) return reply.code(403).send();
-        if (cil.id === aktor.id) req.session.flash = { typ: 'chyba', text: t('sprava.sam_sobe') };
+        const r = (
+          req.body.role === undefined ? [] : Array.isArray(req.body.role) ? req.body.role : [req.body.role]
+        ).filter((x): x is Role => (ROLE as readonly string[]).includes(x));
+        const chyba = await ucty.kontrolaZmenyRoli(aktor, cil, r);
+        if (chyba) req.session.flash = { typ: 'chyba', text: t(CHYBY_ROLI[chyba]) };
         else {
-          const r =
-            req.body.role === undefined ? [] : Array.isArray(req.body.role) ? req.body.role : [req.body.role];
-          await ucty.nastavRole(cil.id, r as Role[], aktor, req.ip);
+          await ucty.nastavRole(cil.id, r, aktor, req.ip, { zdroj: 'detail-uctu' });
           req.session.flash = { typ: 'ok', text: t('sprava.role_ulozeny') };
         }
       }
