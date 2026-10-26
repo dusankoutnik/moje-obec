@@ -123,7 +123,7 @@ Náhrada aplikace MůjÚčet: `/ucet` sdružuje všechna nastavení účtu, kart
 - **SMSGate ostře:** webhooky (`sms:received`, `sms:delivered`, `sms:failed`), volitelný podpis `X-Signature`
   (`SMSGATE_WEBHOOK_KLIC`), registrace skriptem `src/scripts/smsgate-webhook.ts`.
 - **Hlídání brány** (`brana.ts`, cron à 10 min, jen při SMSGate): `lastSeen` telefonu > `BRANA_LIMIT_MIN` (60) →
-  e-mail `BRANA_NOTIFY` (jinak správci) s počtem čekajících SMS, připomínka à 12 h, po obnovení „zase funguje“;
+  e-mail `BRANA_NOTIFY` (jinak správci) s počtem čekajících SMS, připomínka à 1 h mimo noční klid 22–6 h (výpadek vzniklý v noci se ohlásí v 6:00), po obnovení „zase funguje“;
   cloud nedostupný > 2 h → jedno upozornění. Stav v `nastaveni.infokanal_brana`.
 
 ### SMS brány — abstrakce a adaptéry (P0)

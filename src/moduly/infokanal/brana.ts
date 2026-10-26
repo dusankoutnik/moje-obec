@@ -1,7 +1,8 @@
 // Hlídání GSM brány SMSGate (telefon na úřadě) — převzato z VlastiKanálu (brana.js).
 // Když se telefon dlouho neozve cloudu (typicky po restartu čeká na odemčení PINem), SMS se tiše hromadí
 // ve stavu Pending. Proto à 10 min: lastSeen starší než BRANA_LIMIT_MIN → e-mail (BRANA_NOTIFY, jinak správci),
-// připomínka à 12 h, po obnovení „zase funguje“. Nedostupný cloud SMSGate > 2 h → jedno upozornění.
+// připomínka à 1 h mimo noční klid (22–6 h Praha; poplach vzniklý v noci se ohlásí v 6:00), po obnovení
+// „zase funguje“. Nedostupný cloud SMSGate > 2 h → jedno upozornění.
 // Stav v tabulce nastaveni (klíč infokanal_brana).
 import type { Db } from '../../db/index.js';
 import type { Logger } from '../../lib/logger.js';
@@ -16,7 +17,10 @@ export interface BranaKonfigurace {
   limitMin: number;
   /** adresy (BRANA_NOTIFY); prázdné = správci obce */
   notify: string[];
+  /** interval připomínek v hodinách (výchozí 1) */
   pripominkaH?: number;
+  /** noční klid [od, do) v hodinách pražského času — e-maily o výpadku se v něm neposílají (výchozí 22–6) */
+  nocniKlid?: [number, number];
   chybaH?: number;
   fetch?: typeof fetch;
 }
@@ -42,6 +46,13 @@ const cas = (d: Date) =>
     hour: '2-digit',
     minute: '2-digit',
   });
+
+const hodinaPraha = (d: Date) =>
+  Number(
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Prague', hour: 'numeric', hourCycle: 'h23' }).format(
+      d,
+    ),
+  );
 
 export class HlidaniBrany {
   private f: typeof fetch;
@@ -117,7 +128,10 @@ export class HlidaniBrany {
   async kontrola(ted = new Date()): Promise<VysledekKontroly> {
     const s = await this.nactiStav();
     const chybaH = this.cfg.chybaH ?? 2;
-    const pripominkaH = this.cfg.pripominkaH ?? 12;
+    const pripominkaH = this.cfg.pripominkaH ?? 1;
+    const [klidOd, klidDo] = this.cfg.nocniKlid ?? [22, 6];
+    const hodina = hodinaPraha(ted);
+    const noc = klidOd > klidDo ? hodina >= klidOd || hodina < klidDo : hodina >= klidOd && hodina < klidDo;
     let lastSeen: Date;
     try {
       lastSeen = await this.posledniKontakt();
@@ -139,10 +153,13 @@ export class HlidaniBrany {
 
     const ticho = (ted.getTime() - lastSeen.getTime()) / 60_000;
     if (ticho > this.cfg.limitMin) {
-      if (!s.alarm || !s.pripominka || ted.getTime() - Date.parse(s.pripominka) > pripominkaH * 3600e3) {
+      // cron běží à 10 min → tolerance 5 min, aby připomínky šly opravdu každou hodinu (ne à 70 min)
+      const pripomenout =
+        !s.pripominka || ted.getTime() - Date.parse(s.pripominka) >= pripominkaH * 3600e3 - 5 * 60e3;
+      if (pripomenout && !noc) {
         const n = await this.cekajicich(lastSeen);
         await this.posli(
-          s.alarm ? 'stále offline' : 'telefon je offline — SMS neodcházejí',
+          s.pripominka ? 'stále offline' : 'telefon je offline — SMS neodcházejí',
           `Telefon SMS brány se naposledy ozval ${cas(lastSeen)}, tedy před ${Math.round((ticho / 60) * 10) / 10} h.\n` +
             (n != null ? `Ve frontě brány čeká ${n} SMS.\n` : '') +
             `\nNejspíš se restartoval (aktualizace) a čeká na odemčení PINem. Odemkněte prosím telefon na úřadě ` +
@@ -159,6 +176,8 @@ export class HlidaniBrany {
     if (s.alarm) {
       const zacatek = new Date(s.alarm);
       await this.ulozStav({ alarm: null, pripominka: null, chybaOd: null });
+      // výpadek začal i skončil v nočním klidu → nikdo o něm nevěděl, není co odvolávat
+      if (!s.pripominka) return { stav: 'obnoveno' };
       await this.posli(
         'zase funguje',
         `Telefon SMS brány je znovu připojený (ozval se ${cas(lastSeen)}). Výpadek začal ${cas(zacatek)}.\n` +

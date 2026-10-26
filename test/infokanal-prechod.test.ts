@@ -594,7 +594,7 @@ describe('příchozí SMS', () => {
 });
 
 describe('hlídání brány', () => {
-  it('offline → poplach, připomínka po 12 h, obnovení; výpadek cloudu > 2 h', async () => {
+  it('offline → poplach, připomínka à 1 h mimo noční klid, obnovení; výpadek cloudu > 2 h', async () => {
     let lastSeen = '2026-10-22T08:00:00Z';
     let cloudOk = true;
     const f = (async (url: string) => {
@@ -623,21 +623,46 @@ describe('hlídání brány', () => {
     expect(mail.odeslane[0]!.text).toContain('čeká 2 SMS');
     await h.kontrola(new Date('2026-10-22T10:00:00Z'));
     expect(mail.odeslane).toHaveLength(1);
-    await h.kontrola(new Date('2026-10-22T22:00:00Z'));
+    // cron à 10 min: další připomínka v 10:30 (hodina po 9:30)
+    await h.kontrola(new Date('2026-10-22T10:30:00Z'));
     expect(mail.odeslane).toHaveLength(2);
     expect(mail.odeslane[1]!.predmet).toContain('stále offline');
-    lastSeen = '2026-10-22T22:05:00Z';
-    expect((await h.kontrola(new Date('2026-10-22T22:10:00Z'))).stav).toBe('obnoveno');
-    expect(mail.odeslane[2]!.predmet).toContain('zase funguje');
+    await h.kontrola(new Date('2026-10-22T19:50:00Z')); // 21:50 Praha (letní čas) — ještě den
+    expect(mail.odeslane).toHaveLength(3);
+    await h.kontrola(new Date('2026-10-22T21:00:00Z')); // 23:00 Praha — noční klid
+    await h.kontrola(new Date('2026-10-23T03:50:00Z')); // 5:50 Praha
+    expect(mail.odeslane).toHaveLength(3);
+    await h.kontrola(new Date('2026-10-23T04:00:00Z')); // 6:00 Praha
+    expect(mail.odeslane).toHaveLength(4);
+    lastSeen = '2026-10-23T04:05:00Z';
+    expect((await h.kontrola(new Date('2026-10-23T04:10:00Z'))).stav).toBe('obnoveno');
+    expect(mail.odeslane[4]!.predmet).toContain('zase funguje');
+
+    // výpadek vzniklý v noci se ohlásí až ráno, jako první poplach
+    lastSeen = '2026-10-23T20:00:00Z';
+    await h.kontrola(new Date('2026-10-23T21:30:00Z'));
+    expect(mail.odeslane).toHaveLength(5);
+    await h.kontrola(new Date('2026-10-24T04:00:00Z'));
+    expect(mail.odeslane).toHaveLength(6);
+    expect(mail.odeslane[5]!.predmet).toContain('offline — SMS neodcházejí');
+    lastSeen = '2026-10-24T05:00:00Z';
+    await h.kontrola(new Date('2026-10-24T05:03:00Z'));
+    expect(mail.odeslane).toHaveLength(7);
+    // výpadek jen v noci → žádný e-mail
+    lastSeen = '2026-10-24T20:00:00Z';
+    expect((await h.kontrola(new Date('2026-10-24T22:00:00Z'))).stav).toBe('offline');
+    lastSeen = '2026-10-24T23:00:00Z';
+    expect((await h.kontrola(new Date('2026-10-24T23:10:00Z'))).stav).toBe('obnoveno');
+    expect(mail.odeslane).toHaveLength(7);
 
     cloudOk = false;
-    expect((await h.kontrola(new Date('2026-10-23T08:00:00Z'))).stav).toBe('chyba');
-    await h.kontrola(new Date('2026-10-23T09:00:00Z'));
-    expect(mail.odeslane).toHaveLength(3);
-    await h.kontrola(new Date('2026-10-23T10:30:00Z'));
-    expect(mail.odeslane).toHaveLength(4);
-    expect(mail.odeslane[3]!.predmet).toContain('nelze ověřit');
-    await h.kontrola(new Date('2026-10-23T14:30:00Z'));
-    expect(mail.odeslane).toHaveLength(4);
+    expect((await h.kontrola(new Date('2026-10-24T08:00:00Z'))).stav).toBe('chyba');
+    await h.kontrola(new Date('2026-10-24T09:00:00Z'));
+    expect(mail.odeslane).toHaveLength(7);
+    await h.kontrola(new Date('2026-10-24T10:30:00Z'));
+    expect(mail.odeslane).toHaveLength(8);
+    expect(mail.odeslane[7]!.predmet).toContain('nelze ověřit');
+    await h.kontrola(new Date('2026-10-24T14:30:00Z'));
+    expect(mail.odeslane).toHaveLength(8);
   });
 });
