@@ -28,7 +28,7 @@ export async function upozorniNaKonecDotaci(app: FastifyInstance) {
     .select(['email'])
     .where('email', 'is not', null)
     .where('blokovan_at', 'is', null)
-    .where(sql<boolean>`role && ARRAY['spravce', 'admin']::text[]`)
+    .where(sql<boolean>`role && ARRAY['spravce', 'admin', 'provozovatel']::text[]`)
     .execute();
   const text = app.t('web.dotace_mail_text', {
     seznam: koncici

@@ -30,7 +30,7 @@ export type AkcePrichozi = 'start' | 'restart' | 'stop' | 'odvoz' | 'odvoz_bez_c
 export async function emailySpravcu(db: Db, navic: string[] = []): Promise<string[]> {
   const r = await sql<{ email: string }>`
     SELECT email FROM uzivatele
-     WHERE email IS NOT NULL AND blokovan_at IS NULL AND role && ARRAY['admin','spravce']::text[]`.execute(
+     WHERE email IS NOT NULL AND blokovan_at IS NULL AND role && ARRAY['admin','spravce','provozovatel']::text[]`.execute(
     db,
   );
   const set = new Set<string>();

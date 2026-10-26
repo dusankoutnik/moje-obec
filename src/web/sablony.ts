@@ -4,7 +4,7 @@ import path from 'node:path';
 import { Eta } from 'eta';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
-import { formatujTelefon } from '../lib/kontakty.js';
+import { formatujTelefon, maskujTelefon } from '../lib/kontakty.js';
 import { filtrujMenu, type PolozkaMenu } from '../moduly/sluzby/sluzba.js';
 import { maRoli } from '../moduly/ucty/sluzba.js';
 
@@ -98,6 +98,7 @@ export default fp(async function sablony(app: FastifyInstance) {
         flash: volby.flash === false ? null : (req.session?.flash ?? null),
         fmtDatum: formatujDatum,
         fmtTelefon: formatujTelefon,
+        fmtTelefonSkryty: maskujTelefon,
         v: VERZE_STATIKY,
         ...layout,
         ...data,

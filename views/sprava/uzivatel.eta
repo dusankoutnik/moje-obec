@@ -34,29 +34,36 @@
     </li>
   <% }) %>
   </ul>
+  <% if (it.smiUpravit) { %>
   <form method="post" action="/sprava/uzivatele/<%= it.u.id %>" class="formular">
     <input type="hidden" name="_csrf" value="<%= it.csrf %>">
     <button class="tlacitko sekundarni" name="akce" value="odemknout" type="submit"><%= it.t('sprava.zamek_zrusit') %></button>
   </form>
   <% } %>
+  <% } %>
 </section>
 <section class="karta">
   <h2><%= it.t('ucet.role') %></h2>
-  <% if (it.jeAdmin && !it.samSobe) { %>
+  <% if (it.chraneny) { %><p class="flash flash-info"><%= it.t('sprava.chraneny') %></p><% } %>
+  <% if (it.jeAdmin && it.smiMenitRole) { %>
   <form method="post" action="/sprava/uzivatele/<%= it.u.id %>" class="formular">
     <input type="hidden" name="_csrf" value="<%= it.csrf %>">
     <fieldset>
       <legend><%= it.t('ucet.role') %></legend>
       <% it.role.forEach(function (r) { %>
-        <label class="zatrzitko"><input type="checkbox" name="role" value="<%= r %>" <%= it.u.role.includes(r) ? 'checked' : '' %>> <%= it.t('sprava.role_' + r) %></label>
+        <% var zamcena = r.chranena && !it.jeProvozovatel; %>
+        <label class="zatrzitko"><input type="checkbox" name="role" value="<%= r.id %>" aria-describedby="role-<%= r.id %>-popis" <%= it.u.role.includes(r.id) ? 'checked' : '' %> <%= zamcena ? 'disabled' : '' %>> <strong><%= r.nazev %></strong></label>
+        <p class="napoveda" id="role-<%= r.id %>-popis"><%= r.popis %><% if (zamcena) { %> <%= it.t('sprava.role_jen_provozovatel') %><% } %></p>
       <% }) %>
     </fieldset>
+    <% if (it.samSobe) { %><p class="napoveda"><%= it.t('sprava.sam_sobe_buh') %></p><% } %>
     <button class="tlacitko" name="akce" value="role" type="submit"><%= it.t('app.ulozit') %></button>
   </form>
   <% } else { %>
-    <p><%= it.u.role.length ? it.u.role.join(', ') : it.t('ucet.role_obcan') %></p>
+    <p><%= it.u.role.length ? it.role.filter(function (r) { return it.u.role.includes(r.id); }).map(function (r) { return r.nazev; }).join(', ') : it.t('ucet.role_obcan') %></p>
     <% if (it.samSobe) { %><p class="napoveda"><%= it.t('sprava.sam_sobe') %></p><% } %>
   <% } %>
+  <p><a href="/sprava/role"><%= it.t('sprava.role_karta') %></a></p>
 </section>
 </div>
 <h2><%= it.t('sprava.historie') %></h2>

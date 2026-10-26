@@ -7,6 +7,7 @@ import type { Env } from '../../../config/env.js';
 import type { ObecProfil } from '../../../config/obec.js';
 import { vytvorAdapter } from './adapter.js';
 import { celeJmeno } from '../sluzba.js';
+import { roleProAplikace } from '../role.js';
 
 export const OIDC_PREFIX = '/oidc';
 export const PLATFORMA_CLIENT_ID = 'platforma';
@@ -236,7 +237,7 @@ export async function vytvorProvider(db: Db, env: Env, obec: ObecProfil): Promis
             phone_number_verified: !!u.telefon_overen_at,
             cast_obce: u.cast_obce,
             rezident: u.rezident,
-            role: u.role,
+            role: roleProAplikace(u.role),
             mujucet_id: u.cislo,
           };
         },

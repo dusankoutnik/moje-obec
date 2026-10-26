@@ -10,7 +10,7 @@ import { bezDiakritiky, formatujTelefon, normalizujEmail, normalizujTelefon } fr
 import { hlidejLimit } from '../../lib/limit.js';
 import type { StavModulu } from '../sluzby/sluzba.js';
 import { vyzadujPrihlaseni, vyzadujRoli } from './opravneni.js';
-import type { UctySluzba } from './sluzba.js';
+import { smiUpravitUcet, type UctySluzba } from './sluzba.js';
 import { AplikaceRezervaci, type SouhrnRezervaci } from './ucet-aplikace.js';
 
 const KANALY_UCTU: KanalPreference[] = ['sms', 'smisene'];
@@ -537,6 +537,11 @@ export default async function ucetKartyRoutes(app: FastifyInstance, z: { ucty: U
       }
       const cil = await ucty.podleId(z.uzivatel_id);
       if (!cil) return reply.redirect(zpet);
+      // chráněný účet (provozovatel): žádost o jeho telefon vyřizuje jen provozovatel
+      if (!smiUpravitUcet(aktor, cil)) {
+        req.session.flash = { typ: 'chyba', text: t('sprava.chraneny_nelze') };
+        return reply.redirect(zpet);
+      }
       const kontakt = app.obec.obec.kontakt.telefon || app.obec.obec.kontakt.email || '';
 
       if (req.body.akce === 'zamitnout') {

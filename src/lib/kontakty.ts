@@ -38,6 +38,14 @@ export function formatujTelefon(e164: string | null | undefined): string {
   return m ? `+420 ${m[1]} ${m[2]} ${m[3]}` : e164;
 }
 
+// Telefon v přehledech správy (seznamy, kde stačí účet poznat): +420 777 *** 456 — prostřední trojčíslí skryté
+export function maskujTelefon(e164: string | null | undefined): string {
+  if (!e164) return '';
+  const m = /^\+420(\d{3})\d{3}(\d{3})$/.exec(e164);
+  if (m) return `+420 ${m[1]} *** ${m[2]}`;
+  return e164.length > 6 ? `${e164.slice(0, -6)}***${e164.slice(-3)}` : '***';
+}
+
 // Bez diakritiky + typografické znaky na ASCII — SMS v GSM abecedě má 160 znaků, v UCS-2 jen 70.
 export function bezDiakritiky(s: string): string {
   return String(s)

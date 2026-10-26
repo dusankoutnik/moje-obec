@@ -3099,3 +3099,29 @@ button.kviz-odpoved:active {
 .rubrika-vnorena {
   margin-left: calc(var(--uroven, 0) * 24px);
 }
+/* Administrace → Systém → Role (2026-10-26) */
+.role-obsah {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding: 0;
+  list-style: none;
+}
+.role-karta {
+  margin-top: 24px;
+}
+.role-nalezene {
+  padding: 0;
+  list-style: none;
+}
+.role-nalezene li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--linka);
+}
+.role-nalezene .inline-form {
+  display: inline-flex;
+}

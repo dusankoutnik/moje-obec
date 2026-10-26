@@ -183,7 +183,7 @@ if (telefon !== '-') {
     }
   }
 }
-// všechna barevná schémata a písma přes náhled vzhledu (jen přihlášený správce): axe + screenshot titulky
+// všechna barevná schémata a písma přes náhled vzhledu (jen přihlášený provozovatel — vzhled od 2026-10-26 nevidí správce ani admin): axe + screenshot titulky
 const schemata = (process.env.SCHEMATA ?? '').split(',').filter(Boolean);
 for (const sch of schemata) {
   const [schema, pismo] = sch.split(':');

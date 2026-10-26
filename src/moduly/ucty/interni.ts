@@ -4,7 +4,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { ROLE, type Role } from '../../db/types.js';
 import { stejneTajemstvi } from '../../lib/krypto.js';
-import { profilUzivatele, type UctySluzba } from './sluzba.js';
+import { maRoli, profilUzivatele, smiUpravitUcet, type UctySluzba } from './sluzba.js';
 
 export default async function interniRoutes(app: FastifyInstance, z: { ucty: UctySluzba }) {
   const { ucty } = z;
@@ -54,8 +54,10 @@ export default async function interniRoutes(app: FastifyInstance, z: { ucty: Uct
       // kdo = číslo účtu správce, který v aplikaci klikl (musí být admin nebo správce obce)
       const kdoC = cisloZ(String(b.kdo ?? ''));
       const aktor = kdoC === null ? undefined : await ucty.podleCisla(kdoC);
-      if (!aktor || aktor.blokovan_at || !aktor.role.some((r) => r === 'admin' || r === 'spravce'))
+      if (!aktor || aktor.blokovan_at || !maRoli(aktor, 'spravce'))
         return reply.code(403).send({ chyba: 'kdo' });
+      // chráněný účet (provozovatel) mění jen provozovatel
+      if (!smiUpravitUcet(aktor, u)) return reply.code(403).send({ chyba: 'chraneny' });
       const novy = await ucty.nastavRezident(u, b.rezident, aktor, 'interni-api', req.ip);
       return { ok: true, ...profilUzivatele(novy) };
     },

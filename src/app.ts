@@ -367,7 +367,7 @@ async function upozorniNaRozpocetSms(app: FastifyInstance, pocet: number) {
     .select('email')
     .where('email', 'is not', null)
     .where('blokovan_at', 'is', null)
-    .where(sql<boolean>`role && ARRAY['admin','spravce']::text[]`)
+    .where(sql<boolean>`role && ARRAY['admin','spravce','provozovatel']::text[]`)
     .execute();
   for (const s of spravci) {
     await app.mail

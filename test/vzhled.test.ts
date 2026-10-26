@@ -9,7 +9,7 @@ let t: TestApp;
 let spr: Prohlizec;
 beforeAll(async () => {
   t = await spustTestApp();
-  spr = await prihlasSRoli(t, '777600001', ['spravce']);
+  spr = await prihlasSRoli(t, '777600001', ['provozovatel']);
 });
 afterAll(async () => t.zavri());
 beforeEach(() => {
