@@ -703,6 +703,18 @@ describe('rubriky 1:1 (vnořené, článek ve více rubrikách)', () => {
     expect(await html('Svoz odpadu')).toBe('<p>Upraveno redaktorem</p>');
   });
 
+  it('zrušená rubrika přesměruje na rubriku, do které se sloučila', async () => {
+    await t.db
+      .insertInto('web_presmerovani')
+      .values({ stara_cesta: '/aktuality?kategorie=zrusena', nova_cesta: '/aktuality?kategorie=knihovna' })
+      .execute();
+    const p = new Prohlizec(t.base);
+    const r = await p.get('/aktuality?kategorie=zrusena', false);
+    expect(r.res.status).toBe(301);
+    expect(r.res.headers.get('location')).toBe('/aktuality?kategorie=knihovna');
+    expect((await p.get('/aktuality?kategorie=neexistuje', false)).res.status).toBe(200);
+  });
+
   it('WordPress z kopie webu: adresy se přepíšou na původní web', async () => {
     const { WordpressZdroj } = await import('../src/moduly/web/import/wordpress.js');
     const kopie = 'https://archiv.stara-obec.cz';

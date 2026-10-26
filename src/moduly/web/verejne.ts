@@ -207,6 +207,11 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       const vsechny = await s.obsah.kategorie();
       const sObsahem = await s.obsah.kategorieSObsahem();
       const k = vsechny.find((x) => x.slug === req.query.kategorie);
+      // sloučená (zrušená) rubrika: přesměrování na rubriku, do které přešly její příspěvky
+      if (req.query.kategorie && !k) {
+        const kam = await s.presmerovani.cil(`/aktuality?kategorie=${req.query.kategorie}`);
+        if (kam) return reply.redirect(kam, 301);
+      }
       const na = NA_STRANKU.includes(Number(req.query.na)) ? Number(req.query.na) : NA_STRANKU[0]!;
       const v = await s.obsah.aktuality({
         kategorie: k?.id ?? null,
