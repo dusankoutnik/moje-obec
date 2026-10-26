@@ -82,6 +82,7 @@ describe('podobnost názvů a shoda termínů', () => {
     expect(obecZObjektu(zaklad).web).toEqual({
       akce_koncepty: true,
       stat_zpravy_kategorie: '',
+      rubrika_knihovny: 'knihovna',
       rychle_odkazy: [],
     });
     const dlazdice = (odkaz: string) => () =>

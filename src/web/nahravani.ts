@@ -23,10 +23,15 @@ import { maRoli } from '../moduly/ucty/sluzba.js';
 /** cesty, kam se nahrávají videa (větší limit) */
 const CESTY_VIDEA = /^\/sprava\/web\/videa(\/|\?|$)/;
 
-/** jediné cesty, které přijímají multipart, a role, kterou musí mít přihlášený uživatel */
-const CESTY_NAHRAVANI: { cesta: RegExp; role: Role }[] = [
-  { cesta: /^\/sprava\/web(\/|\?|$)/, role: 'web' },
-  { cesta: /^\/sprava\/deska(\/|\?|$)/, role: 'deska' },
+/** jediné cesty, které přijímají multipart, a role (některá z nich), kterou musí mít přihlášený uživatel;
+ * platí první shoda — editor aktualit smí i knihovnice (rozsah rubrik hlídá správa webu) */
+const CESTY_NAHRAVANI: { cesta: RegExp; role: Role[] }[] = [
+  {
+    cesta: /^\/sprava\/web\/(novy|nahled|obrazek|obsah\/[^/?]+(\/autosave)?)(\?|$)/,
+    role: ['web', 'knihovnice'],
+  },
+  { cesta: /^\/sprava\/web(\/|\?|$)/, role: ['web'] },
+  { cesta: /^\/sprava\/deska(\/|\?|$)/, role: ['deska'] },
 ];
 
 /** nejvýš souborů v jednom požadavku (galerie se nahrává po dávkách) */
@@ -41,8 +46,8 @@ export function limitNahrani(req: FastifyRequest): number {
   return CESTY_VIDEA.test(req.url) && maRoli(req.uzivatel, 'web') ? MAX_VELIKOST_VIDEA : MAX_VELIKOST;
 }
 
-/** role potřebná k nahrávání na danou cestu, nebo null, když cesta multipart nepřijímá */
-export function roleProNahrani(url: string): Role | null {
+/** role, z nichž některá je potřebná k nahrávání na danou cestu, nebo null, když cesta multipart nepřijímá */
+export function roleProNahrani(url: string): Role[] | null {
   return CESTY_NAHRAVANI.find((c) => c.cesta.test(url))?.role ?? null;
 }
 
@@ -125,7 +130,7 @@ export default fp(async function nahravani(app: FastifyInstance) {
     const u = id
       ? await app.db.selectFrom('uzivatele').selectAll().where('id', '=', id).executeTakeFirst()
       : undefined;
-    if (!u || u.blokovan_at || !maRoli(u, role)) throw chyba(403, 'forbidden');
+    if (!u || u.blokovan_at || !maRoli(u, ...role)) throw chyba(403, 'forbidden');
     req.uzivatel = u;
     return payload;
   });

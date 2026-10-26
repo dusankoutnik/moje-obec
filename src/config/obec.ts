@@ -137,6 +137,8 @@ export const ObecSchema = z.object({
       akce_koncepty: z.boolean().default(true),
       // statistika „zpráv za poslední měsíc“ v úvodu: slug kategorie aktualit; prázdné = všechny aktuality
       stat_zpravy_kategorie: z.string().default(''),
+      // rubrika aktualit, kterou spravuje role knihovnice (i s podrubrikami)
+      rubrika_knihovny: z.string().default('knihovna'),
       // další rychlé dlaždice pod úvodem (za výchozími), např. knihovna
       rychle_odkazy: z
         .array(

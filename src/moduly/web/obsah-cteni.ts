@@ -332,6 +332,8 @@ export class ObsahCteni {
         'o.upraveno_at',
         'o.smazano_at',
         'o.zdroj',
+        'o.kategorie_id',
+        'o.kategorie_dalsi',
         'u.jmeno',
         'u.prijmeni',
       ])

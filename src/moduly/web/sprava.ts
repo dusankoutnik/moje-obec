@@ -14,6 +14,7 @@ import { vyzadujRoli } from '../ucty/opravneni.js';
 import { maRoli } from '../ucty/sluzba.js';
 import type { WebSluzby } from './index.js';
 import { rozdelPodleVidei } from './videa.js';
+import { sPodrubrikami } from './rubriky.js';
 import { PRAZDNA_POLE, poleProEditor, TYPY, type PoleObsahu } from './obsah.js';
 
 type Telo = Record<string, string | string[] | undefined>;
@@ -29,12 +30,73 @@ export const SEKCE_TYPU: Record<TypObsahu, string> = {
   odkaz: 'stranky',
 };
 
+/** 403 pro obsah mimo rozsah uživatele (knihovnice a cizí rubrika) */
+function zakazano() {
+  const chyba = new Error('forbidden') as Error & { statusCode: number };
+  chyba.statusCode = 403;
+  return chyba;
+}
+
 export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
   const t = app.t;
   const redaktor = vyzadujRoli('web');
+  // aktuality smí i knihovnice — jen ve své rubrice (kontroluje `smi` a `omezRubriky`)
+  const redaktorObsahu = vyzadujRoli('web', 'knihovnice');
   const pomocnici = { urlSouboru, lidskaVelikost, popisTypu, zkrat, textZHtml, datumPraha };
 
-  app.get('/sprava/web', { preHandler: redaktor }, async (req, reply) => {
+  /** rubriky, ve kterých uživatel smí psát: null = všechny (redaktor webu), jinak rubrika knihovny s podrubrikami */
+  async function rozsah(req: FastifyRequest): Promise<Set<number> | null> {
+    if (maRoli(req.uzivatel, 'web')) return null;
+    const vse = await s.obsah.kategorie();
+    const koren = vse.find((k) => k.slug === app.obec.web.rubrika_knihovny);
+    return new Set(koren ? sPodrubrikami(vse, koren.id) : []);
+  }
+
+  /** smí uživatel s omezeným rozsahem na tento obsah? (aktualita s některou rubrikou z rozsahu) */
+  function vRozsahu(r: Set<number> | null, o: Pick<WebObsah, 'typ' | 'kategorie_id' | 'kategorie_dalsi'>) {
+    if (!r) return true;
+    return (
+      o.typ === 'aktualita' &&
+      [o.kategorie_id, ...(o.kategorie_dalsi ?? [])].some((k) => k !== null && r.has(k))
+    );
+  }
+
+  /** obsah podle id, jen pokud na něj uživatel smí; jinak 403 */
+  async function obsahProUpravu(req: FastifyRequest, id: string): Promise<WebObsah | undefined> {
+    const o = await s.obsah.podleId(id);
+    if (o && !vRozsahu(await rozsah(req), o)) throw zakazano();
+    return o;
+  }
+
+  /**
+   * omezený rozsah: vybrat jde jen rubriky z rozsahu (aspoň jedna — jinak kořen rozsahu), rubriky mimo rozsah
+   * z původního obsahu zůstanou beze změny (i hlavní rubrika, když byla mimo rozsah)
+   */
+  async function omezRubriky(req: FastifyRequest, pole: PoleObsahu, o: WebObsah | null) {
+    const r = await rozsah(req);
+    if (!r) return;
+    const mimo = o
+      ? [o.kategorie_id, ...(o.kategorie_dalsi ?? [])].filter((k): k is number => k !== null && !r.has(k))
+      : [];
+    let vybrane = [pole.kategorie_id, ...pole.kategorie_dalsi].filter(
+      (k): k is number => k !== null && r.has(k),
+    );
+    if (!vybrane.length) {
+      const koren = (await s.obsah.kategorie()).find((k) => k.slug === app.obec.web.rubrika_knihovny);
+      vybrane = koren ? [koren.id] : [];
+    }
+    vybrane = [...new Set(vybrane)];
+    if (o?.kategorie_id && !r.has(o.kategorie_id)) {
+      pole.kategorie_id = o.kategorie_id;
+      pole.kategorie_dalsi = [...mimo.filter((k) => k !== o.kategorie_id), ...vybrane];
+    } else {
+      pole.kategorie_id = vybrane[0] ?? null;
+      pole.kategorie_dalsi = [...vybrane.slice(1), ...mimo];
+    }
+  }
+
+  app.get('/sprava/web', { preHandler: redaktorObsahu }, async (req, reply) => {
+    if (!maRoli(req.uzivatel, 'web')) return reply.redirect('/sprava/web/aktuality');
     const [akceKeZpracovani, koncepty, koncici, pocetPresmerovani, sObrazky] = await Promise.all([
       s.propojeni.pocet().catch(() => 0),
       app.db
@@ -98,9 +160,12 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
     if (typ === 'stranka') continue;
     app.get<{ Querystring: { q?: string } }>(
       `/sprava/web/${sekce}`,
-      { preHandler: redaktor },
+      { preHandler: typ === 'aktualita' ? redaktorObsahu : redaktor },
       async (req, reply) => {
-        const polozky = await s.obsah.proSpravu(typ, String(req.query.q ?? ''));
+        const r = await rozsah(req);
+        const polozky = (await s.obsah.proSpravu(typ, String(req.query.q ?? ''))).filter((o) =>
+          vRozsahu(r, o),
+        );
         // akce sálu a hřišť z rezervačního systému — jen pro přehled, upravují se tam
         const externi = typ === 'akce' ? await s.kalendar.akce() : [];
         return reply.view('web/sprava/seznam', {
@@ -108,6 +173,7 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
           sekce,
           typ,
           polozky,
+          jenRozsah: !!r,
           externi,
           akceKeZpracovani: typ === 'akce' ? await s.propojeni.pocet().catch(() => 0) : 0,
           q: req.query.q ?? '',
@@ -125,8 +191,9 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
     f: PoleObsahu,
     extra: Record<string, unknown> = {},
   ) {
+    const r = await rozsah(req);
     const [kategorie, nadrazene, obrazek] = await Promise.all([
-      s.obsah.kategorie(),
+      s.obsah.kategorie().then((k) => (r ? k.filter((x) => r.has(x.id)) : k)),
       typ === 'stranka' || typ === 'odkaz' ? s.obsah.moznaNadrazena(o?.id ?? null) : Promise.resolve([]),
       f.obrazek_id ? app.soubory.podleId(f.obrazek_id) : Promise.resolve(undefined),
     ]);
@@ -142,6 +209,7 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
       o,
       f,
       kategorie,
+      jenRozsah: !!r,
       nadrazene,
       maDeti,
       obrazek,
@@ -181,11 +249,12 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
 
   app.get<{ Querystring: { typ?: string; nadrazena?: string } }>(
     '/sprava/web/novy',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
       const typ = (TYPY as string[]).includes(String(req.query.typ))
         ? (req.query.typ as TypObsahu)
         : 'aktualita';
+      if (typ !== 'aktualita' && !maRoli(req.uzivatel, 'web')) throw zakazano();
       const f: PoleObsahu = { ...PRAZDNA_POLE, nadrazena_id: req.query.nadrazena || null };
       if (typ === 'aktualita') f.datum = new Date().toISOString();
       return editor(req, reply, typ, null, f);
@@ -194,9 +263,9 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
 
   app.get<{ Params: { id: string } }>(
     '/sprava/web/obsah/:id',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
-      const o = await s.obsah.podleId(req.params.id);
+      const o = await obsahProUpravu(req, req.params.id);
       if (!o) return reply.callNotFound();
       return editor(req, reply, o.typ, o, poleProEditor(o));
     },
@@ -236,6 +305,7 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
       if (b.kategorie_id !== undefined) pole.kategorie_id = Number(jeden(b.kategorie_id)) || null;
       dalsiRubriky(pole, b);
     }
+    await omezRubriky(req, pole, o);
     if (typ === 'akce' && !casyAkce(pole, b) && prisne) return { pole, chyba: t('web.chyba_akce_datum') };
     // úvodní obrázek
     if (jeden(b.odebrat_obrazek) === 'ano') pole.obrazek_id = null;
@@ -337,20 +407,21 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
 
   app.post<{ Querystring: { typ?: string }; Body: Telo }>(
     '/sprava/web/novy',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
       const typ = (TYPY as string[]).includes(jeden(req.body?.typ))
         ? (jeden(req.body?.typ) as TypObsahu)
         : 'aktualita';
+      if (typ !== 'aktualita' && !maRoli(req.uzivatel, 'web')) throw zakazano();
       return ulozZFormulare(req, reply, typ, null);
     },
   );
 
   app.post<{ Params: { id: string }; Body: Telo }>(
     '/sprava/web/obsah/:id',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
-      const o = await s.obsah.podleId(req.params.id);
+      const o = await obsahProUpravu(req, req.params.id);
       if (!o) return reply.callNotFound();
       return ulozZFormulare(req, reply, o.typ, o);
     },
@@ -359,16 +430,17 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
   // automatické ukládání z editoru (JSON, CSRF v hlavičce). Nový obsah se při prvním uložení založí jako koncept.
   app.post<{ Params: { id: string }; Body: Telo }>(
     '/sprava/web/obsah/:id/autosave',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
       const nove = req.params.id === 'novy';
-      const o = nove ? null : await s.obsah.podleId(req.params.id);
+      const o = nove ? null : await obsahProUpravu(req, req.params.id);
       if (!nove && !o) return reply.code(404).send({ ok: false });
       const typ =
         o?.typ ??
         ((TYPY as string[]).includes(jeden(req.body?.typ))
           ? (jeden(req.body?.typ) as TypObsahu)
           : 'aktualita');
+      if (typ !== 'aktualita' && !maRoli(req.uzivatel, 'web')) throw zakazano();
       const { pole } = await ctiFormular(req, typ, o ?? null, req.body ?? {}, false);
       const id = await s.obsah.uloz(o?.id ?? null, typ, pole, 'autosave', req.uzivatel!.id, req.ip);
       return reply.send({
@@ -384,10 +456,10 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
   );
 
   // náhled: vykreslí veřejnou podobu z (neuloženého) formuláře
-  app.post<{ Body: Telo }>('/sprava/web/nahled', { preHandler: redaktor }, async (req, reply) => {
+  app.post<{ Body: Telo }>('/sprava/web/nahled', { preHandler: redaktorObsahu }, async (req, reply) => {
     const b = req.body ?? {};
     const id = jeden(b.id);
-    const o = id ? ((await s.obsah.podleId(id)) ?? null) : null;
+    const o = id ? ((await obsahProUpravu(req, id)) ?? null) : null;
     const typ =
       o?.typ ?? ((TYPY as string[]).includes(jeden(b.typ)) ? (jeden(b.typ) as TypObsahu) : 'aktualita');
     const { pole } = await ctiFormular(
@@ -422,7 +494,7 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
   });
 
   // obrázek vložený do textu editorem (fetch, JSON odpověď)
-  app.post<{ Body: Telo }>('/sprava/web/obrazek', { preHandler: redaktor }, async (req, reply) => {
+  app.post<{ Body: Telo }>('/sprava/web/obrazek', { preHandler: redaktorObsahu }, async (req, reply) => {
     const f = souboryZPole(req, 'obrazek')[0];
     if (!f) return reply.code(400).send({ chyba: t('soubory.chyba_prazdny') });
     if (f.oriznuto) return reply.code(400).send({ chyba: chybaSouboruText(t, 'velikost') });
@@ -447,8 +519,9 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
 
   app.post<{ Params: { id: string } }>(
     '/sprava/web/obsah/:id/zahodit',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
+      await obsahProUpravu(req, req.params.id);
       await s.obsah.zahodKoncept(req.params.id, req.uzivatel!.id);
       req.session.flash = { typ: 'info', text: t('web.koncept_zahozen') };
       return reply.redirect(`/sprava/web/obsah/${req.params.id}`);
@@ -457,8 +530,9 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
 
   app.post<{ Params: { id: string } }>(
     '/sprava/web/obsah/:id/skryt',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
+      await obsahProUpravu(req, req.params.id);
       await s.obsah.skryj(req.params.id, req.uzivatel!.id, req.ip);
       req.session.flash = { typ: 'info', text: t('web.skryto') };
       return reply.redirect(`/sprava/web/obsah/${req.params.id}`);
@@ -468,9 +542,9 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
   // smazání: potvrzovací stránka (funguje bez JS) → koš
   app.get<{ Params: { id: string } }>(
     '/sprava/web/obsah/:id/smazat',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
-      const o = await s.obsah.podleId(req.params.id);
+      const o = await obsahProUpravu(req, req.params.id);
       if (!o) return reply.callNotFound();
       return reply.view('web/sprava/smazat', {
         titulek: t('web.smazat_titulek'),
@@ -481,9 +555,9 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
   );
   app.post<{ Params: { id: string } }>(
     '/sprava/web/obsah/:id/smazat',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
-      const o = await s.obsah.podleId(req.params.id);
+      const o = await obsahProUpravu(req, req.params.id);
       if (!o) return reply.callNotFound();
       await s.obsah.doKose(o.id, true, req.uzivatel!.id, req.ip);
       req.session.flash = { typ: 'ok', text: t('web.v_kosi', { titulek: o.titulek }) };
@@ -503,9 +577,9 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
   // revize
   app.get<{ Params: { id: string } }>(
     '/sprava/web/obsah/:id/revize',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
-      const o = await s.obsah.podleId(req.params.id);
+      const o = await obsahProUpravu(req, req.params.id);
       if (!o) return reply.callNotFound();
       const revize = await s.obsah.revize(o.id);
       return reply.view('web/sprava/revize', { titulek: t('web.revize'), o, revize, ...pomocnici });
@@ -513,8 +587,9 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
   );
   app.post<{ Params: { id: string; rid: string } }>(
     '/sprava/web/obsah/:id/revize/:rid',
-    { preHandler: redaktor },
+    { preHandler: redaktorObsahu },
     async (req, reply) => {
+      await obsahProUpravu(req, req.params.id);
       const ok = await s.obsah.obnovRevizi(req.params.id, Number(req.params.rid), req.uzivatel!.id, req.ip);
       req.session.flash = ok
         ? { typ: 'info', text: t('web.revize_nactena') }

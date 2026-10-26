@@ -1,5 +1,5 @@
 <% layout('/layout') %>
-<p class="drobky"><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a></p>
+<p class="drobky"><% if (it.jenRozsah) { %><a href="/sprava">← <%= it.t('sprava.titulek') %></a><% } else { %><a href="/sprava/web">← <%= it.t('web.sprava_titulek') %></a><% } %></p>
 <div class="hlavicka-stranky">
   <h1><%= it.titulek %></h1>
   <a class="tlacitko velke" href="/sprava/web/novy?typ=<%= it.typ %>">＋ <%= it.t('web.novy_' + it.typ) %></a>

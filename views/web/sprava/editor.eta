@@ -58,7 +58,7 @@
         <label for="datum"><%= it.t('web.datum_zverejneni') %></label>
         <div class="radek-uzky"><input id="datum" name="datum" type="date" value="<%= f.datum ? it.datumPraha(new Date(f.datum)) : '' %>"><label for="cas" class="vh"><%= it.t('web.cas') %></label><input id="cas" name="cas" type="time" value="<%= f.datum ? new Date(f.datum).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Prague' }) : '' %>"></div>
         <p class="napoveda"><%= it.t('web.datum_napoveda') %></p>
-        <%~ include('/web/sprava/_rubriky', { f: f, kategorie: it.kategorie, t: it.t }) %>
+        <%~ include('/web/sprava/_rubriky', { f: f, kategorie: it.kategorie, jenRozsah: it.jenRozsah, t: it.t }) %>
       </section>
       <% } %>
 
@@ -78,7 +78,7 @@
         <h2><%= it.t('propojeni.pozvanka_titulek') %></h2>
         <label class="zatrzitko"><input type="checkbox" name="v_aktualitach" value="ano" aria-describedby="vakt-n" <%= f.v_aktualitach ? 'checked' : '' %>> <%= it.t('propojeni.v_aktualitach') %></label>
         <p class="napoveda" id="vakt-n"><%= it.t('propojeni.v_aktualitach_napoveda') %></p>
-        <%~ include('/web/sprava/_rubriky', { f: f, kategorie: it.kategorie, t: it.t }) %>
+        <%~ include('/web/sprava/_rubriky', { f: f, kategorie: it.kategorie, jenRozsah: it.jenRozsah, t: it.t }) %>
       </section>
       <% if (it.nabidka.length || (o && o.rezervace_ref)) { %>
       <section class="karta">

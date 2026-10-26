@@ -10,7 +10,16 @@ type TimestampNullable = ColumnType<Date | null, Date | string | null | undefine
 // vstupne = kontrola vstupenek (připraveno) · kviz = správa kvízu · spravce = vše obsahové a účty · admin = vše
 // kromě vzhledu webu a správy rolí · provozovatel („Bůh“) = vše; popisy a odvozená práva: src/moduly/ucty/role.ts
 export type Role =
-  'web' | 'deska' | 'redaktor' | 'kviz' | 'ucetni' | 'vstupne' | 'spravce' | 'admin' | 'provozovatel';
+  | 'web'
+  | 'deska'
+  | 'redaktor'
+  | 'kviz'
+  | 'ucetni'
+  | 'vstupne'
+  | 'knihovnice'
+  | 'spravce'
+  | 'admin'
+  | 'provozovatel';
 export const ROLE: readonly Role[] = [
   'web',
   'deska',
@@ -18,6 +27,7 @@ export const ROLE: readonly Role[] = [
   'kviz',
   'ucetni',
   'vstupne',
+  'knihovnice',
   'spravce',
   'admin',
   'provozovatel',

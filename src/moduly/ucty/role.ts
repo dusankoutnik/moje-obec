@@ -50,7 +50,7 @@ export const DEFINICE_ROLI: readonly DefiniceRole[] = [
       'Audit rezervací (odkaz do aplikace Rezervace)',
       'Blokace účtů jiných administrátorů',
     ],
-    zahrnuje: ['spravce', 'web', 'deska', 'redaktor', 'kviz', 'ucetni', 'vstupne'],
+    zahrnuje: ['spravce', 'web', 'deska', 'redaktor', 'kviz', 'ucetni', 'vstupne', 'knihovnice'],
   },
   {
     id: 'spravce',
@@ -105,6 +105,17 @@ export const DEFINICE_ROLI: readonly DefiniceRole[] = [
       'Infokanál: nová hlášení, odběratelé, historie rozesílek',
       'Výstrahy (ČHMÚ, odstávky) — rozeslání a přehled',
       'Rozeslání zveřejněné aktuality nebo akce infokanálem (s rolí redaktor webu)',
+    ],
+    zahrnuje: [],
+  },
+  {
+    id: 'knihovnice',
+    nazev: 'knihovnice',
+    popis: 'Příspěvky obecní knihovny: aktuality v rubrice knihovny a jejích podrubrikách.',
+    opravneni: [
+      'Aktuality v rubrice knihovny (profil obce web.rubrika_knihovny, výchozí „knihovna“) a jejích podrubrikách: psaní, úpravy, koncepty, revize, skrytí a smazání do koše',
+      'Obrázky a soubory do textu příspěvku',
+      'Ostatní obsah webu ani jiné rubriky nevidí; další rubriky příspěvku, které nespravuje, zůstávají beze změny',
     ],
     zahrnuje: [],
   },

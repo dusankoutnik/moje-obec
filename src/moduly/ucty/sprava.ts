@@ -28,7 +28,7 @@ export const CHYBY_ROLI = {
 export default async function spravaRoutes(app: FastifyInstance, z: { ucty: UctySluzba }) {
   const { ucty } = z;
   const t = app.t;
-  const urad = vyzadujRoli('spravce', 'ucetni', 'redaktor', 'web', 'deska', 'kviz', 'vstupne');
+  const urad = vyzadujRoli('spravce', 'ucetni', 'redaktor', 'web', 'deska', 'kviz', 'vstupne', 'knihovnice');
   const spravce = vyzadujRoli('spravce');
 
   app.get('/sprava', { preHandler: urad }, async (req, reply) => {
@@ -57,6 +57,8 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
           ? await app.textSouboru.prehled().catch(() => null)
           : null,
       jeKviz: maRoli(u, 'kviz', 'web'),
+      // knihovnice bez role redaktora webu: jen příspěvky knihovny
+      jenKnihovna: maRoli(u, 'knihovnice') && !maRoli(u, 'web'),
       // podání obsahují osobní údaje — jen správce obce (admin má vše)
       podatelnaNevyrizene:
         app.obec.moduly.podatelna && maRoli(u, 'spravce') ? await app.podatelna.pocetNevyrizenych() : null,

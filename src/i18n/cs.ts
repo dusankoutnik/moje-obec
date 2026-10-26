@@ -714,6 +714,8 @@ export const cs = {
     cas: 'Čas',
     datum_napoveda: 'Aktualita s budoucím datem se na webu ukáže až ten den.',
     bez_kategorie: '— bez kategorie —',
+    knihovna_prispevky: 'Příspěvky knihovny',
+    knihovna_prispevky_text: 'Aktuality obecní knihovny — psaní, úpravy a mazání.',
     dalsi_kategorie: 'Další kategorie',
     dalsi_kategorie_napoveda:
       'Příspěvek se ukáže i ve vybraných kategoriích (hlavní kategorie je u článku první).',

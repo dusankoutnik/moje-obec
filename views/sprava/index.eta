@@ -18,6 +18,7 @@
 
   skupina('Obsah webu', [
     it.jeWeb && it.obec.moduly.web ? { ikona: '📰', nazev: t('web.sprava_titulek'), href: '/sprava/web', popis: t('sprava.web_text'), akce: { href: '/sprava/web/novy?typ=aktualita', text: t('web.napsat_aktualitu') } } : null,
+    it.jenKnihovna && it.obec.moduly.web ? { ikona: '📚', nazev: t('web.knihovna_prispevky'), href: '/sprava/web/aktuality', popis: t('web.knihovna_prispevky_text'), akce: { href: '/sprava/web/novy?typ=aktualita', text: t('web.napsat_aktualitu') } } : null,
     it.jeDeska && it.obec.moduly.deska ? { ikona: '📋', nazev: t('deska.titulek'), href: '/sprava/deska', popis: t('sprava.deska_text'), akce: { href: '/sprava/deska/novy', text: t('deska.novy') } } : null,
     it.jeDeska && it.jeSpravce && it.obec.moduly.deska ? { ikona: '⚖️', nazev: t('pi.titulek'), href: '/sprava/povinne-informace', popis: 'Struktura podle vyhlášky 515/2020 Sb.' } : null,
     it.jeWeb && it.obec.moduly.web ? { ikona: '☎️', nazev: t('web.kontakt_obce'), href: '/sprava/web/kontakt', popis: t('web.kontakt_obce_text') } : null,
