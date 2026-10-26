@@ -5,6 +5,7 @@
 // části v sekce/*.ts.
 import { ImportKontext, type VysledekImportu } from './kontext.js';
 import { duplicita, importujAktuality } from './sekce/aktuality.js';
+import { presmerujRubriky, pripravRubriky } from './sekce/rubriky.js';
 import { importujDesku } from './sekce/deska.js';
 import { importujDotace } from './sekce/dotace.js';
 import { importujMenu } from './sekce/menu.js';
@@ -53,13 +54,18 @@ export class Importer extends ImportKontext {
       }
     };
     if (this.v.stranky !== false) await cast('stránky', () => this.importujStranky());
+    if (this.v.rubrikyZeZdroje) await cast('rubriky', () => pripravRubriky(this));
     if (this.v.aktuality !== false) await cast('aktuality', () => this.importujAktuality());
     if (this.v.deska !== false) await cast('úřední deska', () => this.importujDesku());
     if (this.zdroj.presmerovani)
       await cast('přesměrování', async () => {
-        for (const [a, b] of Object.entries(await this.zdroj.presmerovani!()))
+        for (const [a, b] of Object.entries(await this.zdroj.presmerovani!())) {
+          // existující přesměrování (i ručně upravené ve správě) opakovaný import nepřepisuje
+          if ((await this.s.presmerovani.cil(this.cesta(a))) !== null) continue;
           await this.mapuj(a, b).catch((e) => this.chyba(`přesměrování ${a}`, e));
+        }
       });
+    if (this.rubriky) await cast('přesměrování rubrik', () => presmerujRubriky(this));
     if (this.v.menu !== false) await cast('menu', () => this.importujMenu());
     if (this.v.dotace !== false) await cast('dotace', () => this.importujDotace());
     return this.vysledek;

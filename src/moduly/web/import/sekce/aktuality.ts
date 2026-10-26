@@ -12,6 +12,7 @@ import {
   SCHEMA_CLANKU,
 } from '../pomucky.js';
 import type { ImportClanek } from '../typy.js';
+import { prerazClanek, rubrikyClanku } from './rubriky.js';
 
 /**
  * už je na webu (nebo ve známém seznamu) aktualita s podobným titulkem a datem ±3 dny? Stejný den a stejný
@@ -80,6 +81,7 @@ export async function importujAktuality(ctx: ImportKontext) {
 async function importujAktualitu(ctx: ImportKontext, a: ImportClanek, kategorie: Map<string, number>) {
   const existujici = await ctx.uzImportovano('web_obsah', a.url);
   if (existujici && !ctx.v.prepsat) {
+    if (ctx.rubriky) await prerazClanek(ctx, existujici, a);
     ctx.vysledek.preskoceno++;
     return;
   }
@@ -110,6 +112,9 @@ async function importujAktualitu(ctx: ImportKontext, a: ImportClanek, kategorie:
     }
   }
   const slugKat = a.kategorie ? ctx.v.kategorieAktualit?.[a.kategorie] : undefined;
+  const rubriky = ctx.rubriky
+    ? rubrikyClanku(ctx, a)
+    : { hlavni: slugKat ? (kategorie.get(slugKat) ?? null) : null, dalsi: [] };
   // článek a jeho přesměrování buď oba, nebo nic (jinak by příští běh článek přeskočil a 301 by chyběla)
   await ctx.vTransakci(async (s) => {
     const id = await s.obsah.uloz(
@@ -121,7 +126,8 @@ async function importujAktualitu(ctx: ImportKontext, a: ImportClanek, kategorie:
         perex: zkrat(a.perex?.trim() || textZHtml(html), 300),
         obsah_html: html,
         obrazek_id: obrazekId,
-        kategorie_id: slugKat ? (kategorie.get(slugKat) ?? null) : null,
+        kategorie_id: rubriky.hlavni,
+        kategorie_dalsi: rubriky.dalsi,
         datum: a.datum.toISOString(),
       },
       'zverejnit',

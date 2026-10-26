@@ -535,3 +535,152 @@ describe('adaptér archiv (starý web z Wayback Machine)', () => {
     expect(v2.aktuality).toBe(0);
   });
 });
+
+describe('rubriky 1:1 (vnořené, článek ve více rubrikách)', () => {
+  const rubriky = [
+    { slug: 'sluzby-a-spolky', nazev: 'Služby a spolky', rodic: null, url: `${Z}/category/sluzby-a-spolky/` },
+    {
+      slug: 'knihovna',
+      nazev: 'Knihovna',
+      rodic: 'sluzby-a-spolky',
+      url: `${Z}/category/sluzby-a-spolky/knihovna/`,
+    },
+    { slug: 'akce', nazev: 'Akce', rodic: 'knihovna', url: `${Z}/category/sluzby-a-spolky/knihovna/akce/` },
+    { slug: 'ou-informuje', nazev: 'Obecní úřad informuje', rodic: null, url: `${Z}/category/ou-informuje/` },
+  ];
+  const zdroj2: ImportniZdroj = {
+    nazev: 'test',
+    zaklad: Z,
+    async *stranky() {},
+    async *aktuality() {
+      yield {
+        url: `${Z}/2025/03/svoz/`,
+        titulek: 'Svoz odpadu',
+        html: '<p>Text</p>',
+        datum: new Date('2025-03-02T10:00:00Z'),
+        kategorieVse: ['knihovna', 'ou-informuje'],
+      };
+      yield {
+        url: `${Z}/2013/03/noc-s-andersenem/`,
+        titulek: 'Noc s Andersenem',
+        html: '<p>Čtení v knihovně</p>',
+        datum: new Date('2013-03-29T16:00:00Z'),
+        kategorieVse: ['akce', 'ou-informuje'],
+      };
+    },
+    async rubriky() {
+      return rubriky;
+    },
+    async presmerovani() {
+      return Object.fromEntries(rubriky.map((r) => [r.url, '/aktuality']));
+    },
+  };
+  const imp = () =>
+    new Importer(
+      zdroj2,
+      {
+        db: t.db,
+        obsah: t.app.web.obsah,
+        soubory: t.app.soubory,
+        presmerovani: t.app.web.presmerovani,
+        dotace: t.app.web.dotace,
+        deska: t.app.deska,
+      },
+      stahovac,
+      {
+        aktualityOd: new Date('1990-01-01'),
+        rubrikyZeZdroje: true,
+        kategorieAktualit: { 'ou-informuje': 'obecni-urad' },
+        stranky: false,
+        deska: false,
+        menu: false,
+        dotace: false,
+      },
+    );
+
+  it('založí strom rubrik, zařadí nové i už importované články a přesměruje stránky rubrik', async () => {
+    // ručně nastavené přesměrování rubriky se nepřepíše
+    await t.app.web.presmerovani.pridej('/category/sluzby-a-spolky', '/sluzby-obec');
+    const v = await imp().spust();
+    expect(v).toMatchObject({ aktuality: 1, prerazeno: 1 });
+    const kat = await t.app.web.obsah.kategorie();
+    const k = (slug: string) => kat.find((x) => x.slug === slug)!;
+    expect(k('knihovna').nadrazena_id).toBe(k('sluzby-a-spolky').id);
+    expect(k('akce').nadrazena_id).toBe(k('knihovna').id);
+    expect(k('akce').uroven).toBe(2);
+    const noc = await t.db
+      .selectFrom('web_obsah')
+      .selectAll()
+      .where('titulek', '=', 'Noc s Andersenem')
+      .executeTakeFirstOrThrow();
+    expect(noc.kategorie_id).toBe(k('akce').id);
+    expect(noc.kategorie_dalsi).toEqual([k('obecni-urad').id]);
+    const svoz = await t.db
+      .selectFrom('web_obsah')
+      .selectAll()
+      .where('titulek', '=', 'Svoz odpadu')
+      .executeTakeFirstOrThrow();
+    expect(svoz.kategorie_id).toBe(k('knihovna').id);
+    // filtr rubriky bere podrubriky i další rubriky
+    const ids = async (id: number) =>
+      (await t.app.web.obsah.aktuality({ kategorie: id, naStranku: 50 })).radky.map((r) => r.titulek);
+    expect(await ids(k('sluzby-a-spolky').id)).toEqual(
+      expect.arrayContaining(['Noc s Andersenem', 'Svoz odpadu']),
+    );
+    expect(await ids(k('obecni-urad').id)).toEqual(
+      expect.arrayContaining(['Noc s Andersenem', 'Svoz odpadu']),
+    );
+    expect(await ids(k('akce').id)).toEqual(['Noc s Andersenem']);
+    const p = new Prohlizec(t.base);
+    const strana = await p.get('/aktuality?kategorie=knihovna');
+    expect(strana.text).toContain('Noc s Andersenem');
+    expect(strana.text).toContain('kategorie=akce'); // podrubrika v nabídce
+    const detail = await p.get('/aktuality/noc-s-andersenem');
+    expect(detail.text).toMatch(/kategorie=akce">Akce<\/a>, <a href="\/aktuality\?kategorie=obecni-urad"/);
+    // přesměrování: rubrika → filtr, ručně nastavené zůstalo
+    const r = await p.get('/category/sluzby-a-spolky/knihovna/', false);
+    expect(r.res.headers.get('location')).toBe('/aktuality?kategorie=knihovna');
+    const r2 = await p.get('/category/sluzby-a-spolky/', false);
+    expect(r2.res.headers.get('location')).toBe('/sluzby-obec');
+    // podruhé nic
+    expect(await imp().spust()).toMatchObject({ aktuality: 0, prerazeno: 0 });
+  });
+
+  it('WordPress z kopie webu: adresy se přepíšou na původní web', async () => {
+    const { WordpressZdroj } = await import('../src/moduly/web/import/wordpress.js');
+    const kopie = 'https://archiv.stara-obec.cz';
+    const json = async (url: string) => {
+      expect(url.startsWith(`${kopie}/wp-json/`)).toBe(true);
+      const data = url.includes('/categories')
+        ? [
+            {
+              id: 5,
+              slug: 'knihovna',
+              name: 'Knihovna',
+              parent: 0,
+              link: `${kopie}/category/knihovna/`,
+              count: 1,
+            },
+          ]
+        : [
+            {
+              id: 1,
+              link: `${kopie}/2013/03/noc/`,
+              date: '2013-03-29T17:00:00',
+              date_gmt: '2013-03-29T16:00:00',
+              title: { rendered: 'Noc' },
+              content: { rendered: `<p><a href="${kopie}/wp-content/uploads/a.pdf">PDF</a></p>` },
+              categories: [5],
+            },
+          ];
+      return { data: data as never, hlavicky: new Headers({ 'x-wp-totalpages': '1' }) };
+    };
+    const z = new WordpressZdroj({ zaklad: kopie, puvodni: Z, stahovac: { ...stahovac, json } });
+    expect(z.zaklad).toBe(Z);
+    const clanky = [];
+    for await (const a of z.aktuality(new Date('1990-01-01'))) clanky.push(a);
+    expect(clanky[0]).toMatchObject({ url: `${Z}/2013/03/noc/`, kategorieVse: ['knihovna'] });
+    expect(clanky[0]!.html).toContain(`${Z}/wp-content/uploads/a.pdf`);
+    expect((await z.rubriky())[0]).toMatchObject({ slug: 'knihovna', url: `${Z}/category/knihovna/` });
+  });
+});

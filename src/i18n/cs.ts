@@ -687,6 +687,12 @@ export const cs = {
     cas: 'Čas',
     datum_napoveda: 'Aktualita s budoucím datem se na webu ukáže až ten den.',
     bez_kategorie: '— bez kategorie —',
+    dalsi_kategorie: 'Další kategorie',
+    dalsi_kategorie_napoveda:
+      'Příspěvek se ukáže i ve vybraných kategoriích (hlavní kategorie je u článku první).',
+    podrubriky: 'Podkategorie',
+    kategorie_nadrazena: 'Nadřazená kategorie',
+    kategorie_bez_nadrazene: '— hlavní kategorie —',
     kdy_a_kde: 'Kdy a kde',
     zacatek: 'Začátek',
     externi_titulek: 'Z rezervačního systému (sál a hřiště)',

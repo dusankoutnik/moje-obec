@@ -57,7 +57,12 @@ export default async function apiV1(app: FastifyInstance, z: { tokeny: ApiTokeny
     { preHandler: vyzaduj('obsah:cteni', 'obsah:zapis', 'deska:zapis', 'zpravodaj') },
     async () => ({
       web: app.obec.moduly.web
-        ? (await app.web.obsah.kategorie()).map((k) => ({ id: k.id, slug: k.slug, nazev: k.nazev }))
+        ? (await app.web.obsah.kategorie()).map((k) => ({
+            id: k.id,
+            slug: k.slug,
+            nazev: k.nazev,
+            nadrazena: k.nadrazena_id,
+          }))
         : [],
       deska: app.obec.moduly.deska
         ? (await app.deska.kategorie()).map((k) => ({
@@ -345,7 +350,9 @@ export default async function apiV1(app: FastifyInstance, z: { tokeny: ApiTokeny
       `Obálka zpravodaje ${m.cislo}/${m.rocnik}`,
     );
 
-    let kat = (await app.web.obsah.kategorie()).find((k) => k.slug === 'zpravodaj');
+    let kat: { id: number } | undefined = (await app.web.obsah.kategorie()).find(
+      (k) => k.slug === 'zpravodaj',
+    );
     if (!kat) {
       kat = await app.db
         .insertInto('web_kategorie')

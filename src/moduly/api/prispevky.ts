@@ -99,6 +99,17 @@ export async function nactiPrispevek(
       pole.kategorie_id = k.id;
     }
   }
+  // další kategorie (pole slugů nebo čísel); prázdné pole je zruší
+  if (b.dalsi_kategorie !== undefined && typ !== 'stranka') {
+    const dalsi = seznamTextu(b, 'dalsi_kategorie');
+    const vse = await app.web.obsah.kategorie();
+    pole.kategorie_dalsi = dalsi.map((x) => {
+      const k = vse.find((y) => y.slug === x || String(y.id) === x);
+      if (!k)
+        throw chyba(400, `Kategorie „${x}“ neexistuje (seznam: GET /api/v1/kategorie).`, 'dalsi_kategorie');
+      return k.id;
+    });
+  }
 
   if (typ === 'aktualita') {
     const d = datum(b, 'datum', 8);
@@ -170,9 +181,11 @@ export async function kontrolaPredZverejnenim(app: FastifyInstance, pole: PoleOb
 
 /** veřejná podoba příspěvku pro odpověď API */
 export async function vystupPrispevku(app: FastifyInstance, o: WebObsah) {
-  const kategorie = o.kategorie_id
-    ? ((await app.web.obsah.kategorie()).find((k) => k.id === o.kategorie_id)?.slug ?? null)
-    : null;
+  const vse = await app.web.obsah.kategorie();
+  const kategorie = o.kategorie_id ? (vse.find((k) => k.id === o.kategorie_id)?.slug ?? null) : null;
+  const dalsiKategorie = (o.kategorie_dalsi ?? [])
+    .map((id) => vse.find((k) => k.id === id)?.slug)
+    .filter((x): x is string => !!x);
   return {
     id: o.id,
     typ: o.typ,
@@ -185,6 +198,7 @@ export async function vystupPrispevku(app: FastifyInstance, o: WebObsah) {
     zdroj: o.zdroj,
     externi_id: o.externi_id,
     kategorie,
+    dalsi_kategorie: dalsiKategorie,
     perex: o.perex,
     datum: o.datum?.toISOString() ?? null,
     akce_konec: o.akce_konec?.toISOString() ?? null,

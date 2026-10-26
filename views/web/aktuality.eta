@@ -1,9 +1,15 @@
 <% layout('/layout') %>
-<h1><%= it.t('web.aktuality') %></h1>
+<h1><%= it.t('web.aktuality') %><% if (it.rubrikaCesta.length) { %><span class="vh">: </span><small class="rubrika-cesta"><%= it.rubrikaCesta.map(function (x) { return x.nazev; }).join(' › ') %></small><% } %></h1>
 <% if (it.kategorie.length) { %>
 <nav class="stitky-filtr" aria-label="<%= it.t('web.kategorie') %>">
   <a href="/aktuality" <%= !it.aktivni ? 'aria-current=page' : '' %>><%= it.t('deska.vse') %></a>
-  <% it.kategorie.forEach(function (k) { %><a href="/aktuality?kategorie=<%= k.slug %>" <%= it.aktivni === k.slug ? 'aria-current=page' : '' %>><%= k.nazev %></a><% }) %>
+  <% it.kategorie.forEach(function (k) { %><a href="/aktuality?kategorie=<%= k.slug %>" <%= it.aktivni === k.slug ? 'aria-current=page' : (it.aktivniKoren === k.slug ? 'class=v-ceste' : '') %>><%= k.nazev %></a><% }) %>
+</nav>
+<% } %>
+<% if (it.rubrikaCesta.length > 1 || it.podrubriky.length) { %>
+<nav class="stitky-filtr podrubriky" aria-label="<%= it.t('web.podrubriky') %>">
+  <% it.rubrikaCesta.slice(1).forEach(function (k) { %><a href="/aktuality?kategorie=<%= k.slug %>" <%= it.aktivni === k.slug ? 'aria-current=page' : 'class=v-ceste' %>><%= k.nazev %></a><% }) %>
+  <% it.podrubriky.forEach(function (k) { %><a href="/aktuality?kategorie=<%= k.slug %>"><%= k.nazev %></a><% }) %>
 </nav>
 <% } %>
 <% if (!it.radky.length) { %><p class="prazdne"><%= it.t('web.zadne_aktuality') %></p><% } %>

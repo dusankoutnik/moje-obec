@@ -322,6 +322,7 @@ export interface WebKategorieTable {
   slug: string;
   nazev: string;
   poradi: Generated<number>;
+  nadrazena_id: number | null;
 }
 export interface WebObsahTable {
   id: Generated<string>;
@@ -336,6 +337,7 @@ export interface WebObsahTable {
   obsah_html: Generated<string>;
   obrazek_id: string | null;
   kategorie_id: number | null;
+  kategorie_dalsi: Generated<number[]>;
   datum: TimestampNullable;
   akce_konec: TimestampNullable;
   akce_cely_den: Generated<boolean>;

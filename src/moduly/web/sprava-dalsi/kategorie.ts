@@ -2,6 +2,7 @@
 import type { FastifyInstance } from 'fastify';
 import { zapisAudit } from '../../../lib/audit.js';
 import { slugify } from '../../../lib/slug.js';
+import { sPodrubrikami } from '../rubriky.js';
 import type { WebSluzby } from '../index.js';
 import { kontextSpravy, type Telo, jeden } from './spolecne.js';
 
@@ -19,23 +20,36 @@ export default async function webSpravaKategorie(app: FastifyInstance, s: WebSlu
     const b = req.body ?? {};
     const nazev = jeden(b.nazev).slice(0, 100);
     const id = Number(jeden(b.id)) || null;
+    // nadřazená: jen existující rubrika, ne ona sama ani její podrubrika (cyklus)
+    const vse = await s.obsah.kategorie();
+    let nadrazena = Number(jeden(b.nadrazena_id)) || null;
+    if (
+      nadrazena &&
+      (!vse.some((k) => k.id === nadrazena) || (id && sPodrubrikami(vse, id).includes(nadrazena)))
+    )
+      nadrazena = null;
     if (nazev) {
       if (id)
         await app.db
           .updateTable('web_kategorie')
-          .set({ nazev, poradi: Number(jeden(b.poradi)) || 100 })
+          .set({ nazev, poradi: Number(jeden(b.poradi)) || 100, nadrazena_id: nadrazena })
           .where('id', '=', id)
           .execute();
       else
         await app.db
           .insertInto('web_kategorie')
-          .values({ nazev, slug: slugify(nazev, 40), poradi: Number(jeden(b.poradi)) || 100 })
+          .values({
+            nazev,
+            slug: slugify(nazev, 40),
+            poradi: Number(jeden(b.poradi)) || 100,
+            nadrazena_id: nadrazena,
+          })
           .onConflict((oc) => oc.column('slug').doNothing())
           .execute();
       await zapisAudit(app.db, {
         uzivatelId: req.uzivatel!.id,
         akce: 'web.kategorie',
-        detail: { id, nazev },
+        detail: { id, nazev, nadrazena },
         ip: req.ip,
       });
       req.session.flash = { typ: 'ok', text: t('app.ulozeno') };

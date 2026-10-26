@@ -233,6 +233,7 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
     if (typ === 'akce') {
       pole.v_aktualitach = jeden(b.v_aktualitach) === 'ano';
       if (b.kategorie_id !== undefined) pole.kategorie_id = Number(jeden(b.kategorie_id)) || null;
+      dalsiRubriky(pole, b);
     }
     if (typ === 'akce' && !casyAkce(pole, b) && prisne) return { pole, chyba: t('web.chyba_akce_datum') };
     // úvodní obrázek
@@ -558,9 +559,19 @@ export function navrhAlt(nazev: string): string {
   return z.charAt(0).toUpperCase() + z.slice(1);
 }
 
+/** další rubriky ze zatržítek (jen když formulář pole měl; ověří je ObsahSluzba při uložení) */
+function dalsiRubriky(pole: PoleObsahu, b: Telo) {
+  if (b.kategorie_dalsi_pole === undefined) return;
+  const v = b.kategorie_dalsi;
+  pole.kategorie_dalsi = (Array.isArray(v) ? v : v === undefined ? [] : [v])
+    .map((x) => Number(x))
+    .filter((x) => Number.isSafeInteger(x) && x > 0);
+}
+
 /** datum a čas aktuality z formuláře (pražský čas; bez data = teď) */
 function datumAktuality(pole: PoleObsahu, b: Telo) {
   pole.kategorie_id = Number(jeden(b.kategorie_id)) || null;
+  dalsiRubriky(pole, b);
   const d = jeden(b.datum);
   const cas = /^(\d{1,2}):(\d{2})$/.exec(jeden(b.cas));
   const kdy = d ? casPraha(d, cas ? Number(cas[1]) : 8, cas ? Number(cas[2]) : 0) : null;

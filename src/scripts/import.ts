@@ -4,13 +4,16 @@
 //   (ve vývoji: npx tsx src/scripts/import.ts …)
 //
 // Volby:
-//   --aktuality-od 2024-10-01   aktuality od data (výchozí: 2 roky zpět)
+//   --aktuality-od 2024-10-01   aktuality od data (výchozí: celá historie)
 //   --deska-od 2020-01-01       úřední deska od data (výchozí: vše)
 //   --limit-mb 1800             strop pro stažené soubory (výchozí 1800 MB)
 //   --dotace soubor.json        dotace k založení (pole objektů {projekt, poskytovatel, text, odkaz, loga:[{url, alt}]})
 //   --jen stranky,aktuality,deska,menu,dotace   jen vybrané části
 //   --prepsat                   už importované stránky a aktuality přepsat obsahem ze zdroje (text, ne strukturu)
 //   --kategorie-desky slug      kategorie WordPressu, která tvoří úřední desku (výchozí uredni-deska)
+//   --puvodni-url https://…     čte se z kopie webu (např. archivu), ale adresy se ukládají jako z původního webu
+//   --rubriky-ze-zdroje         rubriky aktualit 1:1 i se zanořením (už importované aktuality se přeřadí)
+//   --mapa-kategorii soubor.json  výjimky {"rubrika-zdroje": "slug-rubriky-webu"} (napojení na existující rubriky)
 //
 // Archiv starého webu (Wayback Machine), jen aktuality — viz docs/IMPORT.md:
 //   node dist/scripts/import.js archiv http://www.obec.cz/ --do 2013 --vsechny-snimky \
@@ -172,7 +175,13 @@ if (typ === 'archiv') {
   zdroj = archiv;
   console.log(`Archiv ${url}: ${zaznamy.length} snímků stránek`);
 } else if (typ === 'wordpress')
-  zdroj = new WordpressZdroj({ zaklad: url, stahovac, dotace, kategorieDesky: volba('kategorie-desky') });
+  zdroj = new WordpressZdroj({
+    zaklad: url,
+    puvodni: volba('puvodni-url'),
+    stahovac,
+    dotace,
+    kategorieDesky: volba('kategorie-desky'),
+  });
 else if (typ === 'galileo') zdroj = new GalileoZdroj({ zaklad: url, stahovac, maxStranek });
 else {
   console.error(`Neznámý typ zdroje: ${typ}`);
@@ -181,13 +190,17 @@ else {
 
 const jen = volba('jen')?.split(',');
 const zapnuto = (cast: string) => !jen || jen.includes(cast);
-const aktualityOd = aktualityOdVolba
-  ? aktualityOdVolba
-  : archiv
-    ? new Date('1990-01-01')
-    : new Date(Date.now() - 2 * 365 * 86_400_000);
+// výchozí je celá historie: web obce je i její kronika (zkrácení jen výslovnou volbou)
+const aktualityOd = aktualityOdVolba ?? new Date('1990-01-01');
 // kategorie pro archiv: založit, když chybí (např. „Archiv starého webu“)
-const kategorie = { ...KATEGORIE };
+// převod rubrik 1:1: výchozí mapování se nepoužije, výjimky (rubrika zdroje → slug webu) jen ze souboru
+const rubrikyZeZdroje = arg.includes('--rubriky-ze-zdroje');
+const kategorie: Record<string, string> = {
+  ...(rubrikyZeZdroje ? {} : KATEGORIE),
+  ...(volba('mapa-kategorii')
+    ? (JSON.parse(readFileSync(volba('mapa-kategorii')!, 'utf8')) as Record<string, string>)
+    : {}),
+};
 if (archiv && volba('kategorie') && !arg.includes('--nanecisto')) {
   const slug = slugify(volba('kategorie')!);
   await db
@@ -228,6 +241,7 @@ const importer = new Importer(
     menu: zapnuto('menu'),
     dotace: zapnuto('dotace'),
     kategorieAktualit: kategorie,
+    rubrikyZeZdroje,
     prepsat: arg.includes('--prepsat'),
     archiv: !!archiv,
     kontrolaDuplicit: !!archiv || arg.includes('--kontrola-duplicit'),

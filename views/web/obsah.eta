@@ -4,7 +4,7 @@
 <article class="clanek">
   <% if (it.zpet) { %><p class="drobky"><a href="<%= it.zpet.url %>">← <%= it.zpet.text %></a></p><% } else if (it.rodic) { %><p class="drobky"><a href="/<%= it.rodic.slug %>">← <%= it.rodic.titulek %></a></p><% } %>
   <h1><%= o.titulek %><%~ include('/web/_edit', { id: o.id, muzeEditovat: it.muzeEditovatWeb, t: it.t }) %></h1>
-  <% if (o.typ === 'aktualita' && o.datum) { %><p class="clanek-meta"><time datetime="<%= o.datum.toISOString() %>"><%= it.fmtDatum(o.datum, false) %></time><% if (it.kategorie) { %> · <a href="/aktuality?kategorie=<%= it.kategorie.slug %>"><%= it.kategorie.nazev %></a><% } %></p><% } %>
+  <% if (o.typ === 'aktualita' && o.datum) { %><p class="clanek-meta"><time datetime="<%= o.datum.toISOString() %>"><%= it.fmtDatum(o.datum, false) %></time><% if (it.kategorie) { %> · <a href="/aktuality?kategorie=<%= it.kategorie.slug %>"><%= it.kategorie.nazev %></a><% } %><% ;(it.dalsiRubriky || []).forEach(function (k) { %>, <a href="/aktuality?kategorie=<%= k.slug %>"><%= k.nazev %></a><% }) %></p><% } %>
   <% if (o.typ === 'akce') { %>
   <dl class="seznam akce-udaje">
     <dt><%= it.t('web.kdy') %></dt><dd><% if (it.serie) { %><%= it.serie.opakovani %> <%= it.fmtDatum(it.serie.datum, false) %><% } else { %><%= o.datum ? it.fmtDatum(o.datum, !o.akce_cely_den) : '' %><%= o.akce_konec ? ' – ' + it.fmtDatum(o.akce_konec, !o.akce_cely_den) : '' %><% } %></dd>

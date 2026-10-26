@@ -10,6 +10,7 @@ import { cisloStrany } from '../../lib/vstupy.js';
 import { urlSouboru } from '../../web/soubory.js';
 import type { WebSluzby } from './index.js';
 import { rozdelPodleVidei } from './videa.js';
+import { sPodrubrikami, vRubrikach } from './rubriky.js';
 import { odkazAkce } from './akce-externi.js';
 import { pomocniciOdstavek } from '../odstavky/index.js';
 import { pomocniciPocasi } from '../pocasi/index.js';
@@ -141,7 +142,10 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       .where('smazano_at', 'is', null)
       .where('datum', '>=', pred30)
       .where('datum', '<=', new Date());
-    if (katZprav) dotazZprav = dotazZprav.where('kategorie_id', '=', katZprav.id);
+    if (katZprav)
+      dotazZprav = dotazZprav.where(
+        vRubrikach(sPodrubrikami(await s.obsah.kategorie(), katZprav.id), 'web_obsah'),
+      );
     const noveAktuality = await dotazZprav.executeTakeFirstOrThrow();
     statistiky.push({
       hodnota: String(Number(noveAktuality.n)),
@@ -191,13 +195,23 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
 
   app.get<{ Querystring: { kategorie?: string; strana?: string } }>('/aktuality', async (req, reply) => {
     const vsechny = await s.obsah.kategorie();
-    const kategorie = await s.obsah.kategorieSObsahem();
+    const sObsahem = await s.obsah.kategorieSObsahem();
     const k = vsechny.find((x) => x.slug === req.query.kategorie);
     const v = await s.obsah.aktuality({ kategorie: k?.id ?? null, stranka: cisloStrany(req.query.strana) });
+    // filtr: hlavní rubriky; u vybrané rubriky cesta k ní (nadřazené) a její podrubriky
+    const podleId = new Map(vsechny.map((x) => [x.id, x]));
+    const cesta: typeof vsechny = [];
+    for (let x = k; x; x = x.nadrazena_id !== null ? podleId.get(x.nadrazena_id) : undefined) {
+      if (cesta.includes(x)) break;
+      cesta.unshift(x);
+    }
     return reply.view('web/aktuality', {
-      titulek: t('web.aktuality'),
-      kategorie,
+      titulek: k ? `${k.nazev} — ${t('web.aktuality')}` : t('web.aktuality'),
+      kategorie: sObsahem.filter((x) => x.uroven === 0),
+      rubrikaCesta: cesta,
+      podrubriky: k ? sObsahem.filter((x) => x.nadrazena_id === k.id) : [],
       aktivni: k?.slug ?? '',
+      aktivniKoren: cesta[0]?.slug ?? '',
       ...v,
       obr,
       ...pomocnici,
@@ -227,9 +241,11 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
     extra: Record<string, unknown> = {},
   ) {
     const obrazek = o.obrazek_id ? await app.soubory.podleId(o.obrazek_id) : undefined;
-    const kategorie = o.kategorie_id
-      ? (await s.obsah.kategorie()).find((k) => k.id === o.kategorie_id)
-      : undefined;
+    const vsechny = await s.obsah.kategorie();
+    const kategorie = o.kategorie_id ? vsechny.find((k) => k.id === o.kategorie_id) : undefined;
+    const dalsiRubriky = (o.kategorie_dalsi ?? [])
+      .map((id) => vsechny.find((k) => k.id === id))
+      .filter((k) => k !== undefined);
     return reply.view('web/obsah', {
       titulek: o.titulek,
       popis: o.perex || zkrat(textZHtml(o.obsah_html), 160),
@@ -238,6 +254,7 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       castiObsahu: rozdelPodleVidei(o.obsah_html, await s.videa.vTextu(o.obsah_html)),
       obrazek,
       kategorie,
+      dalsiRubriky,
       ...pomocnici,
       ...extra,
     });

@@ -52,6 +52,8 @@ export interface PoleObsahu {
   obsah_html: string;
   obrazek_id: string | null;
   kategorie_id: number | null;
+  /** další rubriky (hlavní je kategorie_id) */
+  kategorie_dalsi: number[];
   datum: string | null; // ISO
   akce_konec: string | null;
   akce_cely_den: boolean;
@@ -70,6 +72,7 @@ export const PRAZDNA_POLE: PoleObsahu = {
   obsah_html: '',
   obrazek_id: null,
   kategorie_id: null,
+  kategorie_dalsi: [],
   datum: null,
   akce_konec: null,
   akce_cely_den: false,
@@ -88,6 +91,7 @@ export function poleZRadku(o: WebObsah): PoleObsahu {
     obsah_html: o.obsah_html,
     obrazek_id: o.obrazek_id,
     kategorie_id: o.kategorie_id,
+    kategorie_dalsi: o.kategorie_dalsi ?? [],
     datum: o.datum ? o.datum.toISOString() : null,
     akce_konec: o.akce_konec ? o.akce_konec.toISOString() : null,
     akce_cely_den: o.akce_cely_den,
@@ -112,6 +116,7 @@ export function doSloupcu(p: PoleObsahu) {
     obsah_html: p.obsah_html,
     obrazek_id: p.obrazek_id,
     kategorie_id: p.kategorie_id,
+    kategorie_dalsi: p.kategorie_dalsi ?? [],
     datum: p.datum ? new Date(p.datum) : null,
     akce_konec: p.akce_konec ? new Date(p.akce_konec) : null,
     akce_cely_den: p.akce_cely_den,

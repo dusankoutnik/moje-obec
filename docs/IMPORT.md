@@ -8,12 +8,15 @@ a vrátí obsah v neutrální podobě, **společný importér** ho uloží (méd
 ```bash
 # v kontejneru aplikace (data jdou do její DB a do volume se soubory)
 docker exec -e IMPORT_KONTAKT=email@obce.cz platforma \
-  node dist/scripts/import.js wordpress https://www.obec.cz --aktuality-od 2024-10-01 --limit-mb 1800
+  node dist/scripts/import.js wordpress https://www.obec.cz --rubriky-ze-zdroje --limit-mb 20000
 ```
 
 | Volba                                       | Význam                                                                            |
 | ------------------------------------------- | --------------------------------------------------------------------------------- |
-| `--aktuality-od 2024-10-01`                 | aktuality od data (výchozí 2 roky zpět)                                           |
+| `--aktuality-od 2024-10-01`                 | aktuality od data (výchozí celá historie — web obce je i její kronika)            |
+| `--rubriky-ze-zdroje`                       | rubriky aktualit 1:1 i se zanořením; článek ve více rubrikách                     |
+| `--mapa-kategorii soubor.json`              | výjimky `{"rubrika-zdroje": "slug-webu"}` — napojení na existující rubriky        |
+| `--puvodni-url https://www.obec.cz`         | čte se z kopie webu (archiv na jiné doméně), adresy se ukládají jako z původního  |
 | `--deska-od 2020-01-01`                     | úřední deska od data (výchozí vše)                                                |
 | `--limit-mb 1800`                           | strop pro stažené soubory; nad ním se další soubory přeskočí (zapíše se do logu)  |
 | `--dotace soubor.json`                      | dotace k založení: `[{projekt, poskytovatel, text, odkaz, loga: [{url, alt}]}]`   |

@@ -5,6 +5,7 @@ import type { Db } from '../../db/index.js';
 import type { TypObsahu, WebObsah } from '../../db/types.js';
 import { odpovida, tsDotaz } from '../../lib/hledani.js';
 import { adresaS, type AdresaObsahu, type PolozkaMenu } from './obsah-pole.js';
+import { sNadrazenymi, sPodrubrikami, stromRubrik, vRubrikach } from './rubriky.js';
 
 export class ObsahCteni {
   private menuCache: { cas: number; menu: PolozkaMenu[] } | null = null;
@@ -205,7 +206,7 @@ export class ObsahCteni {
           eb.and([eb('o.typ', '=', 'akce'), eb('o.v_aktualitach', '=', true)]),
         ]),
       );
-    if (v.kategorie) q = q.where('o.kategorie_id', '=', v.kategorie);
+    if (v.kategorie) q = q.where(vRubrikach(sPodrubrikami(await this.kategorie(), v.kategorie)));
     const radky = await q
       .orderBy(razeni, 'desc')
       .orderBy('o.id')
@@ -246,31 +247,40 @@ export class ObsahCteni {
       .execute();
   }
 
-  kategorie() {
-    return this.db.selectFrom('web_kategorie').selectAll().orderBy('poradi').orderBy('nazev').execute();
+  /** rubriky aktualit ve stromovém pořadí (s úrovní zanoření) */
+  async kategorie() {
+    return stromRubrik(await this.db.selectFrom('web_kategorie').selectAll().execute());
   }
 
-  /** slugy rubrik aktualit bez jediného zveřejněného příspěvku (aktuality, nebo akce zobrazené i v aktualitách) */
+  /** slugy rubrik aktualit bez jediného zveřejněného příspěvku (aktuality, nebo akce zobrazené i v aktualitách) —
+   * počítá se hlavní i další rubrika a rubrika s obsahem jen v podrubrice prázdná není */
   async prazdneKategorie(): Promise<Set<string>> {
-    const radky = await this.db
-      .selectFrom('web_kategorie as k')
-      .leftJoin('web_obsah as o', (join) =>
-        join
-          .onRef('o.kategorie_id', '=', 'k.id')
-          .on('o.stav', '=', 'zverejneno')
-          .on('o.smazano_at', 'is', null)
-          .on((eb) =>
-            eb.or([
-              eb('o.typ', '=', 'aktualita'),
-              eb.and([eb('o.typ', '=', 'akce'), eb('o.v_aktualitach', '=', true)]),
-            ]),
-          ),
-      )
-      .select(['k.slug'])
-      .select((eb) => eb.fn.count<number>('o.id').as('n'))
-      .groupBy('k.slug')
-      .execute();
-    return new Set(radky.filter((r) => Number(r.n) === 0).map((r) => r.slug));
+    const [vse, radky] = await Promise.all([
+      this.kategorie(),
+      this.db
+        .selectFrom('web_obsah as o')
+        .select(['o.kategorie_id', 'o.kategorie_dalsi'])
+        .where('o.stav', '=', 'zverejneno')
+        .where('o.smazano_at', 'is', null)
+        .where((eb) =>
+          eb.or([
+            eb('o.typ', '=', 'aktualita'),
+            eb.and([eb('o.typ', '=', 'akce'), eb('o.v_aktualitach', '=', true)]),
+          ]),
+        )
+        .where((eb) =>
+          eb.or([eb('o.kategorie_id', 'is not', null), sql<boolean>`cardinality(o.kategorie_dalsi) > 0`]),
+        )
+        .execute(),
+    ]);
+    const pouzite = sNadrazenymi(
+      vse,
+      radky.flatMap((r) => [
+        ...(r.kategorie_id !== null ? [r.kategorie_id] : []),
+        ...(r.kategorie_dalsi ?? []),
+      ]),
+    );
+    return new Set(vse.filter((k) => !pouzite.has(k.id)).map((k) => k.slug));
   }
 
   /** rubriky pro veřejný filtr: jen ty, ve kterých něco je (prázdné rubriky se návštěvníkům nenabízejí) */

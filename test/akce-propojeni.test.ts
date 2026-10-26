@@ -79,7 +79,16 @@ describe('podobnost názvů a shoda termínů', () => {
     expect(s('//zlo.example')).toThrow();
     expect(s('javascript:alert(1)')).toThrow();
     expect(s('http://example.cz')).toThrow();
-    expect(obecZObjektu(zaklad).web).toEqual({ akce_koncepty: true, stat_zpravy_kategorie: '' });
+    expect(obecZObjektu(zaklad).web).toEqual({
+      akce_koncepty: true,
+      stat_zpravy_kategorie: '',
+      rychle_odkazy: [],
+    });
+    const dlazdice = (odkaz: string) => () =>
+      obecZObjektu({ ...zaklad, web: { rychle_odkazy: [{ nazev: 'Knihovna', odkaz }] } });
+    expect(dlazdice('/sluzby-obec/obecni-knihovna')).not.toThrow();
+    expect(dlazdice('//zlo.example')).toThrow();
+    expect(dlazdice('javascript:alert(1)')).toThrow();
   });
 });
 

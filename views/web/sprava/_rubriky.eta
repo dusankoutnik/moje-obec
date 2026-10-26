@@ -1,0 +1,12 @@
+<% var f = it.f; var odsad = function (k) { return '  '.repeat(k.uroven || 0); }; %>
+<label for="kategorie_id"><%= it.t('web.kategorie') %></label>
+<select id="kategorie_id" name="kategorie_id"><option value=""><%= it.t('web.bez_kategorie') %></option>
+  <% it.kategorie.forEach(function (k) { %><option value="<%= k.id %>" <%= f.kategorie_id === k.id ? 'selected' : '' %>><%= odsad(k) %><%= k.nazev %></option><% }) %>
+</select>
+<input type="hidden" name="kategorie_dalsi_pole" value="1">
+<% var dalsi = f.kategorie_dalsi || []; %>
+<details class="dalsi-rubriky" <%= dalsi.length ? 'open' : '' %>>
+  <summary><%= it.t('web.dalsi_kategorie') %><% if (dalsi.length) { %> (<%= dalsi.length %>)<% } %></summary>
+  <p class="napoveda"><%= it.t('web.dalsi_kategorie_napoveda') %></p>
+  <% it.kategorie.forEach(function (k) { %><label class="zatrzitko" style="--uroven:<%= k.uroven || 0 %>"><input type="checkbox" name="kategorie_dalsi" value="<%= k.id %>" <%= dalsi.indexOf(k.id) >= 0 ? 'checked' : '' %>> <%= k.nazev %></label><% }) %>
+</details>

@@ -142,7 +142,7 @@ export const ObecSchema = z.object({
         .array(
           z.object({
             nazev: z.string().min(1).max(40),
-            odkaz: z.string().regex(/^(\/|https:\/\/)/),
+            odkaz: z.string().regex(/^(\/(?![/\\])|https:\/\/)/),
             ikona: z.string().max(8).default('🔗'),
           }),
         )

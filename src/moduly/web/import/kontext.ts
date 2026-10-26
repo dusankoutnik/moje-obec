@@ -25,6 +25,12 @@ export interface VolbyImportu {
   /** mapování kategorie zdroje → slug kategorie aktualit platformy */
   kategorieAktualit?: Record<string, string>;
   /**
+   * převést rubriky zdroje 1:1 (i se zanořením): chybějící rubriky založit, článek dostane hlavní rubriku
+   * (nejkonkrétnější) a další rubriky; už importované články se přeřadí (ručně upravené jen doplní o další).
+   * `kategorieAktualit` tu slouží jako výjimky (rubrika zdroje → existující/jiný slug).
+   */
+  rubrikyZeZdroje?: boolean;
+  /**
    * Archiv starého webu (např. z Wayback Machine): staré adresy nepatří nové doméně → bez přesměrování,
    * odkazy na neimportované stránky a nedostupné soubory zůstanou jen jako text.
    */
@@ -58,6 +64,8 @@ export interface VysledekImportu {
   souboru: number;
   presmerovani: number;
   preskoceno: number;
+  /** už importované aktuality přeřazené do rubrik (převod rubrik 1:1) */
+  prerazeno: number;
   /** nově založená videa (z YouTube/Vimea i vlastních souborů v obsahu) */
   videa: number;
   /** aktuality přeskočené jako duplicita: „titulek (datum) = existující“ */
@@ -78,11 +86,14 @@ export class ImportKontext {
     souboru: 0,
     presmerovani: 0,
     preskoceno: 0,
+    prerazeno: 0,
     videa: 0,
     duplicity: [],
     chyby: [],
   };
   zname: { titulek: string; datum: Date; popis: string; text: string }[] | null = null;
+  /** převod rubrik 1:1: slug rubriky zdroje → id rubriky webu */
+  rubriky: Map<string, number> | null = null;
 
   constructor(
     readonly zdroj: ImportniZdroj,

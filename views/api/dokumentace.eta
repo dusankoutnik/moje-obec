@@ -44,6 +44,7 @@
     <tr><td><code>perex</code></td><td>krátký úvod (do 600 znaků)</td></tr>
     <tr><td><code>html</code> / <code>markdown</code></td><td>text; HTML se pročistí (povolené značky jako v editoru), Markdown se převede</td></tr>
     <tr><td><code>kategorie</code></td><td>slug nebo id kategorie (<code>GET /api/v1/kategorie</code>)</td></tr>
+    <tr><td><code>dalsi_kategorie</code></td><td>další kategorie (pole nebo čárkami oddělené slugy/id); prázdné je zruší</td></tr>
     <tr><td><code>datum</code></td><td>aktualita: datum zveřejnění zprávy (výchozí teď)</td></tr>
     <tr><td><code>akce_od</code>, <code>akce_do</code>, <code>akce_cely_den</code>, <code>misto</code></td><td>akce: termín a místo (jen datum = celý den)</td></tr>
     <tr><td><code>v_aktualitach</code></td><td>akce se ukáže i v Aktualitách jako pozvánka</td></tr>

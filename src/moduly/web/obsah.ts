@@ -119,6 +119,19 @@ export class ObsahSluzba extends ObsahCteni {
       )
     )
       p.kategorie_id = null;
+    // další rubriky: jen existující, bez hlavní a bez opakování; bez hlavní se první z dalších stane hlavní
+    const dalsi = [
+      ...new Set((Array.isArray(p.kategorie_dalsi) ? p.kategorie_dalsi : []).map(Number)),
+    ].filter((id) => Number.isSafeInteger(id) && id > 0 && id !== p.kategorie_id);
+    const existujici = dalsi.length
+      ? new Set(
+          (await db.selectFrom('web_kategorie').select('id').where('id', 'in', dalsi).execute()).map(
+            (k) => k.id,
+          ),
+        )
+      : new Set<number>();
+    p.kategorie_dalsi = dalsi.filter((id) => existujici.has(id));
+    if (p.kategorie_id === null && p.kategorie_dalsi.length) p.kategorie_id = p.kategorie_dalsi.shift()!;
     // koncept, který ještě nikdy nebyl na webu: automatická adresa jde s titulkem (jinak by zůstala
     // „bez-nazvu“ z prvního automatického uložení prázdného formuláře)
     const automaticka =

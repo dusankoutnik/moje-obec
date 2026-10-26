@@ -9,6 +9,7 @@ import type {
   ImportDotace,
   ImportMenu,
   ImportniZdroj,
+  ImportRubrika,
   ImportStranka,
   Stahovac,
 } from './typy.js';
@@ -33,10 +34,16 @@ interface WpKategorie {
   name: string;
   parent: number;
   link: string;
+  count?: number;
 }
 
 export interface VolbyWordpress {
   zaklad: string;
+  /**
+   * původní adresa webu, když se čte z jeho kopie (např. archivu na jiné doméně): odkazy, média i původní
+   * adresy článků se přepíšou na ni, takže sedí přesměrování i už importovaný obsah
+   */
+  puvodni?: string;
   stahovac: Stahovac;
   /** slug kategorie příspěvků, které tvoří úřední desku */
   kategorieDesky?: string;
@@ -52,9 +59,21 @@ export class WordpressZdroj implements ImportniZdroj {
   private api: string;
   private kat: WpKategorie[] | null = null;
 
+  private cteni: string;
+
   constructor(private v: VolbyWordpress) {
-    this.zaklad = v.zaklad.replace(/\/$/, '');
-    this.api = `${this.zaklad}/wp-json/wp/v2`;
+    this.cteni = v.zaklad.replace(/\/$/, '');
+    this.zaklad = (v.puvodni ?? v.zaklad).replace(/\/$/, '');
+    this.api = `${this.cteni}/wp-json/wp/v2`;
+  }
+
+  /** položka z kopie webu → jako z původního webu (všechny adresy kopie přepsat na původní) */
+  private puvodni<T>(x: T): T {
+    if (this.cteni === this.zaklad) return x;
+    const kopie = new URL(this.cteni).host;
+    const cil = new URL(this.zaklad);
+    const vzor = new RegExp(`https?://${kopie.replace(/[.]/g, '\\.')}`, 'g');
+    return JSON.parse(JSON.stringify(x).replace(vzor, cil.origin)) as T;
   }
 
   private async *strankovane<T>(cesta: string): AsyncIterable<T> {
@@ -63,7 +82,7 @@ export class WordpressZdroj implements ImportniZdroj {
       const { data, hlavicky } = await this.v.stahovac.json<T[]>(
         `${this.api}/${cesta}${oddel}per_page=100&page=${strana}`,
       );
-      for (const x of data) yield x;
+      for (const x of data) yield this.puvodni(x);
       const celkem = Number(hlavicky.get('x-wp-totalpages') ?? '1');
       if (strana >= celkem || !data.length) return;
     }
@@ -72,7 +91,9 @@ export class WordpressZdroj implements ImportniZdroj {
   async kategorie(): Promise<WpKategorie[]> {
     if (!this.kat) {
       this.kat = [];
-      for await (const k of this.strankovane<WpKategorie>('categories?_fields=id,slug,name,parent,link'))
+      for await (const k of this.strankovane<WpKategorie>(
+        'categories?_fields=id,slug,name,parent,link,count',
+      ))
         this.kat.push(k);
     }
     return this.kat;
@@ -120,6 +141,7 @@ export class WordpressZdroj implements ImportniZdroj {
           .trim(),
         datum: new Date(p.date_gmt ? p.date_gmt + 'Z' : p.date),
         kategorie: slugy[0] ?? null,
+        kategorieVse: this.odNejkonkretnejsi(p.categories ?? [], kat),
         obrazekUrl: media?.source_url ?? null,
         obrazekAlt: media?.alt_text ?? null,
       };
@@ -150,12 +172,55 @@ export class WordpressZdroj implements ImportniZdroj {
   }
 
   async menu(): Promise<ImportMenu[]> {
-    const html = await this.v.stahovac.text(this.zaklad + '/');
+    const html = this.puvodni(await this.v.stahovac.text(this.cteni + '/'));
     return parsujMenu(html, this.v.menuTrida, this.zaklad);
   }
 
   async dotace(): Promise<ImportDotace[]> {
     return this.v.dotace ?? [];
+  }
+
+  /** slugy rubrik příspěvku: nejhlubší (nejkonkrétnější) první, jinak v pořadí zdroje */
+  private odNejkonkretnejsi(ids: number[], kat: WpKategorie[]): string[] {
+    const hloubka = (id: number) => {
+      let n = 0;
+      for (let k = kat.find((x) => x.id === id); k && k.parent && n < 20; n++)
+        k = kat.find((x) => x.id === k!.parent);
+      return n;
+    };
+    return ids
+      .map((id, i) => ({ id, i, h: hloubka(id) }))
+      .sort((a, b) => b.h - a.h || a.i - b.i)
+      .map((x) => kat.find((k) => k.id === x.id)?.slug)
+      .filter((s): s is string => !!s);
+  }
+
+  /** rubriky aktualit: bez rubrik úřední desky a bez prázdných větví */
+  async rubriky(): Promise<ImportRubrika[]> {
+    const deska = await this.idDesky();
+    const kat = await this.kategorie();
+    const vDesce = (k: WpKategorie) => {
+      for (let x: WpKategorie | undefined = k, n = 0; x && n < 20; n++) {
+        if (x.id === deska) return true;
+        x = x.parent ? kat.find((y) => y.id === x!.parent) : undefined;
+      }
+      return false;
+    };
+    const neprazdna = new Set<number>();
+    for (const k of kat)
+      if ((k.count ?? 1) > 0)
+        for (let x: WpKategorie | undefined = k, n = 0; x && n < 20; n++) {
+          neprazdna.add(x.id);
+          x = x.parent ? kat.find((y) => y.id === x!.parent) : undefined;
+        }
+    return kat
+      .filter((k) => !vDesce(k) && neprazdna.has(k.id))
+      .map((k) => ({
+        slug: k.slug,
+        nazev: dekodujEntity(k.name),
+        rodic: k.parent ? (kat.find((x) => x.id === k.parent)?.slug ?? null) : null,
+        url: k.link,
+      }));
   }
 
   /** stránky kategorií a archivy: kategorie desky → úřední deska, ostatní → aktuality */

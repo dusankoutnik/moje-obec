@@ -29,6 +29,8 @@ export interface ImportClanek {
   datum: Date;
   /** neutrální název kategorie (importér ji namapuje na kategorii webu) */
   kategorie?: string | null;
+  /** všechny rubriky zdroje (slugy), nejkonkrétnější první — pro převod rubrik 1:1 */
+  kategorieVse?: string[];
   obrazekUrl?: string | null;
   obrazekAlt?: string | null;
 }
@@ -90,6 +92,17 @@ export interface ImportniZdroj {
   dotace?(): Promise<ImportDotace[]>;
   /** speciální přesměrování (např. stránky kategorií) — stará cesta → nová */
   presmerovani?(): Promise<Record<string, string>>;
+  /** rubriky aktualit zdroje (bez rubrik úřední desky) — pro převod rubrik 1:1 */
+  rubriky?(): Promise<ImportRubrika[]>;
+}
+
+export interface ImportRubrika {
+  slug: string;
+  nazev: string;
+  /** slug nadřazené rubriky */
+  rodic: string | null;
+  /** adresa stránky rubriky na starém webu */
+  url: string;
 }
 
 /** stahování přes HTTP (zdvořile, s limitem); v testech se podstrčí falešné */
