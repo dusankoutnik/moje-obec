@@ -1,3 +1,4 @@
+import { readdirSync } from 'node:fs';
 // Stránka Role a Systém (26. 10. 2026): matice oprávnění proti skutečné ochraně rout, historie změn rolí, poslední
 // aktivita a spící účty, e-mail při udělení silné role, přihlášená zařízení s odhlášením na dálku, stav systému
 // a dočasné role.
@@ -384,7 +385,12 @@ describe('stav systému', () => {
     const predMail = t.mail.odeslane.length;
     const s = await admin.get('/sprava/system');
     expect(s.res.status).toBe(200);
-    expect(s.text).toContain('0025_role_platnost_sezeni');
+    const posledniMigrace = readdirSync('src/db/migrations')
+      .filter((f) => /^\d{4}_.*\.ts$/.test(f))
+      .sort()
+      .at(-1)!
+      .replace(/\.ts$/, '');
+    expect(s.text).toContain(posledniMigrace);
     expect(s.text).toContain('Automatické zálohy nejsou nastavené');
     expect(s.text).toContain('Hlídání GSM brány');
     expect(t.sms.odeslane.length).toBe(predSms);
