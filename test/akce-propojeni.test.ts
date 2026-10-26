@@ -156,6 +156,16 @@ describe('synchronizace a správa akcí z rezervací', () => {
     expect((await red.get('/sprava')).text).toContain('Akcí ke zpracování: 2');
   });
 
+  it('přejmenování v rezervacích → nedotčený koncept převezme nový název', async () => {
+    polozky = polozky.map((p) => (p.id === 'r10' ? { ...p, nazev: 'Adventní koncert' } : p));
+    await t.app.web.propojeni.synchronizuj();
+    expect((await akceRef('r10'))?.titulek).toBe('Adventní koncert');
+    expect((await red.get('/sprava/web/akce/zpracovani')).text).toContain('Adventní koncert');
+    polozky = polozky.map((p) => (p.id === 'r10' ? { ...p, nazev: 'Podzimní koncert' } : p));
+    await t.app.web.propojeni.synchronizuj();
+    expect((await akceRef('r10'))?.titulek).toBe('Podzimní koncert');
+  });
+
   it('nedostupné rezervace = žádné koncepty ani „zrušené“', async () => {
     dostupny = false;
     polozky = [...polozky, pol({ id: 'r99', nazev: 'Nedostupná', datum: den(4) })];

@@ -182,8 +182,17 @@ export class AkcePropojeniSluzba {
     const podleRef = new Map(akce.map((e) => [e.ref, e]));
     for (const o of propojene) {
       const e = podleRef.get(o.rezervace_ref!);
-      if (!e || !this.jeKonceptSynchronizace(o) || podpisTerminu(e) === o.rezervace_termin) continue;
-      await this.nastavTermin(o, e, null, 'web.akce_termin_sync');
+      if (!e || !this.jeKonceptSynchronizace(o)) continue;
+      // přejmenování v rezervacích: koncept, na který redaktor ještě nesáhl, převezme nový název
+      const nazev = e.titulek.slice(0, 250) || '—';
+      if (!o.upravil_id && !o.koncept && o.titulek !== nazev) {
+        await this.obsah.uloz(o.id, 'akce', { ...poleZRadku(o), titulek: nazev }, 'koncept', null, null, {
+          zdroj: 'rezervace',
+        });
+        o.titulek = nazev;
+      }
+      if (podpisTerminu(e) !== o.rezervace_termin)
+        await this.nastavTermin(o, e, null, 'web.akce_termin_sync');
     }
     let zalozeno = 0;
     if (!this.volby().koncepty) return { zalozeno };
