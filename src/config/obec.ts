@@ -198,7 +198,7 @@ export const ObecSchema = z.object({
     .prefault({}),
   texty: z
     .object({
-      nazev_infokanalu: z.string().default('Infokanál'),
+      nazev_infokanalu: z.string().default('Hlášení obce'),
       sms_prefix: z.string().default(''),
     })
     .prefault({}),

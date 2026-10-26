@@ -132,7 +132,7 @@ pocasi:
 #     obec: ''
 
 texty:
-  nazev_infokanalu: Infokanál
+  nazev_infokanalu: Hlášení obce
   sms_prefix: 'PRIKLADOV: '
 
 # Prohlášení o přístupnosti (zák. 99/2019 Sb.): stav souladu plne / castecne / ne, data posouzení (RRRR-MM-DD)

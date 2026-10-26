@@ -14,6 +14,7 @@ import { PrichoziSluzba } from './prichozi.js';
 import { HlidaniBrany } from './brana.js';
 import { SmsGate } from '../../lib/sms/smsgate.js';
 import { mapaPresmerovani } from '../../lib/sms/presmerovani.js';
+import { nazevInfokanalu } from './nazev.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -39,8 +40,11 @@ async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }
       emailIntervalMs: app.env.IK_EMAIL_INTERVAL_MS,
       baseUrl: app.env.BASE_URL,
       smsPrefix: app.obec.texty.sms_prefix,
-      nazevKanalu: app.obec.texty.nazev_infokanalu,
+      get nazevKanalu() {
+        return nazevInfokanalu(app);
+      },
       nazevObce: app.obec.obec.nazev,
+      cestaSouboru: (id) => app.soubory.cesta(id),
     },
     app.log,
   );
@@ -76,7 +80,9 @@ async function infokanalModul(app: FastifyInstance, volby: { planovac: boolean }
       odvozUrl,
       odvozHlavicky,
       notify: seznam(app.env.INFOKANAL_NOTIFY),
-      nazevKanalu: app.obec.texty.nazev_infokanalu,
+      get nazevKanalu() {
+        return nazevInfokanalu(app);
+      },
     },
     app.log,
   );

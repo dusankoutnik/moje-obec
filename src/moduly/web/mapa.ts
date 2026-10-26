@@ -3,6 +3,7 @@
 import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import { DOPLNKY } from './doplnky.js';
+import { nazevInfokanalu } from '../infokanal/nazev.js';
 
 export interface UzelMapy {
   titulek: string;
@@ -159,7 +160,7 @@ async function webMapa(app: FastifyInstance) {
             { titulek: t('pi.titulek'), url: '/povinne-informace' },
           ]
         : []),
-      ...(m.infokanal ? [{ titulek: app.obec.texty.nazev_infokanalu, url: '/infokanal' }] : []),
+      ...(m.infokanal ? [{ titulek: nazevInfokanalu(app), url: '/infokanal' }] : []),
       ...(m.podatelna ? [{ titulek: t('podatelna.titulek'), url: '/podatelna' }] : []),
       ...(m.kviz ? [{ titulek: t('kviz.titulek'), url: '/kviz' }] : []),
       ...(m.ucty ? [{ titulek: t('staticke.mapa_ucet'), url: '/ucet' }] : []),

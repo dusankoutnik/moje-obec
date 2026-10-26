@@ -7,7 +7,7 @@
   <% if (!it.pocasi.vystrahy.length) { %><p class="prazdne"><%= it.t('pocasi.zadne_vystrahy') %></p><% } else { %>
   <% it.pocasi.vystrahy.forEach(function (v) { %><%~ include('/pocasi/_vystraha', Object.assign({}, it, { v: v })) %><% }) %>
   <% } %>
-  <% if (it.obec.moduly.infokanal) { %><p><a href="/infokanal/vystrahy"><%= it.t('pocasi.vystrahy_odkaz') %> ›</a></p><% } %>
+  <% if (it.obec.moduly.infokanal) { %><p><a href="/infokanal/vystrahy"><%= it.t('pocasi.vystrahy_odkaz', { kanal: it.obec.texty.nazev_infokanalu }) %> ›</a></p><% } %>
 </section>
 
 <% if (!s.ted) { %>

@@ -1,6 +1,6 @@
 <% layout('/layout') %>
 <h1><%= it.t('vystrahy.titulek') %></h1>
-<p><%= it.t('vystrahy.uvod') %></p>
+<p><%= it.t('vystrahy.uvod', { kanal: it.obec.texty.nazev_infokanalu }) %></p>
 <% if (!it.vystrahy.length) { %>
 <p class="prazdne"><%= it.t('vystrahy.zadne') %></p>
 <% } else { %>
@@ -16,4 +16,4 @@
 <% }) %>
 </ul>
 <% } %>
-<p><a href="/infokanal"><%= it.t('vystrahy.odber') %></a></p>
+<p><a href="/infokanal"><%= it.t('vystrahy.odber', { kanal: it.obec.texty.nazev_infokanalu }) %></a></p>

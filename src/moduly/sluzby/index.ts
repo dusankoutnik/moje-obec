@@ -7,6 +7,7 @@ import { vyzadujRoli } from '../ucty/opravneni.js';
 import { zaregistrujHlavicku } from './hlavicka.js';
 import { prihlasenyZeSezeni, zaregistrujProxy } from './proxy.js';
 import { KLICE_MODULU, MODULY, ModulySluzba, podCestou, type KlicModulu, type StavModulu } from './sluzba.js';
+import { nazevInfokanalu } from '../infokanal/nazev.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -22,7 +23,7 @@ const VYJIMKY: Partial<Record<KlicModulu, string[]>> = {
 };
 
 export function nazevModulu(app: FastifyInstance, klic: KlicModulu): string {
-  if (klic === 'infokanal') return app.obec.texty.nazev_infokanalu;
+  if (klic === 'infokanal') return nazevInfokanalu(app);
   return app.t(`moduly_obce.nazev_${klic}`);
 }
 
