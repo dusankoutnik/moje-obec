@@ -11,19 +11,21 @@ docker exec -e IMPORT_KONTAKT=email@obce.cz platforma \
   node dist/scripts/import.js wordpress https://www.obec.cz --rubriky-ze-zdroje --limit-mb 20000
 ```
 
-| Volba                                       | Význam                                                                            |
-| ------------------------------------------- | --------------------------------------------------------------------------------- |
-| `--aktuality-od 2024-10-01`                 | aktuality od data (výchozí celá historie — web obce je i její kronika)            |
-| `--rubriky-ze-zdroje`                       | rubriky aktualit 1:1 i se zanořením; článek ve více rubrikách                     |
-| `--mapa-kategorii soubor.json`              | výjimky `{"rubrika-zdroje": "slug-webu"}` — napojení na existující rubriky        |
-| `--puvodni-url https://www.obec.cz`         | čte se z kopie webu (archiv na jiné doméně), adresy se ukládají jako z původního  |
-| `--deska-od 2020-01-01`                     | úřední deska od data (výchozí vše)                                                |
-| `--limit-mb 1800`                           | strop pro stažené soubory; nad ním se další soubory přeskočí (zapíše se do logu)  |
-| `--dotace soubor.json`                      | dotace k založení: `[{projekt, poskytovatel, text, odkaz, loga: [{url, alt}]}]`   |
-| `--jen stranky,aktuality,deska,menu,dotace` | jen vybrané části                                                                 |
-| `--kategorie-desky slug`                    | WordPress: kategorie příspěvků, které tvoří úřední desku (výchozí `uredni-deska`) |
-| `--max-stranek 300`                         | Galileo: kolik stálých stránek nejvýš projít                                      |
-| `--rozestup-ms 500`                         | rozestup požadavků (500 = 2/s; u cizích webů raději 1000)                         |
+| Volba                                       | Význam                                                                                  |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `--aktuality-od 2024-10-01`                 | aktuality od data (výchozí celá historie — web obce je i její kronika)                  |
+| `--rubriky-ze-zdroje`                       | rubriky aktualit 1:1 i se zanořením; článek ve více rubrikách                           |
+| `--mapa-kategorii soubor.json`              | výjimky `{"rubrika-zdroje": "slug-webu"}` — napojení na existující rubriky              |
+| `--puvodni-url https://www.obec.cz`         | čte se z kopie webu (archiv na jiné doméně), adresy se ukládají jako z původního        |
+| `--prepsat`                                 | už importované aktuality a stránky načíst znovu (ručně upravené aktuality se nepřepíší) |
+| `--jen-adresy soubor.txt`                   | jen aktuality s těmito původními adresami (řádek = adresa), např. po dohledání souborů  |
+| `--deska-od 2020-01-01`                     | úřední deska od data (výchozí vše)                                                      |
+| `--limit-mb 1800`                           | strop pro stažené soubory; nad ním se další soubory přeskočí (zapíše se do logu)        |
+| `--dotace soubor.json`                      | dotace k založení: `[{projekt, poskytovatel, text, odkaz, loga: [{url, alt}]}]`         |
+| `--jen stranky,aktuality,deska,menu,dotace` | jen vybrané části                                                                       |
+| `--kategorie-desky slug`                    | WordPress: kategorie příspěvků, které tvoří úřední desku (výchozí `uredni-deska`)       |
+| `--max-stranek 300`                         | Galileo: kolik stálých stránek nejvýš projít                                            |
+| `--rozestup-ms 500`                         | rozestup požadavků (500 = 2/s; u cizích webů raději 1000)                               |
 
 Import je **idempotentní** (podle původní URL) — přerušený nebo opakovaný běh nic nezdvojí. Menu se při každém
 běhu postaví znovu (staré importované odkazy jdou do koše).

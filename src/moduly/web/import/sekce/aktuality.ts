@@ -65,6 +65,7 @@ export async function importujAktuality(ctx: ImportKontext) {
     (await ctx.s.db.selectFrom('web_kategorie').select(['id', 'slug']).execute()).map((k) => [k.slug, k.id]),
   );
   for await (const a of ctx.zdroj.aktuality(ctx.v.aktualityOd)) {
+    if (ctx.v.jenAdresy && !ctx.v.jenAdresy.has(a.url)) continue;
     const p = SCHEMA_CLANKU.safeParse(a);
     if (!p.success) {
       ctx.chyba(`aktualita ${String(a?.url ?? '?')}`, chybaSchematu(p.error));
@@ -91,16 +92,36 @@ async function importujAktualitu(ctx: ImportKontext, a: ImportClanek, kategorie:
     ctx.vysledek.preskoceno++;
     return;
   }
-  const { html } = await ctx.prepisHtml(a.html, a.titulek, a.url);
   if (existujici) {
+    // co redaktor ve správě upravil, import nepřepisuje
+    const o = await ctx.s.db
+      .selectFrom('web_obsah')
+      .select(['upravil_id', 'obrazek_id'])
+      .where('id', '=', existujici)
+      .executeTakeFirstOrThrow();
+    if (o.upravil_id) {
+      ctx.log(`ručně upraveno, nepřepisuji: ${a.titulek}`);
+      ctx.vysledek.preskoceno++;
+      return;
+    }
+    const { html } = await ctx.prepisHtml(a.html, a.titulek, a.url);
+    let obrazekId = o.obrazek_id;
+    if (!obrazekId && a.obrazekUrl) {
+      const abs = absolutni(a.obrazekUrl, ctx.zdroj.zaklad);
+      if (abs) {
+        const nazev = dekodujBezpecne(new URL(abs).pathname.split('/').pop() ?? '');
+        obrazekId = (await ctx.soubor(abs, 'obrazek', altZeZdroje(a.obrazekAlt, nazev)))?.id ?? null;
+      }
+    }
     await ctx.s.db
       .updateTable('web_obsah')
-      .set({ obsah_html: html, upraveno_at: new Date() })
+      .set({ obsah_html: html, obrazek_id: obrazekId, upraveno_at: new Date() })
       .where('id', '=', existujici)
       .execute();
     ctx.vysledek.aktuality++;
     return;
   }
+  const { html } = await ctx.prepisHtml(a.html, a.titulek, a.url);
   // média se stahují mimo transakci (soubor bez článku nevadí — příště se použije znovu podle adresy)
   let obrazekId: string | null = null;
   if (a.obrazekUrl) {

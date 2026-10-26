@@ -22,6 +22,8 @@ export interface VolbyImportu {
   dotace?: boolean;
   /** už importované stránky a aktuality znovu načíst a přepsat obsahem ze zdroje (po vylepšení adaptéru) */
   prepsat?: boolean;
+  /** jen aktuality s těmito původními adresami (např. doplnění souborů dohledaných v archivu) */
+  jenAdresy?: Set<string>;
   /** mapování kategorie zdroje → slug kategorie aktualit platformy */
   kategorieAktualit?: Record<string, string>;
   /**

@@ -243,6 +243,14 @@ const importer = new Importer(
     kategorieAktualit: kategorie,
     rubrikyZeZdroje,
     prepsat: arg.includes('--prepsat'),
+    jenAdresy: volba('jen-adresy')
+      ? new Set(
+          readFileSync(volba('jen-adresy')!, 'utf8')
+            .split('\n')
+            .map((r) => r.trim())
+            .filter(Boolean),
+        )
+      : undefined,
     archiv: !!archiv,
     kontrolaDuplicit: !!archiv || arg.includes('--kontrola-duplicit'),
     znameClanky: zname,

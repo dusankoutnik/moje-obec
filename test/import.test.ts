@@ -646,6 +646,63 @@ describe('rubriky 1:1 (vnořené, článek ve více rubrikách)', () => {
     expect(await imp().spust()).toMatchObject({ aktuality: 0, prerazeno: 0 });
   });
 
+  it('přepis jen vybraných adres; ručně upravený článek zůstane', async () => {
+    const svoz = await t.db
+      .selectFrom('web_obsah')
+      .select(['id'])
+      .where('titulek', '=', 'Svoz odpadu')
+      .executeTakeFirstOrThrow();
+    const admin = await t.db
+      .insertInto('uzivatele')
+      .values({ telefon: '+420777000555', jmeno: 'Redaktor' })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    await t.db
+      .updateTable('web_obsah')
+      .set({ obsah_html: '<p>Upraveno redaktorem</p>', upravil_id: admin.id })
+      .where('id', '=', svoz.id)
+      .execute();
+    await t.db
+      .updateTable('web_obsah')
+      .set({ obsah_html: '<p>staré</p>' })
+      .where('titulek', '=', 'Noc s Andersenem')
+      .execute();
+    const prepis = (adresy: string[]) =>
+      new Importer(
+        zdroj2,
+        {
+          db: t.db,
+          obsah: t.app.web.obsah,
+          soubory: t.app.soubory,
+          presmerovani: t.app.web.presmerovani,
+          dotace: t.app.web.dotace,
+          deska: t.app.deska,
+        },
+        stahovac,
+        {
+          aktualityOd: new Date('1990-01-01'),
+          prepsat: true,
+          jenAdresy: new Set(adresy),
+          stranky: false,
+          deska: false,
+          menu: false,
+          dotace: false,
+        },
+      ).spust();
+    expect(await prepis([`${Z}/2013/03/noc-s-andersenem/`])).toMatchObject({ aktuality: 1, preskoceno: 0 });
+    expect(await prepis([`${Z}/2025/03/svoz/`])).toMatchObject({ aktuality: 0, preskoceno: 1 });
+    const html = async (titulek: string) =>
+      (
+        await t.db
+          .selectFrom('web_obsah')
+          .select('obsah_html')
+          .where('titulek', '=', titulek)
+          .executeTakeFirstOrThrow()
+      ).obsah_html;
+    expect(await html('Noc s Andersenem')).toContain('Čtení v knihovně');
+    expect(await html('Svoz odpadu')).toBe('<p>Upraveno redaktorem</p>');
+  });
+
   it('WordPress z kopie webu: adresy se přepíšou na původní web', async () => {
     const { WordpressZdroj } = await import('../src/moduly/web/import/wordpress.js');
     const kopie = 'https://archiv.stara-obec.cz';
