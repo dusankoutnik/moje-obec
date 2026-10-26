@@ -1,9 +1,10 @@
 // Služba účtů: hledání/zakládání podle telefonu, role, souhlas, profil. Vše, co s účty dělají routy i OIDC.
+import { createHash } from 'node:crypto';
 import { sql } from 'kysely';
 import type { Db } from '../../db/index.js';
 import type { Role, Uzivatel } from '../../db/types.js';
 import { ROLE } from '../../db/types.js';
-import { CHRANENE_ROLE, efektivniRole, roleProAplikace } from './role.js';
+import { CHRANENE_ROLE, efektivniRole, ROLE_JEN_SUPERADMIN, roleProAplikace } from './role.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { hashujHeslo, overHeslo, overHesloNaprazdno, potrebujeRehash } from '../../lib/krypto.js';
 import {
@@ -17,6 +18,11 @@ import {
 } from '../../lib/zamky.js';
 
 export { ROLE };
+
+/** veřejný otisk identifikátoru sezení (sid se do stránek nikdy nevypisuje) */
+export function otiskSezeni(sid: string): string {
+  return createHash('sha256').update(sid).digest('hex').slice(0, 16);
+}
 
 // Oprávnění: role zahrnují práva jiných rolí podle src/moduly/ucty/role.ts (provozovatel ⊃ admin ⊃ všechny
 // ostatní kromě provozovatele; správce obce ⊃ web, deska, redaktor). Ostatní role jsou přesné.
@@ -74,7 +80,22 @@ export function profilUzivatele(u: Uzivatel) {
   };
 }
 
+/** role, jejíž přidělení se hlásí ostatním administrátorům e-mailem */
+export const SILNE_ROLE: readonly Role[] = ['admin', 'provozovatel'];
+
+export interface UdeleniSilneRole {
+  cilId: string;
+  aktor: Uzivatel;
+  role: Role[];
+  /** role → do kdy (null = trvale) */
+  platnost: Map<Role, Date | null>;
+  zdroj: string | null;
+}
+
 export class UctySluzba {
+  /** volá se po přidání role admin/provozovatel (nastavuje modul účtů — e-mail ostatním administrátorům) */
+  upozorniNaSilnouRoli?: (z: UdeleniSilneRole) => Promise<void>;
+
   constructor(private db: Db) {}
 
   podleId(id: string) {
@@ -366,14 +387,65 @@ export class UctySluzba {
     return Number(r.numDeletedRows ?? 0);
   }
 
+  /**
+   * Aktivní sezení (přihlášená zařízení) účtu, nejnověji aktivní první. Identifikátor sezení (sid) je tajný jako
+   * heslo — ven jde jen jeho otisk `id` (SHA-256, 16 znaků), podle kterého se dá sezení odhlásit.
+   */
+  async sezeniUctu(uzivatelId: string, aktualniSid?: string | null) {
+    const r = await this.db
+      .selectFrom('sezeni')
+      .select(['sid', 'vytvoreno_at', 'aktivita_at', 'prohlizec', 'expires_at'])
+      .where((eb) => eb(eb.ref('data', '->>').key('uzivatelId'), '=', uzivatelId))
+      .where('expires_at', '>', new Date())
+      .execute();
+    return r
+      .map((x) => ({
+        id: otiskSezeni(x.sid),
+        vytvoreno_at: x.vytvoreno_at,
+        aktivita_at: x.aktivita_at ?? x.vytvoreno_at,
+        prohlizec: x.prohlizec,
+        plati_do: x.expires_at,
+        aktualni: !!aktualniSid && x.sid === aktualniSid,
+      }))
+      .sort((a, b) => b.aktivita_at.getTime() - a.aktivita_at.getTime());
+  }
+
+  /**
+   * Odhlášení na dálku: jedno sezení (podle otisku) nebo všechna. Vždy se ruší i sezení a tokeny účtu u OIDC
+   * providera — jinak by se zařízení přes „Přihlásit“ tiše přihlásilo zpět (provider si pamatuje přihlášení zvlášť).
+   * Vrací počet zrušených sezení platformy.
+   */
+  async odhlasSezeni(uzivatelId: string, otisk: string | null): Promise<number> {
+    if (otisk === null) return this.odhlasOstatni(uzivatelId, null);
+    const sezeni = await this.db
+      .selectFrom('sezeni')
+      .select('sid')
+      .where((eb) => eb(eb.ref('data', '->>').key('uzivatelId'), '=', uzivatelId))
+      .execute();
+    const cil = sezeni.find((x) => otiskSezeni(x.sid) === otisk);
+    if (!cil) return 0;
+    await this.db.deleteFrom('sezeni').where('sid', '=', cil.sid).execute();
+    await this.db
+      .deleteFrom('oidc_payloads')
+      .where((eb) => eb(eb.ref('payload', '->>').key('accountId'), '=', uzivatelId))
+      .execute();
+    return 1;
+  }
+
   // --- správa úřadem ---
-  /** nastaví role účtu (neznámé zahodí); kontrolu pravidel dělá volající přes kontrolaZmenyRoli */
+  /**
+   * Nastaví role účtu (neznámé zahodí); kontrolu pravidel dělá volající přes kontrolaZmenyRoli.
+   * `platnost`: role → do kdy platí (Date = dočasná, null = trvale); role, která v mapě není, si platnost nechá.
+   * Odebraná role ztrácí i svou platnost. Audit: sprava.role s rozdílem (pridano, odebrano) a změnami platnosti.
+   * Přidání role admin nebo provozovatel ohlásí ostatním administrátorům (upozorniNaSilnouRoli).
+   */
   async nastavRole(
     cilId: string,
     role: Role[],
     aktor: Uzivatel,
     ip?: string | null,
     detail: Record<string, unknown> = {},
+    platnost: Map<Role, Date | null> = new Map(),
   ) {
     const platne = [...new Set(role.filter((r): r is Role => (ROLE as readonly string[]).includes(r)))];
     const puvodni = await this.db
@@ -381,17 +453,82 @@ export class UctySluzba {
       .select('role')
       .where('id', '=', cilId)
       .executeTakeFirst();
-    await this.db
-      .updateTable('uzivatele')
-      .set({ role: platne, upraven_at: new Date() })
-      .where('id', '=', cilId)
-      .execute();
+    const puvodne = puvodni?.role ?? [];
+    const pridano = platne.filter((r) => !puvodne.includes(r));
+    const odebrano = puvodne.filter((r) => !platne.includes(r));
+    const zmenyPlatnosti: Record<string, string | null> = {};
+    await this.db.transaction().execute(async (tx) => {
+      await tx
+        .updateTable('uzivatele')
+        .set({ role: platne, upraven_at: new Date() })
+        .where('id', '=', cilId)
+        .execute();
+      if (odebrano.length)
+        await tx
+          .deleteFrom('role_platnost')
+          .where('uzivatel_id', '=', cilId)
+          .where('role', 'in', odebrano)
+          .execute();
+      const dosavadni = new Map(
+        (
+          await tx
+            .selectFrom('role_platnost')
+            .select(['role', 'plati_do'])
+            .where('uzivatel_id', '=', cilId)
+            .execute()
+        ).map((x) => [x.role, x.plati_do.getTime()]),
+      );
+      for (const [r, doKdy] of platnost) {
+        if (!platne.includes(r)) continue;
+        if (doKdy === null) {
+          if (!dosavadni.has(r)) continue;
+          await tx
+            .deleteFrom('role_platnost')
+            .where('uzivatel_id', '=', cilId)
+            .where('role', '=', r)
+            .execute();
+          zmenyPlatnosti[r] = null;
+        } else {
+          if (dosavadni.get(r) === doKdy.getTime()) continue;
+          await tx
+            .insertInto('role_platnost')
+            .values({ uzivatel_id: cilId, role: r, plati_do: doKdy, pridal_id: aktor.id })
+            .onConflict((oc) =>
+              oc.columns(['uzivatel_id', 'role']).doUpdateSet({ plati_do: doKdy, pridal_id: aktor.id }),
+            )
+            .execute();
+          zmenyPlatnosti[r] = doKdy.toISOString();
+        }
+      }
+    });
     await zapisAudit(this.db, {
       uzivatelId: aktor.id,
       akce: 'sprava.role',
-      detail: { cil: cilId, role: platne, puvodne: puvodni?.role ?? [], ...detail },
+      detail: {
+        cil: cilId,
+        role: platne,
+        puvodne,
+        ...detail,
+        pridano,
+        odebrano,
+        ...(Object.keys(zmenyPlatnosti).length ? { platnost: zmenyPlatnosti } : {}),
+      },
       ip,
     });
+    const silne = pridano.filter((r) => SILNE_ROLE.includes(r));
+    if (silne.length && this.upozorniNaSilnouRoli) {
+      try {
+        await this.upozorniNaSilnouRoli({
+          cilId,
+          aktor,
+          role: silne,
+          platnost: new Map(silne.map((r) => [r, platnost.get(r) ?? null])),
+          zdroj: typeof detail.zdroj === 'string' ? detail.zdroj : null,
+        });
+      } catch {
+        // upozornění nesmí shodit uložení role (chyby loguje samo upozornění)
+      }
+    }
   }
 
   /** počet neblokovaných účtů s rolí provozovatel (pojistka, aby instalace nezůstala bez provozovatele) */
@@ -407,8 +544,8 @@ export class UctySluzba {
 
   /**
    * Smí aktor změnit role cíle z jeho současných na `nove`? Vrací null (smí) nebo klíč chyby:
-   * jen administrátor přiděluje role; vlastní role mění jen provozovatel; roli provozovatel přidělí/odebere
-   * jen provozovatel; chráněný účet mění jen provozovatel; poslední provozovatel si roli neodebere.
+   * jen administrátor přiděluje role; vlastní role mění jen provozovatel; role admin a provozovatel přidělí/odebere
+   * jen provozovatel (Superadmin); chráněný účet mění jen provozovatel; poslední provozovatel si roli neodebere.
    */
   async kontrolaZmenyRoli(
     aktor: Uzivatel,
@@ -419,9 +556,11 @@ export class UctySluzba {
     const buh = maRoli(aktor, 'provozovatel');
     if (cil.id === aktor.id && !buh) return 'sam_sobe';
     if (jeChraneny(cil) && !buh) return 'chraneny';
+    // role Admin a Superadmin přiděluje a odebírá jen Superadmin (provozovatel)
+    if (!buh && ROLE_JEN_SUPERADMIN.some((r) => cil.role.includes(r) !== nove.includes(r)))
+      return 'jen_provozovatel';
     const mel = cil.role.includes('provozovatel');
     const bude = nove.includes('provozovatel');
-    if (mel !== bude && !buh) return 'jen_provozovatel';
     if (mel && !bude && !cil.blokovan_at && (await this.pocetProvozovatelu()) <= 1)
       return 'posledni_provozovatel';
     return null;

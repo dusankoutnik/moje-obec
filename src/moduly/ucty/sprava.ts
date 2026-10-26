@@ -3,8 +3,11 @@ import type { FastifyInstance } from 'fastify';
 import { ROLE, type Role, type Uzivatel } from '../../db/types.js';
 import { prehledSms } from '../../lib/provoz.js';
 import { vyzadujRoli } from './opravneni.js';
-import { DEFINICE_ROLI } from './role.js';
-import { jeChraneny, maRoli, smiUpravitUcet, type UctySluzba } from './sluzba.js';
+import { zapisAudit } from '../../lib/audit.js';
+import { datumPraha, pridejDny } from '../../lib/datum.js';
+import { DEFINICE_ROLI, definiceRole } from './role.js';
+import { platiDoZDatumu, platneRole, platnostiUctu, ROLE_JEN_TRVALE } from './role-platnost.js';
+import { jeChraneny, maRoli, otiskSezeni, smiUpravitUcet, type UctySluzba } from './sluzba.js';
 
 /**
  * Smí aktor blokovat/odblokovat cíl? Sám sebe nikdy (odblokovat by se pak nedal), účet admina jen admin,
@@ -99,14 +102,24 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
         .orderBy('ts', 'desc')
         .limit(50)
         .execute();
+      const jeAdmin = maRoli(req.uzivatel, 'admin');
+      u.role = await platneRole(app.db, u);
+      const platnosti = await platnostiUctu(app.db, u.id);
       return reply.view('sprava/uzivatel', {
         titulek: t('sprava.detail'),
         u,
+        // dočasné role: role → 'RRRR-MM-DD' (poslední den platnosti) pro formulář i výpis
+        platnosti: Object.fromEntries([...platnosti].map(([r, d]) => [r, datumPraha(d)])),
+        jenTrvale: ROLE_JEN_TRVALE,
+        zitra: pridejDny(datumPraha(new Date()), 1),
+        // přihlášená zařízení a odhlášení na dálku: administrátor (chráněný účet jen provozovatel)
+        sezeni: jeAdmin ? await ucty.sezeniUctu(u.id, req.session.sessionId) : null,
+        smiOdhlasit: jeAdmin && smiUpravitUcet(req.uzivatel, u),
         role: DEFINICE_ROLI.filter((d) => (ROLE as readonly string[]).includes(d.id)),
         historie,
         zamky: await ucty.zamkyUctu(u),
         ted: new Date(),
-        jeAdmin: maRoli(req.uzivatel, 'admin'),
+        jeAdmin,
         jeProvozovatel: maRoli(req.uzivatel, 'provozovatel'),
         samSobe: req.uzivatel!.id === u.id,
         chraneny: jeChraneny(u),
@@ -120,40 +133,85 @@ export default async function spravaRoutes(app: FastifyInstance, z: { ucty: Ucty
     },
   );
 
-  app.post<{ Params: { id: string }; Body: { role?: string | string[]; akce?: string } }>(
-    '/sprava/uzivatele/:id',
-    { preHandler: spravce },
+  app.post<{
+    Params: { id: string };
+    Body: { role?: string | string[]; akce?: string } & Record<string, unknown>;
+  }>('/sprava/uzivatele/:id', { preHandler: spravce }, async (req, reply) => {
+    const cil = await ucty.podleId(req.params.id).catch(() => undefined);
+    if (!cil) return reply.callNotFound();
+    const aktor = req.uzivatel!;
+    if (req.body.akce === 'blokovat' || req.body.akce === 'odblokovat') {
+      if (!smiBlokovat(aktor, cil)) {
+        req.session.flash = { typ: 'chyba', text: t('sprava.blokace_nelze') };
+        return reply.redirect(`/sprava/uzivatele/${cil.id}`);
+      }
+      await ucty.blokuj(cil.id, req.body.akce === 'blokovat', aktor, req.ip);
+      req.session.flash = { typ: 'ok', text: t('app.ulozeno') };
+    } else if (req.body.akce === 'odemknout') {
+      if (!smiUpravitUcet(aktor, cil)) {
+        req.session.flash = { typ: 'chyba', text: t('sprava.chraneny_nelze') };
+        return reply.redirect(`/sprava/uzivatele/${cil.id}`);
+      }
+      await ucty.odemkni(cil, aktor, req.ip);
+      req.session.flash = { typ: 'ok', text: t('sprava.zamek_zrusen') };
+    } else if (req.body.akce === 'role') {
+      if (!maRoli(aktor, 'admin')) return reply.code(403).send();
+      const r = (
+        req.body.role === undefined ? [] : Array.isArray(req.body.role) ? req.body.role : [req.body.role]
+      ).filter((x): x is Role => (ROLE as readonly string[]).includes(x));
+      // dočasné role: pole plati_do_<role> (prázdné = trvale)
+      const platnost = new Map<Role, Date | null>();
+      let chybaPlatnosti: string | null = null;
+      for (const role of r) {
+        const p = platiDoZDatumu(req.body[`plati_do_${role}`]);
+        if (p === 'neplatne') chybaPlatnosti = t('sprava.role_platnost_neplatna');
+        else if (p && ROLE_JEN_TRVALE.includes(role))
+          chybaPlatnosti = t('sprava.role_jen_trvale', { role: definiceRole(role)?.nazev ?? role });
+        else platnost.set(role, p);
+      }
+      const chyba = chybaPlatnosti ? null : await ucty.kontrolaZmenyRoli(aktor, cil, r);
+      if (chybaPlatnosti) req.session.flash = { typ: 'chyba', text: chybaPlatnosti };
+      else if (chyba) req.session.flash = { typ: 'chyba', text: t(CHYBY_ROLI[chyba]) };
+      else {
+        await ucty.nastavRole(cil.id, r, aktor, req.ip, { zdroj: 'detail-uctu' }, platnost);
+        req.session.flash = { typ: 'ok', text: t('sprava.role_ulozeny') };
+      }
+    }
+    return reply.redirect(`/sprava/uzivatele/${cil.id}`);
+  });
+
+  // Odhlášení na dálku (přehled přihlášených zařízení v detailu účtu): administrátor; chráněný účet jen provozovatel.
+  app.post<{ Params: { id: string }; Body: { sezeni?: string } }>(
+    '/sprava/uzivatele/:id/zarizeni',
+    { preHandler: vyzadujRoli('admin') },
     async (req, reply) => {
       const cil = await ucty.podleId(req.params.id).catch(() => undefined);
       if (!cil) return reply.callNotFound();
-      const aktor = req.uzivatel!;
-      if (req.body.akce === 'blokovat' || req.body.akce === 'odblokovat') {
-        if (!smiBlokovat(aktor, cil)) {
-          req.session.flash = { typ: 'chyba', text: t('sprava.blokace_nelze') };
-          return reply.redirect(`/sprava/uzivatele/${cil.id}`);
-        }
-        await ucty.blokuj(cil.id, req.body.akce === 'blokovat', aktor, req.ip);
-        req.session.flash = { typ: 'ok', text: t('app.ulozeno') };
-      } else if (req.body.akce === 'odemknout') {
-        if (!smiUpravitUcet(aktor, cil)) {
-          req.session.flash = { typ: 'chyba', text: t('sprava.chraneny_nelze') };
-          return reply.redirect(`/sprava/uzivatele/${cil.id}`);
-        }
-        await ucty.odemkni(cil, aktor, req.ip);
-        req.session.flash = { typ: 'ok', text: t('sprava.zamek_zrusen') };
-      } else if (req.body.akce === 'role') {
-        if (!maRoli(aktor, 'admin')) return reply.code(403).send();
-        const r = (
-          req.body.role === undefined ? [] : Array.isArray(req.body.role) ? req.body.role : [req.body.role]
-        ).filter((x): x is Role => (ROLE as readonly string[]).includes(x));
-        const chyba = await ucty.kontrolaZmenyRoli(aktor, cil, r);
-        if (chyba) req.session.flash = { typ: 'chyba', text: t(CHYBY_ROLI[chyba]) };
-        else {
-          await ucty.nastavRole(cil.id, r, aktor, req.ip, { zdroj: 'detail-uctu' });
-          req.session.flash = { typ: 'ok', text: t('sprava.role_ulozeny') };
-        }
+      const zpet = `/sprava/uzivatele/${cil.id}#zarizeni`;
+      if (!smiUpravitUcet(req.uzivatel, cil)) {
+        req.session.flash = { typ: 'chyba', text: t('sprava.chraneny_nelze') };
+        return reply.redirect(zpet);
       }
-      return reply.redirect(`/sprava/uzivatele/${cil.id}`);
+      const otisk =
+        typeof req.body?.sezeni === 'string' && /^[0-9a-f]{16}$/.test(req.body.sezeni)
+          ? req.body.sezeni
+          : null;
+      const n = await ucty.odhlasSezeni(cil.id, otisk);
+      await zapisAudit(app.db, {
+        uzivatelId: req.uzivatel!.id,
+        akce: 'sprava.odhlaseni_zarizeni',
+        detail: { cil: cil.id, rozsah: otisk ? 'jedno' : 'vse', sezeni: n },
+        ip: req.ip,
+      });
+      // odhlásil-li správce i sezení, ve kterém právě je: zrušit ho i v paměti (jinak by se uložením znovu vytvořilo)
+      const vlastni =
+        cil.id === req.uzivatel!.id && (!otisk || otisk === otiskSezeni(req.session.sessionId ?? ''));
+      if (vlastni) {
+        await req.session.destroy();
+        return reply.redirect('/');
+      }
+      req.session.flash = { typ: 'ok', text: t('sprava.zarizeni_odhlaseno', { n }) };
+      return reply.redirect(zpet);
     },
   );
 

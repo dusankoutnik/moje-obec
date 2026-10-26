@@ -3,11 +3,31 @@
 <h1><%= it.t('sprava.role_titulek') %></h1>
 <p><%= it.t('sprava.role_uvod') %></p>
 <% if (!it.jeProvozovatel) { %><p class="napoveda"><%= it.t('sprava.role_jen_cteni') %></p><% } %>
+<% if (it.spicich) { %><p class="flash flash-info" role="status"><%= it.t('sprava.role_spici_souhrn', { n: it.spicich, dni: it.spiciDni }) %></p><% } %>
 <nav aria-label="<%= it.t('sprava.role_titulek') %>">
   <ul class="role-obsah">
     <% it.role.forEach(function (r) { %><li><a href="#role-<%= r.id %>"><%= r.nazev %></a> (<%= r.clenove.length %>)</li><% }) %>
+    <li><a href="#matice"><%= it.t('sprava.role_matice') %></a></li>
+    <li><a href="#historie"><%= it.t('sprava.role_historie') %></a></li>
   </ul>
 </nav>
+
+<section class="karta role-karta" id="matice" aria-labelledby="matice-nadpis">
+  <h2 id="matice-nadpis"><%= it.t('sprava.role_matice') %></h2>
+  <p class="napoveda"><%= it.t('sprava.role_matice_uvod') %></p>
+  <div class="tabulka-obal">
+  <table class="tabulka kompaktni role-matice">
+    <caption class="vh"><%= it.t('sprava.role_matice') %></caption>
+    <thead><tr><th scope="col"><%= it.t('sprava.role_oblast') %></th><% it.role.forEach(function (r) { %><th scope="col"><%= r.nazev %></th><% }) %></tr></thead>
+    <tbody>
+    <% it.matice.forEach(function (o) { %>
+      <tr><th scope="row"><%= o.nazev %></th><% o.role.forEach(function (smi) { %><td class="<%= smi ? 'rm-ano' : 'rm-ne' %>"><% if (smi) { %><span aria-hidden="true">✓</span><span class="vh"><%= it.t('sprava.role_matice_ano') %></span><% } else { %><span aria-hidden="true">–</span><span class="vh"><%= it.t('sprava.role_matice_ne') %></span><% } %></td><% }) %></tr>
+    <% }) %>
+    </tbody>
+  </table>
+  </div>
+</section>
+
 <% it.role.forEach(function (r) { %>
 <section class="karta role-karta" id="role-<%= r.id %>" aria-labelledby="role-<%= r.id %>-nadpis">
   <h2 id="role-<%= r.id %>-nadpis"><%= r.nazev %> <small class="napoveda"><code><%= r.id %></code></small></h2>
@@ -24,19 +44,34 @@
   <% } else { %>
   <div class="tabulka-obal">
   <table class="tabulka">
-    <thead><tr><th scope="col"><%= it.t('sprava.role_jmeno') %></th><th scope="col"><%= it.t('ucet.telefon') %></th><% if (it.jeProvozovatel) { %><th scope="col"><span class="vh"><%= it.t('sprava.akce') %></span></th><% } %></tr></thead>
+    <thead><tr>
+      <th scope="col"><%= it.t('sprava.role_jmeno') %></th>
+      <th scope="col"><%= it.t('ucet.telefon') %></th>
+      <th scope="col"><%= it.t('sprava.role_platnost') %></th>
+      <th scope="col"><%= it.t('sprava.role_posledni_prihlaseni') %></th>
+      <% if (it.jeAdmin || it.jeProvozovatel) { %><th scope="col"><span class="vh"><%= it.t('sprava.akce') %></span></th><% } %>
+    </tr></thead>
     <tbody>
     <% r.clenove.forEach(function (u) { %>
       <tr<% if (u.blokovan_at) { %> class="blokovan"<% } %>>
         <td><a href="/sprava/uzivatele/<%= u.id %>"><%= u.nazev %></a><% if (u.blokovan_at) { %> · <%= it.t('sprava.role_blokovan') %><% } %></td>
         <td><%= it.fmtTelefonSkryty(u.telefon) %></td>
-        <% if (it.jeProvozovatel) { %>
+        <td><%= u.platiDo ? it.t('sprava.role_plati_do', { datum: it.fmtDatum(u.platiDo, false) }) : it.t('sprava.role_trvale') %></td>
         <td>
-          <form method="post" action="/sprava/role/<%= r.id %>/odebrat" data-confirm="<%= it.t('sprava.role_odebrat_potvrzeni', { role: r.nazev, jmeno: u.nazev }) %>">
+          <%= u.prihlaseni ? it.fmtDatum(u.prihlaseni) : it.t('sprava.role_neprihlasen') %>
+          <% if (u.aktivita && (!u.prihlaseni || u.aktivita > u.prihlaseni)) { %><br><span class="napoveda"><%= it.t('sprava.role_aktivni', { datum: it.fmtDatum(u.aktivita) }) %></span><% } %>
+          <% if (u.spici) { %><br><span class="stitek stitek-varovani"><%= it.t('sprava.role_spici', { dni: it.spiciDni }) %></span><% } %>
+        </td>
+        <% if (it.jeAdmin || it.jeProvozovatel) { %>
+        <td>
+          <a href="/sprava/uzivatele/<%= u.id %>#zarizeni" aria-label="<%= it.t('sprava.zarizeni_popisek', { jmeno: u.nazev }) %>"><%= it.t('sprava.zarizeni_odkaz') %></a>
+          <% if (it.jeProvozovatel) { %>
+          <form method="post" action="/sprava/role/<%= r.id %>/odebrat" class="inline-form" data-confirm="<%= it.t('sprava.role_odebrat_potvrzeni', { role: r.nazev, jmeno: u.nazev }) %>">
             <input type="hidden" name="_csrf" value="<%= it.csrf %>">
             <input type="hidden" name="uzivatel" value="<%= u.id %>">
             <button class="tlacitko sekundarni" type="submit" aria-label="<%= it.t('sprava.role_odebrat_popisek', { role: r.nazev, jmeno: u.nazev }) %>"><%= it.t('sprava.role_odebrat') %></button>
           </form>
+          <% } %>
         </td>
         <% } %>
       </tr>
@@ -69,14 +104,25 @@
       <form method="post" action="/sprava/role/<%= r.id %>/pridat" class="inline-form">
         <input type="hidden" name="_csrf" value="<%= it.csrf %>">
         <input type="hidden" name="uzivatel" value="<%= u.id %>">
+        <% if (!r.jenTrvale) { %>
+        <label for="do-<%= r.id %>-<%= u.id %>"><%= it.t('sprava.role_plati_do_pole') %></label>
+        <input type="date" id="do-<%= r.id %>-<%= u.id %>" name="plati_do" aria-describedby="do-<%= r.id %>-napoveda">
+        <% } %>
         <button class="tlacitko" type="submit" aria-label="<%= it.t('sprava.role_pridat_popisek', { role: r.nazev, jmeno: u.nazev }) %>"><%= it.t('sprava.role_pridat') %></button>
       </form>
       <% } %>
     </li>
     <% }) %>
   </ul>
+  <% if (!r.jenTrvale) { %><p class="napoveda" id="do-<%= r.id %>-napoveda"><%= it.t('sprava.role_plati_do_napoveda') %></p><% } else { %><p class="napoveda"><%= it.t('sprava.role_jen_trvale', { role: r.nazev }) %></p><% } %>
   <% } %>
   <% } %>
   <% } %>
 </section>
 <% }) %>
+
+<section class="karta role-karta" id="historie" aria-labelledby="historie-nadpis">
+  <h2 id="historie-nadpis"><%= it.t('sprava.role_historie_posledni') %></h2>
+  <%~ include('/sprava/_role-historie', Object.assign({}, it, { zaznamy: it.historie })) %>
+  <p><a href="/sprava/role/historie"><%= it.t('sprava.role_historie_cela') %></a></p>
+</section>

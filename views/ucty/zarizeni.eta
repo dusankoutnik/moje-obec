@@ -1,0 +1,5 @@
+<% layout('/layout') %>
+<h1><%= it.t('sprava.zarizeni_nadpis') %></h1>
+<section class="karta" id="zarizeni">
+  <%~ include('/ucty/_zarizeni', Object.assign({}, it, { akce: '/ucet/zarizeni', smiOdhlasit: true, vlastni: true })) %>
+</section>

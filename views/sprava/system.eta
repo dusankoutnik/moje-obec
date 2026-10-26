@@ -1,0 +1,139 @@
+<% layout('/layout') %>
+<% var t = it.t; %>
+<p><a href="/sprava">← <%= t('sprava.titulek') %></a></p>
+<h1><%= t('system.titulek') %></h1>
+<p><%= t('system.uvod') %></p>
+<div class="sloupce">
+
+<section class="karta" aria-labelledby="sys-verze">
+  <h2 id="sys-verze"><%= t('system.verze') %></h2>
+  <dl class="seznam">
+    <dt><%= t('system.verze_balicku') %></dt><dd><%= it.verze.balicek || '—' %></dd>
+    <dt><%= t('system.commit') %></dt><dd><% if (it.verze.commit) { %><code><%= it.verze.commit %></code><% } else { %><%= t('system.neuvedeno') %><% } %></dd>
+    <dt><%= t('system.sestaveno') %></dt><dd><%= it.verze.build ? it.fmtDatum(it.verze.build) : t('system.neuvedeno') %></dd>
+    <dt><%= t('system.spusteno') %></dt><dd><%= it.fmtDatum(it.verze.start) %></dd>
+    <dt><%= t('system.node') %></dt><dd><%= it.verze.node %> (<%= it.verze.prostredi %>)</dd>
+  </dl>
+</section>
+
+<section class="karta" aria-labelledby="sys-migrace">
+  <h2 id="sys-migrace"><%= t('system.migrace') %></h2>
+  <% if (!it.migrace) { %>
+  <p class="varovani"><%= t('system.migrace_chyba') %></p>
+  <% } else { %>
+  <dl class="seznam">
+    <dt><%= t('system.migrace_provedeno') %></dt><dd><%= it.migrace.provedeno %> / <%= it.migrace.celkem %></dd>
+    <dt><%= t('system.migrace_posledni') %></dt><dd><% if (it.migrace.posledni) { %><code><%= it.migrace.posledni.nazev %></code> (<%= it.fmtDatum(it.migrace.posledni.at) %>)<% } else { %>—<% } %></dd>
+  </dl>
+  <% if (it.migrace.chybi.length) { %>
+  <p class="flash flash-chyba" role="alert"><%= t('system.migrace_chybi', { n: it.migrace.chybi.length }) %> <code><%= it.migrace.chybi.join(', ') %></code></p>
+  <% } else { %>
+  <p><span class="stitek"><%= t('system.v_poradku') %></span></p>
+  <% } %>
+  <% } %>
+</section>
+
+<section class="karta" aria-labelledby="sys-sms">
+  <h2 id="sys-sms"><%= t('system.sms') %></h2>
+  <dl class="seznam">
+    <dt><%= t('system.poskytovatel') %></dt><dd><code><%= it.smsProvider %></code></dd>
+    <dt><%= t('system.sms_kody') %></dt><dd><%= it.sms.kodu24h %><% if (it.sms.limit) { %> / <%= it.sms.limit %><% } %></dd>
+    <% if (it.hlidaniBrany) { %>
+    <dt><%= t('system.brana_kontakt') %></dt><dd><%= it.brana && it.brana.posledniKontakt ? it.fmtDatum(it.brana.posledniKontakt) : t('system.brana_nezjisteno') %></dd>
+    <dt><%= t('system.brana_kontrola') %></dt><dd><%= it.brana && it.brana.kontrolaAt ? it.fmtDatum(it.brana.kontrolaAt) : '—' %></dd>
+    <% } %>
+  </dl>
+  <% if (!it.hlidaniBrany) { %>
+  <p class="napoveda"><%= t('system.brana_bez_hlidani') %></p>
+  <% } else if (it.brana && it.brana.alarm) { %>
+  <p class="flash flash-chyba" role="alert"><%= t('system.brana_offline', { od: it.fmtDatum(it.brana.alarm) }) %><% if (it.brana.cekajici !== null && it.brana.cekajici !== undefined) { %> <%= t('system.brana_cekajici', { n: it.brana.cekajici }) %><% } %></p>
+  <% } else if (it.brana && it.brana.chybaOd) { %>
+  <p class="flash flash-info" role="status"><%= t('system.brana_cloud_chyba') %></p>
+  <% } else if (it.brana && it.brana.posledniKontakt) { %>
+  <p><span class="stitek"><%= t('system.v_poradku') %></span></p>
+  <% } %>
+  <% if (it.sms.vycerpano) { %><p class="flash flash-chyba"><%= t('sprava.sms_vycerpano', { datum: it.fmtDatum(it.sms.vycerpano.at), n: it.sms.vycerpano.pocet }) %></p><% } %>
+</section>
+
+<section class="karta" aria-labelledby="sys-mail">
+  <h2 id="sys-mail"><%= t('system.mail') %></h2>
+  <dl class="seznam">
+    <dt><%= t('system.poskytovatel') %></dt><dd><code><%= it.mailProvider %></code><% if (it.mailProvider === 'konzole') { %> — <%= t('system.mail_konzole') %><% } %></dd>
+    <dt><%= t('system.mail_od_startu') %></dt><dd><%= t('system.mail_pocty', { ok: it.mail.odeslano, chyb: it.mail.chyb }) %></dd>
+    <dt><%= t('system.mail_posledni_ok') %></dt><dd><%= it.mail.posledniOk ? it.fmtDatum(it.mail.posledniOk) : '—' %></dd>
+    <dt><%= t('system.mail_posledni_chyba') %></dt><dd><% if (it.mail.posledniChyba) { %><%= it.fmtDatum(it.mail.posledniChyba.at) %>: <code><%= it.mail.posledniChyba.zprava %></code><% } else { %>—<% } %></dd>
+  </dl>
+  <p class="napoveda"><%= t('system.mail_napoveda') %></p>
+</section>
+
+<section class="karta" aria-labelledby="sys-ucty">
+  <h2 id="sys-ucty"><%= t('system.ucty') %></h2>
+  <dl class="seznam">
+    <dt><%= t('system.ucty_celkem') %></dt><dd><%= it.ucty.celkem %></dd>
+    <dt><%= t('system.ucty_s_roli') %></dt><dd><%= it.ucty.s_roli %> <a href="/sprava/role"><%= t('sprava.role_titulek') %></a></dd>
+    <dt><%= t('system.ucty_docasne') %></dt><dd><%= it.ucty.docasnych %></dd>
+    <dt><%= t('system.ucty_blokovane') %></dt><dd><%= it.ucty.blokovanych %></dd>
+    <dt><%= t('system.ucty_sezeni') %></dt><dd><%= it.ucty.sezeni %></dd>
+  </dl>
+</section>
+
+<section class="karta" aria-labelledby="sys-db">
+  <h2 id="sys-db"><%= t('system.databaze') %></h2>
+  <dl class="seznam">
+    <dt><%= t('system.db_velikost') %></dt><dd><%= it.velikost.db %></dd>
+  </dl>
+  <% if (it.velikost.tabulky.length) { %>
+  <table class="tabulka kompaktni">
+    <caption><%= t('system.db_tabulky') %></caption>
+    <thead><tr><th scope="col"><%= t('system.db_tabulka') %></th><th scope="col"><%= t('system.db_velikost') %></th></tr></thead>
+    <tbody><% it.velikost.tabulky.forEach(function (x) { %><tr><td><code><%= x.nazev %></code></td><td><%= x.velikost %></td></tr><% }) %></tbody>
+  </table>
+  <% } %>
+</section>
+
+<section class="karta" aria-labelledby="sys-zalohy">
+  <h2 id="sys-zalohy"><%= t('system.zalohy') %></h2>
+  <% if (!it.zalohy.nastaveno) { %>
+  <p class="flash flash-chyba" role="alert"><%= t('system.zalohy_nenastaveno') %></p>
+  <p class="napoveda"><%= t('system.zalohy_napoveda') %></p>
+  <% } else if (it.zalohy.chyba) { %>
+  <p class="flash flash-chyba" role="alert"><%= t('system.zalohy_nelze_cist') %></p>
+  <% } else if (!it.zalohy.posledni) { %>
+  <p class="flash flash-chyba" role="alert"><%= t('system.zalohy_zadne') %></p>
+  <% } else { %>
+  <dl class="seznam">
+    <dt><%= t('system.zalohy_posledni') %></dt><dd><%= it.fmtDatum(it.zalohy.posledni.at) %> (<code><%= it.zalohy.posledni.nazev %></code>, <%= Math.round(it.zalohy.posledni.velikost / 1048576 * 10) / 10 %> MB)</dd>
+    <dt><%= t('system.zalohy_pocet') %></dt><dd><%= it.zalohy.pocet %></dd>
+  </dl>
+  <% if (it.zalohy.stara) { %><p class="flash flash-chyba" role="alert"><%= t('system.zalohy_stara', { h: it.zalohaStaraH }) %></p><% } else { %><p><span class="stitek"><%= t('system.v_poradku') %></span></p><% } %>
+  <% } %>
+</section>
+
+</div>
+
+<section class="karta" aria-labelledby="sys-fronty">
+  <h2 id="sys-fronty"><%= t('system.fronty') %></h2>
+  <% if (!it.fronty.length) { %>
+  <p><%= t('system.fronty_prazdne') %></p>
+  <% } else { %>
+  <div class="tabulka-obal">
+  <table class="tabulka">
+    <caption class="vh"><%= t('system.fronty') %></caption>
+    <thead><tr>
+      <th scope="col"><%= t('system.fronty_zdroj') %></th>
+      <th scope="col"><%= t('system.fronty_kanal') %></th>
+      <th scope="col"><%= t('sprava.sms_ceka') %></th>
+      <th scope="col"><%= t('sprava.sms_odesila') %></th>
+      <th scope="col"><%= t('sprava.sms_odeslano') %></th>
+      <th scope="col"><%= t('system.fronty_selhalo') %></th>
+    </tr></thead>
+    <tbody>
+    <% it.fronty.forEach(function (f) { %>
+      <tr><td><%= t('system.fronty_' + (f.zdroj === 'hlaseni' ? 'hlaseni' : 'aplikace')) %></td><td><%= f.kanal === 'sms' ? 'SMS' : 'e-mail' %></td><td><%= f.ceka %></td><td><%= f.odesila_se %></td><td><%= f.odeslano %></td><td><%= f.selhalo %></td></tr>
+    <% }) %>
+    </tbody>
+  </table>
+  </div>
+  <% } %>
+</section>
+<p class="napoveda"><%= t('system.aktualni_k', { cas: it.fmtDatum(it.ted) }) %></p>

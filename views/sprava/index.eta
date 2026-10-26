@@ -57,6 +57,7 @@
     jeAdmin ? { ikona: '🧩', nazev: t('moduly_obce.titulek'), href: '/sprava/moduly', popis: t('moduly_obce.karta') } : null,
     jeAdmin ? { ikona: '🔌', nazev: 'API a integrace', href: '/sprava/api', popis: 'Tokeny pro programy, které na web samy zapisují.' } : null,
     jeAdmin ? { ikona: '🔐', nazev: t('sprava.klienti'), href: '/sprava/klienti', popis: t('sprava.klienti_text') } : null,
+    jeAdmin ? { ikona: '🩺', nazev: t('system.titulek'), href: '/sprava/system', popis: t('system.karta') } : null,
     it.jeSpravce ? { ikona: '🧾', nazev: t('sprava.audit'), href: '/sprava/audit', popis: t('sprava.audit_text') } : null,
     jeAdmin && maRez ? { ikona: '📜', nazev: 'Audit rezervací', href: '/rezervace/admin/log', popis: 'Změny v rezervacích, zámcích a předprodeji.' } : null,
   ]);
