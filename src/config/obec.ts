@@ -137,6 +137,17 @@ export const ObecSchema = z.object({
       akce_koncepty: z.boolean().default(true),
       // statistika „zpráv za poslední měsíc“ v úvodu: slug kategorie aktualit; prázdné = všechny aktuality
       stat_zpravy_kategorie: z.string().default(''),
+      // další rychlé dlaždice pod úvodem (za výchozími), např. knihovna
+      rychle_odkazy: z
+        .array(
+          z.object({
+            nazev: z.string().min(1).max(40),
+            odkaz: z.string().regex(/^(\/|https:\/\/)/),
+            ikona: z.string().max(8).default('🔗'),
+          }),
+        )
+        .max(4)
+        .default([]),
     })
     .prefault({}),
   // elektronická podatelna — formulář pro podání bez elektronického podpisu (modul podatelna)

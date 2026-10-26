@@ -29,6 +29,7 @@
       <li><a href="/kontakt"><span class="ikona" aria-hidden="true">🏛️</span><%= it.t('web.obecni_urad') %></a></li>
       <% if (it.obec.moduly.infokanal) { %><li><a href="/infokanal"><span class="ikona" aria-hidden="true">📱</span><%= it.t('web.zpravy_do_mobilu') %></a></li><% } %>
       <li><a href="/akce"><span class="ikona" aria-hidden="true">📅</span><%= it.t('web.akce') %></a></li>
+      <% it.obec.web.rychle_odkazy.forEach(function (r) { %><li><a href="<%= r.odkaz %>"><span class="ikona" aria-hidden="true"><%= r.ikona %></span><%= r.nazev %></a></li><% }) %>
       <li><a href="<%= it.uzivatel ? '/ucet' : '/prihlaseni' %>"><span class="ikona" aria-hidden="true">👤</span><%= it.t('app.ucet') %></a></li>
     </ul>
   </nav>
