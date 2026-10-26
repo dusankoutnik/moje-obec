@@ -3,7 +3,10 @@
 # Spuštění: docker compose -f docker-compose.dev-server.yml up -d --build
 services:
   platforma:
-    build: .
+    build:
+      context: .
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-} # verze pro Stav systému: GIT_COMMIT=$(git rev-parse --short HEAD) docker compose … --build
     container_name: platforma
     restart: unless-stopped
     env_file: .env
