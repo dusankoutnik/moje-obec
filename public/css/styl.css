@@ -3125,3 +3125,37 @@ button.kviz-odpoved:active {
 .role-nalezene .inline-form {
   display: inline-flex;
 }
+/* Role: matice oprávnění, historie změn, platnost role v detailu účtu (2026-10-26) */
+.role-matice th[scope='col'] {
+  font-size: 0.82rem;
+  vertical-align: bottom;
+}
+.role-matice td {
+  text-align: center;
+}
+.role-matice td.rm-ano {
+  color: var(--zelena-tmava);
+  font-weight: 700;
+}
+.role-matice td.rm-ne {
+  color: var(--text-tlumeny);
+}
+.role-zmeny {
+  margin: 0;
+  padding-left: 18px;
+}
+.rz-plus {
+  color: var(--zelena-tmava);
+  font-weight: 600;
+}
+.rz-minus {
+  color: var(--chyba);
+  font-weight: 600;
+}
+.role-platnost-pole {
+  margin: 0 0 10px 28px;
+}
+.role-platnost-pole label {
+  display: block;
+  font-size: 0.9rem;
+}

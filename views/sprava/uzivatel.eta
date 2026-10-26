@@ -51,21 +51,35 @@
     <fieldset>
       <legend><%= it.t('ucet.role') %></legend>
       <% it.role.forEach(function (r) { %>
-        <% var zamcena = r.chranena && !it.jeProvozovatel; %>
+        <% var zamcena = (r.chranena || r.jenSuperadmin) && !it.jeProvozovatel; %>
+        <% if (zamcena && it.u.role.includes(r.id)) { %><input type="hidden" name="role" value="<%= r.id %>"><% } %>
         <label class="zatrzitko"><input type="checkbox" name="role" value="<%= r.id %>" aria-describedby="role-<%= r.id %>-popis" <%= it.u.role.includes(r.id) ? 'checked' : '' %> <%= zamcena ? 'disabled' : '' %>> <strong><%= r.nazev %></strong></label>
         <p class="napoveda" id="role-<%= r.id %>-popis"><%= r.popis %><% if (zamcena) { %> <%= it.t('sprava.role_jen_provozovatel') %><% } %></p>
+        <% if (it.jenTrvale.indexOf(r.id) < 0) { %>
+        <p class="role-platnost-pole">
+          <label for="plati-do-<%= r.id %>"><%= it.t('sprava.role_plati_do_pole_role', { role: r.nazev }) %></label>
+          <input type="date" id="plati-do-<%= r.id %>" name="plati_do_<%= r.id %>" min="<%= it.zitra %>" value="<%= it.platnosti[r.id] || '' %>" aria-describedby="plati-do-napoveda">
+        </p>
+        <% } %>
       <% }) %>
+      <p class="napoveda" id="plati-do-napoveda"><%= it.t('sprava.role_plati_do_napoveda') %></p>
     </fieldset>
     <% if (it.samSobe) { %><p class="napoveda"><%= it.t('sprava.sam_sobe_buh') %></p><% } %>
     <button class="tlacitko" name="akce" value="role" type="submit"><%= it.t('app.ulozit') %></button>
   </form>
   <% } else { %>
-    <p><%= it.u.role.length ? it.role.filter(function (r) { return it.u.role.includes(r.id); }).map(function (r) { return r.nazev; }).join(', ') : it.t('ucet.role_obcan') %></p>
+    <p><%= it.u.role.length ? it.role.filter(function (r) { return it.u.role.includes(r.id); }).map(function (r) { return r.nazev + (it.platnosti[r.id] ? ' (' + it.t('sprava.role_plati_do', { datum: it.fmtDatum(it.platnosti[r.id] + 'T12:00:00Z', false) }) + ')' : ''); }).join(', ') : it.t('ucet.role_obcan') %></p>
     <% if (it.samSobe) { %><p class="napoveda"><%= it.t('sprava.sam_sobe') %></p><% } %>
   <% } %>
-  <p><a href="/sprava/role"><%= it.t('sprava.role_karta') %></a></p>
+  <p><a href="/sprava/role"><%= it.t('sprava.role_karta') %></a> · <a href="/sprava/role/historie?uzivatel=<%= it.u.id %>"><%= it.t('sprava.role_historie_uctu') %></a></p>
 </section>
 </div>
+<% if (it.sezeni) { %>
+<section class="karta" id="zarizeni" aria-labelledby="zarizeni-nadpis">
+  <h2 id="zarizeni-nadpis"><%= it.t('sprava.zarizeni_nadpis') %></h2>
+  <%~ include('/ucty/_zarizeni', Object.assign({}, it, { akce: '/sprava/uzivatele/' + it.u.id + '/zarizeni', smiOdhlasit: it.smiOdhlasit, jmeno: (it.u.jmeno + ' ' + it.u.prijmeni).trim() })) %>
+</section>
+<% } %>
 <h2><%= it.t('sprava.historie') %></h2>
 <div class="tabulka-obal">
 <table class="tabulka">

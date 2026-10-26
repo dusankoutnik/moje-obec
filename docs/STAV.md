@@ -1,5 +1,40 @@
 # Stav projektu — etapa 1 (18. 10. 2026)
 
+## Role a Systém: historie, matice, zařízení, stav systému, dočasné role (26. 10. 2026)
+
+- Migrace **0025** (`role_platnost`; `sezeni.vytvoreno_at/aktivita_at/prohlizec` + index podle účtu; index
+  `audit_log (akce, ts)`).
+- **Stránka Role** (`/sprava/role`): matice oprávnění role × oblast z `OBLASTI_SPRAVY` v `src/moduly/ucty/role.ts`
+  (test projde každou cestu s každou rolí a ověří, že server pouští přesně role z matice), u členů poslední
+  přihlášení / aktivita a štítek „spí“ (silná role — provozovatel, admin, správce — bez přihlášení přes 90 dní;
+  nikdy nepřihlášený spí až 90 dní od založení), platnost role, odkaz na zařízení, posledních 10 změn rolí.
+- **Historie změn rolí** `/sprava/role/historie?uzivatel=&strana=` (správce+): z audit logu `sprava.role`, který
+  nově vždy nese `pridano`, `odebrano`, případně `platnost` (starší záznamy se dopočítají z `role/puvodne`).
+- **E-mail při udělení role admin/provozovatel** (stránka Role i detail účtu — `UctySluzba.nastavRole`): všem
+  ostatním neblokovaným držitelům admin/provozovatel s e-mailem, včetně toho, kdo roli přidělil; chyba odeslání
+  uložení role neshodí. Skripty (`seed`, převody) e-mail neposílají.
+- **Přihlášená zařízení**: v detailu účtu (administrátor; chráněný účet jen provozovatel) a v Můj účet
+  `/ucet/zarizeni` — seznam sezení (zkrácený prohlížeč a systém, vznik, poslední aktivita; IP ani celý
+  User-Agent se neukládají), odhlášení jednoho nebo všech. Ruší se i OIDC záznamy účtu u providera (bez toho by se
+  zařízení přes „Přihlásit“ tiše přihlásilo zpět); aplikace za proxy (rezervace, e-knihy) pak dostanou prázdnou
+  hlavičku `X-Platforma-Uzivatel` a své sezení zruší. Audit `sprava.odhlaseni_zarizeni`, `ucet.odhlaseni_zarizeni`.
+- **Stav systému** `/sprava/system` (administrátor+, dlaždice v Systému): verze (`package.json`, `GIT_COMMIT`
+  z build-arg, čas sestavení obrazu, čas startu), migrace (provedené/chybějící), SMS (poskytovatel, kódy za 24 h,
+  poslední kontakt brány z kontroly plánovače — hlídání brány si ho nově ukládá), e-mail (poskytovatel, poslední
+  odeslání a chyba od startu procesu, adresy v chybě maskované), fronty po kanálech, účty, velikost DB, zálohy
+  (`ZALOHY_DIR`, jinak upozornění). Jen čtení, nic neodesílá.
+- **Dočasné role**: datum „platí do“ při přidání na stránce Role i v detailu účtu (den platí celý, prázdné =
+  trvale, provozovatel jen trvale). Vypršenou roli odebírá plánovač každou minutu a navíc kontrola při načtení
+  účtu (přihlášený uživatel, OIDC claims, interní API) — v mezidobí se nepoužije. Audit `sprava.role`,
+  zdroj `vyprseni`, aktor systém.
+- **Přejmenování rolí v UI** (klíče v DB beze změny): provozovatel → Superadmin, admin → Admin, spravce → Správce
+  obce, web → Redaktor webu, deska → Úřední deska, redaktor → Hlášení obce, knihovnice → Knihovnice, kviz → Kvíz,
+  ucetni → Účetní, vstupne → Vstupenkář. **Změna pravidla:** role Admin a Superadmin přiděluje a odebírá jen
+  Superadmin (`jenSuperadmin` v `role.ts`, `kontrolaZmenyRoli`); Admin dál přiděluje ostatní role, i jinému Adminovi
+  (zamčená role admin jde formulářem jako skryté pole). Vzhled webu zůstává jen Superadminovi.
+- Nové env: `GIT_COMMIT` (z `--build-arg`), `ZALOHY_DIR`. Ověření: `test/role-system.test.ts` (19 testů),
+  celkem 547 testů (+ 7 přeskočených bez binárek).
+
 ## Text dokumentů a vyhledávání v nich (22. 10. 2026)
 
 - Zadání a rozhodnutí: `docs/HLEDANI-DOKUMENTY.md` (sekce „Rozhodnutí při implementaci“), popis v `docs/MODULY.md`.

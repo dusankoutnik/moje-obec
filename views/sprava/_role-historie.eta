@@ -1,0 +1,32 @@
+<% if (!it.zaznamy.length) { %>
+<p><%= it.t('sprava.role_historie_zadna') %></p>
+<% } else { %>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <caption class="vh"><%= it.t('sprava.role_historie') %></caption>
+  <thead><tr>
+    <th scope="col"><%= it.t('sprava.cas') %></th>
+    <th scope="col"><%= it.t('sprava.role_historie_komu') %></th>
+    <th scope="col"><%= it.t('sprava.role_historie_zmena') %></th>
+    <th scope="col"><%= it.t('sprava.role_historie_kdo') %></th>
+  </tr></thead>
+  <tbody>
+  <% it.zaznamy.forEach(function (z) { %>
+    <tr>
+      <td><%= it.fmtDatum(z.ts) %></td>
+      <td><% if (z.cil) { %><a href="/sprava/role/historie?uzivatel=<%= z.cil.id %>"><%= z.cil.nazev %></a><% } else { %>—<% } %></td>
+      <td>
+        <ul class="role-zmeny">
+          <% z.pridano.forEach(function (r) { %><li><span class="rz-plus"><%= it.t('sprava.role_historie_pridano') %></span> <%= it.nazevRole(r) %><% if (z.platnost[r]) { %> (<%= it.t('sprava.role_plati_do', { datum: it.fmtDatum(z.platnost[r], false) }) %>)<% } %></li><% }) %>
+          <% z.odebrano.forEach(function (r) { %><li><span class="rz-minus"><%= it.t('sprava.role_historie_odebrano') %></span> <%= it.nazevRole(r) %></li><% }) %>
+          <% Object.keys(z.platnost).filter(function (r) { return z.pridano.indexOf(r) < 0; }).forEach(function (r) { %><li><%= z.platnost[r] ? it.t('sprava.role_historie_platnost', { role: it.nazevRole(r), datum: it.fmtDatum(z.platnost[r], false) }) : it.t('sprava.role_historie_trvale', { role: it.nazevRole(r) }) %></li><% }) %>
+          <% if (!z.pridano.length && !z.odebrano.length && !Object.keys(z.platnost).length) { %><li><%= it.t('sprava.role_historie_beze_zmeny') %></li><% } %>
+        </ul>
+      </td>
+      <td><%= z.aktor ? z.aktor.nazev : it.t('sprava.role_historie_system') %><% if (z.zdroj) { %><br><span class="napoveda"><%= it.zdrojZmeny(z.zdroj) %></span><% } %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>

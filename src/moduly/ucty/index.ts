@@ -19,7 +19,11 @@ import interakceRoutes from './interakce.js';
 import uctyRoutes from './routes.js';
 import spravaRoutes from './sprava.js';
 import spravaRoliRoutes from './sprava-role.js';
+import spravaSystemuRoutes from './sprava-system.js';
+import { vyprsRole } from './role-platnost.js';
+import { vytvorUpozorneniNaSilnouRoli } from './role-upozorneni.js';
 import ucetKartyRoutes from './ucet-karty.js';
+import ucetZarizeniRoutes from './ucet-zarizeni.js';
 import { CSP_OIDC, zakladniHlavicky } from '../../web/hlavicky.js';
 
 declare module 'fastify' {
@@ -35,6 +39,11 @@ async function uctyModul(app: FastifyInstance) {
   await zajistiKlientyAplikaci(app.db, app.env);
   const klient = vytvorOidcKlienta(app.env);
   const ucty = new UctySluzba(app.db);
+  ucty.upozorniNaSilnouRoli = vytvorUpozorneniNaSilnouRoli(app.db, app.mail, {
+    baseUrl: app.env.BASE_URL,
+    nazevObce: app.obec.obec.nazev,
+    log: app.log,
+  });
   app.decorate('ucty', ucty);
 
   // Endpointy providera (Koa) pod /oidc/*: tělo požadavku NESMÍ Fastify přečíst — čte si ho provider sám.
@@ -76,7 +85,9 @@ async function uctyModul(app: FastifyInstance) {
   await app.register(uctyRoutes, { klient, ucty });
   await app.register(spravaRoutes, { ucty });
   await app.register(spravaRoliRoutes, { ucty });
+  await app.register(spravaSystemuRoutes);
   await app.register(ucetKartyRoutes, { ucty });
+  await app.register(ucetZarizeniRoutes, { ucty });
   await app.register(interniRoutes, { ucty });
 
   // úklid: prošlé OIDC záznamy, sezení, OTP kódy a čítače zámků přihlášení — každou hodinu
@@ -87,7 +98,14 @@ async function uctyModul(app: FastifyInstance) {
       await app.otp.uklid().catch((e) => app.log.warn({ err: e }, 'úklid otp'));
       await uklidZamku(app.db).catch((e) => app.log.warn({ err: e }, 'úklid zámků přihlášení'));
     });
-    app.addHook('onClose', async () => job.stop());
+    // vypršené dočasné role — každou minutu (kontrola oprávnění je mezitím ignoruje sama, viz role-platnost.ts)
+    const role = new Cron('* * * * *', { protect: true }, async () => {
+      await vyprsRole(app.db).catch((e) => app.log.warn({ err: e }, 'vypršení dočasných rolí'));
+    });
+    app.addHook('onClose', async () => {
+      job.stop();
+      role.stop();
+    });
   }
 }
 

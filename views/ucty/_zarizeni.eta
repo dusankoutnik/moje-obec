@@ -1,0 +1,41 @@
+<% /* Přehled přihlášených zařízení (detail účtu v Administraci i Můj účet): it.sezeni, it.akce (URL formuláře), it.smiOdhlasit */ %>
+<p class="napoveda"><%= it.t('sprava.zarizeni_uvod') %></p>
+<% if (!it.sezeni.length) { %>
+<p><%= it.t('sprava.zarizeni_zadne') %></p>
+<% } else { %>
+<div class="tabulka-obal">
+<table class="tabulka">
+  <caption class="vh"><%= it.t('sprava.zarizeni_nadpis') %></caption>
+  <thead><tr>
+    <th scope="col"><%= it.t('sprava.zarizeni_zarizeni') %></th>
+    <th scope="col"><%= it.t('sprava.zarizeni_prihlaseno') %></th>
+    <th scope="col"><%= it.t('sprava.zarizeni_aktivita') %></th>
+    <% if (it.smiOdhlasit) { %><th scope="col"><span class="vh"><%= it.t('sprava.akce') %></span></th><% } %>
+  </tr></thead>
+  <tbody>
+  <% it.sezeni.forEach(function (s) { %>
+    <tr>
+      <td><%= s.prohlizec || it.t('sprava.zarizeni_nezname') %><% if (s.aktualni) { %> <span class="stitek"><%= it.t('sprava.zarizeni_toto') %></span><% } %></td>
+      <td><%= it.fmtDatum(s.vytvoreno_at) %></td>
+      <td><%= it.fmtDatum(s.aktivita_at) %></td>
+      <% if (it.smiOdhlasit) { %>
+      <td>
+        <form method="post" action="<%= it.akce %>" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+          <input type="hidden" name="sezeni" value="<%= s.id %>">
+          <button class="tlacitko sekundarni" type="submit" aria-label="<%= it.t('sprava.zarizeni_odhlasit_popisek', { zarizeni: s.prohlizec || it.t('sprava.zarizeni_nezname'), cas: it.fmtDatum(s.vytvoreno_at) }) %>"><%= it.t('sprava.zarizeni_odhlasit') %></button>
+        </form>
+      </td>
+      <% } %>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% if (it.smiOdhlasit) { %>
+<form method="post" action="<%= it.akce %>" class="formular" data-confirm="<%= it.vlastni ? it.t('sprava.zarizeni_ostatni_potvrzeni') : it.t('sprava.zarizeni_vse_potvrzeni') %>">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <button class="tlacitko nebezpecne" type="submit"><%= it.vlastni ? it.t('sprava.zarizeni_odhlasit_ostatni') : it.t('sprava.zarizeni_odhlasit_vse') %></button>
+</form>
+<% } %>
+<% } %>

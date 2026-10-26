@@ -10,6 +10,7 @@
       <li><a href="/rezervace/ucet">📅 Moje rezervace a výzvy</a></li><% } %>
       <% if (m.eknihy) { %><li><a href="/eknihy/moje">📚 Moje knihovna</a></li><% } %>
       <% if (m.infokanal) { %><li><a href="/ucet#odber">📣 Odběr hlášení</a></li><% } %>
+      <li><a href="/ucet/zarizeni"<%~ cur('/ucet/zarizeni') %>>🔐 <%= it.t('sprava.zarizeni_nadpis') %></a></li>
     </ul>
   </div>
 </nav>

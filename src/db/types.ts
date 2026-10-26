@@ -8,7 +8,10 @@ type TimestampNullable = ColumnType<Date | null, Date | string | null | undefine
 
 // web = obsah webu · deska = úřední deska a rozpočet · redaktor = hlášení infokanálu (jako v MůjÚčtu)
 // vstupne = kontrola vstupenek (připraveno) · kviz = správa kvízu · spravce = vše obsahové a účty · admin = vše
-// kromě vzhledu webu a správy rolí · provozovatel („Bůh“) = vše; popisy a odvozená práva: src/moduly/ucty/role.ts
+// kromě vzhledu webu a přidělování rolí admin/provozovatel · provozovatel (v UI „Superadmin“) = vše; názvy rolí v UI,
+// popisy a odvozená práva: src/moduly/ucty/role.ts
+// Roli lze přidělit dočasně (tabulka role_platnost): po vypršení se odebere a kontrola oprávnění ji mezitím
+// ignoruje (src/moduly/ucty/role-platnost.ts). Role provozovatel (Superadmin) dočasná být nemůže.
 export type Role =
   | 'web'
   | 'deska'
@@ -87,6 +90,19 @@ export interface SezeniTable {
   sid: string;
   data: JSONColumnType<Record<string, unknown>>;
   expires_at: Timestamp;
+  /** migrace 0025: vznik, poslední aktivita (zapisuje se nejvýš jednou za pár minut) a zkrácený popis prohlížeče */
+  vytvoreno_at: TimestampGenerated;
+  aktivita_at: TimestampNullable;
+  prohlizec: string | null;
+}
+
+// dočasná role (migrace 0025): role v uzivatele.role platí jen do plati_do; bez řádku platí trvale
+export interface RolePlatnostTable {
+  uzivatel_id: string;
+  role: Role;
+  plati_do: Timestamp;
+  pridal_id: string | null;
+  vytvoreno_at: TimestampGenerated;
 }
 
 export interface OidcPayloadsTable {
@@ -619,6 +635,7 @@ export interface Database {
   otp_kody: OtpKodyTable;
   audit_log: AuditLogTable;
   sezeni: SezeniTable;
+  role_platnost: RolePlatnostTable;
   oidc_payloads: OidcPayloadsTable;
   oidc_klienti: OidcKlientiTable;
   nastaveni: NastaveniTable;

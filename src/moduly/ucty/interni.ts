@@ -4,6 +4,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { ROLE, type Role } from '../../db/types.js';
 import { stejneTajemstvi } from '../../lib/krypto.js';
+import { platneRole, vyprsRole } from './role-platnost.js';
 import { maRoli, profilUzivatele, smiUpravitUcet, type UctySluzba } from './sluzba.js';
 
 export default async function interniRoutes(app: FastifyInstance, z: { ucty: UctySluzba }) {
@@ -25,6 +26,7 @@ export default async function interniRoutes(app: FastifyInstance, z: { ucty: Uct
       const c = cisloZ(req.params.cislo);
       const u = c === null ? undefined : await ucty.podleCisla(c);
       if (!u) return reply.code(404).send({ chyba: 'nenalezeno' });
+      u.role = await platneRole(app.db, u);
       return profilUzivatele(u);
     },
   );
@@ -38,6 +40,7 @@ export default async function interniRoutes(app: FastifyInstance, z: { ucty: Uct
         .map((r) => r.trim())
         .filter((r): r is Role => (ROLE as readonly string[]).includes(r));
       if (!role.length) return reply.code(400).send({ chyba: 'role', povolene: ROLE });
+      await vyprsRole(app.db); // seznam podle rolí bez vypršených dočasných rolí
       return { uzivatele: (await ucty.podleRole(role)).map(profilUzivatele) };
     },
   );

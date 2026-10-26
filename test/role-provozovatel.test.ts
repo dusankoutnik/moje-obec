@@ -1,4 +1,4 @@
-// Role „Bůh — provozovatel“: práva nad adminem, chráněný účet, vzhled webu jen pro něj, stránka Administrace → Role.
+// Role „provozovatel“ (v UI Superadmin): práva nad adminem, chráněný účet, vzhled webu jen pro něj, stránka Administrace → Role.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { sql } from 'kysely';
 import { ROLE, type Role } from '../src/db/types.js';
@@ -96,11 +96,11 @@ describe('chráněný účet provozovatele', () => {
     expect((await role(buhUcet.id)).blokovan_at).toBeNull();
 
     const r1 = await admin.post(`/sprava/uzivatele/${buhUcet.id}`, { _csrf: csrf, akce: 'role', role: [] });
-    expect(r1.text).toContain('smí měnit jen provozovatel');
+    expect(r1.text).toContain('smí měnit jen Superadmin');
     expect((await role(buhUcet.id)).role).toEqual(['provozovatel']);
 
     const odemknout = await admin.post(`/sprava/uzivatele/${buhUcet.id}`, { _csrf: csrf, akce: 'odemknout' });
-    expect(odemknout.text).toContain('smí měnit jen provozovatel');
+    expect(odemknout.text).toContain('smí měnit jen Superadmin');
 
     // admin nesmí přidělit roli provozovatel běžnému účtu (checkbox je zamčený, server to hlídá taky)
     const dObcan = await admin.get(`/sprava/uzivatele/${obcan.id}`);
@@ -110,7 +110,7 @@ describe('chráněný účet provozovatele', () => {
       akce: 'role',
       role: ['provozovatel', 'web'],
     });
-    expect(r2.text).toContain('smí přidělit nebo odebrat jen provozovatel');
+    expect(r2.text).toContain('smí přidělit nebo odebrat jen Superadmin');
     expect((await role(obcan.id)).role).toEqual([]);
     // běžnou roli admin dál přidělí
     const r3 = await admin.post(`/sprava/uzivatele/${obcan.id}`, {
@@ -165,12 +165,12 @@ describe('chráněný účet provozovatele', () => {
       akce: 'role',
       role: ['web'],
     });
-    expect(r.text).toContain('aspoň jednoho provozovatele');
+    expect(r.text).toContain('aspoň jednoho Superadmina');
     expect((await role(ja.id)).role).toEqual(['provozovatel']);
     // přes stránku Role totéž
     const s = await buh.get('/sprava/role');
     const r2 = await buh.post('/sprava/role/provozovatel/odebrat', { _csrf: csrfZ(s.text), uzivatel: ja.id });
-    expect(r2.text).toContain('aspoň jednoho provozovatele');
+    expect(r2.text).toContain('aspoň jednoho Superadmina');
     // vlastní běžnou roli si provozovatel přidat smí
     const r3 = await buh.post(`/sprava/uzivatele/${ja.id}`, {
       _csrf: csrfZ(d.text),
@@ -198,13 +198,13 @@ describe('chráněný účet provozovatele', () => {
     const s = await spr.get('/sprava');
     const csrf = csrfZ(s.text);
     const r = await spr.post(`/sprava/schvalovani/rezident/${chraneny.id}`, { _csrf: csrf, rezident: '1' });
-    expect(r.text).toContain('smí měnit jen provozovatel');
+    expect(r.text).toContain('smí měnit jen Superadmin');
     const j = await spr.post(`/sprava/schvalovani/jmeno/${chraneny.id}`, {
       _csrf: csrf,
       jmeno: 'Cizí',
       prijmeni: 'Jméno',
     });
-    expect(j.text).toContain('smí měnit jen provozovatel');
+    expect(j.text).toContain('smí měnit jen Superadmin');
     const po = await t.db
       .selectFrom('uzivatele')
       .select(['rezident', 'jmeno'])
@@ -218,7 +218,7 @@ describe('chráněný účet provozovatele', () => {
       .returning('id')
       .executeTakeFirstOrThrow();
     const tel = await spr.post(`/sprava/ucty/zmeny-telefonu/${z.id}`, { _csrf: csrf, akce: 'schvalit' });
-    expect(tel.text).toContain('smí měnit jen provozovatel');
+    expect(tel.text).toContain('smí měnit jen Superadmin');
     const potom = await t.db
       .selectFrom('uzivatele')
       .select('telefon')
@@ -261,8 +261,8 @@ describe('stránka Administrace → Systém → Role', () => {
     for (const p of [spr, admin]) {
       const s = await p.get('/sprava/role');
       expect(s.res.status).toBe(200);
-      expect(s.text).toContain('Bůh — provozovatel');
-      expect(s.text).toContain('redaktor webu');
+      expect(s.text).toContain('Superadmin');
+      expect(s.text).toContain('Redaktor webu');
       expect(s.text).toContain('Redaktorová');
       // telefon maskovaný, nikde celý
       expect(s.text).toContain('+420 777 *** 010');
@@ -302,7 +302,7 @@ describe('stránka Administrace → Systém → Role', () => {
     expect((await role(cil.id)).role).toEqual([]);
 
     const p = await buh.post('/sprava/role/deska/pridat', { _csrf: csrfZ(s.text), uzivatel: cil.id });
-    expect(p.text).toContain('Role „úřední deska“ přidána: Karel Hledaný');
+    expect(p.text).toContain('Role „Úřední deska“ přidána: Karel Hledaný');
     expect((await role(cil.id)).role).toEqual(['deska']);
     // opakované přidání = beze změny
     const znovu = await buh.post('/sprava/role/deska/pridat', { _csrf: csrfZ(s.text), uzivatel: cil.id });
@@ -322,8 +322,8 @@ describe('stránka Administrace → Systém → Role', () => {
       .execute();
     const moje = zaznamy.filter((z) => (z.detail as { cil?: string } | null)?.cil === cil.id);
     expect(moje.map((z) => z.detail)).toEqual([
-      expect.objectContaining({ zdroj: 'stranka-role', pridano: 'deska', role: ['deska'] }),
-      expect.objectContaining({ zdroj: 'stranka-role', odebrano: 'deska', role: [] }),
+      expect.objectContaining({ zdroj: 'stranka-role', pridano: ['deska'], role: ['deska'] }),
+      expect.objectContaining({ zdroj: 'stranka-role', odebrano: ['deska'], role: [] }),
     ]);
 
     // neznámá role / akce = 404

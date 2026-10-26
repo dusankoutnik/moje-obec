@@ -1,0 +1,15 @@
+<% layout('/layout') %>
+<p><a href="/sprava/role">← <%= it.t('sprava.role_titulek') %></a></p>
+<h1><%= it.t('sprava.role_historie') %><% if (it.ucet) { %>: <%= it.ucet.nazev %><% } %></h1>
+<p><%= it.t('sprava.role_historie_uvod') %></p>
+<% if (it.ucet) { %>
+<p><a href="/sprava/role/historie"><%= it.t('sprava.role_historie_vse') %></a> · <a href="/sprava/uzivatele/<%= it.ucet.id %>"><%= it.t('sprava.detail') %></a></p>
+<% } %>
+<p class="napoveda" role="status"><%= it.t('sprava.role_historie_pocet', { n: it.celkem, strana: it.strana, stran: it.stran }) %></p>
+<%~ include('/sprava/_role-historie', it) %>
+<% if (it.predchozi || it.dalsi) { %>
+<nav class="strankovani" aria-label="<%= it.t('sprava.role_historie_strankovani') %>">
+  <% if (it.predchozi) { %><a href="<%= it.predchozi %>" rel="prev">← <%= it.t('sprava.role_historie_novejsi') %></a><% } %>
+  <% if (it.dalsi) { %><a href="<%= it.dalsi %>" rel="next"><%= it.t('sprava.role_historie_starsi') %> →</a><% } %>
+</nav>
+<% } %>

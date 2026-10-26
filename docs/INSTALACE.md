@@ -38,6 +38,8 @@ chmod 600 .env
 | `SMS_POVOLENE_PREDVOLBY`                                        | na jaká čísla smí jít SMS s kódem, výchozí `+420,+421` (ochrana před zneužitím na drahá zahraniční čísla)              |
 | `SMS_DENNI_LIMIT_KODU`                                          | nejvýš kolik SMS s kódy za 24 h pro celou instalaci (výchozí 300); při vyčerpání přijde správcům e-mail                |
 | `OTP_COOLDOWN_S`                                                | minimální odstup dvou kódů na stejné číslo v sekundách (výchozí 60)                                                    |
+| `ZALOHY_DIR`                                                    | nepovinné: adresář se zálohami (jen čtení) — Administrace → Systém → Stav systému ukáže stáří poslední zálohy          |
+| `GIT_COMMIT`                                                    | verze kódu na stránce Stav systému; předává se při sestavení: `--build-arg GIT_COMMIT=$(git rev-parse --short HEAD)`   |
 
 Obraz Dockeru má `NODE_ENV=production` sám; ostrá instalace s `SMS_PROVIDER=konzole` (bez SMS brány) se odmítne spustit — výjimkou je testovací instalace s `OTP_DEV_ZOBRAZIT=1`.
 

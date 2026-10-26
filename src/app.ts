@@ -19,10 +19,10 @@ import type { FastifyBaseLogger } from 'fastify';
 import { OtpSluzba, rozeberPredvolby } from './lib/otp.js';
 import { sql } from 'kysely';
 import { vytvorLimit, type Limit } from './lib/limit.js';
-import { KonzoleMail, SmtpMail, type MailPoskytovatel } from './lib/mail.js';
+import { KonzoleMail, SmtpMail, sledujMail, type MailPoskytovatel } from './lib/mail.js';
 import { vytvorSmsPoskytovatele } from './lib/sms/index.js';
 import type { SmsPoskytovatel } from './lib/sms/typy.js';
-import { PostgresSessionStore } from './web/sezeni.js';
+import { PostgresSessionStore, zaznamenejAktivitu } from './web/sezeni.js';
 import nahravani from './web/nahravani.js';
 import souboryRoutes from './web/soubory.js';
 import ikonyRoutes from './web/ikony.js';
@@ -45,6 +45,7 @@ import sluzbyModul, { vytvorModuly } from './moduly/sluzby/index.js';
 import apiModul from './moduly/api/index.js';
 import vystrahyModul from './moduly/infokanal/vystrahy/index.js';
 import administraceModul from './moduly/administrace/index.js';
+import { platneRole } from './moduly/ucty/role-platnost.js';
 
 /** vrátí true, pokud požadavek obsloužil (odpověď odeslána) */
 /** service worker, který po starém webu uklidí: smaže keše, odregistruje se a obnoví otevřená okna */
@@ -140,7 +141,7 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   app.decorate('db', db);
   app.decorate('t', vytvorT('cs'));
   app.decorate('sms', volby.sms ?? vytvorSmsPoskytovatele(env, log));
-  app.decorate('mail', volby.mail ?? vytvorMail(env, log));
+  app.decorate('mail', sledujMail(volby.mail ?? vytvorMail(env, log)));
   app.decorate(
     'otp',
     new OtpSluzba(db, env.SESSION_SECRET, {
@@ -265,7 +266,12 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
       await req.session.destroy();
       return;
     }
+    // vypršená dočasná role se nepoužije ani v mezidobí před během plánovače (a rovnou se odebere)
+    u.role = await platneRole(db, u);
     req.uzivatel = u;
+    await zaznamenejAktivitu(db, req.session.sessionId, req.headers['user-agent']).catch((e) =>
+      req.log.warn({ err: e }, 'aktivita sezení'),
+    );
   });
 
   // CSRF pro všechny formuláře (POST) kromě OIDC endpointů a webhooků, které mají vlastní ochranu
