@@ -15,6 +15,10 @@ import { odkazAkce } from './akce-externi.js';
 import { pomocniciOdstavek } from '../odstavky/index.js';
 import { pomocniciPocasi } from '../pocasi/index.js';
 import { klicVysledku, vysledkyZDokumentu, type VysledekHledani } from './hledani-dokumentu.js';
+import { strankovani } from '../../lib/strankovani.js';
+
+/** volby „Na stránce“ v seznamu aktualit (první = výchozí) */
+const NA_STRANKU = [12, 24, 48, 96];
 
 /** akce webu + akce z rezervací, seřazené podle začátku */
 function sloucAkce<T extends { datum: Date | null }, U extends { datum: Date }>(
@@ -193,30 +197,47 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
     });
   });
 
-  app.get<{ Querystring: { kategorie?: string; strana?: string } }>('/aktuality', async (req, reply) => {
-    const vsechny = await s.obsah.kategorie();
-    const sObsahem = await s.obsah.kategorieSObsahem();
-    const k = vsechny.find((x) => x.slug === req.query.kategorie);
-    const v = await s.obsah.aktuality({ kategorie: k?.id ?? null, stranka: cisloStrany(req.query.strana) });
-    // filtr: hlavní rubriky; u vybrané rubriky cesta k ní (nadřazené) a její podrubriky
-    const podleId = new Map(vsechny.map((x) => [x.id, x]));
-    const cesta: typeof vsechny = [];
-    for (let x = k; x; x = x.nadrazena_id !== null ? podleId.get(x.nadrazena_id) : undefined) {
-      if (cesta.includes(x)) break;
-      cesta.unshift(x);
-    }
-    return reply.view('web/aktuality', {
-      titulek: k ? `${k.nazev} — ${t('web.aktuality')}` : t('web.aktuality'),
-      kategorie: sObsahem.filter((x) => x.uroven === 0),
-      rubrikaCesta: cesta,
-      podrubriky: k ? sObsahem.filter((x) => x.nadrazena_id === k.id) : [],
-      aktivni: k?.slug ?? '',
-      aktivniKoren: cesta[0]?.slug ?? '',
-      ...v,
-      obr,
-      ...pomocnici,
-    });
-  });
+  app.get<{ Querystring: { kategorie?: string; strana?: string; na?: string } }>(
+    '/aktuality',
+    async (req, reply) => {
+      const vsechny = await s.obsah.kategorie();
+      const sObsahem = await s.obsah.kategorieSObsahem();
+      const k = vsechny.find((x) => x.slug === req.query.kategorie);
+      const na = NA_STRANKU.includes(Number(req.query.na)) ? Number(req.query.na) : NA_STRANKU[0]!;
+      const v = await s.obsah.aktuality({
+        kategorie: k?.id ?? null,
+        stranka: cisloStrany(req.query.strana),
+        naStranku: na,
+      });
+      // filtr: hlavní rubriky; u vybrané rubriky cesta k ní (nadřazené) a její podrubriky
+      const podleId = new Map(vsechny.map((x) => [x.id, x]));
+      const cesta: typeof vsechny = [];
+      for (let x = k; x; x = x.nadrazena_id !== null ? podleId.get(x.nadrazena_id) : undefined) {
+        if (cesta.includes(x)) break;
+        cesta.unshift(x);
+      }
+      return reply.view('web/aktuality', {
+        titulek: k ? `${k.nazev} — ${t('web.aktuality')}` : t('web.aktuality'),
+        kategorie: sObsahem.filter((x) => x.uroven === 0),
+        rubrikaCesta: cesta,
+        podrubriky: k ? sObsahem.filter((x) => x.nadrazena_id === k.id) : [],
+        aktivni: k?.slug ?? '',
+        aktivniKoren: cesta[0]?.slug ?? '',
+        ...v,
+        strankovani: strankovani({
+          cesta: '/aktuality',
+          parametry: k ? { kategorie: k.slug } : {},
+          strana: v.strana,
+          stran: v.stran,
+          celkem: v.celkem,
+          na,
+          moznosti: NA_STRANKU,
+        }),
+        obr,
+        ...pomocnici,
+      });
+    },
+  );
 
   app.get('/aktuality/rss.xml', async (_req, reply) => {
     const { radky } = await s.obsah.aktuality({ naStranku: 30 });

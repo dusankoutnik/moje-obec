@@ -16,9 +16,5 @@
 <div class="karty-clanku seznam-clanku">
   <% it.radky.forEach(function (a) { %><%~ include('/web/_karta-aktuality', { a: a, obr: it.obr, fmtDatum: it.fmtDatum, zkrat: it.zkrat, t: it.t, h: 2 }) %><% }) %>
 </div>
-<nav class="strankovani" aria-label="<%= it.t('deska.strankovani') %>">
-  <% var k = it.aktivni ? 'kategorie=' + it.aktivni + '&' : ''; %>
-  <% if (it.strana > 1) { %><a href="/aktuality?<%= k %>strana=<%= it.strana - 1 %>">← <%= it.t('deska.novejsi') %></a><% } else { %><span></span><% } %>
-  <% if (it.dalsi) { %><a href="/aktuality?<%= k %>strana=<%= it.strana + 1 %>"><%= it.t('deska.starsi') %> →</a><% } %>
-</nav>
+<%~ include('/_strankovani', { s: it.strankovani, t: it.t }) %>
 <p class="odkazy-pod"><a href="/aktuality/rss.xml"><%= it.t('deska.rss') %></a></p>

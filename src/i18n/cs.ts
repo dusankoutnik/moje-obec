@@ -1917,6 +1917,18 @@ export const cs = {
     fronty_aplikace: 'zprávy aplikací',
     aktualni_k: 'Stav k {cas}.',
   },
+  strankovani: {
+    nav: 'Stránkování',
+    prvni: 'první',
+    posledni: 'poslední',
+    novejsi: 'novější',
+    starsi: 'starší',
+    strana: 'Strana {n}',
+    aktualni: 'Strana {n}, aktuální',
+    stav: 'Strana {strana} z {stran} · celkem {celkem}',
+    na_strance: 'Na stránce',
+    zobrazit: 'Zobrazit',
+  },
 } as const;
 
 export type Slovnik = typeof cs;

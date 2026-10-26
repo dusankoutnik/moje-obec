@@ -468,6 +468,72 @@ dl.seznam dd {
   justify-content: space-between;
   margin: 16px 0;
 }
+.strankovani-plne {
+  display: block;
+}
+.strankovani-plne .strany {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+.strankovani-plne .strany a,
+.strankovani-plne .strany span {
+  display: inline-block;
+  min-width: 2.5em;
+  padding: 6px 10px;
+  border: 1px solid var(--linka);
+  border-radius: 8px;
+  background: var(--bila);
+  text-align: center;
+  text-decoration: none;
+}
+.strankovani-plne .strany a:hover {
+  border-color: var(--zelena);
+}
+.strankovani-plne .strany a[aria-current='page'] {
+  background: var(--zelena);
+  border-color: var(--zelena);
+  color: var(--bila);
+  font-weight: 700;
+}
+.strankovani-plne .strany span[aria-disabled='true'] {
+  color: var(--text-tlumeny);
+}
+.strankovani-plne .strany .vypustka {
+  border-color: transparent;
+  background: none;
+  min-width: 1.5em;
+}
+.strankovani-pata {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+}
+.strankovani-stav {
+  margin: 0;
+}
+.na-strance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.na-strance select {
+  width: auto;
+}
+@media (max-width: 600px) {
+  .strankovani-plne .strany li.cislo {
+    display: none;
+  }
+  .strankovani-plne .strany li.cislo:has(a[aria-current='page']) {
+    display: list-item;
+  }
+}
 .pi-bod.pi-u2 {
   margin-left: 16px;
 }

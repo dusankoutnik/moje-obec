@@ -1,0 +1,25 @@
+<% var s = it.s, t = it.t; %>
+<nav class="strankovani strankovani-plne" aria-label="<%= t('strankovani.nav') %>">
+  <% if (s.stran > 1) { %>
+  <ul class="strany">
+    <li><% if (s.prvni) { %><a href="<%= s.prvni %>">« <%= t('strankovani.prvni') %></a><% } else { %><span aria-disabled="true">« <%= t('strankovani.prvni') %></span><% } %></li>
+    <li><% if (s.predchozi) { %><a href="<%= s.predchozi %>" rel="prev">‹ <%= t('strankovani.novejsi') %></a><% } else { %><span aria-disabled="true">‹ <%= t('strankovani.novejsi') %></span><% } %></li>
+    <% s.polozky.forEach(function (p) { %>
+    <li class="cislo"><% if (!p) { %><span class="vypustka" aria-hidden="true">…</span><% } else if (p.aktualni) { %><a href="<%= p.href %>" aria-current="page" aria-label="<%= t('strankovani.aktualni', { n: p.strana }) %>"><%= p.strana %></a><% } else { %><a href="<%= p.href %>" aria-label="<%= t('strankovani.strana', { n: p.strana }) %>"><%= p.strana %></a><% } %></li>
+    <% }) %>
+    <li><% if (s.dalsi) { %><a href="<%= s.dalsi %>" rel="next"><%= t('strankovani.starsi') %> ›</a><% } else { %><span aria-disabled="true"><%= t('strankovani.starsi') %> ›</span><% } %></li>
+    <li><% if (s.posledni) { %><a href="<%= s.posledni %>"><%= t('strankovani.posledni') %> »</a><% } else { %><span aria-disabled="true"><%= t('strankovani.posledni') %> »</span><% } %></li>
+  </ul>
+  <% } %>
+  <div class="strankovani-pata">
+    <p class="strankovani-stav"><%= t('strankovani.stav', { strana: s.strana, stran: s.stran, celkem: s.celkem }) %></p>
+    <form method="get" action="<%= s.cesta %>" class="na-strance">
+      <% Object.keys(s.skryte).forEach(function (k) { %><input type="hidden" name="<%= k %>" value="<%= s.skryte[k] %>"><% }) %>
+      <label for="na-strance"><%= t('strankovani.na_strance') %></label>
+      <select id="na-strance" name="na">
+        <% s.moznosti.forEach(function (m) { %><option value="<%= m %>" <%= m === s.na ? 'selected' : '' %>><%= m %></option><% }) %>
+      </select>
+      <button type="submit" class="tlacitko male sekundarni"><%= t('strankovani.zobrazit') %></button>
+    </form>
+  </div>
+</nav>

@@ -207,13 +207,27 @@ export class ObsahCteni {
         ]),
       );
     if (v.kategorie) q = q.where(vRubrikach(sPodrubrikami(await this.kategorie(), v.kategorie)));
-    const radky = await q
-      .orderBy(razeni, 'desc')
-      .orderBy('o.id')
-      .limit(n + 1)
-      .offset((strana - 1) * n)
-      .execute();
-    return { radky: radky.slice(0, n), dalsi: radky.length > n, strana };
+    const [radky, pocet] = await Promise.all([
+      q
+        .orderBy(razeni, 'desc')
+        .orderBy('o.id')
+        .limit(n + 1)
+        .offset((strana - 1) * n)
+        .execute(),
+      q
+        .clearSelect()
+        .select((eb) => eb.fn.countAll<string>().as('n'))
+        .executeTakeFirstOrThrow(),
+    ]);
+    const celkem = Number(pocet.n);
+    return {
+      radky: radky.slice(0, n),
+      dalsi: radky.length > n,
+      strana,
+      celkem,
+      stran: Math.max(1, Math.ceil(celkem / n)),
+      naStranku: n,
+    };
   }
 
   /** akce: nadcházející (a probíhající), nebo proběhlé */
