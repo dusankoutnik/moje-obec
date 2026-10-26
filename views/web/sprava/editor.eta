@@ -52,6 +52,20 @@
         <% if (it.verejnaUrl) { %><p><a href="<%= it.verejnaUrl %>"><%= it.t('web.zobrazit_na_webu') %> →</a></p><% } %>
       </section>
 
+      <% if (it.rozesilka) { %>
+      <section class="karta" id="rozesilka" aria-labelledby="rozesilka-h">
+        <h2 id="rozesilka-h"><%= it.obec.texty.nazev_infokanalu %></h2>
+        <% if (it.rozesilka.hlaseni) { %><p><%= it.t('propojeni.rozeslano', { datum: it.fmtDatum(it.rozesilka.hlaseni.naplanovano_na || it.rozesilka.hlaseni.vytvoreno_at), n: it.rozesilka.hlaseni.prijemcu }) %> <a href="/infokanal/sprava/hlaseni/<%= it.rozesilka.hlaseni.id %>"><%= it.t('propojeni.rozeslano_detail') %></a></p><% } %>
+        <% if (it.rozesilka.muze) { %>
+        <p><a class="tlacitko sekundarni plna-sirka" href="/infokanal/sprava/nove?obsah=<%= o.id %>" aria-describedby="rozesilka-n"><%= it.t('propojeni.rozeslat', { kanal: it.obec.texty.nazev_infokanalu }) %></a></p>
+        <p class="napoveda" id="rozesilka-n"><%= it.t('propojeni.rozeslat_napoveda') %></p>
+        <% } else { %>
+        <p><button class="tlacitko sekundarni plna-sirka" type="button" disabled aria-describedby="rozesilka-n"><%= it.t('propojeni.rozeslat', { kanal: it.obec.texty.nazev_infokanalu }) %></button></p>
+        <p class="napoveda" id="rozesilka-n"><%= it.t('propojeni.rozeslat_az_zverejnene', { kanal: it.obec.texty.nazev_infokanalu }) %></p>
+        <% } %>
+      </section>
+      <% } %>
+
       <% if (typ === 'aktualita') { %>
       <section class="karta">
         <h2><%= it.t('web.zarazeni') %></h2>
@@ -94,13 +108,6 @@
       <% } %>
       <% } %>
 
-      <% if (it.rozesilka) { %>
-      <section class="karta">
-        <h2><%= it.t('propojeni.rozesilka_titulek') %></h2>
-        <% if (it.rozesilka.hlaseni) { %><p><%= it.t('propojeni.rozeslano', { datum: it.fmtDatum(it.rozesilka.hlaseni.naplanovano_na || it.rozesilka.hlaseni.vytvoreno_at), n: it.rozesilka.hlaseni.prijemcu }) %> <a href="/infokanal/sprava/hlaseni/<%= it.rozesilka.hlaseni.id %>"><%= it.t('propojeni.rozeslano_detail') %></a></p><% } %>
-        <% if (it.rozesilka.muze) { %><p><a class="tlacitko sekundarni" href="/infokanal/sprava/nove?obsah=<%= o.id %>"><%= it.t('propojeni.rozeslat') %></a></p><% } else { %><p class="napoveda"><%= it.t('propojeni.rozeslat_az_zverejnene') %></p><% } %>
-      </section>
-      <% } %>
 
       <% if (typ === 'stranka' || typ === 'odkaz') { %>
       <section class="karta">

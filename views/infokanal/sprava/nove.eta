@@ -3,7 +3,7 @@
 <h1><%= it.t('infokanal.nove_hlaseni') %></h1>
 <% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
 <% if (it.prispevek) { %><div class="flash flash-info" role="status"><%= it.t('propojeni.rozesilate', { titulek: it.prispevek.titulek }) %></div><% } %>
-<form method="post" action="/infokanal/sprava/nove" class="formular siroky">
+<form method="post" action="/infokanal/sprava/nove" class="formular siroky" enctype="multipart/form-data" id="hlaseni-formular">
   <input type="hidden" name="_csrf" value="<%= it.csrf %>">
   <% if (it.prispevek) { %><input type="hidden" name="obsah_id" value="<%= it.prispevek.id %>"><% } %>
   <div class="radek">
@@ -34,12 +34,38 @@
   <label for="email_predmet"><%= it.t('infokanal.email_predmet') %></label>
   <input id="email_predmet" name="email_predmet" maxlength="200" value="<%= it.f.email_predmet || '' %>">
   <label for="email_text"><%= it.t('infokanal.email_text') %></label>
-  <textarea id="email_text" name="email_text" rows="8"><%= it.f.email_text || '' %></textarea>
+  <p class="kopirovani" hidden><button class="tlacitko sekundarni male" type="button" data-kopirovat="sms" data-do="email_text" aria-describedby="kopirovani-n"><%= it.t('infokanal.kopirovat_sms_do_emailu') %></button></p>
+  <textarea id="email_text" name="email_text" rows="8" data-editor="zakladni"><%= it.f.email_text || '' %></textarea>
+
+  <fieldset class="prilohy-hlaseni">
+    <legend><%= it.t('infokanal.prilohy') %></legend>
+    <% if (it.prilohy.length) { %>
+    <p class="napoveda"><%= it.t('infokanal.prilohy_nahrane') %></p>
+    <ul class="kratky-seznam">
+      <% it.prilohy.forEach(function (p) { %>
+      <li><input type="hidden" name="priloha_id" value="<%= p.id %>"><a href="/soubory/<%= p.id %>/<%= encodeURIComponent(p.nazev) %>"><%= p.nazev %></a>
+        <label class="zatrzitko"><input type="checkbox" name="odebrat_prilohu" value="<%= p.id %>"> <%= it.t('infokanal.prilohy_odebrat', { nazev: p.nazev }) %></label></li>
+      <% }) %>
+    </ul>
+    <% } %>
+    <label for="prilohy"><%= it.t('infokanal.prilohy_vybrat') %> <small>(<%= it.t('app.nepovinne') %>)</small></label>
+    <input id="prilohy" name="prilohy" type="file" multiple aria-describedby="prilohy-n">
+    <p class="napoveda" id="prilohy-n"><%= it.t('infokanal.prilohy_napoveda', { n: it.maxPriloh, limit: it.maxPrilohEmailem }) %> <%= it.prispevek ? it.t('infokanal.prilohy_napoveda_prispevek') : it.t('infokanal.prilohy_napoveda_clanek') %></p>
+  </fieldset>
+
   <% if (!it.prispevek) { %>
   <label for="clanek_titulek"><%= it.t('infokanal.clanek_titulek') %></label>
+  <p class="kopirovani" hidden><button class="tlacitko sekundarni male" type="button" data-kopirovat="email_predmet" data-do="clanek_titulek" aria-describedby="kopirovani-n"><%= it.t('infokanal.kopirovat_predmet') %></button></p>
   <input id="clanek_titulek" name="clanek_titulek" maxlength="200" value="<%= it.f.clanek_titulek || '' %>">
   <label for="clanek_text"><%= it.t('infokanal.clanek_html') %></label>
-  <textarea id="clanek_text" name="clanek_text" rows="6"><%= it.f.clanek_text || '' %></textarea>
+  <p class="kopirovani" hidden><button class="tlacitko sekundarni male" type="button" data-kopirovat="email_text" data-do="clanek_text" aria-describedby="kopirovani-n"><%= it.t('infokanal.kopirovat_email_do_clanku') %></button>
+    <button class="tlacitko sekundarni male" type="button" data-kopirovat="sms" data-do="clanek_text" aria-describedby="kopirovani-n"><%= it.t('infokanal.kopirovat_sms_do_clanku') %></button></p>
+  <textarea id="clanek_text" name="clanek_text" rows="6" data-editor="zakladni"><%= it.f.clanek_text || '' %></textarea>
   <% } %>
+  <p class="napoveda kopirovani" id="kopirovani-n" hidden><%= it.t('infokanal.kopirovat_napoveda') %></p>
+  <p class="napoveda" id="kopirovani-stav" role="status" aria-live="polite" data-ok="<%= it.t('infokanal.zkopirovano') %>" data-prazdne="<%= it.t('infokanal.kopirovat_prazdne') %>"></p>
   <button class="tlacitko" type="submit"><%= it.t('infokanal.odeslat') %></button>
 </form>
+<script src="/static/vendor/quill/quill.js" defer></script>
+<script src="/static/js/editor.js?v=<%= it.v %>" defer></script>
+<script src="/static/js/hlaseni.js?v=<%= it.v %>" defer></script>

@@ -32,6 +32,8 @@ const CESTY_NAHRAVANI: { cesta: RegExp; role: Role[] }[] = [
   },
   { cesta: /^\/sprava\/web(\/|\?|$)/, role: ['web'] },
   { cesta: /^\/sprava\/deska(\/|\?|$)/, role: ['deska'] },
+  // přílohy nového hlášení infokanálu (e-mail + článek z hlášení)
+  { cesta: /^\/infokanal\/sprava\/nove(\?|$)/, role: ['redaktor'] },
 ];
 
 /** nejvýš souborů v jednom požadavku (galerie se nahrává po dávkách) */

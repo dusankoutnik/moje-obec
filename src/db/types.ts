@@ -178,8 +178,16 @@ export interface IkHlaseniTable {
   prevod_id: Generated<number | null>;
   /** souhrn příjemců převedené historie {prijemcu, odeslano, sms:{stav:n}, email:{…}, web_url?} */
   souhrn: ColumnType<SouhrnHlaseni | null, string | null | undefined, string | null>;
+  /** přílohy hlášení (migrace 0030) — snímek údajů souborů z úložiště */
+  prilohy: ColumnType<PrilohaHlaseni[], string | undefined, string>;
 }
 export type Hlaseni = Selectable<IkHlaseniTable>;
+export interface PrilohaHlaseni {
+  id: string;
+  nazev: string;
+  velikost: number;
+  mime: string;
+}
 export interface SouhrnHlaseni {
   prijemcu: number;
   odeslano: number;

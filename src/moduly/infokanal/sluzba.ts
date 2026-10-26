@@ -1,7 +1,7 @@
 // Infokanál — doménová logika: odběratelé, kategorie, výběr příjemců, založení hlášení.
 // Čisté funkce (vyberPrijemce) jsou oddělené od DB, aby se daly testovat bez Postgresu.
 import type { Db } from '../../db/index.js';
-import type { KanalPreference, Odberatel } from '../../db/types.js';
+import type { KanalPreference, Odberatel, PrilohaHlaseni } from '../../db/types.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { nahodnyToken } from '../../lib/krypto.js';
 import { bezDiakritiky, rozpoznejKontakt } from '../../lib/kontakty.js';
@@ -116,6 +116,8 @@ export interface NoveHlaseni {
   dulezite?: boolean;
   zdrojAutomatu?: string | null;
   dalsiKontakty?: string[];
+  /** přílohy (e-mail + článek z hlášení), viz obsah.ts */
+  prilohy?: PrilohaHlaseni[];
 }
 
 export class InfokanalSluzba {
@@ -331,6 +333,7 @@ export class InfokanalSluzba {
           stav,
           naplanovano_na: h.naplanovanoNa ?? null,
           zdroj_automatu: h.zdrojAutomatu ?? null,
+          prilohy: JSON.stringify(h.prilohy ?? []),
         })
         .returning('id')
         .executeTakeFirstOrThrow();
