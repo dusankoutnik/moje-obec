@@ -284,6 +284,38 @@ jako **přístupný text** místo obrázkového banneru `ppo.cezdistribuce.cz/ov
   bezstavy.cz pokrývá jen ČEZ. Jiný distributor = nový převodník v `cez.ts`-stylu, pokud bude mít použitelný zdroj.
 - **Navazuje:** automatické rozesílání odstávek infokanálem (P1 výše) může použít stejný převod `prevedOdpoved()`.
 
+## Návštěvnost webu — veřejná statistika (hotovo 27. 10. 2026)
+
+Modul `navstevnost` (`src/moduly/navstevnost/`, migrace 0031): veřejná stránka `/navstevnost` s odkazem v patičce
+(„Návštěvnost webu“) — obec chce být transparentní, proto ne v administraci. Logika převzatá z návštěvnosti MůjÚčtu.
+
+- **Zdroj = access logy reverzní proxy** ve formátu Nginx Proxy Manageru (adresář připojený jen pro čtení, aktuální log
+  i rotované `.N.gz`). Žádný měřicí skript, cookies ani služba třetí strany.
+- **Zapnutí proměnnými prostředí** (ne `obec.yml` — modul potřebuje přístup k logům serveru): `NAVSTEVNOST_LOGY`
+  (adresář; prázdné = vypnuto), `NAVSTEVNOST_SOUBORY` (vzory s `*`/`?` oddělené čárkou, výchozí `*access.log*` — na
+  serveru s více proxy hosty nastavit jen host webu), `NAVSTEVNOST_VLASTNI_IP` (IP vlastního serveru; soukromé sítě
+  se počítají jako robot vždy).
+- **Přepočet** (`logy.ts` → `sluzba.ts`): jednou denně v 5:10 (Praha) a po startu, když tabulky nic nemají. Soubory se
+  čtou proudově a chronologicky (nejstarší archiv první); den, který je o víc než den starší než poslední přečtený
+  řádek, se hned spočítá a jeho klienti se zahodí — v paměti jsou nejvýš dva dny. Dny z logu se v DB přepíší, starší
+  zůstávají (historie roste i po smazání archivů); nejstarší den v logu bývá useknutý rotací, proto se už uložený
+  nepřepisuje. Řádově 1,4 mil. řádků ≈ 13 s.
+- **Co se počítá:** zobrazení stránky = úspěšný `GET` (2xx kromě 206, a 304) mimo statiku, dokumenty, RSS, `/api`,
+  `/sprava`, `/administrace`, OIDC, přihlašovací techniku a administraci aplikací (`/rezervace/admin` …); dokumenty
+  (PDF, DOC, EPUB …) jako stažení. **Robot** = User-Agent podle `BOT_RE`, vlastní/soukromá IP, víc než 200 stránek
+  za den, nebo klient (IP + prohlížeč), který za den zobrazil stránku a nenačetl žádný CSS/JS/obrázek/písmo.
+- **Sekce:** web, infokanál (`/infokanal`), Můj účet (`/ucet`, `/prihlaseni`), rezervace (`/rezervace`), spolujízda
+  (`/rezervace/spolujizda`), eKnihy (`/eknihy`); řádek `celkem` počítá návštěvníka více sekcí jednou.
+- **Soukromí:** ukládají se jen denní počty (`navstevnost_den`) a nejnavštěvovanějších 60 stránek na den a sekci
+  (`navstevnost_stranky`). IP a prohlížeč existují jen v paměti při přepočtu. Cesty se normalizují (bez dotazu,
+  čísla → `:id`, UUID → `:id`, tokeny → `:token`); výjimky: dokument úřední desky (`/uredni-deska/<uuid>`) a archiv
+  starého WordPressu `/rok/měsíc/článek`.
+- **Stránka:** období 7 / 30 / 90 dní a filtr sekce (odkazy, bez JS), souhrn (návštěvníci jako součet za dny,
+  zobrazení, stažení, odfiltrované požadavky robotů), sloupcový graf návštěvníků jako inline SVG (jedna řada bez
+  legendy, `<title>` u každého dne, textová alternativa + tabulka po dnech), tabulka nejnavštěvovanějších stránek
+  s názvy (stránky modulů z textů, stránky/aktuality/akce/galerie z obsahu webu — jen zveřejněné, dokumenty desky,
+  staré adresy přes tabulku přesměrování), poznámka „Jak počítáme“. Stránka je i v `/sitemap.xml`.
+
 ## Počasí — předpověď MET Norway (hotovo 23. 10. 2026)
 
 Modul `pocasi` (`src/moduly/pocasi/`, zapíná se `moduly.pocasi` + souřadnice `pocasi.lat/lon`, za běhu Správa → Moduly

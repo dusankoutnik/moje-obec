@@ -27,10 +27,14 @@ services:
       STARY_WEB_SOUBORY: /app/stary-web-uploads
       # service workery pluginu pwa-for-wp ze starého WordPressu — prohlížeče je dostanou jako „uklízeče“
       STARE_SERVICE_WORKERY: /pwa-sw.js,/pwa-amp-sw.js
+      # veřejná statistika návštěvnosti (/navstevnost) z access logů Nginx Proxy Manageru — proxy host webu obce
+      NAVSTEVNOST_LOGY: /npmlogs
+      NAVSTEVNOST_SOUBORY: proxy-host-1_access.log*
     volumes:
       - ./obec.prod.yml:/app/obec.yml:ro
       - ../platforma-instance/kviz:/app/kviz-instance:ro
       - ../platforma-instance/stary-web-uploads:/app/stary-web-uploads:ro
+      - ../npm/data/logs:/npmlogs:ro # logy NPM jen pro čtení (statistika návštěvnosti)
       - platforma_prod_data:/app/data # nahrané soubory obce — přežijí rebuild
     mem_limit: 768m
     depends_on:

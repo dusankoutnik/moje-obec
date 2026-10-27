@@ -658,6 +658,8 @@ export interface Database {
   ik_vystrahy: IkVystrahyTable;
   ik_vystrahy_zdroje: IkVystrahyZdrojeTable;
   uzivatele_zmeny_telefonu: UzivateleZmenyTelefonuTable;
+  navstevnost_den: NavstevnostDenTable;
+  navstevnost_stranky: NavstevnostStrankyTable;
 }
 
 // ---- automatické výstrahy infokanálu (migrace 0019) ----
@@ -706,4 +708,23 @@ export interface UzivateleZmenyTelefonuTable {
   vyrizil_id: string | null;
   vyrizeno_at: TimestampNullable;
   vytvoreno_at: TimestampGenerated;
+}
+
+// ---- veřejná statistika návštěvnosti (migrace 0031) — jen agregované počty ----
+type Den = ColumnType<string, string, string>;
+export interface NavstevnostDenTable {
+  den: Den;
+  sekce: string;
+  zobrazeni: number;
+  navstevnici: number;
+  stazeni: number;
+  pozadavky: number;
+  boti: number;
+}
+export interface NavstevnostStrankyTable {
+  den: Den;
+  sekce: string;
+  cesta: string;
+  zobrazeni: number;
+  navstevnici: number;
 }

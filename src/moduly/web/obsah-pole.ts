@@ -36,6 +36,7 @@ export const REZERVOVANE = new Set([
   'favicon.ico',
   'sitemap.xml',
   'mapa-stranek',
+  'navstevnost',
   'velikost', // volba velikosti písma návštěvníka (/velikost?v=…)
   'manifest.webmanifest',
   'apple-touch-icon.png',

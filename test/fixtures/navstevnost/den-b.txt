@@ -1,0 +1,4 @@
+[21/Oct/2026:07:00:00 +0000] - 200 200 - GET https obec.example "/" [Client 203.0.113.10] [Length 100] [Gzip -] [Sent-to platforma] "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0" "-"
+[21/Oct/2026:07:00:01 +0000] - 200 200 - GET https obec.example "/static/css/styl.css" [Client 203.0.113.10] [Length 100] [Gzip -] [Sent-to platforma] "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0" "-"
+[21/Oct/2026:07:00:02 +0000] - 200 200 - GET https obec.example "/infokanal" [Client 203.0.113.10] [Length 100] [Gzip -] [Sent-to platforma] "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0" "-"
+[21/Oct/2026:07:00:03 +0000] - 200 200 - GET https obec.example "/eknihy/kniha/1797" [Client 203.0.113.10] [Length 100] [Gzip -] [Sent-to platforma] "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0" "-"

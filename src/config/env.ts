@@ -41,6 +41,13 @@ const EnvSchema = z.object({
     .string()
     .regex(/^\/[\w./-]*\/$/, 'STARY_WEB_PREFIX musí začínat i končit lomítkem')
     .default('/wp-content/uploads/'),
+  // Veřejná statistika návštěvnosti (/navstevnost, odkaz v patičce) z access logů reverzní proxy (formát Nginx Proxy
+  // Manageru). Adresář s logy (připojený jen pro čtení); prázdné = modul vypnutý.
+  NAVSTEVNOST_LOGY: z.string().optional(),
+  // které soubory v adresáři číst: vzory s * a ? oddělené čárkou (aktuální log i zabalené archivy .gz)
+  NAVSTEVNOST_SOUBORY: z.string().default('*access.log*'),
+  // IP adresy vlastního serveru (oddělené čárkou) — jeho požadavky se počítají jako roboti (soukromé sítě vždy)
+  NAVSTEVNOST_VLASTNI_IP: z.string().default(''),
   SMS_PROVIDER: z.enum(['konzole', 'smsgate', 'smsbrana', 'gosms', 'smsmanager']).default('konzole'),
   SMS_ODESILATEL: z.string().optional(),
   // vývoj/pilot: „+420777000001>+420777000099, …“ — SMS pro tato čísla jdou skutečnou bránou na jiné číslo

@@ -3279,3 +3279,77 @@ button.kviz-odpoved:active {
 .dlazdice-sprava td {
   vertical-align: middle;
 }
+
+/* veřejná statistika návštěvnosti (/navstevnost) */
+.navst-panel {
+  margin: 0 0 24px;
+}
+.navst-souhrn {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+  margin: 0 0 8px;
+}
+.navst-souhrn dt {
+  color: var(--text-tlumeny);
+  font-size: 0.95rem;
+}
+.navst-souhrn dd {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.navst-graf {
+  margin: 0 0 8px;
+  overflow-x: auto; /* na telefonu se graf posouvá do strany, ať čísla a data zůstanou čitelná */
+}
+.navst-graf svg {
+  width: 100%;
+  min-width: 560px;
+  height: auto;
+  display: block;
+}
+.navst-sloupec {
+  fill: var(--zelena);
+}
+.navst-hit {
+  fill: transparent;
+}
+.navst-den:hover .navst-sloupec {
+  fill: var(--zelena-tmava);
+}
+.navst-osa-linka {
+  stroke: #8a958c;
+  stroke-width: 1;
+}
+.navst-osa {
+  fill: #4a554c;
+  font-size: 13px;
+}
+.navst-max {
+  fill: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+.navst-dny summary {
+  cursor: pointer;
+  color: var(--zelena);
+  font-weight: 600;
+  padding: 6px 0;
+}
+.navst-c {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.tabulka th.navst-c,
+.tabulka td.navst-c {
+  text-align: right;
+}
+.navst-cesta {
+  display: block;
+  color: var(--text-tlumeny);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}

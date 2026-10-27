@@ -122,6 +122,7 @@ async function webMapa(app: FastifyInstance) {
     }
     if (m.infokanal) polozky.push({ url: '/infokanal' });
     if (m.kviz) polozky.push({ url: '/kviz' });
+    if (app.navstevnost) polozky.push({ url: '/navstevnost' });
     polozky.push(
       { url: '/kontakt' },
       { url: app.obec.patika.ochrana_osobnich_udaju },

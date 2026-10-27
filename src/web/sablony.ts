@@ -94,6 +94,8 @@ export default fp(async function sablony(app: FastifyInstance) {
         obec,
         obecStaticka: app.obec,
         devlog: app.env.DEVLOG,
+        // veřejná statistika návštěvnosti — odkaz v patičce pro všechny
+        navstevnostZapnuta: !!app.env.NAVSTEVNOST_LOGY,
         logoVyrobce: LOGO_VYROBCE ? `/static/img/${LOGO_VYROBCE}` : null,
         env: app.env.NODE_ENV,
         uzivatel: req.uzivatel ?? null,

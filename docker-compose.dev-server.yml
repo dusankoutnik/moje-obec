@@ -21,6 +21,9 @@ services:
       DEVLOG: '1'
       # vlastní otázky kvízu obce (mimo veřejný repozitář)
       KVIZ_BALIKY: /app/kviz-instance
+      # veřejná statistika návštěvnosti (/navstevnost) z access logů Nginx Proxy Manageru — proxy host dev instalace
+      NAVSTEVNOST_LOGY: /npmlogs
+      NAVSTEVNOST_SOUBORY: proxy-host-8_access.log*
       # soubory starého WordPressu na původní adrese /wp-content/uploads/ (pevné odkazy, ne kopie dat)
       STARY_WEB_SOUBORY: /app/stary-web-uploads
       # service workery pluginu pwa-for-wp ze starého WordPressu — prohlížeče je dostanou jako „uklízeče“
@@ -28,6 +31,7 @@ services:
     volumes:
       - ./obec.yml:/app/obec.yml:ro
       - ../platforma-instance/kviz:/app/kviz-instance:ro
+      - ../npm/data/logs:/npmlogs:ro # logy NPM jen pro čtení (statistika návštěvnosti)
       - ../platforma-instance/stary-web-uploads:/app/stary-web-uploads:ro
       - platforma_data:/app/data # nahrané soubory obce — přežijí rebuild
     # zpracování fotek (sharp), import a OCR dokumentů (tesseract ~150 MB na stranu) potřebují víc než původních 384 MB

@@ -1,0 +1,84 @@
+<% layout('/layout') %>
+<% const p = it.p %>
+<h1><%= it.t('navstevnost.titulek') %></h1>
+<p><%= it.t('navstevnost.uvod') %></p>
+
+<nav class="stitky-filtr" aria-label="<%= it.t('navstevnost.obdobi') %>">
+  <% it.obdobi.forEach(function (n) { %><a href="<%= it.odkaz({ dni: n }) %>" <% if (p.dni === n) { %>aria-current="page"<% } %>><%= it.t('navstevnost.obdobi_dni', { n: n }) %></a><% }) %>
+</nav>
+<% if (p.sekceSDaty.length > 1 || p.sekce) { %>
+<nav class="stitky-filtr" aria-label="<%= it.t('navstevnost.sekce_filtr') %>">
+  <a href="<%= it.odkaz({ sekce: null }) %>" <% if (!p.sekce) { %>aria-current="page"<% } %>><%= it.t('navstevnost.sekce_vse') %></a>
+  <% p.sekceSDaty.forEach(function (s) { %><a href="<%= it.odkaz({ sekce: s }) %>" <% if (p.sekce === s) { %>aria-current="page"<% } %>><%= it.t('navstevnost.sekce.' + s) %></a><% }) %>
+</nav>
+<% } %>
+
+<% if (!p.prvniDen) { %>
+<section class="panel navst-panel"><p class="prazdne"><%= it.t('navstevnost.zatim_nic') %></p></section>
+<% } else { %>
+<section class="panel navst-panel" aria-labelledby="h-souhrn">
+  <h2 id="h-souhrn"><%= it.t('navstevnost.souhrn') %>: <%= p.sekce ? it.t('navstevnost.sekce.' + p.sekce) : it.t('navstevnost.sekce_vse') %>, <%= it.t('navstevnost.obdobi_dni_popis', { n: p.dni }) %></h2>
+  <dl class="navst-souhrn">
+    <div><dt><%= it.t('navstevnost.navstevnici') %></dt><dd><%= it.cislo(p.navstevnici) %></dd></div>
+    <div><dt><%= it.t('navstevnost.zobrazeni') %></dt><dd><%= it.cislo(p.zobrazeni) %></dd></div>
+    <div><dt><%= it.t('navstevnost.stazeni') %></dt><dd><%= it.cislo(p.stazeni) %></dd></div>
+  </dl>
+  <p class="poznamka"><%= it.t('navstevnost.navstevnici') %>: <%= it.t('navstevnost.navstevnici_popis') %>. <%= it.t('navstevnost.boti') %>: <%= it.cislo(p.boti) %>.</p>
+</section>
+
+<section class="panel navst-panel" aria-labelledby="h-graf">
+  <h2 id="h-graf"><%= it.t('navstevnost.graf_nadpis') %></h2>
+  <% const g = it.graf %>
+  <figure class="navst-graf" tabindex="0" aria-labelledby="h-graf">
+    <svg viewBox="0 0 <%= g.W %> <%= g.H %>" role="img" aria-labelledby="navst-graf-t navst-graf-d">
+      <title id="navst-graf-t"><%= it.t('navstevnost.graf_nadpis') %></title>
+      <desc id="navst-graf-d"><%= it.t('navstevnost.graf_popis', { od: it.datumDne(p.od), do: it.datumDne(p.dnes), max: it.cislo(Math.max.apply(null, p.serie.map(function (d) { return d.navstevnici; }).concat([0]))) }) %></desc>
+      <line class="navst-osa-linka" x1="<%= g.vlevo %>" x2="<%= g.vpravo %>" y1="<%= g.dole %>" y2="<%= g.dole %>"/>
+      <% g.sloupce.forEach(function (s) { %><g class="navst-den"><title><%= s.popis %></title><rect class="navst-hit" x="<%= s.hitX %>" y="0" width="<%= s.hitW %>" height="<%= g.dole %>"/><% if (s.d) { %><path class="navst-sloupec" d="<%= s.d %>"/><% } %></g><% }) %>
+      <% if (g.maximum) { %><text class="navst-max" x="<%= g.maximum.x %>" y="<%= g.maximum.y %>" text-anchor="middle"><%= g.maximum.text %></text><% } %>
+      <% g.osa.forEach(function (o) { %><text class="navst-osa" x="<%= o.x %>" y="<%= g.H - 8 %>" text-anchor="<%= o.kotva %>"><%= o.text %></text><% }) %>
+    </svg>
+  </figure>
+  <details class="navst-dny">
+    <summary><%= it.t('navstevnost.tabulka_dny') %></summary>
+    <div class="tabulka-obal">
+      <table class="tabulka kompaktni">
+        <caption class="vh"><%= it.t('navstevnost.tabulka_dny') %></caption>
+        <thead><tr><th scope="col"><%= it.t('navstevnost.den') %></th><th scope="col" class="navst-c"><%= it.t('navstevnost.navstevnici') %></th><th scope="col" class="navst-c"><%= it.t('navstevnost.zobrazeni') %></th></tr></thead>
+        <tbody>
+          <% p.serie.slice().reverse().forEach(function (d) { %><tr><th scope="row"><%= it.datumDne(d.den) %></th><td class="navst-c"><%= it.cislo(d.navstevnici) %></td><td class="navst-c"><%= it.cislo(d.zobrazeni) %></td></tr><% }) %>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</section>
+
+<section class="panel navst-panel" aria-labelledby="h-stranky">
+  <h2 id="h-stranky"><%= it.t('navstevnost.stranky_nadpis') %></h2>
+  <% if (!p.stranky.length) { %><p class="prazdne"><%= it.t('navstevnost.zadna_data') %></p><% } else { %>
+  <div class="tabulka-obal">
+    <table class="tabulka">
+      <caption class="vh"><%= it.t('navstevnost.stranky_nadpis') %></caption>
+      <thead><tr><th scope="col"><%= it.t('navstevnost.stranka') %></th><% if (!p.sekce) { %><th scope="col"><%= it.t('navstevnost.cast') %></th><% } %><th scope="col" class="navst-c"><%= it.t('navstevnost.zobrazeni') %></th><th scope="col" class="navst-c"><%= it.t('navstevnost.navstevnici') %></th></tr></thead>
+      <tbody>
+        <% p.stranky.forEach(function (s) { %><tr>
+          <td><% if (s.odkaz) { %><a href="<%= s.odkaz %>"><%= s.titulek || s.cesta %></a><% } else { %><%= s.titulek || s.cesta %><% } %><% if (s.titulek) { %><span class="navst-cesta"><%= s.cesta %></span><% } %></td>
+          <% if (!p.sekce) { %><td><%= it.t('navstevnost.sekce.' + s.sekce) %></td><% } %>
+          <td class="navst-c"><%= it.cislo(s.zobrazeni) %></td>
+          <td class="navst-c"><%= it.cislo(s.navstevnici) %></td>
+        </tr><% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</section>
+<% } %>
+
+<section class="panel navst-panel" aria-labelledby="h-jak">
+  <h2 id="h-jak"><%= it.t('navstevnost.jak_nadpis') %></h2>
+  <p><%= it.t('navstevnost.jak_1') %></p>
+  <p><%= it.t('navstevnost.jak_2') %></p>
+  <p><%= it.t('navstevnost.jak_3') %></p>
+  <p><%= it.t('navstevnost.jak_4') %></p>
+  <p class="poznamka"><% if (p.prvniDen) { %><%= it.t('navstevnost.od_kdy', { den: it.datumDne(p.prvniDen) }) %> <% } %><% if (p.stav) { %><%= it.t('navstevnost.prepocet', { kdy: it.fmtDatum(new Date(p.stav.posledni_prepocet)) }) %><% } %></p>
+</section>
