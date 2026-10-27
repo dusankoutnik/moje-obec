@@ -27,9 +27,8 @@ export const DEFINICE_ROLI: readonly DefiniceRole[] = [
     id: 'provozovatel',
     nazev: 'Superadmin',
     popis:
-      'Provozovatel instalace: vše jako Admin a navíc vzhled webu a přidělování rolí Admin a Superadmin. Účet je chráněný.',
+      'Provozovatel instalace: vše jako Admin a navíc přidělování rolí Admin a Superadmin. Účet je chráněný.',
     opravneni: [
-      'Vzhled webu: barevné schéma, písma, velikost, znak, fotky pozadí, umístění počasí, náhled a vrácení zpět',
       'Přidělování a odebírání rolí Superadmin a Admin (ostatní role přiděluje i Admin)',
       'Přidávání a odebírání členů rolí na stránce Role (i dočasně, s datem „platí do“)',
       'Úpravy, blokace, role a schvalování změn telefonu u chráněných účtů (s rolí Superadmin)',
@@ -43,8 +42,9 @@ export const DEFINICE_ROLI: readonly DefiniceRole[] = [
   {
     id: 'admin',
     nazev: 'Admin',
-    popis: 'Vše kromě vzhledu webu a přidělování rolí Admin a Superadmin.',
+    popis: 'Vše kromě přidělování rolí Admin a Superadmin.',
     opravneni: [
+      'Vzhled webu: barevné schéma, písma, velikost, znak, fotky pozadí, umístění počasí, náhled a vrácení zpět',
       'Přidělování rolí v detailu účtu, i dočasně s datem „platí do“ (kromě rolí Admin a Superadmin; vlastní role si neměnit)',
       'Moduly obce — zapínání a vypínání modulů a napojených aplikací',
       'API a integrace — tokeny pro programy, které na web zapisují',
@@ -223,7 +223,7 @@ export const OBLASTI_SPRAVY: readonly OblastSpravy[] = [
     cesta: '/sprava/web/kategorie',
     modul: 'web',
   },
-  { nazev: 'Vzhled webu', role: ['provozovatel'], cesta: '/sprava/web/vzhled', modul: 'web' },
+  { nazev: 'Vzhled webu', role: ['admin'], cesta: '/sprava/web/vzhled', modul: 'web' },
   { nazev: 'Úřední deska', role: ['deska'], cesta: '/sprava/deska', modul: 'deska' },
   {
     nazev: 'Kategorie desky a povinně zveřejňované informace',

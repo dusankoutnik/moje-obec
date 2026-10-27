@@ -1,4 +1,4 @@
-// Role „provozovatel“ (v UI Superadmin): práva nad adminem, chráněný účet, vzhled webu jen pro něj, stránka Administrace → Role.
+// Role „provozovatel“ (v UI Superadmin): práva nad adminem, chráněný účet, vzhled webu (admin i on), stránka Administrace → Role.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { sql } from 'kysely';
 import { ROLE, type Role } from '../src/db/types.js';
@@ -229,27 +229,28 @@ describe('chráněný účet provozovatele', () => {
   });
 });
 
-describe('vzhled webu jen pro provozovatele', () => {
-  it('admin a správce: 403 na všech routách vzhledu a bez dlaždice; provozovatel ano', async () => {
-    const admin = await prihlasSRoli(t, '777900003', ['admin']);
+describe('vzhled webu pro admina a provozovatele', () => {
+  it('správce: 403 na všech routách vzhledu a bez dlaždice; admin a provozovatel ano', async () => {
     const spr = await prihlasSRoli(t, '777900006', ['spravce']);
-    for (const p of [admin, spr]) {
-      expect((await p.get('/sprava/web/vzhled')).res.status).toBe(403);
-      const prehled = await p.get('/sprava');
-      expect(prehled.text).not.toContain('href="/sprava/web/vzhled"');
-      expect((await p.get('/sprava/web')).text).not.toContain('href="/sprava/web/vzhled"');
-      const csrf = csrfZ(prehled.text);
-      for (const cesta of [
-        '/sprava/web/vzhled',
-        '/sprava/web/vzhled/nahled-pouzit',
-        '/sprava/web/vzhled/nahled-zrusit',
-        '/sprava/web/vzhled/zpet',
-      ])
-        expect((await p.post(cesta, { _csrf: csrf, akce: 'ulozit' })).res.status).toBe(403);
-    }
+    expect((await spr.get('/sprava/web/vzhled')).res.status).toBe(403);
+    const prehled = await spr.get('/sprava');
+    expect(prehled.text).not.toContain('href="/sprava/web/vzhled"');
+    expect((await spr.get('/sprava/web')).text).not.toContain('href="/sprava/web/vzhled"');
+    const csrf = csrfZ(prehled.text);
+    for (const cesta of [
+      '/sprava/web/vzhled',
+      '/sprava/web/vzhled/nahled-pouzit',
+      '/sprava/web/vzhled/nahled-zrusit',
+      '/sprava/web/vzhled/zpet',
+    ])
+      expect((await spr.post(cesta, { _csrf: csrf, akce: 'ulozit' })).res.status).toBe(403);
+    const admin = await prihlasSRoli(t, '777900003', ['admin']);
     const buh = await prihlasSRoli(t, '777900031', ['provozovatel']);
-    expect((await buh.get('/sprava/web/vzhled')).res.status).toBe(200);
-    expect((await buh.get('/sprava')).text).toContain('href="/sprava/web/vzhled"');
+    for (const p of [admin, buh]) {
+      expect((await p.get('/sprava/web/vzhled')).res.status).toBe(200);
+      expect((await p.get('/sprava')).text).toContain('href="/sprava/web/vzhled"');
+      expect((await p.get('/sprava/web')).text).toContain('href="/sprava/web/vzhled"');
+    }
   });
 });
 

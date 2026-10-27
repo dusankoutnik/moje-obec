@@ -30,7 +30,7 @@
   <a class="dlazdice" href="/sprava/web/dotace"><span class="ikona" aria-hidden="true">🏅</span><strong><%= it.t('web.dotace') %></strong><span><%= it.t('web.dotace_text') %></span></a>
   <% if (it.obec.moduly.deska) { %><a class="dlazdice" href="/sprava/deska"><span class="ikona" aria-hidden="true">📋</span><strong><%= it.t('deska.titulek') %></strong><span><%= it.t('sprava.deska_text') %></span></a><% } %>
   <a class="dlazdice" href="/sprava/web/kontakt"><span class="ikona" aria-hidden="true">☎️</span><strong><%= it.t('web.kontakt_obce') %></strong><span><%= it.t('web.kontakt_obce_text') %></span></a>
-  <% if (it.jeProvozovatel) { %><a class="dlazdice" href="/sprava/web/vzhled"><span class="ikona" aria-hidden="true">🎨</span><strong><%= it.t('web.vzhled') %></strong><span><%= it.t('web.vzhled_text') %></span></a><% } %>
+  <% if (it.jeAdmin) { %><a class="dlazdice" href="/sprava/web/vzhled"><span class="ikona" aria-hidden="true">🎨</span><strong><%= it.t('web.vzhled') %></strong><span><%= it.t('web.vzhled_text') %></span></a><% } %>
   <% if (it.jeSpravce) { %><a class="dlazdice" href="/sprava/web/kategorie"><span class="ikona" aria-hidden="true">🏷️</span><strong><%= it.t('web.kategorie_aktualit') %></strong><span><%= it.t('web.kategorie_aktualit_perex') %></span></a><% } %>
   <a class="dlazdice" href="/sprava/web/kos"><span class="ikona" aria-hidden="true">🗑️</span><strong><%= it.t('web.kos') %></strong><span><%= it.t('web.kos_text') %></span></a>
   <% if (it.jeSpravce) { %><a class="dlazdice" href="/sprava/web/presmerovani"><span class="ikona" aria-hidden="true">↪️</span><strong><%= it.t('web.presmerovani') %></strong><span><%= it.t('web.presmerovani_text', { n: it.pocetPresmerovani }) %></span></a><% } %>

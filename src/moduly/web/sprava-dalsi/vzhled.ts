@@ -44,11 +44,11 @@ import { nazevInfokanalu, VYCHOZI_NAZEV_INFOKANALU } from '../../infokanal/nazev
 
 export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby) {
   const { t, ulozObrazky } = kontextSpravy(app);
-  // vzhled webu (i náhled, uložení a vrácení) jen provozovatel instalace — rozhodnutí 2026-10-26
-  const provozovatel = vyzadujRoli('provozovatel');
+  // vzhled webu (i náhled, uložení a vrácení) admin a provozovatel — rozhodnutí 2026-10-27 (dřív jen provozovatel)
+  const admin = vyzadujRoli('admin');
 
   // ---------- vzhled: schéma, písmo, velikost, znak, fotky pozadí; náhled a vrácení zpět ----------
-  app.get('/sprava/web/vzhled', { preHandler: provozovatel }, async (req, reply) => {
+  app.get('/sprava/web/vzhled', { preHandler: admin }, async (req, reply) => {
     const v = await s.vzhled.nacti();
     const pozadi = (v.ulozeno.pozadi_ids ?? []).map((id) => ({
       id,
@@ -177,7 +177,7 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
     return z;
   }
 
-  app.post<{ Body: Telo }>('/sprava/web/vzhled', { preHandler: provozovatel }, async (req, reply) => {
+  app.post<{ Body: Telo }>('/sprava/web/vzhled', { preHandler: admin }, async (req, reply) => {
     const b = req.body ?? {};
     const zmena = volbyVzhledu(b);
     const stary = (await s.vzhled.nacti()).ulozeno;
@@ -245,18 +245,18 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
     return reply.redirect('/sprava/web/vzhled');
   });
 
-  app.post('/sprava/web/vzhled/nahled-pouzit', { preHandler: provozovatel }, async (req, reply) => {
+  app.post('/sprava/web/vzhled/nahled-pouzit', { preHandler: admin }, async (req, reply) => {
     if (req.session.nahledVzhledu) await s.vzhled.uloz(req.session.nahledVzhledu, req.uzivatel!.id, req.ip);
     req.session.nahledVzhledu = null;
     req.session.flash = { typ: 'ok', text: t('web.vzhled_ulozen') };
     return reply.redirect('/sprava/web/vzhled');
   });
-  app.post('/sprava/web/vzhled/nahled-zrusit', { preHandler: provozovatel }, async (req, reply) => {
+  app.post('/sprava/web/vzhled/nahled-zrusit', { preHandler: admin }, async (req, reply) => {
     req.session.nahledVzhledu = null;
     req.session.flash = { typ: 'info', text: t('web.nahled_zrusen') };
     return reply.redirect('/sprava/web/vzhled');
   });
-  app.post('/sprava/web/vzhled/zpet', { preHandler: provozovatel }, async (req, reply) => {
+  app.post('/sprava/web/vzhled/zpet', { preHandler: admin }, async (req, reply) => {
     const ok = await s.vzhled.vratZpet(req.uzivatel!.id, req.ip);
     req.session.flash = ok
       ? { typ: 'ok', text: t('web.vzhled_vracen') }

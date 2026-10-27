@@ -135,7 +135,7 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
       pocetPresmerovani,
       akceKeZpracovani,
       jeSpravce: maRoli(req.uzivatel, 'spravce'),
-      jeProvozovatel: maRoli(req.uzivatel, 'provozovatel'),
+      jeAdmin: maRoli(req.uzivatel, 'admin'),
       // pole „Počet obyvatel“ v dlaždici Aktuality — správce obce a výš (obyvatele.ts)
       obyvatele: maRoli(req.uzivatel, 'spravce')
         ? {

@@ -22,7 +22,7 @@
     it.jeDeska && it.obec.moduly.deska ? { ikona: '📋', nazev: t('deska.titulek'), href: '/sprava/deska', popis: t('sprava.deska_text'), akce: { href: '/sprava/deska/novy', text: t('deska.novy') } } : null,
     it.jeDeska && it.jeSpravce && it.obec.moduly.deska ? { ikona: '⚖️', nazev: t('pi.titulek'), href: '/sprava/povinne-informace', popis: 'Struktura podle vyhlášky 515/2020 Sb.' } : null,
     it.jeWeb && it.obec.moduly.web ? { ikona: '☎️', nazev: t('web.kontakt_obce'), href: '/sprava/web/kontakt', popis: t('web.kontakt_obce_text') } : null,
-    it.jeProvozovatel && it.obec.moduly.web ? { ikona: '🎨', nazev: t('web.vzhled'), href: '/sprava/web/vzhled', popis: t('web.vzhled_text') } : null,
+    it.jeAdmin && it.obec.moduly.web ? { ikona: '🎨', nazev: t('web.vzhled'), href: '/sprava/web/vzhled', popis: t('web.vzhled_text') } : null,
     it.jeKviz && it.obecStaticka.moduly.kviz ? { ikona: '🧠', nazev: t('kviz.sprava_titulek'), href: '/sprava/kviz', popis: t('kviz.sprava_karta') } : null,
   ]);
 
