@@ -1,6 +1,7 @@
 // Akce z jiných aplikací obce (rezervace sálu a hřišť, předprodej vstupenek) v kalendáři webu.
 // Zdroj: JSON z rezervačního systému (REZERVACE_KALENDAR_URL) — jen veřejné položky, bez jmen.
-// Keš 10 min; když zdroj neodpoví, web jede dál s poslední známou verzí (nebo bez externích akcí).
+// Keš 1 min (dřív 10 — skrytí akce v rezervacích se na webu projevovalo pozdě; dotaz jde po vnitřní síti a je levný);
+// když zdroj neodpoví, web jede dál s poslední známou verzí (nebo bez externích akcí).
 // Opakované rezervace (série — např. jóga každý čtvrtek) se slučují do jedné položky s nejbližším termínem.
 import type { FastifyBaseLogger } from 'fastify';
 import { casPraha } from '../../lib/datum.js';
@@ -119,6 +120,8 @@ export function podpisTerminu(a: Pick<ExterniAkce, 'ref' | 'den' | 'od' | 'do' |
   return `${a.den}|${casy}`;
 }
 
+const KES_MS = 60_000;
+
 export class ExterniKalendar {
   private kes: { cas: number; akce: Polozka[] } | null = null;
   /** poslední stažení se povedlo (jen tehdy se smí usuzovat, že termín z rezervací zmizel) */
@@ -135,7 +138,7 @@ export class ExterniKalendar {
   /** akce i s informací, jestli zdroj právě odpovídá (nastavený a poslední stažení prošlo) */
   async nacti(ted = new Date()): Promise<{ dostupny: boolean; akce: ExterniAkce[] }> {
     if (!this.url) return { dostupny: false, akce: [] };
-    if (!this.kes || Date.now() - this.kes.cas > 10 * 60_000) {
+    if (!this.kes || Date.now() - this.kes.cas > KES_MS) {
       try {
         const r = await fetch(this.url, { signal: AbortSignal.timeout(4000) });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -146,7 +149,7 @@ export class ExterniKalendar {
         this.naposledyOk = false;
         this.log.warn({ err: (e as Error).message }, 'kalendář rezervací nedostupný');
         // poslední známá data ponecháme, další pokus za minutu
-        this.kes = { cas: Date.now() - 9 * 60_000, akce: this.kes?.akce ?? [] };
+        this.kes = { cas: Date.now(), akce: this.kes?.akce ?? [] };
       }
     }
     return { dostupny: this.naposledyOk, akce: prevedPolozky(this.kes.akce, ted) };
