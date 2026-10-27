@@ -115,6 +115,24 @@ describe('vzhled', () => {
     }
   });
 
+  it('fotek pozadí nejvýš 40; přebytek se nepřidá a správa to oznámí', async () => {
+    const davka = async (n: number, barva: string) =>
+      Promise.all(
+        Array.from({ length: n }, async (_, i) => ({
+          pole: 'pozadi',
+          nazev: `${barva}${i}.jpg`,
+          data: await foto(barva),
+        })),
+      );
+    const pred = (await t.app.web.vzhled.nacti()).pozadi.length;
+    await ulozVzhled({}, await davka(38 - pred, '#336633'));
+    expect((await t.app.web.vzhled.nacti()).pozadi).toHaveLength(38);
+    const r = await ulozVzhled({}, await davka(4, '#663333'));
+    expect((await t.app.web.vzhled.nacti()).pozadi).toHaveLength(40);
+    expect(r.text).toContain('posledních 2 jsme nepřidali');
+    expect((await spr.get('/sprava/web/vzhled')).text).toContain('nejvýš 40 fotek');
+  });
+
   it('ikony se generují ze znaku; /favicon.ico je ICO, ne přesměrování', async () => {
     const pred = await fetch(`${t.base}/favicon.ico`);
     expect(pred.status).toBe(200);

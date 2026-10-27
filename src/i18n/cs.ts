@@ -1029,7 +1029,8 @@ export const cs = {
     vzhled_pozadi_napoveda:
       'Nejlépe krajina nebo letecký pohled na šířku (alespoň 1600 px). Fotky se samy zmenší.',
     pozadi_pridat: 'Přidat fotky (můžete víc najednou)',
-    pozadi_napoveda: 'JPG, PNG nebo WebP. Poloha GPS se z fotek odstraní.',
+    pozadi_napoveda: 'JPG, PNG nebo WebP, nejvýš {max} fotek. Poloha GPS se z fotek odstraní.',
+    pozadi_moc: 'Fotek pozadí může být nejvýš {max} — posledních {navic} jsme nepřidali.',
     pozadi_pevna: 'tato, když je pevná',
     pozadi_rezim: 'Jak fotky zobrazovat',
     pozadi_stridani: 'Střídat — pomalu se prolínají (každých 25 s)',

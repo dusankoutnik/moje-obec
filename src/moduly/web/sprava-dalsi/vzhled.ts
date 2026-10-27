@@ -42,6 +42,9 @@ import { vyzadujRoli } from '../../ucty/opravneni.js';
 import { kontextSpravy, type Telo, jeden, vice } from './spolecne.js';
 import { nazevInfokanalu, VYCHOZI_NAZEV_INFOKANALU } from '../../infokanal/nazev.js';
 
+/** nejvýš tolik fotek pozadí (dřív 20, pokyn 2026-10-27) */
+export const MAX_FOTEK_POZADI = 40;
+
 export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby) {
   const { t, ulozObrazky } = kontextSpravy(app);
   // vzhled webu (i náhled, uložení a vrácení) admin a provozovatel — rozhodnutí 2026-10-27 (dřív jen provozovatel)
@@ -94,6 +97,7 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
         fontFace(PISMA) +
         fontFaceRezu(RODINY.flatMap((x) => [x.telo, x.nadpis, x.titulek].filter((r) => !!r))),
       pozadi,
+      maxPozadi: MAX_FOTEK_POZADI,
       maPredchozi: !!v.ulozeno.predchozi,
       nahledAktivni: !!req.session.nahledVzhledu,
       kontrastBile: kontrast(v.barva, '#ffffff'),
@@ -193,11 +197,12 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
       t('web.pozadi_alt', { obec: app.obec.obec.nazev }),
     );
     chyby.push(...znak.chyby, ...foto.chyby);
-    if (odebrat.size || foto.ids.length)
-      zmena.pozadi_ids = [...(stary.pozadi_ids ?? []).filter((id) => !odebrat.has(id)), ...foto.ids].slice(
-        0,
-        20,
-      );
+    if (odebrat.size || foto.ids.length) {
+      const vsechny = [...(stary.pozadi_ids ?? []).filter((id) => !odebrat.has(id)), ...foto.ids];
+      if (vsechny.length > MAX_FOTEK_POZADI)
+        chyby.push(t('web.pozadi_moc', { max: MAX_FOTEK_POZADI, navic: vsechny.length - MAX_FOTEK_POZADI }));
+      zmena.pozadi_ids = vsechny.slice(0, MAX_FOTEK_POZADI);
+    }
     if (jeden(b.akce) === 'nahled') {
       req.session.nahledVzhledu = { ...(req.session.nahledVzhledu ?? {}), ...zmena };
       return reply.redirect('/');

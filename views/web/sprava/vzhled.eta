@@ -149,7 +149,7 @@
     <% } %>
     <label for="pozadi"><%= it.t('web.pozadi_pridat') %></label>
     <input id="pozadi" name="pozadi" type="file" multiple accept="image/jpeg,image/png,image/webp" aria-describedby="pozadi-n">
-    <p class="napoveda" id="pozadi-n"><%= it.t('web.pozadi_napoveda') %></p>
+    <p class="napoveda" id="pozadi-n"><%= it.t('web.pozadi_napoveda', { max: it.maxPozadi }) %></p>
     <p class="vh" id="rezim-h"><%= it.t('web.pozadi_rezim') %></p>
     <div role="radiogroup" aria-labelledby="rezim-h">
       <strong aria-hidden="true"><%= it.t('web.pozadi_rezim') %></strong>
