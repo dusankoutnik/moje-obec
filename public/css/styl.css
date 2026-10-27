@@ -527,10 +527,10 @@ dl.seznam dd {
   width: auto;
 }
 @media (max-width: 600px) {
-  .strankovani-plne .strany li.cislo {
+  .strankovani-plne .strany li.strana-cislo {
     display: none;
   }
-  .strankovani-plne .strany li.cislo:has(a[aria-current='page']) {
+  .strankovani-plne .strany li.strana-cislo:has(a[aria-current='page']) {
     display: list-item;
   }
 }

@@ -5,7 +5,7 @@
     <li><% if (s.prvni) { %><a href="<%= s.prvni %>">« <%= t('strankovani.prvni') %></a><% } else { %><span aria-disabled="true">« <%= t('strankovani.prvni') %></span><% } %></li>
     <li><% if (s.predchozi) { %><a href="<%= s.predchozi %>" rel="prev">‹ <%= t('strankovani.novejsi') %></a><% } else { %><span aria-disabled="true">‹ <%= t('strankovani.novejsi') %></span><% } %></li>
     <% s.polozky.forEach(function (p) { %>
-    <li class="cislo"><% if (!p) { %><span class="vypustka" aria-hidden="true">…</span><% } else if (p.aktualni) { %><a href="<%= p.href %>" aria-current="page" aria-label="<%= t('strankovani.aktualni', { n: p.strana }) %>"><%= p.strana %></a><% } else { %><a href="<%= p.href %>" aria-label="<%= t('strankovani.strana', { n: p.strana }) %>"><%= p.strana %></a><% } %></li>
+    <li class="strana-cislo"><% if (!p) { %><span class="vypustka" aria-hidden="true">…</span><% } else if (p.aktualni) { %><a href="<%= p.href %>" aria-current="page" aria-label="<%= t('strankovani.aktualni', { n: p.strana }) %>"><%= p.strana %></a><% } else { %><a href="<%= p.href %>" aria-label="<%= t('strankovani.strana', { n: p.strana }) %>"><%= p.strana %></a><% } %></li>
     <% }) %>
     <li><% if (s.dalsi) { %><a href="<%= s.dalsi %>" rel="next"><%= t('strankovani.starsi') %> ›</a><% } else { %><span aria-disabled="true"><%= t('strankovani.starsi') %> ›</span><% } %></li>
     <li><% if (s.posledni) { %><a href="<%= s.posledni %>"><%= t('strankovani.posledni') %> »</a><% } else { %><span aria-disabled="true"><%= t('strankovani.posledni') %> »</span><% } %></li>
