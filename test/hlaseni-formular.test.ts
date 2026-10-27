@@ -345,12 +345,11 @@ describe('počet obyvatel z administrace', () => {
     t.app.obec.obec.fakta = [{ hodnota: '357', popisek: 'obyvatel', odkaz: '/obec' }];
     const sp = await prihlasSRoli(t, '777 620 009', ['spravce']);
     const s1 = await sp.get('/sprava/web');
-    expect(s1.text).toContain('<label for="pocet_obyvatel">Počet obyvatel</label>');
+    expect(s1.text).toContain('<label for="pocet_obyvatel"><strong>Počet obyvatel</strong></label>');
     expect(s1.text).toContain('placeholder="357"');
-    // odkaz dlaždice zůstává samostatný (formulář není uvnitř odkazu)
-    expect(s1.text).toMatch(
-      /<a class="dlazdice-odkaz" href="\/sprava\/web\/aktuality">[\s\S]*?<\/a>\s*<form/,
-    );
+    // Aktuality a počet obyvatel jsou dvě samostatné dlaždice (27. 10.)
+    expect(s1.text).toContain('<a class="dlazdice" href="/sprava/web/aktuality">');
+    expect(s1.text).toMatch(/<div class="dlazdice dlazdice-s-polem" id="obyvatele">/);
     const spatne = await sp.post('/sprava/web/obyvatele', { _csrf: csrfZ(s1.text), pocet: 'hodně' });
     expect(spatne.text).toContain('celé číslo od 1 do 1 000 000');
     const ok = await sp.post('/sprava/web/obyvatele', { _csrf: csrfZ(spatne.text), pocet: '1 420' });
