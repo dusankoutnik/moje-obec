@@ -2,6 +2,7 @@
 // znak, fotky pozadí (pevná / náhodná / střídání) a motto. Výchozí hodnoty z obec.yml, správa je přepíše
 // v administraci (nastaveni.web_vzhled); před každou změnou se uloží předchozí stav (tlačítko „Vrátit zpět“).
 import type { ObecProfil } from '../../config/obec.js';
+import { sestavDlazdice, type Dlazdice, type UlozenaDlazdice } from './dlazdice.js';
 import type { Db } from '../../db/index.js';
 import { paleta, type Paleta } from '../../lib/barvy.js';
 import { zapisAudit } from '../../lib/audit.js';
@@ -71,6 +72,8 @@ export interface UlozenyVzhled {
   /** ztmavení fotky na pozadí 0–0,8 (sklo a podklad textu se dopočítají podle kontrastu) */
   zavoj?: number;
   pocasi_umisteni?: UmisteniPocasi;
+  /** rychlé dlaždice pod úvodem (pořadí, výběr, vlastní); chybí = výchozí + profil obce */
+  rychle_dlazdice?: UlozenaDlazdice[];
   predchozi?: Omit<UlozenyVzhled, 'predchozi'> | null;
 }
 
@@ -100,6 +103,8 @@ export interface Vzhled {
   pocasiUmisteni: UmisteniPocasi;
   pocasiZobrazeni: ZobrazeniPocasi;
   voltLogo: boolean;
+  /** rychlé dlaždice pod úvodem, i skryté (šablona vykreslí jen zobrazit) */
+  rychleDlazdice: Dlazdice[];
   /** ztmavení fotky a z něj dopočítané sklo a podklad textu */
   pruhlednosti: Pruhlednosti;
   /** CSS proměnné barev a písma + @font-face (vkládá se do <head>) */
@@ -182,6 +187,7 @@ export class VzhledSluzba {
       pocasiZobrazeni:
         u.pocasi_zobrazeni && ZOBRAZENI_POCASI.includes(u.pocasi_zobrazeni) ? u.pocasi_zobrazeni : 'dny',
       voltLogo: u.volt_logo !== false,
+      rychleDlazdice: sestavDlazdice(u.rychle_dlazdice, this.obec),
       pruhlednosti: pr,
       css: fontFace([pismo]) + cssPisma(pismo) + barvyCss,
       ulozeno: u,

@@ -133,6 +133,46 @@ describe('vzhled', () => {
     expect((await spr.get('/sprava/web/vzhled')).text).toContain('nejvýš 40 fotek');
   });
 
+  it('rychlé dlaždice: pořadí, skrytí, vlastní s cizím odkazem; nebezpečný odkaz se odmítne', async () => {
+    const f = await spr.get('/sprava/web/vzhled');
+    expect(f.text).toContain('Rychlé dlaždice na titulce');
+    const ids = [...f.text.matchAll(/name="dl_id_(\d+)" value="([a-z]+)"/g)].map((m) => [m[1]!, m[2]!]);
+    const pole: Record<string, string> = { dl_odeslano: '1' };
+    for (const [i, id] of ids) {
+      pole[`dl_id_${i}`] = id;
+      if (id !== 'aktuality' && id !== 'vlastni') pole[`dl_zobrazit_${i}`] = 'ano';
+      pole[`dl_poradi_${i}`] = id === 'ucet' ? '1' : String(10 + Number(i));
+    }
+    const prazdny = ids.find(([, id]) => id === 'vlastni')![0];
+    Object.assign(pole, {
+      [`dl_zobrazit_${prazdny}`]: 'ano',
+      [`dl_poradi_${prazdny}`]: '2',
+      [`dl_ikona_${prazdny}`]: '🏊',
+      [`dl_nazev_${prazdny}`]: 'Koupaliště',
+      [`dl_odkaz_${prazdny}`]: 'https://example.org/koupaliste',
+    });
+    await ulozVzhled(pole);
+    const web = (await new Prohlizec(t.base).get('/')).text;
+    const rychle = web.slice(
+      web.indexOf('class="rychle"'),
+      web.indexOf('</nav>', web.indexOf('class="rychle"')),
+    );
+    expect(rychle).not.toContain('href="/aktuality"');
+    expect(rychle).toContain('href="https://example.org/koupaliste" target="_blank" rel="noopener"');
+    expect(rychle.indexOf('/prihlaseni')).toBeLessThan(rychle.indexOf('Koupaliště'));
+    expect(rychle.indexOf('Koupaliště')).toBeLessThan(rychle.indexOf('/kontakt'));
+    // javascript: odkaz se neuloží a správa to řekne
+    const zly = await ulozVzhled({
+      dl_odeslano: '1',
+      dl_id_0: 'vlastni',
+      dl_zobrazit_0: 'ano',
+      dl_nazev_0: 'Zlo',
+      dl_odkaz_0: 'javascript:alert(1)',
+    });
+    expect(zly.text).toContain('odkaz musí začínat lomítkem');
+    expect((await new Prohlizec(t.base).get('/')).text).toContain('Koupaliště');
+  });
+
   it('ikony se generují ze znaku; /favicon.ico je ICO, ne přesměrování', async () => {
     const pred = await fetch(`${t.base}/favicon.ico`);
     expect(pred.status).toBe(200);

@@ -7,12 +7,14 @@
 <div class="dlazdice-akci">
   <a class="dlazdice hlavni" href="/sprava/web/novy?typ=aktualita"><span class="ikona" aria-hidden="true">✍️</span><strong><%= it.t('web.napsat_aktualitu') %></strong><span><%= it.t('web.napsat_aktualitu_text') %></span></a>
   <a class="dlazdice" href="/sprava/web/stranky"><span class="ikona" aria-hidden="true">📄</span><strong><%= it.t('web.stranky') %></strong><span><%= it.t('web.stranky_text') %></span></a>
+  <a class="dlazdice" href="/sprava/web/aktuality"><span class="ikona" aria-hidden="true">📰</span><strong><%= it.t('web.aktuality') %></strong><span><%= it.t('web.aktuality_text') %></span></a>
   <% if (it.obyvatele) { var ob = it.obyvatele, vychoziOb = ob.zeZpravodaje || ob.zProfilu; %>
   <div class="dlazdice dlazdice-s-polem" id="obyvatele">
-    <a class="dlazdice-odkaz" href="/sprava/web/aktuality"><span class="ikona" aria-hidden="true">📰</span><strong><%= it.t('web.aktuality') %></strong><span><%= it.t('web.aktuality_text') %></span></a>
+    <span class="ikona" aria-hidden="true">👥</span>
     <form method="post" action="/sprava/web/obyvatele" class="obyvatele-formular">
       <input type="hidden" name="_csrf" value="<%= it.csrf %>">
-      <label for="pocet_obyvatel"><%= it.t('web.obyvatele_pole') %></label>
+      <label for="pocet_obyvatel"><strong><%= it.t('web.obyvatele_pole') %></strong></label>
+      <span class="obyvatele-popis"><%= it.t('web.obyvatele_text') %></span>
       <span class="obyvatele-radek">
         <input id="pocet_obyvatel" name="pocet" inputmode="numeric" pattern="[0-9 ]*" maxlength="9" autocomplete="off" value="<%= ob.rucne ? ob.rucne.pocet : '' %>"<% if (vychoziOb) { %> placeholder="<%= vychoziOb %>"<% } %> aria-describedby="obyvatele-n">
         <button class="tlacitko male" type="submit"><%= it.t('app.ulozit') %></button>
@@ -20,8 +22,6 @@
       <span class="napoveda" id="obyvatele-n"><%= ob.rucne ? it.t('web.obyvatele_rucne', { datum: it.fmtDatum(ob.rucne.zmeneno_at, false) }) : '' %> <%= ob.zeZpravodaje ? it.t('web.obyvatele_ze_zpravodaje', { n: ob.zeZpravodaje }) : ob.zProfilu ? it.t('web.obyvatele_z_profilu', { n: ob.zProfilu }) : it.t('web.obyvatele_zadne') %></span>
     </form>
   </div>
-  <% } else { %>
-  <a class="dlazdice" href="/sprava/web/aktuality"><span class="ikona" aria-hidden="true">📰</span><strong><%= it.t('web.aktuality') %></strong><span><%= it.t('web.aktuality_text') %></span></a>
   <% } %>
   <a class="dlazdice" href="/sprava/web/akce"><span class="ikona" aria-hidden="true">📅</span><strong><%= it.t('web.akce') %></strong><span><%= it.t('web.akce_text') %></span></a>
   <a class="dlazdice" href="/sprava/web/galerie"><span class="ikona" aria-hidden="true">🖼️</span><strong><%= it.t('web.galerie') %></strong><span><%= it.t('web.galerie_text') %></span></a>

@@ -226,6 +226,37 @@
     <% } %>
   </fieldset>
 
+  <fieldset>
+    <legend><span class="krok">7</span> <%= it.t('web.dlazdice') %></legend>
+    <p class="napoveda" id="dl-n"><%= it.t('web.dlazdice_napoveda') %></p>
+    <input type="hidden" name="dl_odeslano" value="1">
+    <datalist id="dl-ikony"><% it.nabidkaIkon.forEach(function (ik) { %><option value="<%= ik %>"></option><% }) %></datalist>
+    <div class="tabulka-obal">
+    <table class="dlazdice-sprava">
+      <thead><tr><th scope="col"><%= it.t('web.dlazdice_poradi') %></th><th scope="col"><%= it.t('web.dlazdice_zobrazit') %></th><th scope="col"><%= it.t('web.dlazdice_ikona') %></th><th scope="col"><%= it.t('web.dlazdice_text') %></th><th scope="col"><%= it.t('web.dlazdice_odkaz') %></th><th scope="col"><span class="vh"><%= it.t('web.odebrat') %></span></th></tr></thead>
+      <tbody>
+      <% it.dlazdice.forEach(function (d, i) { %>
+        <tr>
+          <td><input type="hidden" name="dl_id_<%= i %>" value="<%= d.id %>"><input name="dl_poradi_<%= i %>" type="number" min="0" max="999" class="kratke" value="<%= d.prazdna ? '' : (i + 1) * 10 %>" aria-label="<%= it.t('web.dlazdice_poradi') %>"></td>
+          <td><input type="checkbox" name="dl_zobrazit_<%= i %>" value="ano" <%= d.zobrazit ? 'checked' : '' %> aria-label="<%= it.t('web.dlazdice_zobrazit') %>"></td>
+          <% if (d.vlastni) { %>
+          <td><input name="dl_ikona_<%= i %>" list="dl-ikony" maxlength="8" class="dl-ikona" value="<%= d.ikona || '' %>" placeholder="🔗" aria-label="<%= it.t('web.dlazdice_ikona') %>"></td>
+          <td><input name="dl_nazev_<%= i %>" maxlength="40" value="<%= d.nazev || '' %>" aria-label="<%= it.t('web.dlazdice_text') %>"></td>
+          <td><input name="dl_odkaz_<%= i %>" maxlength="500" value="<%= d.odkaz || '' %>" placeholder="/stranka nebo https://…" aria-label="<%= it.t('web.dlazdice_odkaz') %>"></td>
+          <td><% if (!d.prazdna) { %><label class="zatrzitko"><input type="checkbox" name="dl_odebrat_<%= i %>" value="ano"> <%= it.t('web.odebrat') %></label><% } %></td>
+          <% } else { %>
+          <td><span class="dl-ikona-pevna" aria-hidden="true"><%= d.ikona %></span></td>
+          <td><%= it.t(d.klic) %><% if (d.modul && !it.obecStaticka.moduly[d.modul]) { %> <small class="slabe">(<%= it.t('web.dlazdice_modul_vypnuty') %>)</small><% } %></td>
+          <td><small><%= d.id === 'ucet' ? '/ucet · /prihlaseni' : d.odkaz %></small></td>
+          <td></td>
+          <% } %>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+    </div>
+  </fieldset>
+
   <div class="tlacitka-dole">
     <button class="tlacitko sekundarni velke" type="submit" name="akce" value="nahled" formtarget="_blank"><%= it.t('web.vzhled_nahled') %> ↗</button>
     <button class="tlacitko velke" type="submit" name="akce" value="ulozit"><%= it.t('web.vzhled_pouzit') %></button>

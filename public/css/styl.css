@@ -903,27 +903,17 @@ dl.seznam dd {
 .dlazdice.hlavni span:not(.ikona) {
   color: var(--bila);
 }
-/* dlaždice s odkazem a malým formulářem (Aktuality + počet obyvatel): odkaz a formulář jsou sourozenci */
-.dlazdice-odkaz {
+/* dlaždice s malým formulářem (počet obyvatel na úvodu webu) */
+.obyvatele-formular {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  text-decoration: none;
-  color: inherit;
-}
-.dlazdice-odkaz:hover strong,
-.dlazdice-odkaz:focus-visible strong {
-  text-decoration: underline;
-}
-.obyvatele-formular {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--linka);
 }
 .obyvatele-formular label {
-  font-weight: 600;
-  font-size: 0.93rem;
-  margin: 0 0 4px;
+  margin: 0;
+}
+.obyvatele-popis {
+  margin-bottom: 4px;
 }
 .obyvatele-radek {
   display: flex;
@@ -3272,4 +3262,20 @@ button.kviz-odpoved:active {
 .role-platnost-pole label {
   display: block;
   font-size: 0.9rem;
+}
+
+/* správa vzhledu: rychlé dlaždice */
+.dlazdice-sprava input[type='number'] {
+  width: 5em;
+}
+.dlazdice-sprava input.dl-ikona {
+  width: 4em;
+  text-align: center;
+  font-size: 1.3rem;
+}
+.dlazdice-sprava .dl-ikona-pevna {
+  font-size: 1.3rem;
+}
+.dlazdice-sprava td {
+  vertical-align: middle;
 }

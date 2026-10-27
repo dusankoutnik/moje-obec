@@ -41,6 +41,7 @@ import type { WebSluzby } from '../index.js';
 import { vyzadujRoli } from '../../ucty/opravneni.js';
 import { kontextSpravy, type Telo, jeden, vice } from './spolecne.js';
 import { nazevInfokanalu, VYCHOZI_NAZEV_INFOKANALU } from '../../infokanal/nazev.js';
+import { dlazdiceZFormulare, NABIDKA_IKON, NOVYCH_RADKU } from '../dlazdice.js';
 
 /** nejvýš tolik fotek pozadí (dřív 20, pokyn 2026-10-27) */
 export const MAX_FOTEK_POZADI = 40;
@@ -98,6 +99,17 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
         fontFaceRezu(RODINY.flatMap((x) => [x.telo, x.nadpis, x.titulek].filter((r) => !!r))),
       pozadi,
       maxPozadi: MAX_FOTEK_POZADI,
+      // rychlé dlaždice: uložené (i skryté) + prázdné řádky pro nové vlastní
+      dlazdice: [
+        ...v.rychleDlazdice,
+        ...Array.from({ length: NOVYCH_RADKU }, () => ({
+          id: 'vlastni',
+          vlastni: true,
+          zobrazit: true,
+          prazdna: true,
+        })),
+      ],
+      nabidkaIkon: NABIDKA_IKON,
       maPredchozi: !!v.ulozeno.predchozi,
       nahledAktivni: !!req.session.nahledVzhledu,
       kontrastBile: kontrast(v.barva, '#ffffff'),
@@ -187,6 +199,12 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
     const stary = (await s.vzhled.nacti()).ulozeno;
     if (jeden(b.odebrat_znak) === 'ano') zmena.znak_id = null;
     const chyby: string[] = [];
+    // rychlé dlaždice; při chybě se dlaždice nemění (ostatní volby se uloží) a správa to oznámí
+    if (b.dl_odeslano !== undefined) {
+      const dl = dlazdiceZFormulare(b, jeden);
+      if ('chyba' in dl) chyby.push(dl.chyba);
+      else zmena.rychle_dlazdice = dl;
+    }
     const znak = await ulozObrazky(req, 'znak', 'logo', () =>
       t('web.znak_alt', { obec: app.obec.obec.nazev }),
     );

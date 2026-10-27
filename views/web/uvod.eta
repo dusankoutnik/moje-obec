@@ -24,13 +24,9 @@
 <div class="obal sekce-uvod">
   <nav class="rychle" id="rychle" aria-label="<%= it.t('web.rychle_odkazy') %>">
     <ul>
-      <% if (it.obec.moduly.deska) { %><li><a href="/uredni-deska"><span class="ikona" aria-hidden="true">📋</span><%= it.t('deska.titulek') %></a></li><% } %>
-      <li><a href="/aktuality"><span class="ikona" aria-hidden="true">📰</span><%= it.t('web.aktuality') %></a></li>
-      <li><a href="/kontakt"><span class="ikona" aria-hidden="true">🏛️</span><%= it.t('web.obecni_urad') %></a></li>
-      <% if (it.obec.moduly.infokanal) { %><li><a href="/infokanal"><span class="ikona" aria-hidden="true">📱</span><%= it.t('web.zpravy_do_mobilu') %></a></li><% } %>
-      <li><a href="/akce"><span class="ikona" aria-hidden="true">📅</span><%= it.t('web.akce') %></a></li>
-      <% it.obec.web.rychle_odkazy.forEach(function (r) { %><li><a href="<%= r.odkaz %>"><span class="ikona" aria-hidden="true"><%= r.ikona %></span><%= r.nazev %></a></li><% }) %>
-      <li><a href="<%= it.uzivatel ? '/ucet' : '/prihlaseni' %>"><span class="ikona" aria-hidden="true">👤</span><%= it.t('app.ucet') %></a></li>
+      <% it.vzhled.rychleDlazdice.forEach(function (d) { if (!d.zobrazit || (d.modul && !it.obec.moduly[d.modul])) return %>
+      <li><a href="<%= d.id === 'ucet' && !it.uzivatel ? '/prihlaseni' : d.odkaz %>"<% if (d.externi) { %> target="_blank" rel="noopener"<% } %>><span class="ikona" aria-hidden="true"><%= d.ikona %></span><%= d.vlastni ? d.nazev : it.t(d.klic) %><% if (d.externi) { %><span class="vh"> <%= it.t('web.nove_okno') %></span><% } %></a></li>
+      <% }) %>
     </ul>
   </nav>
 

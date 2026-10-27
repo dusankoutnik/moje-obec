@@ -70,7 +70,7 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
   // menu, vzhled (případně náhled ze sezení), velikost písma návštěvníka, fotka pozadí a pás dárců
   app.dataLayoutu.push(async (req) => {
     const nahled =
-      req.session?.nahledVzhledu && maRoli(req.uzivatel, 'provozovatel') ? req.session.nahledVzhledu : null;
+      req.session?.nahledVzhledu && maRoli(req.uzivatel, 'admin') ? req.session.nahledVzhledu : null;
     const vzhled = nahled
       ? await s.vzhled.sestav({ ...(await s.vzhled.nacti()).ulozeno, ...nahled })
       : await s.vzhled.nacti();
