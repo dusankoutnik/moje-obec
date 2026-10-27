@@ -157,6 +157,9 @@
       <label class="zatrzitko"><input type="radio" name="pozadi_rezim" value="<%= r %>" <%= it.v.pozadiRezim === r ? 'checked' : '' %>> <%= it.t('web.pozadi_' + r) %></label>
       <% }) %>
     </div>
+    <label for="pozadi_interval"><%= it.t('web.pozadi_interval') %></label>
+    <input id="pozadi_interval" name="pozadi_interval" type="number" class="kratke" min="<%= it.intervalPozadi.min %>" max="<%= it.intervalPozadi.max %>" step="1" value="<%= it.v.pozadiInterval %>" aria-describedby="pozadi-interval-n">
+    <p class="napoveda" id="pozadi-interval-n"><%= it.t('web.pozadi_interval_napoveda', { min: it.intervalPozadi.min, max: it.intervalPozadi.max, vychozi: it.intervalPozadi.vychozi }) %></p>
     <% var PR = it.v.pruhlednosti; %>
     <div class="zavoj-volba">
       <label for="zavoj"><strong>Ztmavení fotky na pozadí</strong> <output id="zavoj-hodnota" for="zavoj"><%= Math.round(PR.hore * 100) %> %</output></label>

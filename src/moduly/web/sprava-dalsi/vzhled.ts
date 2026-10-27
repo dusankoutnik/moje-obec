@@ -36,6 +36,8 @@ import {
   type SilaEfektu,
   type UlozenyVzhled,
   type UmisteniPocasi,
+  intervalPozadi,
+  INTERVAL_POZADI,
 } from '../vzhled.js';
 import type { WebSluzby } from '../index.js';
 import { vyzadujRoli } from '../../ucty/opravneni.js';
@@ -99,6 +101,7 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
         fontFaceRezu(RODINY.flatMap((x) => [x.telo, x.nadpis, x.titulek].filter((r) => !!r))),
       pozadi,
       maxPozadi: MAX_FOTEK_POZADI,
+      intervalPozadi: INTERVAL_POZADI,
       // rychlé dlaždice: uložené (i skryté) + prázdné řádky pro nové vlastní
       dlazdice: [
         ...v.rychleDlazdice,
@@ -173,6 +176,7 @@ export default async function webSpravaVzhled(app: FastifyInstance, s: WebSluzby
     const rezim = jeden(b.pozadi_rezim);
     if (rezim === 'pevne' || rezim === 'nahodne' || rezim === 'stridani') z.pozadi_rezim = rezim;
     if (b.pozadi_pevne !== undefined) z.pozadi_pevne = jeden(b.pozadi_pevne) || null;
+    if (jeden(b.pozadi_interval).trim()) z.pozadi_interval = intervalPozadi(jeden(b.pozadi_interval));
     const efekt = jeden(b.efekt_menu);
     if ((EFEKTY_MENU as string[]).includes(efekt)) z.efekt_menu = efekt as EfektMenu;
     const sila = jeden(b.efekt_sila);

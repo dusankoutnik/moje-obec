@@ -66,6 +66,8 @@ export interface UlozenyVzhled {
   pismo_nadpis?: string;
   pismo_titulek?: string;
   pozadi_rezim?: RezimPozadi;
+  /** po kolika sekundách se fotky pozadí střídají (režim stridani) */
+  pozadi_interval?: number;
   pozadi_pevne?: string | null;
   efekt_menu?: EfektMenu;
   efekt_sila?: SilaEfektu;
@@ -97,6 +99,8 @@ export interface Vzhled {
   nazevInfokanalu: string;
   pozadi: string[];
   pozadiRezim: RezimPozadi;
+  /** interval střídání fotek pozadí v sekundách */
+  pozadiInterval: number;
   pozadiPevne: string | null;
   efektMenu: EfektMenu;
   efektSila: SilaEfektu;
@@ -110,6 +114,14 @@ export interface Vzhled {
   /** CSS proměnné barev a písma + @font-face (vkládá se do <head>) */
   css: string;
   ulozeno: UlozenyVzhled;
+}
+
+/** interval střídání fotek pozadí: 5–600 s (prolnutí trvá 2,5 s), výchozí 25 s */
+export const INTERVAL_POZADI = { min: 5, max: 600, vychozi: 25 } as const;
+export function intervalPozadi(x: unknown): number {
+  const n = Math.round(Number(x));
+  if (!Number.isFinite(n) || x === undefined || x === null || x === '') return INTERVAL_POZADI.vychozi;
+  return Math.min(INTERVAL_POZADI.max, Math.max(INTERVAL_POZADI.min, n));
 }
 
 const urlFotky = (id: string, pripona = 'jpg') => `/soubory/${id}/foto.${pripona}`;
@@ -179,6 +191,7 @@ export class VzhledSluzba {
       nazevInfokanalu: u.nazev_infokanalu?.trim() ?? '',
       pozadi: pozadi.map((id) => url(id)),
       pozadiRezim: u.pozadi_rezim ?? 'stridani',
+      pozadiInterval: intervalPozadi(u.pozadi_interval),
       pozadiPevne: u.pozadi_pevne && pozadi.includes(u.pozadi_pevne) ? url(u.pozadi_pevne) : null,
       efektMenu: u.efekt_menu && EFEKTY_MENU.includes(u.efekt_menu) ? u.efekt_menu : 'odlesk',
       efektSila: u.efekt_sila && SILY_EFEKTU.includes(u.efekt_sila) ? u.efekt_sila : 'stredni',

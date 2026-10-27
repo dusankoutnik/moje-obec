@@ -32,7 +32,7 @@
 %>
 <body class="<%= it.vzhled ? 'web efekt-' + it.vzhled.efektMenu + ' sila-' + it.vzhled.efektSila : 'zakladni' %><%= jeSprava ? ' je-sprava' : '' %><%= it.plnaSirka ? ' je-uvod' : '' %><%= it.shell ? ' je-aplikace' : '' %>">
 <% if (it.vzhled) { %>
-<div class="pozadi" aria-hidden="true" <% if (it.pozadiStridat && it.pozadiStridat.length) { %>data-fotky="<%= JSON.stringify(it.pozadiStridat) %>"<% } %>>
+<div class="pozadi" aria-hidden="true" <% if (it.pozadiStridat && it.pozadiStridat.length) { %>data-fotky="<%= JSON.stringify(it.pozadiStridat) %>" data-interval="<%= it.vzhled ? it.vzhled.pozadiInterval : 25 %>"<% } %>>
   <div class="pozadi-vrstva viditelna"<% if (it.pozadiPrvni) { %> style="background-image:url('<%= it.pozadiPrvni %>')"<% } %>></div>
   <div class="pozadi-vrstva"></div>
 </div>

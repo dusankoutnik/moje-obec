@@ -39,9 +39,13 @@
     };
     if (fotky.length > 1 && vrstvy.length === 2) {
       // nestřídat, když je stránka na pozadí (šetří data i baterii)
-      var casovac = setInterval(function () {
-        if (!document.hidden) dalsi();
-      }, 25000);
+      var sekund = Number(pozadi.getAttribute('data-interval')) || 25;
+      var casovac = setInterval(
+        function () {
+          if (!document.hidden) dalsi();
+        },
+        Math.max(5, sekund) * 1000,
+      );
       window.addEventListener('pagehide', function () {
         clearInterval(casovac);
       });

@@ -106,6 +106,11 @@ describe('vzhled', () => {
     const web = await new Prohlizec(t.base).get('/');
     expect(web.text).toMatch(/class="pozadi" aria-hidden="true" data-fotky="\[/);
     expect(web.text).toMatch(/pozadi-vrstva viditelna" style="background-image:url\('\/soubory\//);
+    expect(web.text).toContain('data-interval="25"'); // výchozí interval střídání
+    await ulozVzhled({ pozadi_interval: '60' });
+    expect((await new Prohlizec(t.base).get('/')).text).toContain('data-interval="60"');
+    await ulozVzhled({ pozadi_interval: '1' }); // pod minimem → 5 s
+    expect((await new Prohlizec(t.base).get('/')).text).toContain('data-interval="5"');
     const druha = v.ulozeno.pozadi_ids![1]!;
     await ulozVzhled({ pozadi_rezim: 'pevne', pozadi_pevne: druha });
     for (let i = 0; i < 3; i++) {
