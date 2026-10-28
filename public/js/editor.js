@@ -225,12 +225,15 @@
           container: toolbar,
           handlers: {
             image: function () {
+              // pozici kurzoru je nutné vzít hned — výběr souboru a dialog s popisem editoru vezmou fokus
+              // a výběr by se ztratil (obrázek pak skončil na konci textu)
+              var i = (quill.getSelection(true) || { index: quill.getLength() }).index;
               var v = document.createElement('input');
               v.type = 'file';
               v.accept = 'image/*';
               v.multiple = true;
               v.addEventListener('change', function () {
-                vlozObrazky(quill, v.files);
+                vlozObrazky(quill, v.files, i);
               });
               v.click();
             },
