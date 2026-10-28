@@ -160,5 +160,4 @@
   </div>
 </form>
 <div id="alt-dialog-sablona" hidden data-nadpis="<%= it.t('web.alt_dialog_nadpis') %>" data-napoveda="<%= it.t('web.popis_obrazku_napoveda') %>" data-ok="<%= it.t('web.alt_dialog_ok') %>" data-zrusit="<%= it.t('app.zrusit') %>" data-chyba="<%= it.t('web.alt_dialog_chyba') %>" data-nahravam="<%= it.t('web.nahravam') %>" data-ulozeno="<%= it.t('web.autosave_ok') %>" data-neulozeno="<%= it.t('web.autosave_chyba') %>" data-zmeny="<%= it.t('web.neulozene_zmeny') %>" data-video-nadpis="<%= it.t('videa.vlozit') %>" data-video-napoveda="<%= it.t('videa.vlozit_napoveda') %>" data-video-label="<%= it.t('videa.titulek') %>" data-video-koncept="<%= it.t('web.stav_koncept') %>"></div>
-<script src="/static/vendor/quill/quill.js" defer></script>
-<script src="/static/js/editor.js?v=<%= it.v %>" defer></script>
+<script src="/static/js/vendor/editor.js?v=<%= it.v %>" defer></script>

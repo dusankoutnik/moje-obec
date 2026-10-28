@@ -223,13 +223,6 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
     maxAge: '365d',
     immutable: true,
   });
-  // knihovny pro prohlížeč vendorované přes npm (žádné CDN): editor Quill
-  await app.register(fastifyStatic, {
-    root: path.resolve(import.meta.dirname, '..', 'node_modules', 'quill', 'dist'),
-    prefix: '/static/vendor/quill/',
-    decorateReply: false,
-    maxAge: env.NODE_ENV === 'production' ? '7d' : 0,
-  });
   // soubory starého webu na původní adrese (jen dokumenty a obrázky — nic spustitelného)
   if (env.STARY_WEB_SOUBORY) {
     await app.register(fastifyStatic, {

@@ -60,7 +60,7 @@ Krok za krokem v [docs/INSTALACE.md](docs/INSTALACE.md).
 
 ## Technologie
 
-Node.js 22 + TypeScript, Fastify, PostgreSQL 16 (Kysely — typovaný SQL, explicitní migrace, fulltext s `unaccent`), šablony Eta (server-side, progressive enhancement, minimum JavaScriptu), editor Quill 2 (vendorovaný), sharp (obrázky), sanitize-html, OpenID Connect provider `oidc-provider` (certifikovaná knihovna), Vitest, ESLint + Prettier, pino, Docker (multi-stage, bez root uživatele), Caddy.
+Node.js 22 + TypeScript, Fastify, PostgreSQL 16 (Kysely — typovaný SQL, explicitní migrace, fulltext s `unaccent`), šablony Eta (server-side, progressive enhancement, minimum JavaScriptu), editor Tiptap 3 (zabalený esbuildem, bez CDN), sharp (obrázky), sanitize-html, OpenID Connect provider `oidc-provider` (certifikovaná knihovna), Vitest, ESLint + Prettier, pino, Docker (multi-stage, bez root uživatele), Caddy.
 
 ## Jak přispět
 

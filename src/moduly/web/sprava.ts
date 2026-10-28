@@ -1,5 +1,5 @@
 // Správa obsahu webu (redaktor): stránky a menu, aktuality, akce. Editor s konceptem, náhledem, automatickým
-// ukládáním, revizemi a košem. Všechno funguje i bez JavaScriptu; JS přidává editor Quill a automatické ukládání.
+// ukládáním, revizemi a košem. Všechno funguje i bez JavaScriptu; JS přidává editor (Tiptap) a automatické ukládání.
 import { promises as fs } from 'node:fs';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { sql } from 'kysely';

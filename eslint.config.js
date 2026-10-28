@@ -25,7 +25,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['public/js/**/*.js'],
+    files: ['public/js/**/*.js', 'klient/**/*.js'],
     languageOptions: {
       globals: Object.fromEntries(
         [
@@ -47,7 +47,6 @@ export default tseslint.config(
           'clearTimeout',
           'setInterval',
           'clearInterval',
-          'Quill',
           'Image',
           'Blob',
           'FileReader',

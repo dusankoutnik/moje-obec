@@ -1056,36 +1056,137 @@ dl.seznam dd {
   background: var(--bila);
   border-radius: var(--radius);
 }
-.editor-obal .ql-toolbar.ql-snow {
-  border-radius: var(--radius) var(--radius) 0 0;
-  border-color: #7a8a7e;
-  position: sticky;
-  top: 0;
-  background: #f7f9f7;
-  z-index: 5;
+.editor-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
   padding: 6px;
+  border: 1px solid #7a8a7e;
+  border-bottom: 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: #f7f9f7;
+  position: sticky;
+  top: var(--vyska-menu, 0);
+  z-index: 5;
 }
-.editor-obal .ql-toolbar button {
-  width: 36px !important;
-  height: 36px !important;
-  padding: 6px !important;
+.editor-kontext {
+  border-radius: 0;
+  top: auto;
+  position: static;
+  background: #eef3ef;
+  font-size: 0.9rem;
 }
-.editor-obal .ql-container.ql-snow {
-  border-color: #7a8a7e;
-  border-radius: 0 0 var(--radius) var(--radius);
+.editor-skupina {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  align-items: center;
+}
+.editor-skupina[hidden] {
+  display: none;
+}
+.editor-tl,
+.editor-styl {
+  min-height: 36px;
+  min-width: 36px;
+  padding: 4px 8px;
   font: inherit;
-  font-size: 1.05rem;
-}
-.editor-obal .ql-editor {
-  min-height: 360px;
-  line-height: 1.6;
-}
-.editor-obal .ql-editor img {
+  font-size: 0.95rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #222;
   cursor: pointer;
 }
-.editor-obal .ql-editor img:not([alt]),
-.editor-obal .ql-editor img[alt=''] {
+.editor-styl {
+  border-color: #b8c4bb;
+  background: #fff;
+}
+.editor-tl:hover,
+.editor-tl:focus-visible {
+  background: #e3ebe5;
+  border-color: #b8c4bb;
+}
+.editor-tl[aria-pressed='true'] {
+  background: var(--primarni, #1f5130);
+  color: #fff;
+}
+.editor-pole .editor-obsah {
+  min-height: 360px;
+  line-height: 1.6;
+  padding: 12px 16px;
+  border: 1px solid #7a8a7e;
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-size: 1.05rem;
+  outline: none;
+}
+.editor-pole .editor-obsah:focus-visible {
+  box-shadow: 0 0 0 3px var(--fokus, #ffbf47);
+}
+.editor-pole .editor-obsah p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #5f6b62;
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.editor-pole .editor-obsah img {
+  max-width: 100%;
+  height: auto;
+  cursor: grab;
+}
+.editor-pole .editor-obsah img:not([alt]),
+.editor-pole .editor-obsah img[alt=''] {
   outline: 4px dashed var(--chyba);
+}
+.editor-pole .editor-obsah .ProseMirror-selectednode,
+.editor-pole .editor-obsah img.ProseMirror-selectednode {
+  outline: 3px solid var(--fokus, #ffbf47);
+  outline-offset: 2px;
+}
+.editor-pole .editor-obsah figure {
+  margin: 12px 0;
+}
+.editor-pole .editor-obsah figcaption {
+  font-size: 0.9rem;
+  color: #4a554c;
+}
+.editor-pole .editor-obsah table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+.editor-pole .editor-obsah td,
+.editor-pole .editor-obsah th {
+  border: 1px solid #9aa79d;
+  padding: 4px 8px;
+  vertical-align: top;
+  min-width: 3em;
+}
+.editor-pole .editor-obsah .selectedCell {
+  background: #e8f0ea;
+}
+.editor-pole .editor-obsah blockquote {
+  border-left: 4px solid #9aa79d;
+  margin-left: 0;
+  padding-left: 12px;
+}
+.editor-video,
+.editor-galerie {
+  display: block;
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 2px dashed var(--linka);
+  border-radius: 6px;
+  background: #f3f5f3;
+}
+.editor-galerie img {
+  max-height: 90px;
+  width: auto;
+}
+.ProseMirror-dropcursor {
+  background: var(--fokus, #ffbf47);
 }
 .alt-dialog {
   max-width: 520px;
@@ -1103,7 +1204,8 @@ dl.seznam dd {
   font-weight: 600;
   margin: 10px 0 4px;
 }
-.alt-dialog input {
+.alt-dialog input,
+.alt-dialog select {
   width: 100%;
   font: inherit;
   padding: 10px 12px;
@@ -1237,31 +1339,6 @@ dl.seznam dd {
 details.karta > summary.tlacitko {
   display: inline-block;
   list-style: none;
-}
-/* editor: české popisky výběru stylu odstavce (Quill je bere z CSS) a textová tlačítka tabulky */
-.editor-obal .ql-snow .ql-picker.ql-header {
-  width: 130px;
-}
-.editor-obal .ql-snow .ql-picker.ql-header .ql-picker-label::before,
-.editor-obal .ql-snow .ql-picker.ql-header .ql-picker-item::before {
-  content: 'Běžný text';
-}
-.editor-obal .ql-snow .ql-picker.ql-header .ql-picker-label[data-value='2']::before,
-.editor-obal .ql-snow .ql-picker.ql-header .ql-picker-item[data-value='2']::before {
-  content: 'Nadpis';
-}
-.editor-obal .ql-snow .ql-picker.ql-header .ql-picker-label[data-value='3']::before,
-.editor-obal .ql-snow .ql-picker.ql-header .ql-picker-item[data-value='3']::before {
-  content: 'Podnadpis';
-}
-.editor-obal .ql-toolbar button.ql-tabulka,
-.editor-obal .ql-toolbar button.ql-radek,
-.editor-obal .ql-toolbar button.ql-sloupec,
-.editor-obal .ql-toolbar button.ql-smazat-tabulku {
-  width: auto !important;
-  font-size: 0.85rem;
-  padding: 4px 8px !important;
-  color: #333;
 }
 /* galerie v textu (z importu: řada náhledů v <figure>) */
 .obsah-html figure.galerie {
@@ -2035,18 +2112,6 @@ a.stat-in:hover .stat-hodnota {
     flex-direction: row;
     justify-content: flex-end;
   }
-}
-/* editor textu: video vložené do stránky (zástupný blok) */
-.ql-editor mo-video {
-  display: block;
-  margin: 12px 0;
-  padding: 14px 16px;
-  border: 2px dashed var(--linka);
-  border-radius: 6px;
-  background: #f3f5f3;
-}
-.ql-editor mo-video::before {
-  content: '▶ ';
 }
 @media (prefers-reduced-motion: reduce) {
   .video-tlacitko,

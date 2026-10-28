@@ -2,6 +2,10 @@
 
 Přehled změn platformy Obecní web od Voltu 2.0 pro pilotní obec, nejnovější nahoře. Technické podrobnosti jsou v CHANGELOG.md.
 
+## 28. 10. 2026
+
+- **Nový editor textu** v administraci (příspěvky, stránky, povinné informace, hlášení): obrázek se vloží tam, kde je kurzor (tlačítkem, přetažením i ze schránky), dá se myší přesunout jinam a po kliknutí na něj se objeví lišta s popisem, **titulkem pod obrázkem** a velikostí (malý / střední / celá šířka). Tabulky mají záhlaví, přidávání a mazání řádků a sloupců a slučování buněk. Přibyla vodorovná čára, nadpis třetí úrovně, tlačítka Zpět a Znovu a odkaz přes Ctrl+K. Stávající články včetně galerií a videí zůstávají beze změny.
+
 ## 23. 10. 2026
 
 - **Počasí na webu:** na titulce je dlaždice s předpovědí na dnes, zítra a pozítří (na telefonu dnes a zítra) — teplota, srážky, vítr a obrázek počasí. Když ČHMÚ vydá pro naše území výstrahu, ukáže se nahoře v dlaždici jako barevný pruh. Na stránce **Počasí** je předpověď po hodinách na dva dny (graf i tabulka) a na celý týden. Předpověď je od norského meteorologického ústavu (yr.no) a obnovuje se každou půlhodinu; váš prohlížeč se přitom nikam cizím nepřipojuje.

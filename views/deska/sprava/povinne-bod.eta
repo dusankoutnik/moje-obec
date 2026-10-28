@@ -11,5 +11,4 @@
   <button class="tlacitko velke" type="submit" name="akce" value="ulozit"><%= it.t('app.ulozit') %></button>
   <% if (it.bod.stav === 'vlastni' && (it.bod.auto || it.bod.vychozi)) { %><button class="tlacitko sekundarni" type="submit" name="akce" value="vychozi"><%= it.t('pi.vratit_vychozi') %></button><% } %>
 </form>
-<script src="/static/vendor/quill/quill.js" defer></script>
-<script src="/static/js/editor.js?v=<%= it.v %>" defer></script>
+<script src="/static/js/vendor/editor.js?v=<%= it.v %>" defer></script>

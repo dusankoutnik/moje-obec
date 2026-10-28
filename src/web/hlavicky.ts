@@ -1,5 +1,5 @@
 // Bezpečnostní hlavičky přímo z aplikace (ne jen z reverzní proxy) — platí stejně za Caddy, NPM i bez proxy.
-// CSP: vše z vlastního původu; styly i inline (šablona vkládá <style> s barvami schématu a písmy, editor Quill a
+// CSP: vše z vlastního původu; styly i inline (šablona vkládá <style> s barvami schématu a písmy, editor Tiptap a
 // náhled vzhledu používají atribut style); obrázky i data:/blob: (editor zmenšuje fotky v prohlížeči); přehrávače
 // YouTube (youtube-nocookie) a Vimeo se vkládají až po kliknutí (public/js/web.js). Žádné inline skripty.
 import type { FastifyInstance } from 'fastify';

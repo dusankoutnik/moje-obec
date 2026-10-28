@@ -34,6 +34,8 @@ jobs:
       # nástroje pro text dokumentů (pdftotext, OCR, antiword) — integrační testy se bez nich přeskočí
       - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils tesseract-ocr tesseract-ocr-ces tesseract-ocr-eng antiword
       - run: npm run lint
+      # zabalený editor (public/js/vendor/editor.js) musí odpovídat zdroji klient/editor.js
+      - run: npm run build:klient && git diff --exit-code public/js/vendor/editor.js
       - run: npm run typecheck
       # známé zranitelnosti závislostí úrovně high a critical shodí build (nižší jen hlásí)
       - run: npm audit --audit-level=high

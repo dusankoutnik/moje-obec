@@ -13,7 +13,7 @@
 <% if (!it.shell) { %><link rel="stylesheet" href="/static/css/styl.css?v=<%= it.v %>"><% } %>
 <% if (it.vzhled) { %><style><%~ it.vzhled.css %></style><% } %>
 <% if (it.fontyNavic) { %><style><%~ it.fontyNavic %></style><% } %>
-<% if (it.editor) { %><link rel="stylesheet" href="/static/vendor/quill/quill.snow.css"><% } %>
+
 <script src="/static/js/app.js?v=<%= it.v %>" defer></script>
 <% if (it.vzhled) { %><script src="/static/js/web.js?v=<%= it.v %>" defer></script><% } %>
 <% if (it.skriptKviz) { %><script src="/static/js/kviz.js?v=<%= it.v %>" defer></script><% } %>

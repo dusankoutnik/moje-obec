@@ -90,8 +90,14 @@ vyjmuté v `coverage.exclude`.
 
 CI pouští `npm audit --audit-level=high`: zranitelnost úrovně high nebo critical shodí build. Oprava = aktualizace
 závislosti (`npm install balicek@verze`, u major verze projít changelog a pustit testy). Když oprava neexistuje
-a zranitelnost se nás netýká, zapište to sem i s odkazem na advisory. Aktuálně zůstává jen nízká (low)
-zranitelnost Quillu (GHSA-v3m3-f69x-jf25, XSS v exportu HTML) — výstup editoru se na serveru vždy sanitizuje.
+a zranitelnost se nás netýká, zapište to sem i s odkazem na advisory. Výstup editoru se na serveru vždy sanitizuje.
+
+### Editor textu (klient/editor.js → public/js/vendor/editor.js)
+
+Editor ve správě je Tiptap 3, zdroj v `klient/editor.js`, do prohlížeče jde jeden zabalený soubor
+`public/js/vendor/editor.js` (commituje se, žádné CDN). **Po změně zdroje nebo aktualizaci `@tiptap/*` spusťte
+`./dev.sh npm run build:klient`** — CI zabalí znovu a selže, když se commitnutý soubor liší. Chování editoru ověřuje
+Playwright (`e2e/smoke.spec.ts`: obrázek na pozici kurzoru, titulek, velikost, tabulka, uložení).
 
 > **npm 10 a „Cannot read properties of null (reading 'edgesOut')“** při instalaci nové verze Vitestu: chyba
 > npm při řešení peer závislostí. Pomůže `npx -y npm@11 install …`; vzniklý `package-lock.json` funguje

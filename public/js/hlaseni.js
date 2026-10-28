@@ -1,7 +1,7 @@
 // Formulář nového hlášení infokanálu: kopírování textu mezi kanály jedním tlačítkem (jako v původní aplikaci obce) —
 // SMS → e-mail, předmět e-mailu → nadpis článku, e-mail (s formátováním) → článek, SMS → článek.
-// Tlačítka jsou bez JavaScriptu skrytá (formulář funguje i bez nich). Editory Quill vytváří editor.js
-// a instanci nechává v textarea.editorQuill.
+// Tlačítka jsou bez JavaScriptu skrytá (formulář funguje i bez nich). Editory vytváří klient/editor.js
+// a rozhraní nechává v textarea.editorApi (text, html, nastavHtml, nastavText).
 (function () {
   'use strict';
   var tlacitka = document.querySelectorAll('[data-kopirovat]');
@@ -32,11 +32,11 @@
       .join('');
   }
   function text(el) {
-    if (el.editorQuill) return el.editorQuill.getText().trim();
+    if (el.editorApi) return el.editorApi.text().trim();
     return el.value.trim();
   }
   function html(el) {
-    if (el.editorQuill) return el.editorQuill.getLength() > 1 ? el.editorQuill.getSemanticHTML() : '';
+    if (el.editorApi) return el.editorApi.html();
     return el.getAttribute('data-editor') ? el.value : textNaHtml(el.value);
   }
   function oznam(klic) {
@@ -54,14 +54,11 @@
       var cil = pole(b.getAttribute('data-do'));
       if (!zdroj || !cil) return;
       if (!text(zdroj)) return oznam('prazdne');
-      var formatovany = !!zdroj.editorQuill || !!zdroj.getAttribute('data-editor');
+      var formatovany = !!zdroj.editorApi || !!zdroj.getAttribute('data-editor');
       if (cil.tagName === 'INPUT') cil.value = text(zdroj);
-      else if (cil.editorQuill) {
-        var q = cil.editorQuill;
-        if (formatovany) {
-          q.setContents([], 'user');
-          q.clipboard.dangerouslyPasteHTML(html(zdroj), 'user');
-        } else q.setText(text(zdroj), 'user');
+      else if (cil.editorApi) {
+        if (formatovany) cil.editorApi.nastavHtml(html(zdroj));
+        else cil.editorApi.nastavText(text(zdroj));
       } else cil.value = formatovany ? html(zdroj) : text(zdroj);
       cil.dispatchEvent(new Event('input', { bubbles: true }));
       oznam('ok');

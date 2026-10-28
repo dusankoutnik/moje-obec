@@ -3,28 +3,28 @@
 Platforma je pod EUPL-1.2. Do prohlížeče návštěvníků se navíc posílají tyto cizí soubory (vše self-hosted
 z balíčků npm, žádné CDN):
 
-| Součást                                     | Balíček                             | Licence                                                                           | Použití          |
-| ------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- | ---------------- |
-| Ubuntu                                      | `@fontsource/ubuntu`                | Ubuntu Font Licence 1.0 (vložení do webu povoleno; úpravy písma pod jiným názvem) | písmo webu       |
-| Atkinson Hyperlegible                       | `@fontsource/atkinson-hyperlegible` | SIL Open Font License 1.1                                                         | písmo webu       |
-| Inter                                       | `@fontsource/inter`                 | SIL OFL 1.1                                                                       | písmo webu       |
-| Rubik                                       | `@fontsource/rubik`                 | SIL OFL 1.1                                                                       | nadpisy          |
-| Rubik Dirt                                  | `@fontsource/rubik-dirt`            | SIL OFL 1.1                                                                       | ozdobný titulek  |
-| Source Sans 3                               | `@fontsource/source-sans-3`         | SIL OFL 1.1                                                                       | písmo webu       |
-| Merriweather                                | `@fontsource/merriweather`          | SIL OFL 1.1                                                                       | nadpisy          |
-| Nunito                                      | `@fontsource/nunito`                | SIL OFL 1.1                                                                       | písmo webu       |
-| Genos                                       | `@fontsource/genos`                 | SIL OFL 1.1                                                                       | písmo webu       |
-| Libertinus Sans (nástupce Linux Biolinum)   | `@fontsource/libertinus-sans`       | SIL OFL 1.1                                                                       | písmo webu       |
-| Libertinus Serif (nástupce Linux Libertine) | `@fontsource/libertinus-serif`      | SIL OFL 1.1                                                                       | nadpisy          |
-| Fira Sans                                   | `@fontsource/fira-sans`             | SIL OFL 1.1                                                                       | písmo webu       |
-| Open Sans                                   | `@fontsource/open-sans`             | SIL OFL 1.1                                                                       | písmo webu       |
-| Noto Sans                                   | `@fontsource/noto-sans`             | SIL OFL 1.1                                                                       | písmo webu       |
-| PT Sans                                     | `@fontsource/pt-sans`               | SIL OFL 1.1                                                                       | písmo webu       |
-| Alegreya Sans                               | `@fontsource/alegreya-sans`         | SIL OFL 1.1                                                                       | písmo webu       |
-| Montserrat                                  | `@fontsource/montserrat`            | SIL OFL 1.1                                                                       | nadpisy          |
-| Lora                                        | `@fontsource/lora`                  | SIL OFL 1.1                                                                       | nadpisy          |
-| Roboto Slab                                 | `@fontsource/roboto-slab`           | SIL OFL 1.1                                                                       | nadpisy          |
-| Quill 2                                     | `quill`                             | BSD-3-Clause                                                                      | editor ve správě |
+| Součást                                     | Balíček                             | Licence                                                                           | Použití                                                    |
+| ------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Ubuntu                                      | `@fontsource/ubuntu`                | Ubuntu Font Licence 1.0 (vložení do webu povoleno; úpravy písma pod jiným názvem) | písmo webu                                                 |
+| Atkinson Hyperlegible                       | `@fontsource/atkinson-hyperlegible` | SIL Open Font License 1.1                                                         | písmo webu                                                 |
+| Inter                                       | `@fontsource/inter`                 | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| Rubik                                       | `@fontsource/rubik`                 | SIL OFL 1.1                                                                       | nadpisy                                                    |
+| Rubik Dirt                                  | `@fontsource/rubik-dirt`            | SIL OFL 1.1                                                                       | ozdobný titulek                                            |
+| Source Sans 3                               | `@fontsource/source-sans-3`         | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| Merriweather                                | `@fontsource/merriweather`          | SIL OFL 1.1                                                                       | nadpisy                                                    |
+| Nunito                                      | `@fontsource/nunito`                | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| Genos                                       | `@fontsource/genos`                 | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| Libertinus Sans (nástupce Linux Biolinum)   | `@fontsource/libertinus-sans`       | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| Libertinus Serif (nástupce Linux Libertine) | `@fontsource/libertinus-serif`      | SIL OFL 1.1                                                                       | nadpisy                                                    |
+| Fira Sans                                   | `@fontsource/fira-sans`             | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| Open Sans                                   | `@fontsource/open-sans`             | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| Noto Sans                                   | `@fontsource/noto-sans`             | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| PT Sans                                     | `@fontsource/pt-sans`               | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| Alegreya Sans                               | `@fontsource/alegreya-sans`         | SIL OFL 1.1                                                                       | písmo webu                                                 |
+| Montserrat                                  | `@fontsource/montserrat`            | SIL OFL 1.1                                                                       | nadpisy                                                    |
+| Lora                                        | `@fontsource/lora`                  | SIL OFL 1.1                                                                       | nadpisy                                                    |
+| Roboto Slab                                 | `@fontsource/roboto-slab`           | SIL OFL 1.1                                                                       | nadpisy                                                    |
+| Tiptap 3 (ProseMirror)                      | `@tiptap/*`, `prosemirror-*`        | MIT                                                                               | editor ve správě (zabalený v `public/js/vendor/editor.js`) |
 
 - **Ikony počasí: Meteocons** (Bas Milius, https://github.com/basmilius/weather-icons) — licence MIT, `public/img/pocasi/` (statické) a `public/img/pocasi/anim/` (animované). Text licence v `public/img/pocasi/LICENSE.txt`.
 

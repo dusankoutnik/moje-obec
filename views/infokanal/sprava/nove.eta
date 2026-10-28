@@ -66,6 +66,5 @@
   <p class="napoveda" id="kopirovani-stav" role="status" aria-live="polite" data-ok="<%= it.t('infokanal.zkopirovano') %>" data-prazdne="<%= it.t('infokanal.kopirovat_prazdne') %>"></p>
   <button class="tlacitko" type="submit"><%= it.t('infokanal.odeslat') %></button>
 </form>
-<script src="/static/vendor/quill/quill.js" defer></script>
-<script src="/static/js/editor.js?v=<%= it.v %>" defer></script>
+<script src="/static/js/vendor/editor.js?v=<%= it.v %>" defer></script>
 <script src="/static/js/hlaseni.js?v=<%= it.v %>" defer></script>

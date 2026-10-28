@@ -86,9 +86,9 @@ Role na účtu: `redaktor` (hlášení, články), `ucetni` (platby), `spravce` 
 
 ## ADR 16 — HTML z editoru jen jako struktura, sanitizace whitelistem na serveru
 
-**Rozhodnutí.** Editor **Quill 2** (vendorovaný z npm, servírovaný z `/static/vendor/quill/`) s povolenými formáty jen pro strukturu: nadpisy H2–H3, tučné, kurzíva, odkazy, seznamy, citace, obrázky, tabulky. Žádné barvy, velikosti ani styly — laik nemůže rozbít vzhled ani přístupnost. Server HTML vždy sanitizuje (`sanitize-html`, whitelist tagů a atributů, `h1` → `h2`). Obrázek vložený editorem jde přes server (žádné base64 v textu) a vyžaduje popis (dialog); zveřejnění s obrázkem bez `alt` server odmítne. Bez JavaScriptu zůstává obyčejné textové pole (HTML se stejně sanitizuje).
+**Rozhodnutí.** Editor **Tiptap 3** (ProseMirror, MIT; zdroj `klient/editor.js`, esbuildem zabalený do `public/js/vendor/editor.js` — `npm run build:klient`, žádné CDN) s povolenými formáty jen pro strukturu: nadpisy H2–H4, tučné, kurzíva, odkazy, seznamy, citace, obrázky (s titulkem, velikostí a odkazem), video obce, tabulky (záhlaví, slučování buněk); galerie z importu se zachová beze změny. Žádné barvy, velikosti ani styly — laik nemůže rozbít vzhled ani přístupnost. Server HTML vždy sanitizuje (`sanitize-html`, whitelist tagů a atributů, `h1` → `h2`). Obrázek vložený editorem jde přes server (žádné base64 v textu) a vyžaduje popis (dialog); zveřejnění s obrázkem bez `alt` server odmítne. Bez JavaScriptu zůstává obyčejné textové pole (HTML se stejně sanitizuje).
 
-**Proč ne Tiptap.** Potřeboval by bundler (desítky ES modulů); Quill 2 je jeden soubor, MIT, stabilní a umí tabulky.
+**Proč Tiptap (od 10/2026, dřív Quill 2).** Quill vkládal obrázek vždy na konec (ztráta výběru při dialogu), neuměl titulky, velikost ani přesun obrázku a tabulky jen základně. Tiptap je modulární a bundler (esbuild) je jediná vývojová závislost navíc; výsledek je jeden soubor, který se commituje, CI hlídá, že odpovídá zdroji. CKEditor 5 a TinyMCE ne kvůli licenci (GPL / komerční) a placeným funkcím, Editor.js ne (neukládá HTML).
 
 ## ADR 17 — Obecní web jako modul platformy (úzký redakční systém), ne WordPress ani Drupal
 
