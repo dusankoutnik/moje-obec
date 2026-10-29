@@ -178,19 +178,14 @@ export class AkcePropojeniSluzba {
       this.kandidati(new Date(ted.getTime() - 86_400_000)),
       this.propojeneVse(),
     ]);
-    // koncepty ze synchronizace: termín v rezervacích se změnil → koncept se srovná sám (na webu ještě není)
+    // přejmenování v rezervacích se propíše do akce s nezměněným názvem (i zveřejněné); termín se u konceptů ze
+    // synchronizace srovná sám (na webu ještě nejsou), u ostatních čeká na redaktora v „Akcích ke zpracování“
     const podleRef = new Map(akce.map((e) => [e.ref, e]));
     for (const o of propojene) {
       const e = podleRef.get(o.rezervace_ref!);
-      if (!e || !this.jeKonceptSynchronizace(o)) continue;
-      // přejmenování v rezervacích: koncept, na který redaktor ještě nesáhl, převezme nový název
-      const nazev = e.titulek.slice(0, 250) || '—';
-      if (!o.upravil_id && !o.koncept && o.titulek !== nazev) {
-        await this.obsah.uloz(o.id, 'akce', { ...poleZRadku(o), titulek: nazev }, 'koncept', null, null, {
-          zdroj: 'rezervace',
-        });
-        o.titulek = nazev;
-      }
+      if (!e) continue;
+      await this.srovnejNazev(o, e);
+      if (!this.jeKonceptSynchronizace(o)) continue;
       if (podpisTerminu(e) !== o.rezervace_termin)
         await this.nastavTermin(o, e, null, 'web.akce_termin_sync');
     }
@@ -204,6 +199,47 @@ export class AkcePropojeniSluzba {
     return { zalozeno };
   }
 
+  /**
+   * Termín v rezervacích dostal jiný název: akce, jejíž název redaktor neměnil (stejný jako dřív v rezervacích, bez
+   * ohledu na velikost písmen a mezery), převezme nový — i zveřejněná (adresa stránky zůstává). Vlastní název
+   * redaktora a rozpracované změny (koncept) se nepřepisují. Akce bez známého názvu si ho jen poznamená.
+   */
+  private async srovnejNazev(o: WebObsah, e: ExterniAkce) {
+    const nazev = e.titulek.slice(0, 250) || '—';
+    if (o.rezervace_nazev === nazev) return;
+    const norm = (x: string) =>
+      x
+        .toLocaleLowerCase('cs')
+        .replace(/\s+/g, ' ')
+        .replace(/[.\s]+$/, '')
+        .trim();
+    const puvodni = o.rezervace_nazev;
+    if (puvodni !== null && !o.koncept && norm(o.titulek) === norm(puvodni) && o.titulek !== nazev) {
+      try {
+        await this.obsah.uloz(
+          o.id,
+          'akce',
+          { ...poleZRadku(o), titulek: nazev },
+          o.stav === 'zverejneno' ? 'zverejnit' : 'koncept',
+          null,
+          null,
+          { zdroj: 'rezervace' },
+        );
+        await zapisAudit(this.db, {
+          uzivatelId: null,
+          akce: 'web.akce_nazev_sync',
+          detail: { id: o.id, ref: o.rezervace_ref, puvodni: o.titulek, novy: nazev },
+        });
+        o.titulek = nazev;
+      } catch (err) {
+        // neplatná akce (např. chybí popis obrázku) — název zůstane, synchronizace pokračuje
+        console.warn('akce: název z rezervací se nepropsal', o.id, err);
+      }
+    }
+    await this.db.updateTable('web_obsah').set({ rezervace_nazev: nazev }).where('id', '=', o.id).execute();
+    o.rezervace_nazev = nazev;
+  }
+
   /** založí koncept akce k termínu; vrací id, nebo null, když termín mezitím propojil někdo jiný */
   async zalozKoncept(e: ExterniAkce, aktorId: string | null, ip?: string | null): Promise<string | null> {
     try {
@@ -214,7 +250,12 @@ export class AkcePropojeniSluzba {
         'koncept',
         aktorId,
         ip,
-        { zdroj: 'rezervace', rezervaceRef: e.ref, rezervaceTermin: podpisTerminu(e) },
+        {
+          zdroj: 'rezervace',
+          rezervaceRef: e.ref,
+          rezervaceTermin: podpisTerminu(e),
+          rezervaceNazev: e.titulek.slice(0, 250) || '—',
+        },
       );
     } catch (err) {
       if ((err as { code?: string }).code === '23505') return null;
@@ -325,7 +366,12 @@ export class AkcePropojeniSluzba {
         if (drzitel) {
           await trx
             .updateTable('web_obsah')
-            .set({ rezervace_ref: null, rezervace_termin: null, smazano_at: new Date() })
+            .set({
+              rezervace_ref: null,
+              rezervace_termin: null,
+              rezervace_nazev: null,
+              smazano_at: new Date(),
+            })
             .where('id', '=', drzitel.id)
             .execute();
           await zapisAudit(trx, {
@@ -337,7 +383,11 @@ export class AkcePropojeniSluzba {
         }
         await trx
           .updateTable('web_obsah')
-          .set({ rezervace_ref: ref, rezervace_termin: podpisTerminu(e) })
+          .set({
+            rezervace_ref: ref,
+            rezervace_termin: podpisTerminu(e),
+            rezervace_nazev: e.titulek.slice(0, 250),
+          })
           .where('id', '=', akceId)
           .execute();
       });
@@ -362,7 +412,7 @@ export class AkcePropojeniSluzba {
     if (!akce?.rezervace_ref) return;
     await this.db
       .updateTable('web_obsah')
-      .set({ rezervace_ref: null, rezervace_termin: null })
+      .set({ rezervace_ref: null, rezervace_termin: null, rezervace_nazev: null })
       .where('id', '=', akceId)
       .execute();
     await zapisAudit(this.db, {
@@ -391,7 +441,7 @@ export class AkcePropojeniSluzba {
     if (koncept && this.jeKonceptSynchronizace(koncept)) {
       await this.db
         .updateTable('web_obsah')
-        .set({ rezervace_ref: null, rezervace_termin: null })
+        .set({ rezervace_ref: null, rezervace_termin: null, rezervace_nazev: null })
         .where('id', '=', koncept.id)
         .execute();
       await this.obsah.doKose(koncept.id, true, aktorId, ip);

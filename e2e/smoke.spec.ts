@@ -2,6 +2,7 @@
 // aktualitu, editor ji sám uloží jako koncept, redaktor ji zveřejní a aktualita je na titulce.
 import { expect, test, type Page } from '@playwright/test';
 import pg from 'pg';
+import sharp from 'sharp';
 
 const DB = process.env.E2E_DATABASE_URL ?? 'postgres://platforma:platforma@localhost:5432/platforma_e2e';
 const TELEFON = '+420777990001';
@@ -61,11 +62,16 @@ test('autosave a zveřejnění aktuality, aktualita na titulce', async ({ page }
   await expect(page.locator('main')).toContainText('Text aktuality ze smoke testu.');
 });
 
-// 1×1 PNG pro nahrání obrázku
-const PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGBgAAAABQABpfZFQAAAAABJRU5ErkJggg==',
-  'base64',
-);
+// fotka pro nahrání (dost velká, aby šla kliknout i s úchyty velikosti v rozích)
+let PNG: Buffer;
+test.beforeAll(async () => {
+  PNG = await sharp({ create: { width: 600, height: 400, channels: 3, background: '#5a8a6a' } })
+    .png()
+    .toBuffer();
+});
+test.beforeEach(({ page }) => {
+  page.on('pageerror', (e) => console.log('CHYBA STRÁNKY:', e.message));
+});
 
 test('editor: obrázek na pozici kurzoru, titulek a velikost, tabulka', async ({ page }) => {
   await prihlas(page);
@@ -81,7 +87,7 @@ test('editor: obrázek na pozici kurzoru, titulek a velikost, tabulka', async ({
   await page.keyboard.press('End');
 
   const vyber = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Vložit obrázek na místo kurzoru' }).click();
+  await page.getByRole('button', { name: 'Vložit fotku na místo kurzoru' }).click();
   await (await vyber).setFiles({ name: 'fotka.png', mimeType: 'image/png', buffer: PNG });
   const dialog = page.locator('dialog.alt-dialog');
   await expect(dialog).toBeVisible();
@@ -94,15 +100,15 @@ test('editor: obrázek na pozici kurzoru, titulek a velikost, tabulka', async ({
     .poll(html)
     .toMatch(/První odstavec\.<\/p><img[^>]+alt="Testovací fotka"[^>]*><p>Druhý odstavec\./);
 
-  // titulek a velikost přes kontextovou lištu (obrázek je po vložení vybraný)
+  // titulek a velikost přes plovoucí lištičku u fotky
   await editor.locator('img').click();
-  await page.getByRole('button', { name: 'Šířka 300 px' }).click();
+  await page.getByRole('button', { name: 'Třetina šířky textu' }).click();
   await page.getByRole('button', { name: 'Titulek pod obrázkem' }).click();
   await dialog.locator('input').fill('Foto: obec');
   await dialog.getByRole('button', { name: 'Uložit' }).click();
   await expect
     .poll(html)
-    .toMatch(/<figure><img[^>]+width="300"[^>]*><figcaption>Foto: obec<\/figcaption><\/figure>/);
+    .toMatch(/<figure class="obr-s33"><img[^>]+><figcaption>Foto: obec<\/figcaption><\/figure>/);
 
   // tabulka se záhlavím a přidaný řádek
   await editor.locator('p').last().click();
@@ -121,4 +127,99 @@ test('editor: obrázek na pozici kurzoru, titulek a velikost, tabulka', async ({
   // pomocné styly editoru (šířky sloupců) server odstraní
   expect(ulozeny).toMatch(/<table><tbody><tr><th>/);
   expect(ulozeny).not.toContain('style=');
+});
+
+test('editor: lomítko, obtékání a tažení fotky, galerie z fotek, HTML, kontrola před zveřejněním', async ({
+  page,
+}) => {
+  const titulek = `Galerie ${Date.now()}`;
+  await prihlas(page);
+  await page.goto('/sprava/web/novy?typ=aktualita');
+  await page.locator('#titulek').fill(titulek);
+  const editor = page.locator('.editor-obsah').first();
+  const html = () => page.locator('#obsah_html').inputValue();
+  await editor.click();
+  await editor.pressSequentially('Úvod k pouti.');
+  await page.keyboard.press('Enter');
+
+  // „/fotka“ → výběr souboru → popis
+  await editor.pressSequentially('/fot');
+  await expect(page.locator('.editor-lomitko')).toBeVisible();
+  const vyber = page.waitForEvent('filechooser');
+  await page.keyboard.press('Enter');
+  await (await vyber).setFiles({ name: 'kostel.png', mimeType: 'image/png', buffer: PNG });
+  const dialog = page.locator('dialog.alt-dialog');
+  await dialog.locator('input').fill('Kostel');
+  await dialog.getByRole('button', { name: 'Vložit' }).click();
+  await expect.poll(html).not.toContain('/fot');
+
+  // vlevo s obtékáním → rovnou polovina šířky; pak tažením za roh menší
+  await editor.locator('img').click();
+  await page.getByRole('button', { name: 'Vlevo, text obtéká zprava' }).click();
+  await expect.poll(html).toContain('<figure class="obr-vlevo obr-s50">');
+  const uchyt = editor.locator('.editor-obr-uchyt.vpravo');
+  await expect(uchyt).toBeVisible();
+  const b = (await uchyt.boundingBox())!;
+  const sirka = (await editor.locator('.editor-obr').boundingBox())!.width;
+  await page.mouse.move(b.x + 8, b.y + 8);
+  await page.mouse.down();
+  await page.mouse.move(b.x + 8 - sirka / 2, b.y + 8, { steps: 8 });
+  await page.mouse.up();
+  await expect.poll(html).toContain('<figure class="obr-vlevo obr-s25">');
+
+  // nová galerie ze 4 fotek přes tlačítko Galerie → vloží se živá značka
+  await editor.locator('p').last().click();
+  await page.keyboard.press('End');
+  await page.getByRole('button', { name: 'Vložit fotogalerii' }).click();
+  const vyberGalerie = page.locator('dialog.editor-vyber-galerie');
+  await expect(vyberGalerie).toBeVisible();
+  const fotky = page.waitForEvent('filechooser');
+  await vyberGalerie.getByRole('button', { name: '+ Nová galerie z fotek…' }).click();
+  await (
+    await fotky
+  ).setFiles([1, 2, 3, 4].map((i) => ({ name: `pout-${i}.png`, mimeType: 'image/png', buffer: PNG })));
+  await expect(dialog).toBeVisible();
+  await dialog.locator('input').fill(`Pouť ${titulek}`);
+  await dialog.getByRole('button', { name: 'Nahrát 4 fotek' }).click();
+  await expect
+    .poll(html, { timeout: 30_000 })
+    .toMatch(/<figure class="galerie-obce" data-galerie="[0-9a-f-]{36}"/);
+  await expect(editor.locator('.editor-galerie-obce img')).toHaveCount(4);
+  await editor.locator('.editor-galerie-obce').click();
+  await page.getByRole('button', { name: 'Rozložení galerie: Pás náhledů' }).click();
+  await expect.poll(html).toContain('data-rozlozeni="pas"');
+
+  // ruční HTML: nepovolené věci editor vynechá a řekne co
+  await page.getByRole('button', { name: 'Upravit HTML ručně (pro pokročilé)' }).click();
+  const zdroj = page.locator('textarea.editor-html');
+  await expect(zdroj).toBeVisible();
+  await zdroj.fill(
+    (await zdroj.inputValue()) +
+      '\n<p style="color:red">TOTO JE VELMI DŮLEŽITÉ OZNÁMENÍ PRO VŠECHNY OBČANY OBCE</p><script>alert(1)</script>',
+  );
+  await page.getByRole('button', { name: 'Upravit HTML ručně (pro pokročilé)' }).click();
+  await expect(page.locator('.editor-html-zprava')).toContainText('atribut style');
+  await expect(page.locator('.editor-html-zprava')).toContainText('<script>');
+  await expect.poll(html).toContain('<p>TOTO JE VELMI');
+
+  // kontrola před zveřejněním upozorní na verzálky, „Přesto zveřejnit“ projde
+  await page.locator('button[name=akce][value=zverejnit]').click();
+  const kontrola = page.locator('dialog.editor-kontrola');
+  await expect(kontrola).toContainText('VELKÝMI PÍSMENY');
+  await kontrola.getByRole('button', { name: 'Přesto zveřejnit' }).click();
+  await expect(page.locator('.flash').first()).toContainText('na webu');
+
+  // web: fotka vlevo, galerie jako pás s prohlížečem
+  await page.goto('/aktuality');
+  await page.getByRole('link', { name: titulek }).click();
+  await expect(page.locator('.obsah-html figure.obr-vlevo.obr-s25 img')).toHaveAttribute('alt', 'Kostel');
+  const galerie = page.locator('.galerie-v-textu.galerie-pas');
+  await expect(galerie.locator('a[data-foto]')).toHaveCount(4);
+  await galerie.locator('a[data-foto]').first().click();
+  await expect(page.locator('dialog.prohlizec')).toBeVisible();
+  await expect(page.locator('dialog.prohlizec .pocitadlo')).toHaveText('1 / 4');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('dialog.prohlizec .pocitadlo')).toHaveText('2 / 4');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog.prohlizec')).toBeHidden();
 });

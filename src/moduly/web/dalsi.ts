@@ -1,9 +1,35 @@
 // Ostatní obsah webu: fotogalerie, dokumenty ke stažení, dotace (publicita dárců), přesměrování starých adres, vzhled.
-import { sql } from 'kysely';
+import { sql, type Selectable } from 'kysely';
 import type { Db } from '../../db/index.js';
+import type { WebGalerieTable } from '../../db/types.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { datumPraha } from '../../lib/datum.js';
 import { slugify } from '../../lib/slug.js';
+
+export type GalerieProZobrazeni = Selectable<WebGalerieTable> & {
+  fotky: Awaited<ReturnType<GalerieSluzba['fotky']>>;
+};
+
+/** Galerie vložená do textu: `<figure class="galerie-obce" data-galerie="<id>" data-rozlozeni data-pocet><a>Název</a></figure>` */
+export const RE_GALERIE_V_TEXTU = /<figure\b[^>]*\bdata-galerie="([0-9a-f-]{36})"[^>]*>[\s\S]*?<\/figure>/g;
+
+export const ROZLOZENI_GALERIE = ['mrizka', 'pas', 'velka'] as const;
+export type RozlozeniGalerie = (typeof ROZLOZENI_GALERIE)[number];
+
+/** id galerií vložených do HTML obsahu */
+export function idGaleriiVTextu(html: string): string[] {
+  return [...new Set([...String(html ?? '').matchAll(RE_GALERIE_V_TEXTU)].map((m) => m[1]!))];
+}
+
+/** rozložení a počet zobrazených fotek z vložené značky (neznámé hodnoty → výchozí mřížka, 6 fotek) */
+export function volbyVlozeneGalerie(znacka: string): { rozlozeni: RozlozeniGalerie; pocet: number } {
+  const r = /\bdata-rozlozeni="([a-z]+)"/.exec(znacka)?.[1] as RozlozeniGalerie | undefined;
+  const p = Number(/\bdata-pocet="(\d+)"/.exec(znacka)?.[1] ?? 6);
+  return {
+    rozlozeni: r && ROZLOZENI_GALERIE.includes(r) ? r : 'mrizka',
+    pocet: Number.isFinite(p) ? Math.max(0, Math.min(200, p)) : 6, // 0 = všechny
+  };
+}
 
 export class GalerieSluzba {
   constructor(private db: Db) {}
@@ -133,6 +159,90 @@ export class GalerieSluzba {
     await zapisAudit(this.db, { uzivatelId: aktorId, akce: 'web.galerie_stav', detail: { id, stav } });
   }
 
+  /** zobrazit na stránce Fotogalerie (false = „jen pro příspěvky“) */
+  async nastavVSeznamu(id: string, vSeznamu: boolean, aktorId: string) {
+    const g = await this.podleId(id);
+    if (!g || g.v_seznamu === vSeznamu) return;
+    await this.db
+      .updateTable('web_galerie')
+      .set({ v_seznamu: vSeznamu, upraveno_at: new Date() })
+      .where('id', '=', id)
+      .execute();
+    await zapisAudit(this.db, {
+      uzivatelId: aktorId,
+      akce: 'web.galerie_v_seznamu',
+      detail: { id, v_seznamu: vSeznamu },
+    });
+  }
+
+  /** příspěvky a stránky (i koncepty, bez koše), do jejichž textu je galerie vložená */
+  pouziti(id: string) {
+    if (!/^[0-9a-f-]{36}$/.test(id)) return Promise.resolve([]);
+    const vzor = `%data-galerie="${id}"%`;
+    return this.db
+      .selectFrom('web_obsah')
+      .select(['id', 'titulek', 'typ', 'stav'])
+      .where('smazano_at', 'is', null)
+      .where((eb) =>
+        eb.or([eb('obsah_html', 'like', vzor), sql<boolean>`koncept::text like ${'%' + id + '%'}`]),
+      )
+      .orderBy('upraveno_at', 'desc')
+      .limit(50)
+      .execute();
+  }
+
+  /**
+   * Galerie vložené do textu (editor): id → galerie s fotkami. Na webu jen zveřejněné (i „jen pro příspěvky“);
+   * náhled ve správě (`vcetneKonceptu`) ukáže i koncept, ať redaktor vidí, co vkládá.
+   */
+  async vTextu(html: string, vcetneKonceptu = false) {
+    const ids = idGaleriiVTextu(html);
+    const out = new Map<string, GalerieProZobrazeni>();
+    if (!ids.length) return out;
+    let q = this.db
+      .selectFrom('web_galerie')
+      .selectAll()
+      .where('id', 'in', ids)
+      .where('smazano_at', 'is', null);
+    if (!vcetneKonceptu) q = q.where('stav', '=', 'zverejneno');
+    for (const g of await q.execute()) out.set(g.id, { ...g, fotky: await this.fotky(g.id) });
+    return out;
+  }
+
+  /** pro výběr v editoru: všechny nesmazané galerie s několika náhledy */
+  async proEditor() {
+    const galerie = await this.seznam({ verejne: false, limit: 500 });
+    const nahledy = galerie.length
+      ? await this.db
+          .selectFrom('web_galerie_fotky')
+          .select(['galerie_id', 'soubor_id', 'poradi'])
+          .where(
+            'galerie_id',
+            'in',
+            galerie.map((g) => g.id),
+          )
+          .orderBy('galerie_id')
+          .orderBy('poradi')
+          .execute()
+      : [];
+    const podle = new Map<string, string[]>();
+    for (const n of nahledy) {
+      const a = podle.get(n.galerie_id) ?? [];
+      if (a.length < 6) a.push(n.soubor_id);
+      podle.set(n.galerie_id, a);
+    }
+    return galerie.map((g) => ({
+      id: g.id,
+      nazev: g.nazev,
+      slug: g.slug,
+      datum: g.datum,
+      stav: g.stav,
+      v_seznamu: g.v_seznamu,
+      pocet: Number(g.pocet ?? 0),
+      nahledy: podle.get(g.id) ?? [],
+    }));
+  }
+
   async doKose(id: string, smazat: boolean, aktorId: string) {
     const g = await this.podleId(id);
     if (!g) return;
@@ -178,7 +288,7 @@ export class GalerieSluzba {
           .as('titulni_alt'),
       ])
       .where('g.smazano_at', v.kos ? 'is not' : 'is', null);
-    if (v.verejne) q = q.where('g.stav', '=', 'zverejneno');
+    if (v.verejne) q = q.where('g.stav', '=', 'zverejneno').where('g.v_seznamu', '=', true);
     return q
       .orderBy(sql`coalesce(g.datum, g.vytvoreno_at::date)`, 'desc')
       .limit(v.limit ?? 200)

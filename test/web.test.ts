@@ -343,6 +343,81 @@ describe('galerie, dokumenty', () => {
     expect(pub.text).toContain('alt="Dětský den — fotografie 2"');
   });
 
+  it('galerie „jen pro příspěvky“ z editoru: mimo seznam, vložená v textu, fotka s velikostí a obtékáním', async () => {
+    const strana = await red.get('/sprava/web/galerie');
+    const r = await postSoubory(
+      red,
+      '/sprava/web/galerie/nova.json',
+      { _csrf: csrfZ(strana.text), nazev: 'Pouť 2026' },
+      [
+        { pole: 'fotky', nazev: 'a.png', data: await png('#aa3333') },
+        { pole: 'fotky', nazev: 'b.png', data: await png('#33aa33') },
+        { pole: 'fotky', nazev: 'c.png', data: await png('#3333aa') },
+      ],
+    );
+    const g = JSON.parse(r.text) as {
+      id: string;
+      slug: string;
+      stav: string;
+      v_seznamu: boolean;
+      pocet: number;
+    };
+    expect(g).toMatchObject({ stav: 'zverejneno', v_seznamu: false, pocet: 3 });
+    // na stránce Fotogalerie není, ale vlastní adresu má
+    expect((await verejne().get('/galerie')).text).not.toContain('Pouť 2026');
+    expect((await verejne().get(`/galerie/${g.slug}`)).res.status).toBe(200);
+    // výběr v editoru ji nabízí
+    const vyber = JSON.parse((await red.get('/sprava/web/galerie.json')).text) as {
+      id: string;
+      nahledy: string[];
+    }[];
+    expect(vyber.find((x) => x.id === g.id)?.nahledy).toHaveLength(3);
+
+    const html =
+      '<p>Pozvánka.</p><figure class="obr-vlevo obr-s33 zlo"><img src="/soubory/x/kostel.jpg" alt="Kostel"></figure>' +
+      `<figure class="galerie-obce" data-galerie="${g.id}" data-rozlozeni="pas" data-pocet="3"><a href="/galerie/${g.slug}">Pouť 2026</a></figure>` +
+      `<figure class="galerie-obce" data-galerie="${g.id}" data-rozlozeni="hack" data-pocet="77"><a href="/x">Druhá</a></figure>`;
+    await uloz(red, '/sprava/web/novy?typ=aktualita', {
+      typ: 'aktualita',
+      titulek: 'Pouť s galerií',
+      obsah_html: html,
+      akce: 'zverejnit',
+    });
+    const o = await obsah('Pouť s galerií');
+    expect(o.obsah_html).toContain('<figure class="obr-vlevo obr-s33">');
+    expect(o.obsah_html).toContain('data-rozlozeni="pas"');
+    expect(o.obsah_html).not.toContain('hack');
+    expect(o.obsah_html).not.toContain('data-pocet="77"');
+
+    const pub = await verejne().get('/aktuality/pout-s-galerii');
+    expect(pub.text).toContain('galerie-v-textu galerie-pas');
+    expect(pub.text).toContain('galerie-v-textu galerie-mrizka'); // neplatné rozložení → výchozí
+    expect(pub.text).toContain('alt="Pouť 2026 — fotografie 3"');
+    expect(pub.text.match(/data-foto/g)?.length).toBe(6);
+    expect(pub.text).not.toContain('data-galerie=');
+
+    // správa galerie ví, kde je použitá; po skrytí z příspěvku zmizí
+    const detail = await red.get(`/sprava/web/galerie/${g.id}`);
+    expect(detail.text).toContain('Pouť s galerií');
+    expect(detail.text).toContain('data-confirm="Galerie je vložená v textu 1 příspěvků');
+    await red.post(`/sprava/web/galerie/${g.id}`, {
+      _csrf: csrfZ(detail.text),
+      nazev: 'Pouť 2026',
+      akce: 'skryt',
+    });
+    expect((await verejne().get('/aktuality/pout-s-galerii')).text).not.toContain('galerie-v-textu');
+    // zatržítko vrátí galerii do seznamu
+    const d2 = await red.get(`/sprava/web/galerie/${g.id}`);
+    await red.post(`/sprava/web/galerie/${g.id}`, {
+      _csrf: csrfZ(d2.text),
+      nazev: 'Pouť 2026',
+      _v_seznamu: '1',
+      v_seznamu: 'ano',
+      akce: 'zverejnit',
+    });
+    expect((await verejne().get('/galerie')).text).toContain('Pouť 2026');
+  });
+
   it('dokument ke stažení', async () => {
     const s = await red.get('/sprava/web/dokumenty');
     await postSoubory(

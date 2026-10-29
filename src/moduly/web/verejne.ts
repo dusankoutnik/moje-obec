@@ -9,7 +9,7 @@ import { jeBezpecnyOdkaz } from '../../lib/navrat.js';
 import { cisloStrany } from '../../lib/vstupy.js';
 import { urlSouboru } from '../../web/soubory.js';
 import type { WebSluzby } from './index.js';
-import { rozdelPodleVidei } from './videa.js';
+import { rozdelObsah } from './vlozene.js';
 import { sPodrubrikami, vRubrikach } from './rubriky.js';
 import { odkazAkce } from './akce-externi.js';
 import { pomocniciOdstavek } from '../odstavky/index.js';
@@ -281,7 +281,11 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
       popis: o.perex || zkrat(textZHtml(o.obsah_html), 160),
       o,
       zobrazitPerex: !!o.perex && !perexOpakujeText(o.perex, o.obsah_html),
-      castiObsahu: rozdelPodleVidei(o.obsah_html, await s.videa.vTextu(o.obsah_html)),
+      castiObsahu: rozdelObsah(
+        o.obsah_html,
+        await s.videa.vTextu(o.obsah_html),
+        await s.galerie.vTextu(o.obsah_html),
+      ),
       obrazek,
       kategorie,
       dalsiRubriky,

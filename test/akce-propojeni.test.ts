@@ -445,4 +445,40 @@ describe('synchronizace a správa akcí z rezervací', () => {
     const a = (await akceRef('e7'))!;
     expect(dlazdice).toContain(`href="/akce/${a.slug}"`);
   });
+  it('přejmenování v rezervacích se propíše i do zveřejněné akce, jen když redaktor název neměnil', async () => {
+    polozky = [...polozky, pol({ id: 'r95', nazev: 'přednáška', datum: den(20) })];
+    await t.app.web.propojeni.synchronizuj();
+    const k = (await akceRef('r95'))!;
+    expect(k.rezervace_nazev).toBe('přednáška');
+    // redaktor zveřejní jen s velkým písmenem (= název fakticky neměnil)
+    const redaktor = await t.db
+      .selectFrom('uzivatele')
+      .select('id')
+      .where('telefon', '=', '+420777610001')
+      .executeTakeFirstOrThrow();
+    await t.db
+      .updateTable('web_obsah')
+      .set({ titulek: 'Přednáška', stav: 'zverejneno', zverejneno_at: new Date(), upravil_id: redaktor.id })
+      .where('id', '=', k.id)
+      .execute();
+    polozky = polozky.map((p) => (p.id === 'r95' ? { ...p, nazev: 'Cestovatelská přednáška' } : p));
+    await t.app.web.propojeni.synchronizuj();
+    const po = (await akceRef('r95'))!;
+    expect(po.titulek).toBe('Cestovatelská přednáška');
+    expect(po.stav).toBe('zverejneno');
+    expect(po.slug).toBe(k.slug); // adresa zůstává
+    expect((await new Prohlizec(t.base).get(`/akce/${po.slug}`)).text).toContain('Cestovatelská přednáška');
+    // vlastní název redaktora se nepřepisuje
+    await t.db
+      .updateTable('web_obsah')
+      .set({ titulek: 'Cesta kolem světa' })
+      .where('id', '=', k.id)
+      .execute();
+    polozky = polozky.map((p) => (p.id === 'r95' ? { ...p, nazev: 'Přednáška o Islandu' } : p));
+    await t.app.web.propojeni.synchronizuj();
+    const vlastni = (await akceRef('r95'))!;
+    expect(vlastni.titulek).toBe('Cesta kolem světa');
+    expect(vlastni.rezervace_nazev).toBe('Přednáška o Islandu');
+    polozky = polozky.filter((p) => p.id !== 'r95');
+  });
 });

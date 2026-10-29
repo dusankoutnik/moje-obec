@@ -18,7 +18,7 @@
 <% it.galerie.forEach(function (g) { %>
   <li><a href="/sprava/web/galerie/<%= g.id %>">
     <% if (g.titulni_id) { %><img src="/soubory/<%= g.titulni_id %>/nahled?v=nahled" alt="" loading="lazy"><% } else { %><span class="karta-obr-prazdny"></span><% } %>
-    <strong><%= g.nazev %></strong><span class="poznamka"><%= g.stav === 'zverejneno' ? it.t('web.stav_zverejneno') : it.t('web.stav_koncept') %> · <%= it.t('web.fotek', { n: g.pocet }) %></span>
+    <strong><%= g.nazev %></strong><span class="poznamka"><%= g.stav === 'zverejneno' ? (g.v_seznamu ? it.t('web.stav_zverejneno') : it.t('web.galerie_jen_prispevky')) : it.t('web.stav_koncept') %> · <%= it.t('web.fotek', { n: g.pocet }) %></span>
   </a></li>
 <% }) %>
 </ul>

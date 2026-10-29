@@ -119,7 +119,7 @@ describe('drobnosti (bez DB)', () => {
   it('CSP: vlastní původ, přehrávače videí, žádné inline skripty', () => {
     expect(CSP).toContain("script-src 'self'");
     expect(CSP).not.toMatch(/script-src[^;]*unsafe-inline/);
-    expect(CSP).toContain('frame-src https://www.youtube-nocookie.com https://player.vimeo.com');
+    expect(CSP).toContain("frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com");
     expect(CSP).toContain("frame-ancestors 'self'");
   });
   it('prohlášení o přístupnosti: výchozí stav „částečně“, data se nedopočítávají', () => {

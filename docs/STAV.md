@@ -1,5 +1,25 @@
 # Stav projektu — etapa 1 (18. 10. 2026)
 
+## Editor textu a fotogalerie v příspěvcích (29. 10. 2026)
+
+- **Editor (Tiptap 3, `klient/editor.js`):** fotka má velikost jako podíl šířky textu (třídy `obr-s25…s75`, bez třídy
+  celá šířka) a zarovnání vlevo/vpravo s obtékáním (`obr-vlevo`, `obr-vpravo`), na mobilu je vždy přes celou šířku.
+  Velikost jde měnit tažením za roh (přichytává se k ¼, ⅓, ½, ⅔, ¾, celé) nebo v plovoucí lištičce u vybrané fotky
+  (velikost, zarovnání, popis, titulek, odkaz, výměna fotky). Nabídka přes „/“ na začátku odstavce, úchyt ⠿ pro
+  přesun bloků myší, režim **HTML** jen pro roli `web` (editor i server pustí jen povolenou strukturu a editor vypíše,
+  co vynechal), **kontrola před zveřejněním** (fotka bez popisu, odkaz „zde“, prázdný nadpis, VERZÁLKY, víc fotek
+  pod sebou, galerie v konceptu — upozorní, nebrání) a **náhled na mobilu** (formulář se odešle do rámu 390 px).
+- **Fotogalerie v textu:** `<figure class="galerie-obce" data-galerie data-rozlozeni="mrizka|pas|velka"
+data-pocet="0|3|6|9|12">` — web ji vykresluje živě z alba (`src/moduly/web/vlozene.ts`,
+  `views/web/_galerie-v-textu.eta`), nezveřejněná nebo smazaná galerie z textu zmizí. Prohlížeč fotek
+  (`public/js/web.js`, šipky, přejetí prstem, Esc) i na stránce galerie. Galerie má zatržítko „Zobrazit na stránce
+  Fotogalerie“ (`web_galerie.v_seznamu`, migrace 0032) — bez něj je „jen pro příspěvky“. Víc než 3 fotky vložené
+  najednou editor nabídne jako galerii (nová galerie je rovnou „jen pro příspěvky“, nahrává se po dávkách 10 fotek).
+  Detail galerie ve správě ukazuje, ve kterých příspěvcích je vložená, a před skrytím/smazáním varuje.
+- **Akce z rezervací — název (migrace 0033, `web_obsah.rezervace_nazev`):** přejmenování termínu v rezervacích se
+  propíše i do zveřejněné akce, když má pořád původní název z rezervací (velikost písmen a mezery se nepočítají);
+  vlastní název redaktora a rozpracovaný koncept se nepřepisují, adresa stránky zůstává.
+
 ## Role a Systém: historie, matice, zařízení, stav systému, dočasné role (26. 10. 2026)
 
 - Migrace **0025** (`role_platnost`; `sezeni.vytvoreno_at/aktivita_at/prohlizec` + index podle účtu; index

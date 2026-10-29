@@ -151,3 +151,86 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(zmer);
   zmer();
 })();
+
+// Prohlížeč fotek: galerie vložená do textu i stránka galerie ([data-prohlizec] s odkazy [data-foto] na velkou
+// fotku). Šipky / přejetí prstem listují, Esc zavírá, fokus se vrátí na náhled. Bez JS odkaz otevře fotku.
+(function () {
+  'use strict';
+  var skupiny = document.querySelectorAll('[data-prohlizec]');
+  if (!skupiny.length || !window.HTMLDialogElement) return;
+  var d = document.createElement('dialog');
+  d.className = 'prohlizec';
+  d.setAttribute('aria-label', 'Prohlížeč fotek');
+  d.innerHTML =
+    '<div class="prohlizec-plocha"><img alt=""><p></p></div><span class="pocitadlo" aria-live="polite"></span>' +
+    '<button type="button" class="predchozi" aria-label="Předchozí fotka">‹</button>' +
+    '<button type="button" class="dalsi" aria-label="Další fotka">›</button>' +
+    '<button type="button" class="zavrit" aria-label="Zavřít">✕</button>';
+  document.body.appendChild(d);
+  var img = d.querySelector('img');
+  var popis = d.querySelector('p');
+  var pocitadlo = d.querySelector('.pocitadlo');
+  var fotky = [];
+  var i = 0;
+  var zdroj = null;
+  function ukaz(n) {
+    i = (n + fotky.length) % fotky.length;
+    var a = fotky[i];
+    var nahled = a.querySelector('img');
+    img.src = a.getAttribute('href');
+    img.alt = nahled ? nahled.alt : '';
+    popis.textContent = a.getAttribute('data-popisek') || (nahled ? nahled.alt : '');
+    pocitadlo.textContent = i + 1 + ' / ' + fotky.length;
+    // další fotku načíst dopředu
+    var dalsi = fotky[(i + 1) % fotky.length];
+    if (dalsi) new Image().src = dalsi.getAttribute('href');
+  }
+  d.querySelector('.predchozi').addEventListener('click', function () {
+    ukaz(i - 1);
+  });
+  d.querySelector('.dalsi').addEventListener('click', function () {
+    ukaz(i + 1);
+  });
+  d.querySelector('.zavrit').addEventListener('click', function () {
+    d.close();
+  });
+  d.addEventListener('click', function (e) {
+    if (e.target === d || e.target.classList.contains('prohlizec-plocha')) d.close();
+  });
+  d.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') ukaz(i - 1);
+    else if (e.key === 'ArrowRight') ukaz(i + 1);
+  });
+  var x0 = null;
+  d.addEventListener(
+    'touchstart',
+    function (e) {
+      x0 = e.touches[0].clientX;
+    },
+    { passive: true },
+  );
+  d.addEventListener('touchend', function (e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) ukaz(dx > 0 ? i - 1 : i + 1);
+    x0 = null;
+  });
+  d.addEventListener('close', function () {
+    img.removeAttribute('src');
+    if (zdroj) zdroj.focus();
+  });
+  skupiny.forEach(function (s) {
+    var odkazy = Array.prototype.slice.call(s.querySelectorAll('a[data-foto]'));
+    odkazy.forEach(function (a, n) {
+      a.addEventListener('click', function (e) {
+        if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+        e.preventDefault();
+        fotky = odkazy;
+        zdroj = a;
+        d.showModal();
+        ukaz(n);
+        d.querySelector('.zavrit').focus();
+      });
+    });
+  });
+})();

@@ -13,7 +13,7 @@
   <% } %>
   <% if (it.zobrazitPerex) { %><p class="perex"><%= o.perex %></p><% } %>
   <% if (it.obrazek) { %><figure class="clanek-obr"><img src="<%= it.urlSouboru(it.obrazek) %>" alt="<%= it.obrazek.alt %>" <% if (it.obrazek.sirka) { %>width="<%= it.obrazek.sirka %>" height="<%= it.obrazek.vyska %>"<% } %>></figure><% } %>
-  <div class="obsah-html"><% var casti = it.castiObsahu || [{ html: o.obsah_html }]; casti.forEach(function (c) { %><% if (c.video) { %><figure class="video-v-obsahu"><%~ include('/web/_video', { v: c.video, t: it.t }) %><figcaption><strong><%= c.video.nazev %></strong><% if (c.video.popis) { %> — <%= c.video.popis %><% } %></figcaption></figure><% } else { %><%~ c.html %><% } %><% }) %></div>
+  <div class="obsah-html"><% var casti = it.castiObsahu || [{ html: o.obsah_html }]; casti.forEach(function (c) { %><% if (c.video) { %><figure class="video-v-obsahu"><%~ include('/web/_video', { v: c.video, t: it.t }) %><figcaption><strong><%= c.video.nazev %></strong><% if (c.video.popis) { %> — <%= c.video.popis %><% } %></figcaption></figure><% } else if (c.galerie) { %><%~ include('/web/_galerie-v-textu', { vg: c.galerie, t: it.t, urlSouboru: it.urlSouboru }) %><% } else { %><%~ c.html %><% } %><% }) %></div>
   <% if (o.typ === 'stranka' && o.upraveno_at && !it.nahled) { %><p class="poznamka clanek-aktualizovano"><%= it.t('web.aktualizovano') %> <time datetime="<%= new Date(o.upraveno_at).toISOString() %>"><%= it.fmtDatum(o.upraveno_at, false) %></time></p><% } %>
   <% if (it.podstranky && it.podstranky.length) { %>
   <ul class="dlazdice-podstranek">

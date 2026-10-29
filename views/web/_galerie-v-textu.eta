@@ -1,0 +1,14 @@
+<% var vg = it.vg; var g = vg.g; var vsechny = g.fotky; %>
+<figure class="galerie-v-textu galerie-<%= vg.rozlozeni %>" data-prohlizec>
+  <% if (g.stav !== 'zverejneno') { %><p class="poznamka galerie-koncept">⚠ <%= it.t('web.stav_koncept') %> — <%= g.nazev %></p><% } %>
+  <ul>
+  <% vsechny.forEach(function (f, i) { var url = it.urlSouboru({ id: f.id, puvodni_nazev: f.puvodni_nazev }); %>
+    <% if (i < vg.fotky.length) { %>
+    <li><a href="<%= url %>" data-foto data-popisek="<%= f.popisek %>" aria-label="<%= it.t('web.galerie_zvetsit', { popis: f.alt || g.nazev }) %>"><img src="<%= url %>?v=nahled" alt="<%= f.alt %>" loading="lazy" <% if (f.sirka) { %>width="<%= f.sirka %>" height="<%= f.vyska %>"<% } %>></a></li>
+    <% } else { %>
+    <li hidden><a href="<%= url %>" data-foto data-popisek="<%= f.popisek %>" tabindex="-1"><img data-src="<%= url %>?v=nahled" alt="<%= f.alt %>"></a></li>
+    <% } %>
+  <% }) %>
+  </ul>
+  <figcaption><strong><%= g.nazev %></strong><% if (g.stav === 'zverejneno') { %> · <a href="/galerie/<%= g.slug %>"><%= vg.zbyva ? it.t('web.galerie_vsech_fotek', { n: vsechny.length }) : it.t('web.galerie') %></a><% } %></figcaption>
+</figure>

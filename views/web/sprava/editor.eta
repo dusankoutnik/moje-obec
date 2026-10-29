@@ -36,7 +36,7 @@
 
         <label for="obsah_html" id="obsah-label"><%= it.t('web.text') %></label>
         <p class="napoveda" id="obsah-n"><%= it.t('web.text_napoveda') %></p>
-        <textarea id="obsah_html" name="obsah_html" rows="18" data-editor="plny" aria-describedby="obsah-n"><%= f.obsah_html %></textarea>
+        <textarea id="obsah_html" name="obsah_html" rows="18" data-editor="plny"<% if (it.redaktorWebu) { %> data-galerie="1" data-html="1"<% } %> aria-describedby="obsah-n"><%= f.obsah_html %></textarea>
         <noscript><p class="napoveda"><%= it.t('web.bez_js') %></p></noscript>
       <% } %>
     </div>
@@ -47,7 +47,8 @@
         <p class="autosave-stav napoveda" aria-live="polite" id="autosave-stav"><%= o ? it.t('web.naposledy_ulozeno', { cas: it.fmtDatum(o.koncept_at || o.upraveno_at) }) : it.t('web.zatim_neulozeno') %></p>
         <button class="tlacitko velke plna-sirka" type="submit" name="akce" value="zverejnit"><%= zverejneno ? it.t('web.zverejnit_zmeny') : it.t('web.zverejnit') %></button>
         <button class="tlacitko sekundarni plna-sirka" type="submit" name="akce" value="koncept" formnovalidate><%= it.t('web.ulozit_rozpracovane') %></button>
-        <% if (typ !== 'odkaz') { %><button class="tlacitko sekundarni plna-sirka" type="submit" formaction="/sprava/web/nahled" formtarget="_blank" formnovalidate><%= it.t('web.nahled') %> ↗</button><% } %>
+        <% if (typ !== 'odkaz') { %><button class="tlacitko sekundarni plna-sirka" type="submit" formaction="/sprava/web/nahled" formtarget="_blank" formnovalidate><%= it.t('web.nahled') %> ↗</button>
+        <button class="tlacitko sekundarni plna-sirka" type="submit" formaction="/sprava/web/nahled" formtarget="nahled-mobil" formnovalidate data-nahled-mobil hidden><%= it.t('web.nahled_mobil') %></button><% } %>
         <p class="napoveda"><%= zverejneno ? it.t('web.napoveda_zverejneny') : it.t('web.napoveda_koncept') %></p>
         <% if (it.verejnaUrl) { %><p><a href="<%= it.verejnaUrl %>"><%= it.t('web.zobrazit_na_webu') %> →</a></p><% } %>
       </section>

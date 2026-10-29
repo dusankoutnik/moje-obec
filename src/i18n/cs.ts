@@ -924,6 +924,21 @@ export const cs = {
     fotek_pridano: 'Přidáno fotek: {n}.',
     galerie_zverejnena: 'Hotovo, galerie je na webu.',
     galerie_kos_potvrdit: 'Přesunout galerii do koše? Z koše jde obnovit.',
+    nahled_mobil: '📱 Náhled na mobilu',
+    galerie_v_seznamu: 'Zobrazit na stránce Fotogalerie',
+    galerie_v_seznamu_napoveda:
+      'Bez zaškrtnutí je galerie „jen pro příspěvky“: na stránce Fotogalerie ji návštěvníci neuvidí, ale můžete ji vložit do textu příspěvku nebo stránky (v editoru tlačítko Galerie).',
+    galerie_jen_prispevky: 'jen pro příspěvky',
+    galerie_pouzita: 'Vložená v textu',
+    galerie_pouzita_napoveda: 'Když galerii skryjete nebo smažete, z těchto příspěvků zmizí.',
+    galerie_pouzita_potvrdit:
+      'Galerie je vložená v textu {n} příspěvků nebo stránek a z nich zmizí. Opravdu pokračovat?',
+    galerie_vsech_fotek: 'Všech {n} fotek →',
+    galerie_zvetsit: 'Zvětšit fotku: {popis}',
+    galerie_prohlizec: 'Prohlížeč fotek',
+    galerie_predchozi: 'Předchozí fotka',
+    galerie_dalsi: 'Další fotka',
+    galerie_zavrit: 'Zavřít',
     // dokumenty
     pridat_dokument: 'Přidat dokument',
     soubor: 'Soubor',

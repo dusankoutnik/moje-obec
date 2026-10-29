@@ -41,6 +41,7 @@ export interface NavicUlozeni {
   /** propojení s termínem v rezervačním systému (koncept ze synchronizace) */
   rezervaceRef?: string | null;
   rezervaceTermin?: string | null;
+  rezervaceNazev?: string | null;
 }
 
 export class ObsahSluzba extends ObsahCteni {
@@ -226,6 +227,7 @@ export class ObsahSluzba extends ObsahCteni {
         hlaseni_id: navic.hlaseniId ?? null,
         rezervace_ref: navic.rezervaceRef ?? null,
         rezervace_termin: navic.rezervaceRef ? (navic.rezervaceTermin ?? null) : null,
+        rezervace_nazev: navic.rezervaceRef ? (navic.rezervaceNazev ?? null) : null,
       })
       .returning('id')
       .executeTakeFirstOrThrow();

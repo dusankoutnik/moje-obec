@@ -37,11 +37,31 @@ const ZAKLAD: sanitizeHtml.IOptions = {
     img: ['src', 'alt', 'width', 'height', 'data-soubor'],
     td: ['colspan', 'rowspan', 'data-row'],
     th: ['colspan', 'rowspan', 'scope'],
-    // video z knihovny videí webu (vykreslí ho šablona obsahu, viz moduly/web/videa.ts)
-    figure: ['data-video'],
+    // video z knihovny videí webu a fotogalerie obce (vykreslí je šablona obsahu, viz moduly/web/videa.ts a dalsi.ts)
+    figure: [
+      'data-video',
+      'data-galerie',
+      { name: 'data-rozlozeni', values: ['mrizka', 'pas', 'velka'], multiple: false },
+      { name: 'data-pocet', values: ['0', '3', '6', '9', '12'], multiple: false },
+    ],
   },
-  // povolené třídy: galerie náhledů (z importu starých webů) a video
-  allowedClasses: { figure: ['galerie', 'video'] },
+  // povolené třídy: galerie náhledů (z importu starých webů), video, vložená fotogalerie a velikost/zarovnání
+  // fotky (obr-vlevo/vpravo/stred = obtékání; obr-s25…s75 = šířka v procentech textu, na mobilu celá šířka)
+  allowedClasses: {
+    figure: [
+      'galerie',
+      'video',
+      'galerie-obce',
+      'obr-vlevo',
+      'obr-vpravo',
+      'obr-stred',
+      'obr-s25',
+      'obr-s33',
+      'obr-s50',
+      'obr-s66',
+      'obr-s75',
+    ],
+  },
   allowedSchemes: ['http', 'https', 'mailto', 'tel'],
   allowedSchemesByTag: { img: ['http', 'https'] },
   allowProtocolRelative: false,

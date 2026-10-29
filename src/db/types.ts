@@ -392,6 +392,8 @@ export interface WebObsahTable {
   rezervace_ref: string | null;
   /** podpis termínu z rezervací při propojení (pro hlídání změn) */
   rezervace_termin: string | null;
+  /** název termínu v rezervacích při posledním srovnání (migrace 0033) */
+  rezervace_nazev: string | null;
   /** akce se ukáže i v Aktualitách jako pozvánka */
   v_aktualitach: Generated<boolean>;
   /** identifikátor záznamu v systému klienta API (unikátní se zdrojem) */
@@ -422,6 +424,8 @@ export interface WebGalerieTable {
   popis: Generated<string>;
   datum: ColumnType<string | null, string | null | undefined, string | null>;
   stav: Generated<'koncept' | 'zverejneno'>;
+  /** zobrazit na stránce Fotogalerie (false = „jen pro příspěvky“, migrace 0032) */
+  v_seznamu: Generated<boolean>;
   autor_id: string | null;
   puvodni_url: string | null;
   vytvoreno_at: TimestampGenerated;

@@ -13,7 +13,7 @@ import { urlSouboru } from '../../web/soubory.js';
 import { vyzadujRoli } from '../ucty/opravneni.js';
 import { maRoli } from '../ucty/sluzba.js';
 import type { WebSluzby } from './index.js';
-import { rozdelPodleVidei } from './videa.js';
+import { rozdelObsah } from './vlozene.js';
 import { sPodrubrikami } from './rubriky.js';
 import { PRAZDNA_POLE, poleProEditor, TYPY, type PoleObsahu } from './obsah.js';
 import { obyvateleZProfilu, rucniObyvatele } from './obyvatele.js';
@@ -228,6 +228,8 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
       propojenyTermin,
       rozesilka: await infoRozesilky(req, typ, o),
       editor: true,
+      // vkládání fotogalerií a ruční úprava HTML jen pro redaktora webu (knihovnice ne)
+      redaktorWebu: maRoli(req.uzivatel, 'web'),
       ...pomocnici,
       ...extra,
     });
@@ -496,7 +498,11 @@ export default async function webSprava(app: FastifyInstance, s: WebSluzby) {
     };
     return reply.view('web/obsah', {
       titulek: pole.titulek,
-      castiObsahu: rozdelPodleVidei(pole.obsah_html, await s.videa.vTextu(pole.obsah_html, true)),
+      castiObsahu: rozdelObsah(
+        pole.obsah_html,
+        await s.videa.vTextu(pole.obsah_html, true),
+        await s.galerie.vTextu(pole.obsah_html, true),
+      ),
       o: nahled,
       obrazek,
       nahled: true,

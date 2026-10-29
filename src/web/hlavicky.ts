@@ -1,7 +1,8 @@
 // Bezpečnostní hlavičky přímo z aplikace (ne jen z reverzní proxy) — platí stejně za Caddy, NPM i bez proxy.
 // CSP: vše z vlastního původu; styly i inline (šablona vkládá <style> s barvami schématu a písmy, editor Tiptap a
 // náhled vzhledu používají atribut style); obrázky i data:/blob: (editor zmenšuje fotky v prohlížeči); přehrávače
-// YouTube (youtube-nocookie) a Vimeo se vkládají až po kliknutí (public/js/web.js). Žádné inline skripty.
+// YouTube (youtube-nocookie) a Vimeo se vkládají až po kliknutí (public/js/web.js); vlastní původ v rámu = náhled
+// příspěvku na šířce mobilu v editoru. Žádné inline skripty.
 import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
@@ -13,7 +14,7 @@ export const CSP = [
   "media-src 'self' blob:",
   "font-src 'self'",
   "connect-src 'self'",
-  'frame-src https://www.youtube-nocookie.com https://player.vimeo.com',
+  "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com",
   "frame-ancestors 'self'",
   "object-src 'none'",
   "base-uri 'self'",
