@@ -2,6 +2,15 @@
 
 Přehled změn platformy Obecní web od Voltu 2.0 pro pilotní obec, nejnovější nahoře. Technické podrobnosti jsou v CHANGELOG.md.
 
+## 29. 10. 2026
+
+- **Fotky v textu jdou zmenšit a obtékat textem:** po kliknutí na fotku se u ní objeví lištička — velikost (malá, střední, velká, celá šířka), umístění vlevo nebo vpravo s textem vedle, nebo na střed, popis, titulek, odkaz a výměna za jinou fotku. Velikost jde měnit i tažením za roh fotky; přichytává se k hezkým poměrům (třetina, polovina…), takže to vypadá dobře i „od oka“. Na mobilu je každá fotka přes celou šířku.
+- **Fotogalerie v příspěvku:** tlačítkem **Galerie** vložíte do textu existující fotogalerii, nebo rovnou založíte novou z fotek. Když do textu přetáhnete víc fotek najednou, editor nabídne udělat z nich galerii. V textu se ukáže pár náhledů (mřížka, pás, nebo velká fotka s náhledy) a návštěvník si fotky prohlédne v prohlížeči přes celou obrazovku. Galerie je v textu „živá“ — přidané fotky nebo opravené popisky se projeví i v příspěvku.
+- U galerie je nově zatržítko **Zobrazit na stránce Fotogalerie**. Bez něj je galerie „jen pro příspěvky“: na stránce Fotogalerie ji návštěvníci nevidí, ale v příspěvku ano. Galerie ve správě ukazuje, ve kterých příspěvcích je vložená, a před skrytím nebo smazáním na to upozorní.
+- **Rychlé vkládání přes lomítko:** napíšete „/“ na začátek řádku a vyberete nadpis, seznam, fotku, galerii, video, tabulku… Bloky textu jde přesouvat myší za úchyt ⠿ vlevo.
+- **Kontrola před zveřejněním** upozorní na fotku bez popisu pro nevidomé, odkaz „zde“, prázdný nadpis, text psaný velkými písmeny nebo moc fotek pod sebou (nic nezakazuje, jde „Přesto zveřejnit“). Přibyl **náhled na mobilu** a pro redaktory webu ruční úprava **HTML** (nepovolené věci jako styly a skripty se vynechají a editor řekne které).
+- **Akce z rezervací:** když se termín v rezervacích přejmenuje, nový název se propíše i do zveřejněné akce — pokud redaktor název sám neměnil. Vlastní název redaktora zůstává.
+
 ## 28. 10. 2026
 
 - **Nový editor textu** v administraci (příspěvky, stránky, povinné informace, hlášení): obrázek se vloží tam, kde je kurzor (tlačítkem, přetažením i ze schránky), dá se myší přesunout jinam a po kliknutí na něj se objeví lišta s popisem, **titulkem pod obrázkem** a velikostí (malý / střední / celá šířka). Tabulky mají záhlaví, přidávání a mazání řádků a sloupců a slučování buněk. Přibyla vodorovná čára, nadpis třetí úrovně, tlačítka Zpět a Znovu a odkaz přes Ctrl+K. Stávající články včetně galerií a videí zůstávají beze změny.
