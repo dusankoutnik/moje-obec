@@ -138,7 +138,8 @@ export class Prohlizec {
   hlavicky: Record<string, string> = {};
   constructor(private base: string) {}
 
-  private hlavickaCookie() {
+  /** hlavička Cookie tohoto prohlížeče (testy proxy čtou sezení platformy přímo) */
+  hlavickaCookie() {
     return [...this.cookies.entries()].map(([k, v]) => `${k}=${v}`).join('; ');
   }
   private ulozCookies(res: Response) {
@@ -263,7 +264,11 @@ export function devKodZ(html: string): string {
 }
 
 // Projde přihlášení telefonem přes OIDC interakci (včetně GDPR souhlasu, je-li první). Vrací stránku po přihlášení.
-export async function prihlasTelefonem(p: Prohlizec, telefon: string) {
+export async function prihlasTelefonem(
+  p: Prohlizec,
+  telefon: string,
+  jmeno?: { jmeno: string; prijmeni: string },
+) {
   const inter = await p.get('/prihlaseni');
   if (!inter.url.includes('/oidc/interaction/')) throw new Error(`čekal jsem interakci, mám ${inter.url}`);
   const uid = inter.url.split('/oidc/interaction/')[1]!.split('/')[0];
@@ -272,6 +277,14 @@ export async function prihlasTelefonem(p: Prohlizec, telefon: string) {
   let po = await p.post(`/oidc/interaction/${uid}/kod`, { _csrf: csrfZ(kodStranka.text), telefon, kod });
   if (po.text.includes('action="/oidc/interaction/' + uid + '/souhlas"')) {
     po = await p.post(`/oidc/interaction/${uid}/souhlas`, { _csrf: csrfZ(po.text), souhlas: 'ano' });
+  }
+  // účet bez jména: brána „Jak se jmenujete?“ (jméno a příjmení jsou od 2026-10-30 povinné)
+  if (po.text.includes('action="/oidc/interaction/' + uid + '/jmeno"')) {
+    po = await p.post(`/oidc/interaction/${uid}/jmeno`, {
+      _csrf: csrfZ(po.text),
+      jmeno: jmeno?.jmeno ?? 'Test',
+      prijmeni: jmeno?.prijmeni ?? 'Testovací',
+    });
   }
   return po;
 }

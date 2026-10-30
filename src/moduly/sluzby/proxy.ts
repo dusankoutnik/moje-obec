@@ -9,6 +9,7 @@ import fastifyCookie from '@fastify/cookie';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { podCestou, type KlicModulu, type ModulySluzba } from './sluzba.js';
 import type { Db } from '../../db/index.js';
+import { bezJmena } from '../ucty/sluzba.js';
 
 export interface CilProxy {
   /** modul (rezervace, eknihy) */
@@ -58,8 +59,8 @@ export function prepisLocation(loc: string, cil: URL): string {
   return loc;
 }
 
-/** číslo účtu přihlášeného na platformě (pro aplikace za proxy); null = nikdo */
-export type Prihlaseny = (req: FastifyRequest) => Promise<string | null>;
+/** přihlášený na platformě (pro aplikace za proxy): číslo účtu (null = nikdo) a zda mu chybí jméno */
+export type Prihlaseny = (req: FastifyRequest) => Promise<{ cislo: string | null; bezJmena: boolean }>;
 
 // Jednotné přihlášení (2026-10-22): proxy běží před sezením platformy, cookie sezení si proto přečte sama (podpis
 // @fastify/cookie, tabulka sezeni) a aplikacím posílá u stránek hlavičku X-Platforma-Uzivatel — číslo účtu, nebo
@@ -72,17 +73,19 @@ export function prihlasenyZeSezeni(db: Db, secret: string, cookieName = 'mo_seze
       .split(';')
       .map((x) => x.trim())
       .find((x) => x.startsWith(cookieName + '='));
-    if (!polozka) return null;
+    const nikdo = { cislo: null, bezJmena: false };
+    if (!polozka) return nikdo;
     let hodnota = polozka.slice(cookieName.length + 1);
     try {
       hodnota = decodeURIComponent(hodnota);
     } catch {
-      return null;
+      return nikdo;
     }
     const u = signer.unsign(hodnota);
-    if (!u.valid || !u.value) return null;
+    if (!u.valid || !u.value) return nikdo;
     const sid = u.value;
     let cislo: string | null = null;
+    let chybiJmeno = false;
     const r = await db
       .selectFrom('sezeni')
       .select(['data', 'expires_at'])
@@ -93,12 +96,15 @@ export function prihlasenyZeSezeni(db: Db, secret: string, cookieName = 'mo_seze
     if (id) {
       const uz = await db
         .selectFrom('uzivatele')
-        .select(['cislo', 'blokovan_at'])
+        .select(['cislo', 'blokovan_at', 'jmeno', 'prijmeni'])
         .where('id', '=', id)
         .executeTakeFirst();
-      if (uz && !uz.blokovan_at && uz.cislo != null) cislo = String(uz.cislo);
+      if (uz && !uz.blokovan_at && uz.cislo != null) {
+        cislo = String(uz.cislo);
+        chybiJmeno = bezJmena(uz);
+      }
     }
-    return cislo;
+    return { cislo, bezJmena: chybiJmeno };
   };
 }
 
@@ -144,7 +150,10 @@ export function zaregistrujProxy(
       /text\/html/i.test(String(req.headers.accept ?? ''))
     ) {
       try {
-        prihlasen = (await prihlaseny(req)) ?? '';
+        const p = await prihlaseny(req);
+        // účet bez jména nejdřív jméno (stejná brána jako na webu), do aplikace až potom
+        if (p.bezJmena) return reply.redirect(`/ucet/jmeno?zpet=${encodeURIComponent(url)}`);
+        prihlasen = p.cislo ?? '';
       } catch (e) {
         req.log.warn({ err: e }, 'proxy: sezení platformy se nepodařilo přečíst');
       }

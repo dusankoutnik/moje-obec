@@ -17,6 +17,7 @@
 <script src="/static/js/app.js?v=<%= it.v %>" defer></script>
 <% if (it.vzhled) { %><script src="/static/js/web.js?v=<%= it.v %>" defer></script><% } %>
 <% if (it.skriptKviz) { %><script src="/static/js/kviz.js?v=<%= it.v %>" defer></script><% } %>
+<% if (it.skriptPrihlaseni) { %><script src="/static/js/prihlaseni.js?v=<%= it.v %>" defer></script><% } %>
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/ikona-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">

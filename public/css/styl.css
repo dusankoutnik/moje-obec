@@ -3888,3 +3888,35 @@ button.kviz-odpoved:active {
   background: #fff;
   margin-bottom: 10px;
 }
+
+/* Přihlašovací dialog (2026-10-30): všechny způsoby na jedné stránce — telefon vlevo, e-mail + heslo vpravo */
+.prihlaseni {
+  max-width: 900px;
+}
+.prihlaseni-mrizka {
+  display: grid;
+  gap: 20px;
+  align-items: start;
+}
+@media (min-width: 760px) {
+  .prihlaseni-mrizka {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.prihlaseni-box {
+  background: var(--bila);
+  border: 1px solid var(--linka);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.prihlaseni-box h2 {
+  margin-top: 0;
+  font-size: 1.15rem;
+}
+.prihlaseni-box .tlacitka-rada {
+  margin-top: 16px;
+  justify-content: space-between;
+}
+.prihlaseni-box .tlacitka-rada .tlacitko {
+  margin-top: 0;
+}

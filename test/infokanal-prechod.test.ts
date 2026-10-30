@@ -515,6 +515,9 @@ describe('příchozí SMS', () => {
         },
         log,
       );
+      // jen START bez jména odběr nezaloží (pokyn 2026-10-30) — odpověď řekne, co poslat
+      expect(await p.zpracuj({ od: '+420777333444', text: 'START', prijato: null })).toBe('start_bez_jmena');
+      expect(await t.app.infokanal.odberatelPodleTelefonu('+420777333444')).toBeUndefined();
       expect(await p.zpracuj({ od: '+420777333444', text: 'START Karel Nový', prijato: null })).toBe('start');
       const k = await t.app.infokanal.odberatelPodleTelefonu('+420777333444');
       expect(k).toMatchObject({ jmeno: 'Karel Nový', zdroj: 'sms', kanal: 'sms' });
@@ -543,8 +546,9 @@ describe('příchozí SMS', () => {
       t.mail.odeslane.length = 0;
       await t.app.infokanalOdchozi.zpracujVse();
       expect(t.sms.odeslane.map((s) => s.text)).toEqual([
+        'TESTOV: Pro prihlaseni k odberu napiste START a sve jmeno a prijmeni, napr.: START Jan Novak',
         'TESTOV: Jste prihlaseni k odberu obecnich zprav. Odhlaseni: poslete STOP.',
-        'TESTOV: Odber je zrusen. Znovu prihlasit: poslete START.',
+        'TESTOV: Odber je zrusen. Znovu prihlasit: poslete START Jmeno Prijmeni.',
         'TESTOV: Jste prihlaseni k odberu obecnich zprav. Odhlaseni: poslete STOP.',
         'TESTOV: Napiste prosim i cil, napr. ODVOZ Turnov.',
       ]);

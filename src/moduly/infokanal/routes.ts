@@ -100,6 +100,7 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
         });
       const telefon = normalizujTelefon(b.telefon);
       if (!telefon) return vykresli(t('prihlaseni.telefon_neplatny'));
+      if (!String(b.jmeno ?? '').trim()) return vykresli(t('infokanal.chyba_jmeno'));
       if (b.souhlas !== 'ano') return vykresli(t('infokanal.souhlas_nutny'));
       const email = String(b.email ?? '').trim() ? normalizujEmail(b.email) : null;
       const kanal = KANALY.includes(b.kanal as KanalPreference) ? (b.kanal as KanalPreference) : 'sms';
@@ -300,6 +301,10 @@ export default async function infokanalRoutes(app: FastifyInstance, z: { sluzba:
       const email = String(b.email ?? '').trim() ? normalizujEmail(b.email) : null;
       const kanal = KANALY.includes(b.kanal as KanalPreference) ? (b.kanal as KanalPreference) : 'sms';
       const casti = app.obec.obec.casti;
+      if (!String(b.jmeno ?? '').trim()) {
+        req.session.flash = { typ: 'chyba', text: t('infokanal.chyba_jmeno') };
+        return reply.redirect('/infokanal/odber');
+      }
       await sluzba.uprav(
         a.id,
         {

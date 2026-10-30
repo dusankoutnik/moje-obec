@@ -1,5 +1,6 @@
 // Příchozí SMS na číslo obce (jako ve VlastiKanálu):
-//   START [jméno] = přihlášení k odběru (SMS z čísla = vlastnictví ověřeno, souhlas z registrační SMS),
+//   START Jméno Příjmení = přihlášení k odběru (SMS z čísla = vlastnictví ověřeno, souhlas z registrační SMS);
+//                  bez jména se odběr nezakládá — odpověď vysvětlí, co poslat (pokyn 2026-10-30),
 //   STOP          = odhlášení,
 //   ODVOZ <cíl>   = poptávka spolujízdy → předá se rezervacím po vnitřní síti ({phone, dest, text}),
 //   cokoliv jiného = odpověď občana → přeposlat správcům e-mailem.
@@ -24,7 +25,11 @@ export interface PrichoziKonfigurace {
   fetch?: typeof fetch;
 }
 
-export type AkcePrichozi = 'start' | 'restart' | 'stop' | 'odvoz' | 'odvoz_bez_cile' | 'preposlano';
+export type AkcePrichozi =
+  'start' | 'start_bez_jmena' | 'restart' | 'stop' | 'odvoz' | 'odvoz_bez_cile' | 'preposlano';
+
+export const ODPOVED_START_BEZ_JMENA =
+  'Pro prihlaseni k odberu napiste START a sve jmeno a prijmeni, napr.: START Jan Novak';
 
 /** e-maily správců (admin, spravce) s e-mailem a bez blokace + adresy navíc */
 export async function emailySpravcu(db: Db, navic: string[] = []): Promise<string[]> {
@@ -94,6 +99,12 @@ export class PrichoziSluzba {
     const start = /^start\b(.*)$/is.exec(text);
     if (start) {
       const jmeno = start[1]!.trim().replace(/\s+/g, ' ').slice(0, 80);
+      // jméno je povinné: jen „START“ nestačí (ani u známého odběratele, který jméno dosud nemá)
+      if (!jmeno && !existujici?.jmeno) {
+        await zapisAudit(this.db, { akce: 'infokanal.sms_start_bez_jmena', detail: { telefon: od } });
+        await this.odpovez(od, ODPOVED_START_BEZ_JMENA);
+        return 'start_bez_jmena';
+      }
       let akce: AkcePrichozi;
       if (existujici) {
         await this.db
@@ -141,7 +152,7 @@ export class PrichoziSluzba {
           detail: { odberatel: existujici.id, zpusob: 'sms' },
         });
       }
-      await this.odpovez(od, 'Odber je zrusen. Znovu prihlasit: poslete START.');
+      await this.odpovez(od, 'Odber je zrusen. Znovu prihlasit: poslete START Jmeno Prijmeni.');
       return 'stop';
     }
     const kdo = existujici

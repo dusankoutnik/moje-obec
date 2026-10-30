@@ -8,7 +8,7 @@
   <label for="telefon"><%= it.t('infokanal.telefon') %></label>
   <input id="telefon" type="tel" value="<%= it.fmtTelefon(it.o.telefon) %>" readonly>
   <label for="jmeno"><%= it.t('infokanal.jmeno') %></label>
-  <input id="jmeno" name="jmeno" maxlength="120" value="<%= it.o.jmeno %>">
+  <input id="jmeno" name="jmeno" maxlength="120" required value="<%= it.o.jmeno %>">
   <label for="email"><%= it.t('infokanal.email') %></label>
   <input id="email" name="email" type="email" value="<%= it.o.email || '' %>">
   <label for="cast_obce"><%= it.t('infokanal.cast_obce') %></label>

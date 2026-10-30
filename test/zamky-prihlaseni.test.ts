@@ -83,6 +83,8 @@ describe('zámek přihlášení heslem', () => {
         telefon: '+420777650002',
         email: 'odemknout@example.cz',
         heslo_hash: await hashujHeslo('spravne-heslo-2'),
+        jmeno: 'Olga',
+        prijmeni: 'Odemknutá',
         gdpr_souhlas_at: new Date(),
       })
       .execute();

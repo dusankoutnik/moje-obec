@@ -94,10 +94,16 @@ describe('OIDC provider', () => {
       kod,
     });
     expect(souhlasStranka.text).toContain('Souhlas se zpracováním osobních údajů');
-    // 2) po GDPR souhlasu provider žádá souhlas s přístupem (klient není důvěryhodný)
-    const pristup = await p.post(`/oidc/interaction/${uid}/souhlas`, {
+    // 2) po GDPR souhlasu je povinné jméno; pak provider žádá souhlas s přístupem (klient není důvěryhodný)
+    const jmenoStranka = await p.post(`/oidc/interaction/${uid}/souhlas`, {
       _csrf: csrfZ(souhlasStranka.text),
       souhlas: 'ano',
+    });
+    expect(jmenoStranka.text).toContain('Jak se jmenujete?');
+    const pristup = await p.post(`/oidc/interaction/${uid}/jmeno`, {
+      _csrf: csrfZ(jmenoStranka.text),
+      jmeno: 'Tomáš',
+      prijmeni: 'Externí',
     });
     expect(pristup.text).toContain('Povolit přístup aplikaci');
     expect(pristup.text).toContain('Testovací aplikace');

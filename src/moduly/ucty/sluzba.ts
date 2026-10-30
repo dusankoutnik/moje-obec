@@ -50,6 +50,25 @@ export function jeUrad(u: Uzivatel | null | undefined): boolean {
   return !!u && (u.role?.length ?? 0) > 0;
 }
 
+/** účet bez jména a příjmení — nesmí se dostat dál než na doplnění jména (pokyn 2026-10-30) */
+export function bezJmena(u: Pick<Uzivatel, 'jmeno' | 'prijmeni'>): boolean {
+  return !u.jmeno.trim() || !u.prijmeni.trim();
+}
+
+/** jméno a příjmení z formuláře: ořezané, nejvýš 100 znaků; null = něco chybí */
+export function ctiJmeno(b: Record<string, unknown>): { jmeno: string; prijmeni: string } | null {
+  const jmeno = String(b.jmeno ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 100);
+  const prijmeni = String(b.prijmeni ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 100);
+  if (!jmeno || !prijmeni) return null;
+  return { jmeno, prijmeni };
+}
+
 export function celeJmeno(u: Pick<Uzivatel, 'jmeno' | 'prijmeni' | 'prezdivka' | 'telefon'>): string {
   const j = `${u.jmeno} ${u.prijmeni}`.trim();
   return j || u.prezdivka || u.telefon;
@@ -294,6 +313,21 @@ export class UctySluzba {
       ip,
     });
     return { ok: true };
+  }
+
+  // Doplnění jména u účtu, který ho ještě nemá (brána po přihlášení). Přezdívka = křestní jméno, není-li.
+  async doplnJmeno(id: string, data: { jmeno: string; prijmeni: string }, ip?: string | null): Promise<void> {
+    await this.db
+      .updateTable('uzivatele')
+      .set({
+        jmeno: data.jmeno,
+        prijmeni: data.prijmeni,
+        prezdivka: sql`CASE WHEN prezdivka = '' THEN ${data.jmeno} ELSE prezdivka END`,
+        upraven_at: new Date(),
+      })
+      .where('id', '=', id)
+      .execute();
+    await zapisAudit(this.db, { uzivatelId: id, akce: 'ucet.jmeno_doplneno', ip });
   }
 
   // Nový e-mail se jen poznamená jako čekající; platit začne až po zadání kódu, který na něj pošleme.

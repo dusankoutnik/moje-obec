@@ -1,4 +1,6 @@
-// Přihlašovací obrazovky OIDC providera (interakce): telefon → SMS kód, nebo e-mail + heslo; GDPR souhlas;
+// Přihlašovací obrazovky OIDC providera (interakce) = JEDINÝ přihlašovací dialog pro web i aplikace
+// (rezervace, eKnihy): na jedné stránce telefon → SMS kód, e-mail + heslo, nebo „Neznám heslo“ → kód na e-mail.
+// Po přihlášení GDPR souhlas a POVINNÉ jméno a příjmení (účet bez jména se dál nedostane, pokyn 2026-10-30);
 // souhlas s přístupem pro cizí aplikace. Provider sem posílá KAŽDÉ přihlášení (i z externích aplikací).
 import { zobrazitDevKod } from '../../lib/sms/presmerovani.js';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
@@ -7,8 +9,10 @@ import type { InteractionResults } from 'oidc-provider';
 import { normalizujEmail, normalizujTelefon, formatujTelefon, bezDiakritiky } from '../../lib/kontakty.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { hlidejLimit } from '../../lib/limit.js';
-import type { UctySluzba } from './sluzba.js';
+import { bezJmena, ctiJmeno, type UctySluzba } from './sluzba.js';
 import { OIDC_PREFIX, ROZSAHY } from './oidc/provider.js';
+
+type Amr = 'sms' | 'pwd' | 'email';
 
 interface Zavislosti {
   provider: Provider;
@@ -37,27 +41,57 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
     return reply.code(410).view('chyba', { status: 410, nadpis: t('oidc.chyba'), text: '' });
   }
 
-  // Po přihlášení: bez GDPR souhlasu nejdřív souhlas, pak teprve provider pustí dál.
+  // Společný přihlašovací dialog (telefon vlevo, e-mail + heslo vpravo); chyba se ukáže u příslušné části.
+  function dialog(
+    reply: FastifyReply,
+    uid: string,
+    navic: { chyba?: string; chybaEmail?: string; telefon?: string; email?: string } = {},
+  ) {
+    return reply.view('ucty/prihlaseni', {
+      titulek: t('prihlaseni.titulek'),
+      uid,
+      skriptPrihlaseni: true,
+      ...navic,
+    });
+  }
+
+  // Po přihlášení: bez GDPR souhlasu nejdřív souhlas, bez jména jméno, pak teprve provider pustí dál.
   async function poPrihlaseni(
     req: FastifyRequest,
     reply: FastifyReply,
     uid: string,
     uzivatelId: string,
-    amr: string,
+    amr: Amr,
   ) {
     const u = await ucty.podleId(uzivatelId);
     if (!u) return chybaInterakce(reply);
-    if (u.blokovan_at) {
-      return reply.view('ucty/prihlaseni', {
-        titulek: t('prihlaseni.titulek'),
-        uid,
-        chyba: t('prihlaseni.blokovan'),
-      });
-    }
+    if (u.blokovan_at) return dialog(reply, uid, { chyba: t('prihlaseni.blokovan') });
     await zapisAudit(app.db, { uzivatelId: u.id, akce: 'prihlaseni', detail: { zpusob: amr }, ip: req.ip });
     if (!u.gdpr_souhlas_at) {
-      req.session.cekaSouhlas = { interakce: uid, uzivatelId: u.id };
+      req.session.cekaSouhlas = { interakce: uid, uzivatelId: u.id, amr };
       return reply.view('ucty/souhlas', { titulek: t('souhlas.titulek'), uid });
+    }
+    return poSouhlasu(req, reply, uid, u.id, amr);
+  }
+
+  // Jméno a příjmení jsou povinné na KAŽDÉ cestě přihlášení (SMS kód, e-mail + heslo, e-mail + kód):
+  // účet založený kódem z neznámého telefonu vzniká bez jména a člověk se bez něj dál nedostane.
+  async function poSouhlasu(
+    req: FastifyRequest,
+    reply: FastifyReply,
+    uid: string,
+    uzivatelId: string,
+    amr: Amr,
+  ) {
+    const u = await ucty.podleId(uzivatelId);
+    if (!u) return chybaInterakce(reply);
+    if (bezJmena(u)) {
+      req.session.cekaJmeno = { interakce: uid, uzivatelId: u.id, amr };
+      return reply.view('ucty/jmeno', {
+        titulek: t('jmeno.titulek'),
+        akce: `${OIDC_PREFIX}/interaction/${uid}/jmeno`,
+        u,
+      });
     }
     return dokonci(req, reply, { login: { accountId: u.id, amr: [amr], remember: true } });
   }
@@ -77,10 +111,10 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
         rozsahy,
       });
     }
-    return reply.view('ucty/prihlaseni', { titulek: t('prihlaseni.titulek'), uid: d.uid });
+    return dialog(reply, d.uid);
   });
 
-  // krok 1: telefon → SMS kód
+  // ---------- 1) telefon → SMS kód ----------
   app.post<{ Params: { uid: string }; Body: { telefon?: string } }>(
     `${OIDC_PREFIX}/interaction/:uid/telefon`,
     { preHandler: hlidejLimit(app.limity.poslat) },
@@ -88,23 +122,11 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
       const d = await detaily(req, reply);
       if (!d || d.uid !== req.params.uid) return chybaInterakce(reply);
       const telefon = normalizujTelefon(req.body.telefon);
-      if (!telefon) {
-        return reply.view('ucty/prihlaseni', {
-          titulek: t('prihlaseni.titulek'),
-          uid: d.uid,
-          chyba: t('prihlaseni.telefon_neplatny'),
-          telefon: req.body.telefon,
-        });
-      }
+      if (!telefon)
+        return dialog(reply, d.uid, { chyba: t('prihlaseni.telefon_neplatny'), telefon: req.body.telefon });
       const v = await app.otp.vydej(telefon, 'prihlaseni');
-      if ('chyba' in v) {
-        return reply.view('ucty/prihlaseni', {
-          titulek: t('prihlaseni.titulek'),
-          uid: d.uid,
-          chyba: t('prihlaseni.limit'),
-          telefon: req.body.telefon,
-        });
-      }
+      if ('chyba' in v)
+        return dialog(reply, d.uid, { chyba: t('prihlaseni.limit'), telefon: req.body.telefon });
       try {
         await app.sms.posli(
           telefon,
@@ -112,16 +134,12 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
         );
       } catch (e) {
         req.log.error({ err: e }, 'odeslání OTP selhalo');
-        return reply.view('ucty/prihlaseni', {
-          titulek: t('prihlaseni.titulek'),
-          uid: d.uid,
-          chyba: t('prihlaseni.odesilani_selhalo'),
-          telefon: req.body.telefon,
-        });
+        return dialog(reply, d.uid, { chyba: t('prihlaseni.odesilani_selhalo'), telefon: req.body.telefon });
       }
       return reply.view('ucty/kod', {
         titulek: t('prihlaseni.titulek'),
         uid: d.uid,
+        kanal: 'sms',
         telefon,
         telefonZobrazeny: formatujTelefon(telefon),
         devKod: zobrazitDevKod(app.env, telefon) ? v.kod : null,
@@ -129,7 +147,7 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
     },
   );
 
-  // krok 2: kód → přihlášení (účet vznikne, pokud neexistuje)
+  // kód z SMS → přihlášení (účet vznikne, pokud neexistuje — bez jména, to si vyžádá brána níže)
   app.post<{ Params: { uid: string }; Body: { telefon?: string; kod?: string } }>(
     `${OIDC_PREFIX}/interaction/:uid/kod`,
     { preHandler: hlidejLimit(app.limity.overit) },
@@ -137,17 +155,13 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
       const d = await detaily(req, reply);
       if (!d || d.uid !== req.params.uid) return chybaInterakce(reply);
       const telefon = normalizujTelefon(req.body.telefon);
-      if (!telefon)
-        return reply.view('ucty/prihlaseni', {
-          titulek: t('prihlaseni.titulek'),
-          uid: d.uid,
-          chyba: t('prihlaseni.telefon_neplatny'),
-        });
+      if (!telefon) return dialog(reply, d.uid, { chyba: t('prihlaseni.telefon_neplatny') });
       const ok = await app.otp.over(telefon, 'prihlaseni', String(req.body.kod ?? ''));
       if (!ok) {
         return reply.view('ucty/kod', {
           titulek: t('prihlaseni.titulek'),
           uid: d.uid,
+          kanal: 'sms',
           telefon,
           telefonZobrazeny: formatujTelefon(telefon),
           chyba: t('prihlaseni.kod_nespravny'),
@@ -155,24 +169,17 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
       }
       // blokaci prozradíme až majiteli telefonu (po správném kódu), ne komukoliv, kdo číslo zadá
       const existujici = await ucty.podleTelefonu(telefon);
-      if (existujici?.blokovan_at) {
-        return reply.view('ucty/prihlaseni', {
-          titulek: t('prihlaseni.titulek'),
-          uid: d.uid,
-          chyba: t('prihlaseni.blokovan'),
-        });
-      }
+      if (existujici?.blokovan_at) return dialog(reply, d.uid, { chyba: t('prihlaseni.blokovan') });
       const { uzivatel } = await ucty.najdiNeboZaloz(telefon, req.ip);
       return poPrihlaseni(req, reply, d.uid, uzivatel.id, 'sms');
     },
   );
 
-  // alternativa: e-mail + heslo
-  app.get<{ Params: { uid: string } }>(`${OIDC_PREFIX}/interaction/:uid/heslo`, async (req, reply) => {
-    const d = await detaily(req, reply);
-    if (!d || d.uid !== req.params.uid) return chybaInterakce(reply);
-    return reply.view('ucty/heslo', { titulek: t('prihlaseni.heslem_titulek'), uid: d.uid });
-  });
+  // ---------- 2) e-mail + heslo ----------
+  // Dřív samostatná stránka; teď je vše v jednom dialogu (starý odkaz vede tam).
+  app.get<{ Params: { uid: string } }>(`${OIDC_PREFIX}/interaction/:uid/heslo`, async (req, reply) =>
+    reply.redirect(`${OIDC_PREFIX}/interaction/${encodeURIComponent(req.params.uid)}`),
+  );
   app.post<{ Params: { uid: string }; Body: { email?: string; heslo?: string } }>(
     `${OIDC_PREFIX}/interaction/:uid/heslo`,
     { preHandler: hlidejLimit(app.limity.heslo) },
@@ -189,10 +196,8 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
           detail: { email: email ?? '?', ...(v.chyba === 'zamceno' ? { zamceno: true } : {}) },
           ip: req.ip,
         });
-        return reply.view('ucty/heslo', {
-          titulek: t('prihlaseni.heslem_titulek'),
-          uid: d.uid,
-          chyba: t(v.chyba === 'zamceno' ? 'prihlaseni.heslo_zamceno' : 'prihlaseni.heslo_spatne'),
+        return dialog(reply, d.uid, {
+          chybaEmail: t(v.chyba === 'zamceno' ? 'prihlaseni.heslo_zamceno' : 'prihlaseni.heslo_spatne'),
           email: req.body.email,
         });
       }
@@ -200,7 +205,68 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
     },
   );
 
-  // GDPR souhlas (po prvním přihlášení)
+  // ---------- 3) „Neznám heslo“: kód na e-mail ----------
+  // Odpověď je stejná pro známý i neznámý e-mail (nikdo si nevyčte, kdo má účet); kód jde jen existujícímu,
+  // neblokovanému účtu. Neznámý e-mail účet NEZAKLÁDÁ — kotvou účtu je telefon.
+  app.post<{ Params: { uid: string }; Body: { email?: string } }>(
+    `${OIDC_PREFIX}/interaction/:uid/email-kod`,
+    { preHandler: hlidejLimit(app.limity.poslat) },
+    async (req, reply) => {
+      const d = await detaily(req, reply);
+      if (!d || d.uid !== req.params.uid) return chybaInterakce(reply);
+      const email = normalizujEmail(req.body.email);
+      if (!email)
+        return dialog(reply, d.uid, { chybaEmail: t('prihlaseni.email_neplatny'), email: req.body.email });
+      const u = await ucty.podleEmailu(email);
+      let devKod: string | null = null;
+      if (u && !u.blokovan_at) {
+        const v = await app.otp.vydej(email, 'prihlaseni');
+        if (!('chyba' in v)) {
+          try {
+            await app.mail.posli({
+              komu: email,
+              predmet: t('prihlaseni.email_kod_predmet', { obec: app.obec.obec.nazev }),
+              text: t('prihlaseni.email_kod_text', { kod: v.kod, obec: app.obec.obec.nazev }),
+            });
+            devKod = zobrazitDevKod(app.env, u.telefon) ? v.kod : null;
+          } catch (e) {
+            req.log.error({ err: e }, 'e-mail s přihlašovacím kódem se nepodařilo odeslat');
+          }
+        }
+      }
+      return reply.view('ucty/kod', {
+        titulek: t('prihlaseni.titulek'),
+        uid: d.uid,
+        kanal: 'email',
+        email,
+        devKod,
+      });
+    },
+  );
+  app.post<{ Params: { uid: string }; Body: { email?: string; kod?: string } }>(
+    `${OIDC_PREFIX}/interaction/:uid/email-overit`,
+    { preHandler: hlidejLimit(app.limity.overit) },
+    async (req, reply) => {
+      const d = await detaily(req, reply);
+      if (!d || d.uid !== req.params.uid) return chybaInterakce(reply);
+      const email = normalizujEmail(req.body.email);
+      if (!email) return dialog(reply, d.uid, { chybaEmail: t('prihlaseni.email_neplatny') });
+      const ok = await app.otp.over(email, 'prihlaseni', String(req.body.kod ?? ''));
+      const u = ok ? await ucty.podleEmailu(email) : undefined;
+      if (!u) {
+        return reply.view('ucty/kod', {
+          titulek: t('prihlaseni.titulek'),
+          uid: d.uid,
+          kanal: 'email',
+          email,
+          chyba: t('prihlaseni.kod_nespravny'),
+        });
+      }
+      return poPrihlaseni(req, reply, d.uid, u.id, 'email');
+    },
+  );
+
+  // ---------- GDPR souhlas (po prvním přihlášení) ----------
   app.post<{ Params: { uid: string }; Body: { souhlas?: string } }>(
     `${OIDC_PREFIX}/interaction/:uid/souhlas`,
     async (req, reply) => {
@@ -214,7 +280,30 @@ export default async function interakceRoutes(app: FastifyInstance, z: Zavislost
           error_description: 'Bez souhlasu nelze účet používat.',
         });
       await ucty.udelSouhlas(ceka.uzivatelId, req.ip);
-      return dokonci(req, reply, { login: { accountId: ceka.uzivatelId, amr: ['sms'], remember: true } });
+      return poSouhlasu(req, reply, d.uid, ceka.uzivatelId, ceka.amr ?? 'sms');
+    },
+  );
+
+  // ---------- jméno a příjmení (povinné; účet bez nich se do aplikací nedostane) ----------
+  app.post<{ Params: { uid: string }; Body: Record<string, string | undefined> }>(
+    `${OIDC_PREFIX}/interaction/:uid/jmeno`,
+    async (req, reply) => {
+      const d = await detaily(req, reply);
+      const ceka = req.session.cekaJmeno;
+      if (!d || d.uid !== req.params.uid || !ceka || ceka.interakce !== d.uid) return chybaInterakce(reply);
+      const jm = ctiJmeno(req.body);
+      if (!jm) {
+        const u = await ucty.podleId(ceka.uzivatelId);
+        return reply.view('ucty/jmeno', {
+          titulek: t('jmeno.titulek'),
+          akce: `${OIDC_PREFIX}/interaction/${d.uid}/jmeno`,
+          u: { ...u, jmeno: String(req.body.jmeno ?? ''), prijmeni: String(req.body.prijmeni ?? '') },
+          chyba: t('jmeno.chyba'),
+        });
+      }
+      delete req.session.cekaJmeno;
+      await ucty.doplnJmeno(ceka.uzivatelId, jm, req.ip);
+      return dokonci(req, reply, { login: { accountId: ceka.uzivatelId, amr: [ceka.amr], remember: true } });
     },
   );
 

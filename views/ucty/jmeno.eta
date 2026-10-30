@@ -1,0 +1,15 @@
+<% layout('/layout') %>
+<div class="uzke">
+<h1><%= it.t('jmeno.titulek') %></h1>
+<p><%= it.t('jmeno.text') %></p>
+<% if (it.chyba) { %><div class="flash flash-chyba" role="alert"><%= it.chyba %></div><% } %>
+<form method="post" action="<%= it.akce %>" class="formular">
+  <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+  <% if (it.zpet) { %><input type="hidden" name="zpet" value="<%= it.zpet %>"><% } %>
+  <div class="radek">
+    <div><label for="jmeno"><%= it.t('jmeno.jmeno') %></label><input id="jmeno" name="jmeno" autocomplete="given-name" maxlength="100" required autofocus value="<%= it.u.jmeno || '' %>"></div>
+    <div><label for="prijmeni"><%= it.t('jmeno.prijmeni') %></label><input id="prijmeni" name="prijmeni" autocomplete="family-name" maxlength="100" required value="<%= it.u.prijmeni || '' %>"></div>
+  </div>
+  <button class="tlacitko" type="submit"><%= it.t('jmeno.pokracovat') %></button>
+</form>
+</div>

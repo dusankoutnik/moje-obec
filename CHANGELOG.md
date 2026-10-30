@@ -4,6 +4,21 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Změněno (povinné jméno a jednotný přihlašovací dialog, 30. 10. 2026)
+
+- OIDC interakce = jediný přihlašovací dialog: telefon → SMS kód, e-mail + heslo a „Neznám heslo“ → kód na e-mail
+  (`/oidc/interaction/:uid/email-kod`, `/email-overit`; neutrální odpověď pro neznámý e-mail, účet se nezakládá;
+  amr `email`). Stará stránka `/heslo` přesměrovává do dialogu; `public/js/prihlaseni.js` zapíná tlačítka jen
+  s platnými vstupy (bez JS vše ověří server).
+- Jméno a příjmení povinné na všech cestách: brána `ucty/jmeno` v interakci po GDPR souhlasu
+  (`session.cekaJmeno`, `UctySluzba.doplnJmeno`, audit `ucet.jmeno_doplneno`, přezdívka = křestní jméno),
+  `app.ts` posílá přihlášený účet bez jména na `/ucet/jmeno?zpet=` (výjimky `BEZ_JMENA_POVOLENO`), proxy aplikací
+  (`Prihlaseny` vrací `{cislo, bezJmena}`) ho tam pošle dřív, než pustí stránku do rezervací/eKnih. `POST /ucet`
+  prázdné jméno odmítne.
+- Infokanál: SMS `START` bez jména odběr nezaloží (`start_bez_jmena`, audit `infokanal.sms_start_bez_jmena`,
+  odpověď `ODPOVED_START_BEZ_JMENA`); formuláře odběru vyžadují jméno (`infokanal.chyba_jmeno`).
+- Testy `test/jmeno-povinne.test.ts`; `Prohlizec.hlavickaCookie()` veřejná; `.claude/` a `docs/Historie/` mimo lint.
+
 ### Přidáno (role provozovatel a stránka Role, 26. 10. 2026)
 
 - Role `provozovatel` („Bůh — provozovatel“, migrace 0023) nad administrátorem: všechna práva admina, vzhled webu

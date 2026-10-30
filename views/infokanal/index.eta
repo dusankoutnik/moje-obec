@@ -15,7 +15,7 @@
 <form method="post" action="/infokanal" class="formular">
   <input type="hidden" name="_csrf" value="<%= it.csrf %>">
   <label for="jmeno"><%= it.t('infokanal.jmeno') %></label>
-  <input id="jmeno" name="jmeno" autocomplete="name" maxlength="120" value="<%= it.f.jmeno || '' %>">
+  <input id="jmeno" name="jmeno" autocomplete="name" maxlength="120" required value="<%= it.f.jmeno || '' %>">
   <label for="telefon"><%= it.t('infokanal.telefon') %></label>
   <input id="telefon" name="telefon" type="tel" inputmode="tel" autocomplete="tel" required value="<%= it.f.telefon || '' %>" aria-describedby="telefon-napoveda">
   <p class="napoveda" id="telefon-napoveda"><%= it.t('infokanal.telefon_napoveda') %></p>

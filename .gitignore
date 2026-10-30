@@ -27,3 +27,4 @@ playwright-report/
 # produkční instance (profil obce a tajemství) — mimo git
 obec.prod.yml
 .env.prod
+.claude/

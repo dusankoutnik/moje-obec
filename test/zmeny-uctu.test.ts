@@ -55,7 +55,7 @@ describe('bez čerstvého ověření nic', () => {
     const odebrat = await p.post('/ucet/email', { _csrf: csrf, akce: 'odebrat' }, false);
     expect(odebrat.res.headers.get('location')).toContain('/ucet/overeni');
     // starý profilový formulář e-mail už nepřijímá
-    await p.post('/ucet', { _csrf: csrf, jmeno: 'Eva', email: 'utocnik@example.cz' });
+    await p.post('/ucet', { _csrf: csrf, jmeno: 'Eva', prijmeni: 'Testovací', email: 'utocnik@example.cz' });
     const u = await uzivatel('+420777200100');
     expect(u.heslo_hash).toBeNull();
     expect(u.email).toBeNull();

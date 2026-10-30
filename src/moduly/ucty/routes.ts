@@ -7,7 +7,7 @@ import { zapisAudit } from '../../lib/audit.js';
 import { bezpecnyNavrat } from '../../lib/navrat.js';
 import { autorizacniUrl, type OidcKlient } from './oidc/klient.js';
 import { vyzadujPrihlaseni } from './opravneni.js';
-import type { UctySluzba } from './sluzba.js';
+import { bezJmena, ctiJmeno, type UctySluzba } from './sluzba.js';
 
 /** jak dlouho platí čerstvé ověření (staré heslo / SMS kód) pro citlivé změny */
 export const OVERENI_PLATNOST_MS = 10 * 60_000;
@@ -85,15 +85,15 @@ export default async function uctyRoutes(app: FastifyInstance, z: Zavislosti) {
       const b = req.body;
       const casti = app.obec.obec.casti;
       const castObce = casti.includes(String(b.cast_obce)) ? String(b.cast_obce) : '';
+      const jm = ctiJmeno(b);
+      if (!jm) {
+        req.session.flash = { typ: 'chyba', text: t('jmeno.chyba') };
+        return reply.redirect('/ucet');
+      }
       await ucty.upravProfil(
         req.uzivatel!.id,
         {
-          jmeno: String(b.jmeno ?? '')
-            .trim()
-            .slice(0, 100),
-          prijmeni: String(b.prijmeni ?? '')
-            .trim()
-            .slice(0, 100),
+          ...jm,
           prezdivka: String(b.prezdivka ?? '')
             .trim()
             .slice(0, 60),
@@ -103,6 +103,44 @@ export default async function uctyRoutes(app: FastifyInstance, z: Zavislosti) {
       );
       req.session.flash = { typ: 'ok', text: t('app.ulozeno') };
       return reply.redirect('/ucet');
+    },
+  );
+
+  // ---------- Doplnění jména (účet bez jména sem posílá app.ts, dokud jméno nemá) ----------
+  app.get<{ Querystring: { zpet?: string } }>(
+    '/ucet/jmeno',
+    { preHandler: vyzadujPrihlaseni },
+    async (req, reply) => {
+      if (!bezJmena(req.uzivatel!)) return reply.redirect(bezpecnaCesta(req.query.zpet));
+      return reply.view('ucty/jmeno', {
+        titulek: t('jmeno.titulek'),
+        akce: '/ucet/jmeno',
+        zpet: bezpecnaCesta(req.query.zpet),
+        u: req.uzivatel!,
+      });
+    },
+  );
+  app.post<{ Body: Record<string, string | undefined> }>(
+    '/ucet/jmeno',
+    { preHandler: vyzadujPrihlaseni },
+    async (req, reply) => {
+      const zpet = bezpecnaCesta(req.body.zpet);
+      const jm = ctiJmeno(req.body);
+      if (!jm) {
+        return reply.view('ucty/jmeno', {
+          titulek: t('jmeno.titulek'),
+          akce: '/ucet/jmeno',
+          zpet,
+          u: {
+            ...req.uzivatel!,
+            jmeno: String(req.body.jmeno ?? ''),
+            prijmeni: String(req.body.prijmeni ?? ''),
+          },
+          chyba: t('jmeno.chyba'),
+        });
+      }
+      if (bezJmena(req.uzivatel!)) await ucty.doplnJmeno(req.uzivatel!.id, jm, req.ip);
+      return reply.redirect(zpet);
     },
   );
 

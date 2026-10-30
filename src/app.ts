@@ -47,9 +47,13 @@ import apiModul from './moduly/api/index.js';
 import vystrahyModul from './moduly/infokanal/vystrahy/index.js';
 import administraceModul from './moduly/administrace/index.js';
 import { platneRole } from './moduly/ucty/role-platnost.js';
+import { bezJmena } from './moduly/ucty/sluzba.js';
 
 /** vrátí true, pokud požadavek obsloužil (odpověď odeslána) */
 /** service worker, který po starém webu uklidí: smaže keše, odregistruje se a obnoví otevřená okna */
+// cesty, kam smí i účet bez jména: doplnění jména, odhlášení, OIDC (brána je tam vlastní), API, webhooky
+const BEZ_JMENA_POVOLENO = /^\/(ucet\/jmeno|odhlaseni|oidc\/|api\/|webhook\/|healthz|prihlaseni)(\/|\?|$)/;
+
 const ZABIJAK_SERVICE_WORKERU = `self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) {
   e.waitUntil(
@@ -109,7 +113,9 @@ declare module 'fastify' {
     flash?: { typ: 'ok' | 'chyba' | 'info'; text: string; odkaz?: { url: string; text: string } } | null;
     oidc?: { state: string; nonce: string; verifier: string; zpet?: string };
     idToken?: string;
-    cekaSouhlas?: { interakce: string; uzivatelId: string };
+    cekaSouhlas?: { interakce: string; uzivatelId: string; amr?: 'sms' | 'pwd' | 'email' };
+    /** přihlášený účet ještě nemá jméno — čeká se na doplnění (brána v OIDC interakci) */
+    cekaJmeno?: { interakce: string; uzivatelId: string; amr: 'sms' | 'pwd' | 'email' };
     odber?: { odberatelId: string; do: number };
     /** čerstvé ověření pro citlivé změny účtu platí do (ms) */
     overenoDo?: number;
@@ -250,7 +256,7 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
   await app.register(sablony);
 
   // přihlášený uživatel ze sezení (jeden dotaz na požadavek; statické soubory a OIDC endpointy přeskočit)
-  app.addHook('preHandler', async (req) => {
+  app.addHook('preHandler', async (req, reply) => {
     if (req.url.startsWith('/static/') || req.url.startsWith('/healthz')) return;
     if (env.STARY_WEB_SOUBORY && req.url.startsWith(env.STARY_WEB_PREFIX)) return;
     const id = req.session?.uzivatelId;
@@ -266,6 +272,11 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
     await zaznamenejAktivitu(db, req.session.sessionId, req.headers['user-agent']).catch((e) =>
       req.log.warn({ err: e }, 'aktivita sezení'),
     );
+    // účet bez jména (starší účty založené kódem z neznámého telefonu) nesmí nikam dál než na doplnění jména
+    if (bezJmena(u) && !BEZ_JMENA_POVOLENO.test(req.url)) {
+      const zpet = req.method === 'GET' ? req.url : '/ucet';
+      return reply.redirect(`/ucet/jmeno?zpet=${encodeURIComponent(zpet)}`);
+    }
   });
 
   // CSRF pro všechny formuláře (POST) kromě OIDC endpointů a webhooků, které mají vlastní ochranu

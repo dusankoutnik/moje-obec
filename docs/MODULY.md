@@ -115,7 +115,8 @@ Náhrada aplikace MůjÚčet: `/ucet` sdružuje všechna nastavení účtu, kart
     `infokanal.interni_odeslani`. Stav dávky: `GET /api/interni/odeslat/:id`.
   - `GET /api/interni/odber?telefon=` → `{odebira, kanal:'sms'|'mixed'|'email', email?}`.
 - **Příchozí SMS** (webhook brány na `/webhook/sms/<tajemství>`, stejná adresa jako doručenky; SMSGate událost
-  `sms:received`): `START [jméno]` přihlásí (souhlas z registrační SMS, ověřeno číslem), `STOP` odhlásí, obojí
+  `sms:received`): `START Jméno Příjmení` přihlásí (souhlas z registrační SMS, ověřeno číslem; **bez jména se odběr
+  nezaloží** a odpověď řekne, co poslat — 2026-10-30), `STOP` odhlásí, obojí
   s odpovědní SMS; `ODVOZ <cíl>` se předá rezervacím (`POST APLIKACE_REZERVACE_URL/api/sms/prichozi`, nebo
   `SPOLUJIZDA_HOOK_URL`, tělo `{phone, dest, text}`, hlavičky `x-hook-secret` = `SPOLUJIZDA_HOOK_SECRET`,
   `x-api-secret`); bez cíle odpověď „napište i cíl“; při nedostupnosti rezervací e-mail správcům. Ostatní SMS

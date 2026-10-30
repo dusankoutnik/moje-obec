@@ -2,6 +2,12 @@
 
 Přehled změn platformy Obecní web od Voltu 2.0 pro pilotní obec, nejnovější nahoře. Technické podrobnosti jsou v CHANGELOG.md.
 
+## 30. 10. 2026
+
+- **Jedno přihlášení pro všechno, na jedné obrazovce:** přihlašovací stránka má vedle sebe obě cesty — vlevo **telefon** (pošleme SMS s kódem), vpravo **e-mail a heslo**. Kdo heslo nezná nebo nemá, klikne na **Neznám heslo** a dostane kód na e-mail. Tlačítka se rozsvítí, až když je co odeslat (platné číslo, platná adresa, vyplněné heslo). Stejnou obrazovkou procházejí i rezervace a eKnihy.
+- **Jméno a příjmení jsou povinné.** Při prvním přihlášení telefonem se web hned po souhlasu zeptá „Jak se jmenujete?“ a bez odpovědi nepustí dál — ani do rezervací a eKnih. Platí to i pro dřívější účty, které jméno nemají: při příští návštěvě je web nejdřív požádá o doplnění. Jméno nejde v Mém účtu smazat.
+- **SMS START na infokanál už potřebuje jméno:** kdo pošle jen „START“, dostane odpověď, že má poslat „START Jméno Příjmení“; odběr se bez jména nezaloží. Stejně tak formulář odběru na webu.
+
 ## 29. 10. 2026
 
 - **Fotky v textu jdou zmenšit a obtékat textem:** po kliknutí na fotku se u ní objeví lištička — velikost (malá, střední, velká, celá šířka), umístění vlevo nebo vpravo s textem vedle, nebo na střed, popis, titulek, odkaz a výměna za jinou fotku. Velikost jde měnit i tažením za roh fotky; přichytává se k hezkým poměrům (třetina, polovina…), takže to vypadá dobře i „od oka“. Na mobilu je každá fotka přes celou šířku.
