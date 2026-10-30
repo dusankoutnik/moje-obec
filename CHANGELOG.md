@@ -4,6 +4,15 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (ochrana kontaktního formuláře před roboty, 30. 10. 2026)
+
+- `src/web/kontakt-spam.ts`: bodování podezření bez CAPTCHA — podepsaný token (HMAC tajemství + id sezení + čas
+  zobrazení) opíše JavaScript `public/js/kontakt.js` z `data-overeni` do skrytého pole `overeni`; bez něj +3,
+  odeslání do 6 s od zobrazení +3 (čas z tokenu, jinak ze sezení `kontaktZobrazen`), odkazy +2…+4, anglický text bez
+  češtiny +3, reklamní slova +2…+3, slepené jméno a cizí telefon +1, česká diakritika −2. Skóre ≥ 5 → zahozeno
+  (odpověď jako u člověka, audit `kontakt.spam` bez obsahu), ≥ 3 → e-mail s předmětem „[možný spam]“ a důvody.
+  Česky psaná zpráva bez JavaScriptu se nikdy nezahodí, nejvýš označí.
+
 ### Změněno (povinné jméno a jednotný přihlašovací dialog, 30. 10. 2026)
 
 - OIDC interakce = jediný přihlašovací dialog: telefon → SMS kód, e-mail + heslo a „Neznám heslo“ → kód na e-mail

@@ -24,8 +24,9 @@
   <p class="napoveda">Zpráva přijde starostce, místostarostovi a na e-mail obecního úřadu. Odpovíme na váš e-mail.</p>
   <% var F = it.formular ? it.formular.f : {}, CH = it.formular ? it.formular.chyby : {}; %>
   <% if (CH.odeslani) { %><div class="flash flash-chyba" role="alert"><%= CH.odeslani %></div><% } %>
-  <form method="post" action="/kontakt/zprava" class="formular" novalidate>
+  <form method="post" action="/kontakt/zprava" class="formular" novalidate data-overeni="<%= it.overeni %>">
     <input type="hidden" name="_csrf" value="<%= it.csrf %>">
+    <input type="hidden" name="overeni" value="">
     <div class="past" aria-hidden="true"><label for="kf-web">Nevyplňujte</label><input id="kf-web" name="web" tabindex="-1" autocomplete="off"></div>
     <label for="kf-jmeno">Jméno a příjmení</label>
     <input id="kf-jmeno" name="jmeno" required maxlength="120" autocomplete="name" value="<%= F.jmeno || (it.uzivatel ? ((it.uzivatel.jmeno || '') + ' ' + (it.uzivatel.prijmeni || '')).trim() : '') %>"<% if (CH.jmeno) { %> aria-invalid="true" aria-describedby="kf-jmeno-ch"<% } %>>

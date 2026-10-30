@@ -1,10 +1,12 @@
 // Kontaktní formulář na stránce Kontakt (2026-10-23, Dušan): zpráva odchází e-mailem starostovi/starostce,
 // místostarostovi/místostarostce (podle funkce v profilu obce, obec.lide) a na oficiální e-mail obce (obec.kontakt.email).
 // Bez ukládání do databáze (jen audit bez obsahu). Ochrana: CSRF (globálně), limit podle IP (app.limity.podani),
-// past na roboty (skryté pole „web“ — vyplněné = tváříme se, že je odesláno).
+// past na roboty (skryté pole „web“ — vyplněné = tváříme se, že je odesláno) a od 2026-10-30 bodování podezření
+// (`kontakt-spam.ts`: token z JavaScriptu, doba od zobrazení, odkazy, angličtina, reklamní slova).
 import type { FastifyInstance } from 'fastify';
 import { zapisAudit } from '../lib/audit.js';
 import { hlidejLimit } from '../lib/limit.js';
+import { ohodnotZpravu, overOvereni, PRAH, vytvorOvereni } from './kontakt-spam.js';
 
 export interface KontaktniZprava {
   jmeno?: string;
@@ -12,6 +14,8 @@ export interface KontaktniZprava {
   telefon?: string;
   zprava?: string;
   web?: string;
+  /** token z `data-overeni`, opíše ho JavaScript (bez JS zůstane prázdný) */
+  overeni?: string;
 }
 
 const FUNKCE = /^(starost|místostarost)/i;
@@ -43,6 +47,17 @@ export function overZpravu(f: KontaktniZprava): { ok: boolean; chyby: Record<str
   return { ok: !Object.keys(chyby).length, chyby };
 }
 
+/** token pro šablonu stránky Kontakt; zároveň si sezení pamatuje první zobrazení (záloha pro odeslání bez JS) */
+export function kontaktOvereni(
+  tajemstvi: string,
+  req: { session: { sessionId?: string; kontaktZobrazen?: number | null } },
+): string {
+  const ted = Date.now();
+  const z = req.session.kontaktZobrazen;
+  if (!z || ted - z > 24 * 3600 * 1000) req.session.kontaktZobrazen = ted;
+  return vytvorOvereni(tajemstvi, req.session.sessionId ?? '', ted);
+}
+
 export default async function kontaktFormular(app: FastifyInstance) {
   app.post<{ Body: KontaktniZprava }>(
     '/kontakt/zprava',
@@ -67,13 +82,40 @@ export default async function kontaktFormular(app: FastifyInstance) {
         email = String(f.email).trim(),
         telefon = String(f.telefon ?? '').trim();
       const zprava = String(f.zprava).trim().replace(/\r\n/g, '\n');
+      const zTokenu = overOvereni(app.env.SESSION_SECRET, req.session.sessionId ?? '', f.overeni);
+      const h = ohodnotZpravu(
+        { jmeno, email, telefon, zprava },
+        { jsOk: zTokenu != null, zobrazeno: zTokenu ?? req.session.kontaktZobrazen ?? null },
+      );
+      if (h.skore >= PRAH.ZAHODIT) {
+        req.log.info({ skore: h.skore, duvody: h.duvody }, 'kontakt: zpráva vyhodnocena jako spam, zahozena');
+        await zapisAudit(app.db, {
+          akce: 'kontakt.spam',
+          detail: {
+            skore: h.skore,
+            duvody: h.duvody,
+            delka: zprava.length,
+            domena: email.split('@')[1] ?? '',
+          },
+          ip: req.ip,
+        });
+        req.session.flash = { typ: 'ok', text: 'Děkujeme, zprávu jsme odeslali obecnímu úřadu.' };
+        return reply.redirect('/kontakt#zprava', 303);
+      }
+      const podezrela = h.skore >= PRAH.OZNACIT;
       try {
         if (!komu.length) throw new Error('obec nemá v profilu e-mail');
         await app.mail.posli({
           komu: komu.join(', '),
-          predmet: `Zpráva z webu obce: ${jmeno}`,
+          predmet: `${podezrela ? '[možný spam] ' : ''}Zpráva z webu obce: ${jmeno}`,
           replyTo: email,
           text: [
+            ...(podezrela
+              ? [
+                  `⚠️ Zpráva má známky spamu (${h.duvody.join(', ')}). Pokud je to reklama, neodpovídejte a smažte ji.`,
+                  ``,
+                ]
+              : []),
             `Zpráva z kontaktního formuláře na webu ${app.env.BASE_URL.replace(/\/$/, '')}/kontakt`,
             ``,
             `Od: ${jmeno}`,
@@ -100,7 +142,12 @@ export default async function kontaktFormular(app: FastifyInstance) {
       }
       await zapisAudit(app.db, {
         akce: 'kontakt.zprava',
-        detail: { adresatu: komu.length, delka: zprava.length },
+        detail: {
+          adresatu: komu.length,
+          delka: zprava.length,
+          skore: h.skore,
+          ...(podezrela ? { duvody: h.duvody } : {}),
+        },
         ip: req.ip,
       });
       req.session.flash = {
@@ -116,5 +163,7 @@ declare module 'fastify' {
   interface Session {
     /** vyplněný formulář a chyby po neúspěšném odeslání (zobrazí se jednou) */
     kontaktFormular?: { f: KontaktniZprava; chyby: Record<string, string> } | null;
+    /** první zobrazení formuláře Kontakt (ms) — záloha pro odeslání bez JavaScriptu */
+    kontaktZobrazen?: number | null;
   }
 }

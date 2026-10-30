@@ -4,6 +4,7 @@ Přehled změn platformy Obecní web od Voltu 2.0 pro pilotní obec, nejnovějš
 
 ## 30. 10. 2026
 
+- **Kontaktní formulář bez spamu:** roboti, kteří formulář vyplňovali strojově (reklama na „lead generation“, nesmyslné zprávy v cizích jazycích), se rozpoznají podle toho, že neběží v prohlížeči, odesílají do pár sekund od zobrazení, píší anglicky bez češtiny a vkládají odkazy a reklamní slova. Jasný spam se tiše zahodí, hraniční zpráva dojde úřadu s předmětem „[možný spam]“ a vysvětlením. Bez CAPTCHA a bez cizích služeb; člověk píšící česky projde vždy, i bez JavaScriptu.
 - **Jedno přihlášení pro všechno, na jedné obrazovce:** přihlašovací stránka má vedle sebe obě cesty — vlevo **telefon** (pošleme SMS s kódem), vpravo **e-mail a heslo**. Kdo heslo nezná nebo nemá, klikne na **Neznám heslo** a dostane kód na e-mail. Tlačítka se rozsvítí, až když je co odeslat (platné číslo, platná adresa, vyplněné heslo). Stejnou obrazovkou procházejí i rezervace a eKnihy.
 - **Jméno a příjmení jsou povinné.** Při prvním přihlášení telefonem se web hned po souhlasu zeptá „Jak se jmenujete?“ a bez odpovědi nepustí dál — ani do rezervací a eKnih. Platí to i pro dřívější účty, které jméno nemají: při příští návštěvě je web nejdřív požádá o doplnění. Jméno nejde v Mém účtu smazat.
 - **SMS START na infokanál už potřebuje jméno:** kdo pošle jen „START“, dostane odpověď, že má poslat „START Jméno Příjmení“; odběr se bez jména nezaloží. Stejně tak formulář odběru na webu.
