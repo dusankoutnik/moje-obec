@@ -1,6 +1,8 @@
 # Moje obec 2.0 — produkční obraz. Dvoufázový build: TypeScript se přeloží v první fázi,
 # běhový obraz obsahuje jen dist/, produkční závislosti, šablony a statické soubory. Běží jako uživatel `node` (ne root).
 FROM node:22-bookworm-slim AS build
+# swagger-ui-dist táhne @scarf/scarf (telemetrie při instalaci) — vypnout
+ENV SCARF_ANALYTICS=false
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund

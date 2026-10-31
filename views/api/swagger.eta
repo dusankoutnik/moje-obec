@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= it.titulek %> – <%= it.nazevObce %></title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/vendor/swagger/swagger-ui.css">
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; }
+  .api-lista { background: #1c231c; color: #fff; padding: 8px 20px; font-size: 14px; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+  .api-lista a { color: #fff; }
+  .api-lista strong { margin-right: auto; }
+  .swagger-ui .topbar { display: none; }
+</style>
+</head>
+<body>
+<nav class="api-lista" aria-label="API">
+  <strong>API webu obce <%= it.nazevObce %></strong>
+  <a href="/">← Web obce</a>
+  <a href="/api/dokumentace">Textová dokumentace</a>
+  <a href="/api/openapi.json">openapi.json</a>
+  <a href="/sprava/api">Tokeny (administrace)</a>
+</nav>
+<div id="swagger-ui" data-openapi="/api/openapi.json"></div>
+<script src="/static/vendor/swagger/swagger-ui-bundle.js"></script>
+<script src="/static/js/api-swagger.js"></script>
+</body>
+</html>

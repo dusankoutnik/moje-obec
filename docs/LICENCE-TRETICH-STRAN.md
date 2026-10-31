@@ -26,6 +26,7 @@ z balíčků npm, žádné CDN):
 | Roboto Slab                                 | `@fontsource/roboto-slab`           | SIL OFL 1.1                                                                       | nadpisy                                                    |
 | Tiptap 3 (ProseMirror)                      | `@tiptap/*`, `prosemirror-*`        | MIT                                                                               | editor ve správě (zabalený v `public/js/vendor/editor.js`) |
 
+- **Swagger UI** (SmartBear, https://github.com/swagger-api/swagger-ui) — licence Apache-2.0, balíček `swagger-ui-dist`, podává se z `/static/vendor/swagger/` pro stránku `/api`.
 - **Ikony počasí: Meteocons** (Bas Milius, https://github.com/basmilius/weather-icons) — licence MIT, `public/img/pocasi/` (statické) a `public/img/pocasi/anim/` (animované). Text licence v `public/img/pocasi/LICENSE.txt`.
 
 Na serveru (do prohlížeče se neposílá) navíc běží `fflate` (MIT) — čtení ZIP archivů kancelářských formátů

@@ -4,6 +4,7 @@ Přehled změn platformy Obecní web od Voltu 2.0 pro pilotní obec, nejnovějš
 
 ## 31. 10. 2026
 
+- **Dokumentace API jako Swagger.** Odkaz „API“ v patičce vede na interaktivní přehled všech koncových bodů (Swagger UI nad naším OpenAPI popisem); textová dokumentace zůstává na /api/dokumentace.
 - **Vývoj počtu obyvatel se kreslí sám.** Místo zastaralého obrázku se statistikou umí stránka zobrazit blok „Vývoj počtu obyvatel“: graf a tabulku podle evidence Ministerstva vnitra (stav k 1. lednu každého roku, děti a dospělí, muži a ženy). Data si web jednou týdně stáhne ze stránky obce na mistopisy.cz, návštěvník nic z cizího serveru nenačítá. Do textu se blok vkládá v editoru přes „/“, a kdekoliv v textu lze napsat `{{pocet_obyvatel}}` — web dosadí aktuální počet obyvatel, který udržuje obec v administraci.
 - **Fotky v příspěvku se otevírají na celou obrazovku.** Klik na jakýkoli obrázek v aktualitě nebo na stránce (nejen ve fotogalerii) ho otevře přes celou obrazovku, dole je pás náhledů všech obrázků příspěvku, listuje se šipkami, klávesami nebo přejetím prstem. **Zoom:** tlačítka + a −, dvojklik, kolečko myši nebo dva prsty; zvětšená fotka se posouvá tažením. Esc nebo ✕ zavře a vrátí vás na místo v textu.
 

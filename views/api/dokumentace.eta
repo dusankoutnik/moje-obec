@@ -1,6 +1,7 @@
 <% layout('/layout') %>
 <article class="obsah-clanek api-dokumentace">
-<h1>API webu obce</h1>
+<h1>API webu obce — textová dokumentace</h1>
+<p class="hint"><a href="/api">← Swagger UI (interaktivní přehled a vyzkoušení)</a></p>
 <p>Rozhraní pro programy, které na web obce samy zapisují: sazba obecního zpravodaje, kalendář akcí, systémy úřadu.
   Všechno, co přes API vznikne, jde stejnou cestou jako z administrace — s revizemi, auditem, kontrolou HTML a zákonných
   náležitostí (popisy obrázků, lhůty úřední desky). Strojový popis: <a href="/api/openapi.json"><code>/api/openapi.json</code></a> (OpenAPI 3.1).</p>

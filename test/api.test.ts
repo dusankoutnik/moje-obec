@@ -586,8 +586,17 @@ describe('správa tokenů, dokumentace, patička', () => {
     const red = await prihlasSRoli(t, '777300301', ['spravce']);
     expect((await red.get('/sprava/api')).res.status).toBe(403);
   });
-  it('dokumentace /api, OpenAPI a odkaz v patičce', async () => {
-    const d = await fetch(`${t.base}/api`);
+  it('Swagger UI /api, textová dokumentace, OpenAPI a odkaz v patičce', async () => {
+    const sw = await fetch(`${t.base}/api`);
+    expect(sw.status).toBe(200);
+    const swh = await sw.text();
+    expect(swh).toContain('data-openapi="/api/openapi.json"');
+    expect(swh).toContain('/static/vendor/swagger/swagger-ui-bundle.js');
+    expect(swh).not.toContain('cdn.'); // žádné CDN
+    expect((await fetch(`${t.base}/static/vendor/swagger/swagger-ui-bundle.js`)).status).toBe(200);
+    expect((await fetch(`${t.base}/static/vendor/swagger/swagger-ui.css`)).status).toBe(200);
+    expect((await fetch(`${t.base}/static/vendor/swagger/index.html`)).status).toBe(404); // jen dva soubory
+    const d = await fetch(`${t.base}/api/dokumentace`);
     expect(d.status).toBe(200);
     const h = await d.text();
     expect(h).toContain('Authorization: Bearer');

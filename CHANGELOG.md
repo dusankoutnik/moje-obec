@@ -4,6 +4,14 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Změněno (API: Swagger UI, 31. 10. 2026)
+
+- `/api` je Swagger UI (balíček `swagger-ui-dist`, Apache-2.0, podáván z `/static/vendor/swagger/` — jen bundle a CSS,
+  žádné CDN; inicializace `public/js/api-swagger.js` kvůli CSP) nad `/api/openapi.json`; textová dokumentace
+  přesunuta na `/api/dokumentace`. V Dockerfile `SCARF_ANALYTICS=false` (telemetrie závislosti při instalaci).
+- Proxy soukromého chatu týmu `/chat` (`CHAT_URL`, `CHAT_TELEFONY`): jen přihlášené účty s vyjmenovaným telefonem,
+  ostatní 404, odkaz „Chat týmu“ v patičce jen pro ně.
+
 ### Přidáno (vývoj počtu obyvatel v textu stránky, 31. 10. 2026)
 
 - `src/moduly/web/obyvatele-vyvoj.ts`: tabulka evidence obyvatel MV ČR (stav k 1. 1., muži/ženy do a nad 15 let)

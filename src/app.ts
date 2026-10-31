@@ -229,6 +229,14 @@ export async function vytvorApp(volby: AppVolby): Promise<FastifyInstance> {
     maxAge: '365d',
     immutable: true,
   });
+  // Swagger UI pro /api (vendorované z balíčku swagger-ui-dist, žádné CDN) — jen dva soubory
+  await app.register(fastifyStatic, {
+    root: path.resolve(import.meta.dirname, '..', 'node_modules', 'swagger-ui-dist'),
+    prefix: '/static/vendor/swagger/',
+    decorateReply: false,
+    allowedPath: (p) => p === '/swagger-ui-bundle.js' || p === '/swagger-ui.css',
+    maxAge: '30d',
+  });
   // soubory starého webu na původní adrese (jen dokumenty a obrázky — nic spustitelného)
   if (env.STARY_WEB_SOUBORY) {
     await app.register(fastifyStatic, {
