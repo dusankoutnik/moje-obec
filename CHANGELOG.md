@@ -4,6 +4,17 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Přidáno (vývoj počtu obyvatel v textu stránky, 31. 10. 2026)
+
+- `src/moduly/web/obyvatele-vyvoj.ts`: tabulka evidence obyvatel MV ČR (stav k 1. 1., muži/ženy do a nad 15 let)
+  ze stránky obce na mistopisy.cz (`obec.yml` → `obyvatele.mistopisy_url`); server ji čte jednou týdně
+  (cron pondělí 4:20 + po startu, když chybí) a drží v `nastaveni.obyvatele_vyvoj` (chyba zdroje nic nesmaže).
+  Do textu se vkládá `<figure class="obyvatele-vyvoj" data-obyvatele="vyvoj">` (editor: „/“ → Vývoj počtu
+  obyvatel; uzel `obyvateleVyvoj` v `klient/editor.js`) — šablona `views/web/_obyvatele-vyvoj.eta` vykreslí souhrn,
+  vlastní SVG graf (jedna řada, popisky u prvního a posledního roku), tabulku po letech a zdroj. Zástupka
+  `{{pocet_obyvatel}}` v textu = aktuální počet podle obce (`aktualniObyvatele()`: administrace → Zpravodaj →
+  profil). `rozdelObsah()` má 4. parametr `DoplnkyObsahu`; data se načítají jen pro obsah, který je potřebuje.
+
 ### Změněno (prohlížeč fotek v příspěvku, 31. 10. 2026)
 
 - `public/js/web.js`: skupina prohlížeče = všechny obrázky jednoho `.obsah-html` v pořadí dokumentu (prosté `<img>`,

@@ -45,6 +45,8 @@ export const testovaciObec = obecZObjektu({
   },
   odstavky: { cez: { kod_obce: '564516' } }, // odstávky ČEZ: bez plánovače se nic nestahuje (test/odstavky.test.ts)
   pocasi: { lat: 50.61864, lon: 15.05186 }, // počasí MET: bez plánovače se nic nestahuje (test/pocasi.test.ts)
+  // vývoj obyvatel: bez plánovače se nic nestahuje (test/obyvatele-vyvoj.test.ts)
+  obyvatele: { mistopisy_url: 'https://www.mistopisy.cz/pruvodce/obec/1/testov/pocet-obyvatel/' },
   texty: { nazev_infokanalu: 'TestKanál', sms_prefix: 'TESTOV: ' },
 });
 

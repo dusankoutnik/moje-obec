@@ -16,3 +16,5 @@ test/fixtures/vystrahy/
 test/fixtures/met-compact.json
 # archiv starého webu (mimo git, jen na serveru)
 docs/Historie/
+# uložená stránka mistopisy.cz — přesně tak, jak ji server posílá
+test/fixtures/mistopisy-*.html

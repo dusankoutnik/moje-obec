@@ -196,6 +196,17 @@ export const ObecSchema = z.object({
       vyska: z.number().int().min(-500).max(9000).nullable().default(null),
     })
     .prefault({}),
+  // vývoj počtu obyvatel podle evidence MV ČR (vkládá se do textu stránky jako blok „Vývoj počtu obyvatel“):
+  // adresa stránky obce na mistopisy.cz, část „pocet-obyvatel“ — server ji čte jednou týdně, návštěvník nic
+  // z cizího serveru nenačítá. Prázdné = blok se nevykreslí.
+  obyvatele: z
+    .object({
+      mistopisy_url: z
+        .string()
+        .regex(/^(https:\/\/www\.mistopisy\.cz\/\S+)?$/, 'adresa musí vést na https://www.mistopisy.cz/')
+        .default(''),
+    })
+    .prefault({}),
   texty: z
     .object({
       nazev_infokanalu: z.string().default('Hlášení obce'),

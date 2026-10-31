@@ -9,7 +9,7 @@ import { jeBezpecnyOdkaz } from '../../lib/navrat.js';
 import { cisloStrany } from '../../lib/vstupy.js';
 import { urlSouboru } from '../../web/soubory.js';
 import type { WebSluzby } from './index.js';
-import { rozdelObsah } from './vlozene.js';
+import { rozdelObsah, doplnkyObyvatel, ZASTUPKA_OBYVATEL } from './vlozene.js';
 import { sPodrubrikami, vRubrikach } from './rubriky.js';
 import { odkazAkce } from './akce-externi.js';
 import { pomocniciOdstavek } from '../odstavky/index.js';
@@ -276,15 +276,18 @@ async function webVerejne(app: FastifyInstance, s: WebSluzby) {
     const dalsiRubriky = (o.kategorie_dalsi ?? [])
       .map((id) => vsechny.find((k) => k.id === id))
       .filter((k) => k !== undefined);
+    const doplnky = await doplnkyObyvatel(app, s, o.obsah_html);
+    const pocetObyvatel = doplnky.pocetObyvatel != null ? String(doplnky.pocetObyvatel) : '';
     return reply.view('web/obsah', {
       titulek: o.titulek,
-      popis: o.perex || zkrat(textZHtml(o.obsah_html), 160),
+      popis: (o.perex || zkrat(textZHtml(o.obsah_html), 160)).replace(ZASTUPKA_OBYVATEL, pocetObyvatel),
       o,
       zobrazitPerex: !!o.perex && !perexOpakujeText(o.perex, o.obsah_html),
       castiObsahu: rozdelObsah(
         o.obsah_html,
         await s.videa.vTextu(o.obsah_html),
         await s.galerie.vTextu(o.obsah_html),
+        doplnky,
       ),
       obrazek,
       kategorie,

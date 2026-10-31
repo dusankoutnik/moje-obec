@@ -1,0 +1,26 @@
+<% var d = it.d; var g = d.graf; var p = d.posledni; var n = d.nejstarsi; var t = it.t; var c = function (x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0'); }; %>
+<section class="obyv" aria-labelledby="obyv-h">
+  <h3 id="obyv-h"><%= t('web.obyvatele_nadpis') %></h3>
+  <% if (p) { %>
+  <p class="obyv-souhrn"><%= t('web.obyvatele_souhrn', { rok: p.rok, celkem: c(p.celkem), deti: c(p.muziDeti + p.zenyDeti), muzi: c(p.muziDeti + p.muziDospeli), zeny: c(p.zenyDeti + p.zenyDospele) }) %><% if (n && n.rok !== p.rok) { %> <%= t('web.obyvatele_zmena', { od: n.rok, puvodne: c(n.celkem), rozdil: (p.celkem - n.celkem >= 0 ? '+' : '−') + c(Math.abs(p.celkem - n.celkem)) }) %><% } %></p>
+  <% } %>
+  <% if (g) { %>
+  <figure class="obyv-graf" tabindex="0" aria-labelledby="obyv-h">
+    <svg viewBox="0 0 <%= g.W %> <%= g.H %>" role="img" aria-labelledby="obyv-graf-t obyv-graf-d">
+      <title id="obyv-graf-t"><%= t('web.obyvatele_nadpis') %></title>
+      <desc id="obyv-graf-d"><%= t('web.obyvatele_graf_popis', { od: n.rok, do: p.rok, puvodne: n.celkem, celkem: p.celkem }) %></desc>
+      <line class="obyv-osa-linka" x1="<%= g.vlevo %>" x2="<%= g.vpravo %>" y1="<%= g.dole %>" y2="<%= g.dole %>"/>
+      <% g.sloupce.forEach(function (s) { %><g class="obyv-rok"><title><%= s.popis %></title><rect class="obyv-hit" x="<%= s.hitX %>" y="0" width="<%= s.hitW %>" height="<%= g.dole %>"/><path class="obyv-sloupec" d="<%= s.d %>"/><text class="obyv-osa" x="<%= s.x %>" y="<%= g.H - 8 %>" text-anchor="middle"><%= g.sloupce.length > 16 && !(s.prvni || s.posledni || s.rok % 5 === 0) ? '' : s.rok %></text></g><% }) %>
+      <% g.popisky.forEach(function (o) { %><text class="obyv-max" x="<%= o.x %>" y="<%= o.y %>" text-anchor="middle"><%= o.text %></text><% }) %>
+    </svg>
+  </figure>
+  <details class="obyv-tabulka">
+    <summary><%= t('web.obyvatele_tabulka') %></summary>
+    <div class="tabulka-obal"><table class="tabulka">
+      <thead><tr><th scope="col"><%= t('web.obyvatele_k') %></th><th scope="col" class="obyv-c"><%= t('web.obyvatele_deti') %></th><th scope="col" class="obyv-c"><%= t('web.obyvatele_dospeli') %></th><th scope="col" class="obyv-c"><%= t('web.obyvatele_muzi') %></th><th scope="col" class="obyv-c"><%= t('web.obyvatele_zeny') %></th><th scope="col" class="obyv-c"><%= t('web.obyvatele_celkem') %></th><th scope="col" class="obyv-c"><%= t('web.obyvatele_zmena_sl') %></th></tr></thead>
+      <tbody><% d.roky.slice().reverse().forEach(function (r, i, arr) { var pred = arr[i + 1]; %><tr><th scope="row">1. 1. <%= r.rok %></th><td class="obyv-c"><%= c(r.muziDeti + r.zenyDeti) %></td><td class="obyv-c"><%= c(r.muziDospeli + r.zenyDospele) %></td><td class="obyv-c"><%= c(r.muziDeti + r.muziDospeli) %></td><td class="obyv-c"><%= c(r.zenyDeti + r.zenyDospele) %></td><td class="obyv-c"><strong><%= c(r.celkem) %></strong></td><td class="obyv-c"><% if (pred) { %><%= r.celkem - pred.celkem > 0 ? '+' : r.celkem - pred.celkem < 0 ? '−' : '' %><%= c(Math.abs(r.celkem - pred.celkem)) %><% } %></td></tr><% }) %></tbody>
+    </table></div>
+  </details>
+  <% } %>
+  <p class="obyv-zdroj"><%= t('web.obyvatele_zdroj') %> <a href="<%= d.zdrojUrl %>" rel="noopener">mistopisy.cz</a><% if (d.posledniUspech) { %>, <%= t('web.obyvatele_overeno', { datum: it.fmtDatum(d.posledniUspech, false) }) %><% } %>.<% if (d.chyba && d.posledniUspech) { %> <%= t('web.obyvatele_chyba') %><% } %></p>
+</section>

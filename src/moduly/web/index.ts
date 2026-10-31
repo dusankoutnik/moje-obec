@@ -21,6 +21,7 @@ import { jeVelikost } from './pisma.js';
 import { maRoli } from '../ucty/sluzba.js';
 import { bezpecnyNavrat } from '../../lib/navrat.js';
 import obyvateleRoutes from './obyvatele.js';
+import { ObyvateleVyvojSluzba } from './obyvatele-vyvoj.js';
 
 export const COOKIE_VELIKOST = 'mo_velikost';
 
@@ -36,6 +37,8 @@ export interface WebSluzby {
   /** propojení akcí webu s termíny v rezervacích (koncepty, návrhy, změny termínu) */
   propojeni: AkcePropojeniSluzba;
   videa: VideaSluzba;
+  /** vývoj počtu obyvatel podle MV ČR (tabulka z mistopisy.cz, týdenní obnova) */
+  obyvateleVyvoj: ObyvateleVyvojSluzba;
 }
 
 declare module 'fastify' {
@@ -61,6 +64,12 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
       textPredprodeje: app.t('propojeni.koncept_predprodej'),
     })),
     videa: new VideaSluzba(app.db, app.soubory),
+    obyvateleVyvoj: new ObyvateleVyvojSluzba(
+      app.db,
+      app.obec.obyvatele.mistopisy_url,
+      `ObecniWebOdVoltu/2.0 (${app.env.BASE_URL})`,
+      app.log,
+    ),
   };
   app.decorate('web', s);
   await zalozVychoziMenu(app);
@@ -130,9 +139,16 @@ async function webModul(app: FastifyInstance, volby: { planovac: boolean }) {
         .synchronizuj()
         .catch((e) => app.log.warn({ err: e }, 'synchronizace akcí z rezervací'));
     });
+    // vývoj počtu obyvatel: jednou týdně (data MV ČR se mění jednou ročně) a po startu, když tabulka chybí
+    const obyv = () =>
+      s.obyvateleVyvoj.obnov().catch((e) => app.log.warn({ err: e }, 'počet obyvatel: obnova selhala'));
+    const obyvJob = new Cron('20 4 * * 1', { timezone: 'Europe/Prague' }, obyv);
+    const obyvStart = setTimeout(obyv, 20_000);
     app.addHook('onClose', async () => {
       job.stop();
       sync.stop();
+      obyvJob.stop();
+      clearTimeout(obyvStart);
     });
   }
 }

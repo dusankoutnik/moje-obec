@@ -5,6 +5,7 @@ import type { FastifyInstance } from 'fastify';
 import type { Db } from '../../db/index.js';
 import { zapisAudit } from '../../lib/audit.js';
 import { vyzadujRoli } from '../ucty/opravneni.js';
+import { obyvatelZeZpravodaje } from '../api/zpravodaj.js';
 
 const KLIC = 'pocet_obyvatel';
 export const MAX_OBYVATEL = 1_000_000;
@@ -35,6 +36,15 @@ export function cteniObyvatel(v: unknown): number | null | 'neplatne' {
 export function obyvateleZProfilu(app: FastifyInstance): number | null {
   const f = app.obec.obec.fakta.find((x) => /obyvatel/i.test(x.popisek));
   return f && /^\d+$/.test(f.hodnota) ? Number(f.hodnota) : null;
+}
+
+/** aktuální počet obyvatel podle obce: ruční hodnota z administrace → poslední Zpravodaj → obec.yml; null = nevíme */
+export async function aktualniObyvatele(app: FastifyInstance): Promise<number | null> {
+  const rucne = await rucniObyvatele(app.db).catch(() => null);
+  if (rucne) return rucne.pocet;
+  const z = await obyvatelZeZpravodaje(app.db).catch(() => null);
+  if (z?.obyvatel) return z.obyvatel;
+  return obyvateleZProfilu(app);
 }
 
 export default async function obyvateleRoutes(app: FastifyInstance) {

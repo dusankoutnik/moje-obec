@@ -322,6 +322,42 @@ import { Placeholder } from '@tiptap/extensions';
     },
   });
 
+  // ---------- vývoj počtu obyvatel (blok ze serverových dat MV ČR) ----------
+  // <figure class="obyvatele-vyvoj" data-obyvatele="vyvoj"><p>Vývoj počtu obyvatel</p></figure> — web vykreslí
+  // graf a tabulku sám (moduly/web/obyvatele-vyvoj.ts); v editoru jen zástupný rámeček.
+  var ObyvateleVyvoj = Node.create({
+    name: 'obyvateleVyvoj',
+    group: 'block',
+    atom: true,
+    draggable: true,
+    selectable: true,
+    parseHTML: function () {
+      return [
+        { tag: 'figure.obyvatele-vyvoj', priority: 80 },
+        { tag: 'figure[data-obyvatele]', priority: 80 },
+      ];
+    },
+    renderHTML: function () {
+      return [
+        'figure',
+        { class: 'obyvatele-vyvoj', 'data-obyvatele': 'vyvoj' },
+        ['p', {}, 'Vývoj počtu obyvatel'],
+      ];
+    },
+    addNodeView: function () {
+      return function () {
+        var dom = document.createElement('div');
+        dom.className = 'editor-obyvatele';
+        dom.setAttribute('contenteditable', 'false');
+        var p = document.createElement('p');
+        p.textContent =
+          '📈 Vývoj počtu obyvatel — graf a tabulka podle evidence Ministerstva vnitra se na webu doplní samy (aktualizace jednou ročně).';
+        dom.appendChild(p);
+        return { dom: dom };
+      };
+    },
+  });
+
   // ---------- fotogalerie obce vložená do textu ----------
   // <figure class="galerie-obce" data-galerie="id" data-rozlozeni="mrizka|pas|velka" data-pocet="0|3|6|9|12">
   //   <a href="/galerie/slug">Název</a></figure> — web ji vykreslí živě z alba (nové fotky se objeví samy).
@@ -965,6 +1001,7 @@ import { Placeholder } from '@tiptap/extensions';
         VideoObce,
         Galerie,
         GalerieObce,
+        ObyvateleVyvoj,
       ],
       editorProps: {
         attributes: {
@@ -1520,6 +1557,13 @@ import { Placeholder } from '@tiptap/extensions';
         polozky.push(['Fotka', 'fotka obrazek foto', obrazekZDisku]);
         if (galerieOk) polozky.push(['Fotogalerie', 'galerie fotogalerie fotky album', galerie]);
         polozky.push(['Video', 'video', video]);
+        polozky.push([
+          'Vývoj počtu obyvatel',
+          'obyvatele obyvatel pocet graf statistika',
+          function () {
+            c().insertContent({ type: 'obyvateleVyvoj' }).run();
+          },
+        ]);
       }
       polozky.push(
         [

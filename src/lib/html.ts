@@ -43,6 +43,8 @@ const ZAKLAD: sanitizeHtml.IOptions = {
       'data-galerie',
       { name: 'data-rozlozeni', values: ['mrizka', 'pas', 'velka'], multiple: false },
       { name: 'data-pocet', values: ['0', '3', '6', '9', '12'], multiple: false },
+      // vývoj počtu obyvatel (moduly/web/obyvatele-vyvoj.ts): graf a tabulku vykreslí šablona ze serverových dat
+      { name: 'data-obyvatele', values: ['vyvoj'], multiple: false },
     ],
   },
   // povolené třídy: galerie náhledů (z importu starých webů), video, vložená fotogalerie a velikost/zarovnání
@@ -52,6 +54,7 @@ const ZAKLAD: sanitizeHtml.IOptions = {
       'galerie',
       'video',
       'galerie-obce',
+      'obyvatele-vyvoj',
       'obr-vlevo',
       'obr-vpravo',
       'obr-stred',

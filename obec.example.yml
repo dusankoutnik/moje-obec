@@ -116,6 +116,12 @@ odstavky:
 
 # Předpověď počasí (modul pocasi). Data: MET Norway (api.met.no, data yr.no, licence CC BY 4.0), server je stahuje
 # nejvýš jednou za 30 minut, prohlížeč návštěvníka nic od MET nenačítá. Souřadnice = střed obce (WGS84), např. z mapy.
+# Vývoj počtu obyvatel podle evidence Ministerstva vnitra: adresa stránky obce na mistopisy.cz (část
+# „pocet-obyvatel“). Server ji čte jednou týdně a kreslí vlastní graf; do textu stránky se vkládá blok
+# „Vývoj počtu obyvatel“ (editor → „/“) a zástupka {{pocet_obyvatel}} = počet z administrace. Prázdné = vypnuto.
+# obyvatele:
+#   mistopisy_url: https://www.mistopisy.cz/pruvodce/obec/<id>/<obec>/pocet-obyvatel/
+
 pocasi:
   lat: 50.6186
   lon: 15.0519
