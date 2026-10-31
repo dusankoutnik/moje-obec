@@ -15,6 +15,7 @@ export const cs = {
     patika_pristupnost: 'Prohlášení o přístupnosti',
     patika_gdpr: 'Ochrana osobních údajů',
     patika_kontakt: 'Kontakt',
+    chat_odkaz: 'Chat týmu',
     patika_zdroj: 'Otevřený software Obecní web od Voltu 2.0 (EUPL-1.2)',
     patika_vyrobce: 'Obecní web od Voltu 2.0',
     patika_slogan: 'Spojujeme Evropu',

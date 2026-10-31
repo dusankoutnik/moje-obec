@@ -1,4 +1,5 @@
 // Šablony Eta: reply.view('soubor', data) vykreslí šablonu v layoutu se společnými daty (t, obec, uzivatel, csrf).
+import { normalizujTelefon, telefonyZEnv } from '../moduly/sluzby/proxy.js';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { Eta } from 'eta';
@@ -37,6 +38,7 @@ export function formatujDatum(d: Date | string | null | undefined, sCasem = true
 const VERZE_STATIKY = Date.now().toString(36);
 
 export default fp(async function sablony(app: FastifyInstance) {
+  const chatTelefony = telefonyZEnv(app.env.CHAT_TELEFONY);
   const eta = new Eta({
     views: VIEWS_DIR,
     cache: app.env.NODE_ENV === 'production',
@@ -99,6 +101,11 @@ export default fp(async function sablony(app: FastifyInstance) {
         logoVyrobce: LOGO_VYROBCE ? `/static/img/${LOGO_VYROBCE}` : null,
         env: app.env.NODE_ENV,
         uzivatel: req.uzivatel ?? null,
+        // soukromý chat týmu (/chat): odkaz v patičce jen pro vyjmenované telefony (env CHAT_TELEFONY)
+        chatOdkaz:
+          !!app.env.CHAT_URL &&
+          !!req.uzivatel &&
+          chatTelefony.includes(normalizujTelefon(req.uzivatel.telefon)),
         // odkaz EDIT u titulků stránek a příspěvků (role web; admin a správce ji mají v sobě)
         muzeEditovatWeb: maRoli(req.uzivatel, 'web'),
         csrf,

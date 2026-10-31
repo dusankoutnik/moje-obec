@@ -65,6 +65,8 @@ beforeAll(async () => {
       APLIKACE_REZERVACE_URL: falesnaUrl,
       APLIKACE_EKNIHY_URL: `http://127.0.0.1:${mrtvy}`,
       APLIKACE_TIMEOUT_MS: '1500',
+      CHAT_URL: falesnaUrl,
+      CHAT_TELEFONY: '777 100 001, 777100777',
     },
     obec: { ...testovaciObec, moduly: { ...testovaciObec.moduly, rezervace: true, eknihy: true } },
   });
@@ -278,5 +280,34 @@ describe('moduly obce', () => {
     });
     expect(r2.status).toBe(403); // bez CSRF
     expect((await admin.get('/sprava')).text).toContain('/sprava/moduly');
+  });
+});
+
+describe('soukromý chat týmu (/chat)', () => {
+  it('nepřihlášený → přihlášení; cizí účet → 404 (bez stopy v odkazech); povolený telefon → proxy a odkaz v patičce', async () => {
+    const anonym = new Prohlizec(t.base);
+    const r0 = await anonym.get('/chat/', false);
+    expect(r0.res.status).toBe(302);
+    expect(r0.res.headers.get('location')).toBe('/prihlaseni?zpet=%2Fchat%2F');
+    expect((await anonym.get('/')).text).not.toContain('href="/chat/"');
+
+    const cizi = await prihlasSRoli(t, '777100002', ['web']);
+    expect((await cizi.get('/chat/', false)).res.status).toBe(404);
+    expect((await cizi.get('/chat/api/zpravy', false)).res.status).toBe(404);
+    expect((await cizi.get('/')).text).not.toContain('href="/chat/"');
+
+    // admin má telefon 777100001 = v seznamu (s mezerami v env)
+    expect((await admin.get('/')).text).toContain('href="/chat/"');
+    const r1 = await admin.get('/chat', false);
+    expect(r1.res.status).toBe(301);
+    expect(r1.res.headers.get('location')).toBe('/chat/');
+    const r2 = await admin.get('/chat/api/zpravy?od=x');
+    expect(r2.res.status).toBe(200);
+    expect(r2.text).toBe('APLIKACE GET /chat/api/zpravy?od=x');
+    expect(posledni().hlavicky['x-forwarded-prefix']).toBe('/chat');
+    // i bez Accept text/html (fetch ze stránky) rozhoduje sezení
+    const r3 = await admin.post('/chat/api/zprava', { a: '1' });
+    expect(r3.res.status).toBe(200);
+    expect(posledni().metoda).toBe('POST');
   });
 });

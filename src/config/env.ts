@@ -121,6 +121,14 @@ const EnvSchema = z.object({
     .optional()
     .transform((v) => v || undefined)
     .pipe(z.string().url().optional()),
+  // soukromý týmový chat za proxy platformy (/chat/*): vnitřní adresa a telefony účtů, které ho smějí otevřít
+  // (čárkami; 9 číslic = +420). Ostatní dostanou 404, nepřihlášení přihlášení. Prázdné = chat není.
+  CHAT_URL: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().url().optional()),
+  CHAT_TELEFONY: z.string().default(''),
   // časový limit proxy na odpověď aplikace (ms)
   APLIKACE_TIMEOUT_MS: z.coerce.number().int().min(1000).default(60_000),
   // OIDC klienti aplikací (rezervace, eKnihy): tajemství jednotlivě, nebo JSON pole

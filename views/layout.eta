@@ -185,6 +185,7 @@
         <% if (it.obec.patika.zasady_cookies) { %><li><a href="<%= it.obec.patika.zasady_cookies %>"><%= it.t('staticke.zasady_cookies') %></a></li><% } %>
         <% if (it.obec.moduly.web) { %><li><a href="/dotace"><%= it.t('web.dotace') %></a></li><li><a href="/mapa-stranek"><%= it.t('staticke.mapa_titulek') %></a></li><% } %>
         <% if (it.navstevnostZapnuta) { %><li><a href="/navstevnost" <%= it.cesta === '/navstevnost' ? 'aria-current=page' : '' %>><%= it.t('navstevnost.odkaz_paticka') %></a></li><% } %>
+        <% if (it.chatOdkaz) { %><li><a href="/chat/"><%= it.t('app.chat_odkaz') %></a></li><% } %>
         <% /* správa webu: v patičce pro všechny (redaktoři se tudy i přihlásí), v hlavičce už není */ %>
         <li><a href="/sprava" <%= it.cesta.startsWith('/sprava') ? 'aria-current=page' : '' %>><%= it.t('app.sprava') %></a></li>
       </ul>

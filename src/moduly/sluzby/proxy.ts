@@ -12,10 +12,24 @@ import type { Db } from '../../db/index.js';
 import { bezJmena } from '../ucty/sluzba.js';
 
 export interface CilProxy {
-  /** modul (rezervace, eknihy) */
-  klic: KlicModulu;
+  /** modul (rezervace, eknihy), nebo soukromý chat týmu (jen vyjmenované telefony) */
+  klic: KlicModulu | 'chat';
   prefix: string;
   cil: URL;
+  /** jen účty s těmito telefony (normalizované +420…); ostatní 404 */
+  jenTelefony?: string[];
+}
+
+/** telefon ze seznamu v env: mezery pryč, 9 číslic = +420 */
+export function normalizujTelefon(t: string): string {
+  const s = t.replace(/[\s-]/g, '');
+  return /^\d{9}$/.test(s) ? '+420' + s : s.replace(/^00/, '+');
+}
+export function telefonyZEnv(seznam: string | undefined): string[] {
+  return (seznam ?? '')
+    .split(',')
+    .map((t) => normalizujTelefon(t.trim()))
+    .filter(Boolean);
 }
 
 // hlavičky, které platí jen pro jedno spojení — dál se nepředávají (RFC 9110 7.6.1)
@@ -37,12 +51,19 @@ const agentHttps = new https.Agent({ keepAlive: true, maxSockets: 64 });
 export function cileProxy(env: {
   APLIKACE_REZERVACE_URL?: string | undefined;
   APLIKACE_EKNIHY_URL?: string | undefined;
+  CHAT_URL?: string | undefined;
+  CHAT_TELEFONY?: string | undefined;
 }): CilProxy[] {
   const c: CilProxy[] = [];
   if (env.APLIKACE_REZERVACE_URL)
     c.push({ klic: 'rezervace', prefix: '/rezervace', cil: new URL(env.APLIKACE_REZERVACE_URL) });
   if (env.APLIKACE_EKNIHY_URL)
     c.push({ klic: 'eknihy', prefix: '/eknihy', cil: new URL(env.APLIKACE_EKNIHY_URL) });
+  if (env.CHAT_URL) {
+    const jenTelefony = telefonyZEnv(env.CHAT_TELEFONY);
+    if (jenTelefony.length)
+      c.push({ klic: 'chat', prefix: '/chat', cil: new URL(env.CHAT_URL), jenTelefony });
+  }
   return c;
 }
 
@@ -127,6 +148,36 @@ export function zaregistrujProxy(
     const cesta = url.split('?')[0]!;
     const c = cile.find((x) => podCestou(cesta, x.prefix));
     if (!c) return;
+    if (c.klic === 'chat') {
+      // soukromý chat: jen přihlášený účet s vyjmenovaným telefonem; ostatním se nic neprozradí (404)
+      let telefon: string | null = null;
+      try {
+        const p = prihlaseny ? await prihlaseny(req) : { cislo: null };
+        if (p.cislo) {
+          const u = await app.db
+            .selectFrom('uzivatele')
+            .select('telefon')
+            .where('cislo', '=', Number(p.cislo))
+            .executeTakeFirst();
+          telefon = u?.telefon ?? null;
+        }
+      } catch (e) {
+        req.log.warn({ err: e }, 'proxy chat: sezení se nepodařilo přečíst');
+      }
+      if (
+        !telefon &&
+        (req.method === 'GET' || req.method === 'HEAD') &&
+        /text\/html/i.test(String(req.headers.accept ?? ''))
+      )
+        return reply.redirect(`/prihlaseni?zpet=${encodeURIComponent(url)}`);
+      if (!telefon || !c.jenTelefony!.includes(normalizujTelefon(telefon))) return reply.callNotFound();
+      if (cesta === c.prefix)
+        return reply
+          .code(301)
+          .header('location', c.prefix + '/' + url.slice(cesta.length))
+          .send();
+      return predej(req, reply, c, url);
+    }
     // modul vypnutý (nebo jeho část — předprodej, spolujízda) → stránka platformy
     const stav = await moduly.stav();
     if (!stav[c.klic]) return stranky.vypnuto(req, reply);
