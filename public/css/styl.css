@@ -3572,7 +3572,15 @@ button.kviz-odpoved:active {
   }
 }
 
-/* ---- prohlížeč fotek (galerie v textu i stránka galerie) ---- */
+/* ---- prohlížeč fotek (fotky v příspěvku, galerie v textu i stránka galerie) ---- */
+.obsah-html img.zvetsitelny,
+.obsah-html a[data-foto] img {
+  cursor: zoom-in;
+}
+.obsah-html img.zvetsitelny:focus-visible {
+  outline: 3px solid var(--fokus, #ffbf47);
+  outline-offset: 2px;
+}
 .prohlizec {
   width: 100vw;
   height: 100dvh;
@@ -3583,30 +3591,120 @@ button.kviz-odpoved:active {
   border: 0;
   background: rgba(10, 12, 11, 0.97);
   color: #fff;
+  /* výška pásu náhledů dole (0, když je fotka jen jedna) */
+  --pas: 92px;
+}
+.prohlizec.prohlizec-sam {
+  --pas: 0px;
 }
 .prohlizec::backdrop {
   background: rgba(0, 0, 0, 0.6);
 }
 .prohlizec-plocha {
-  height: 100%;
+  height: calc(100% - var(--pas));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 56px 16px 16px;
+  gap: 8px;
+  padding: 56px 16px 8px;
   box-sizing: border-box;
 }
-.prohlizec img {
+.prohlizec-ram {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.prohlizec-ram img {
   max-width: 100%;
-  max-height: calc(100dvh - 140px);
+  max-height: 100%;
   object-fit: contain;
   display: block;
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* zvětšená fotka: rám se posouvá, fotka má pevnou šířku z JS */
+.prohlizec-ram.zoom {
+  display: block;
+  overflow: auto;
+  touch-action: none;
+  scrollbar-width: thin;
+}
+.prohlizec-ram.zoom img {
+  max-width: none;
+  max-height: none;
+  height: auto;
+  cursor: grab;
+}
+.prohlizec-ram.zoom img:active {
+  cursor: grabbing;
 }
 .prohlizec p {
   margin: 0;
+  flex: 0 0 auto;
   text-align: center;
   max-width: 60ch;
+  min-height: 1.4em;
+}
+.prohlizec p:empty {
+  display: none;
+}
+.prohlizec-pas {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--pas);
+  margin: 0;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  background: rgba(0, 0, 0, 0.5);
+}
+.prohlizec-sam .prohlizec-pas {
+  display: none;
+}
+.prohlizec-pas li {
+  flex: 0 0 auto;
+}
+.prohlizec .prohlizec-pas button {
+  position: static;
+  min-width: 0;
+  min-height: 0;
+  width: 96px;
+  height: 72px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: #222;
+  opacity: 0.6;
+  overflow: hidden;
+  font-size: 0;
+}
+.prohlizec .prohlizec-pas button:hover,
+.prohlizec .prohlizec-pas button:focus-visible {
+  opacity: 0.9;
+}
+.prohlizec .prohlizec-pas button[aria-current='true'] {
+  opacity: 1;
+  border-color: #fff;
+}
+.prohlizec-pas img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .prohlizec button {
   position: absolute;
@@ -3619,6 +3717,10 @@ button.kviz-odpoved:active {
   font-size: 1.5rem;
   cursor: pointer;
 }
+.prohlizec button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 .prohlizec button:focus-visible {
   outline: 3px solid var(--fokus, #ffbf47);
 }
@@ -3626,19 +3728,47 @@ button.kviz-odpoved:active {
   top: 10px;
   right: 10px;
 }
+.prohlizec-zoom {
+  position: absolute;
+  top: 10px;
+  right: 72px;
+  display: flex;
+  gap: 6px;
+}
+.prohlizec .prohlizec-zoom button {
+  position: static;
+}
 .prohlizec .predchozi {
   left: 10px;
-  top: 50%;
+  top: calc(50% - var(--pas) / 2);
 }
 .prohlizec .dalsi {
   right: 10px;
-  top: 50%;
+  top: calc(50% - var(--pas) / 2);
+}
+.prohlizec-sam .predchozi,
+.prohlizec-sam .dalsi {
+  display: none;
 }
 .prohlizec .pocitadlo {
   position: absolute;
   top: 18px;
   left: 16px;
   font-size: 0.95rem;
+}
+@media (max-width: 600px) {
+  .prohlizec {
+    --pas: 68px;
+  }
+  .prohlizec .prohlizec-pas button {
+    width: 64px;
+    height: 48px;
+  }
+  .prohlizec .predchozi,
+  .prohlizec .dalsi {
+    top: auto;
+    bottom: calc(var(--pas) + 10px);
+  }
 }
 
 /* ---- editor: fotka, plovoucí lištička, lomítko, úchyty, galerie, HTML ---- */

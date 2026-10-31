@@ -15,8 +15,9 @@ test.beforeAll(async () => {
   await c.connect();
   // aplikace už běží (webServer) → schéma je zmigrované
   await c.query(
-    `INSERT INTO uzivatele (telefon, role, gdpr_souhlas_at) VALUES ($1, ARRAY['web'], now())
-     ON CONFLICT (telefon) DO UPDATE SET role = ARRAY['web'], blokovan_at = NULL`,
+    `INSERT INTO uzivatele (telefon, role, gdpr_souhlas_at, jmeno, prijmeni, prezdivka)
+     VALUES ($1, ARRAY['web'], now(), 'Eva', 'Testovací', 'Eva')
+     ON CONFLICT (telefon) DO UPDATE SET role = ARRAY['web'], blokovan_at = NULL, jmeno = 'Eva', prijmeni = 'Testovací'`,
     [TELEFON],
   );
   // opakované běhy nad stejnou databází: limit kódů na kontakt (3 za hodinu) nesmí test zablokovat
@@ -215,11 +216,30 @@ test('editor: lomítko, obtékání a tažení fotky, galerie z fotek, HTML, kon
   await expect(page.locator('.obsah-html figure.obr-vlevo.obr-s25 img')).toHaveAttribute('alt', 'Kostel');
   const galerie = page.locator('.galerie-v-textu.galerie-pas');
   await expect(galerie.locator('a[data-foto]')).toHaveCount(4);
+  // galerie je součástí jedné řady všech obrázků příspěvku (fotka v textu + 4 z galerie)
   await galerie.locator('a[data-foto]').first().click();
   await expect(page.locator('dialog.prohlizec')).toBeVisible();
-  await expect(page.locator('dialog.prohlizec .pocitadlo')).toHaveText('1 / 4');
+  await expect(page.locator('dialog.prohlizec .pocitadlo')).toHaveText('2 / 5');
   await page.keyboard.press('ArrowRight');
-  await expect(page.locator('dialog.prohlizec .pocitadlo')).toHaveText('2 / 4');
+  await expect(page.locator('dialog.prohlizec .pocitadlo')).toHaveText('3 / 5');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog.prohlizec')).toBeHidden();
+
+  // klik na fotku v textu: prohlížeč se všemi obrázky příspěvku (1 v textu + 4 z galerie), pás náhledů, zoom
+  await page.locator('.obsah-html figure.obr-vlevo.obr-s25 img').click();
+  await expect(page.locator('dialog.prohlizec')).toBeVisible();
+  await expect(page.locator('dialog.prohlizec .pocitadlo')).toHaveText('1 / 5');
+  await expect(page.locator('dialog.prohlizec .prohlizec-pas button')).toHaveCount(5);
+  await page.locator('dialog.prohlizec .prohlizec-pas button').nth(3).click();
+  await expect(page.locator('dialog.prohlizec .pocitadlo')).toHaveText('4 / 5');
+  await expect(page.locator('dialog.prohlizec .prohlizec-pas button').nth(3)).toHaveAttribute(
+    'aria-current',
+    'true',
+  );
+  await page.getByRole('button', { name: 'Přiblížit' }).click();
+  await expect(page.locator('dialog.prohlizec .prohlizec-ram')).toHaveClass(/zoom/);
+  await page.keyboard.press('0');
+  await expect(page.locator('dialog.prohlizec .prohlizec-ram')).not.toHaveClass(/zoom/);
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog.prohlizec')).toBeHidden();
 });

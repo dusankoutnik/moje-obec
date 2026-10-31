@@ -4,6 +4,17 @@ Formát: [Keep a Changelog](https://keepachangelog.com/cs/), verze podle [SemVer
 
 ## [Nevydáno] — 2026-10-18 — etapa 1: úřední deska, obecní web, import
 
+### Změněno (prohlížeč fotek v příspěvku, 31. 10. 2026)
+
+- `public/js/web.js`: skupina prohlížeče = všechny obrázky jednoho `.obsah-html` v pořadí dokumentu (prosté `<img>`,
+  `<a>` s obrázkem i fotky galerií `a[data-foto]`; mimo video a ikonky < 64 px); galerie mimo příspěvek
+  (`[data-prohlizec]`) zvlášť jako dřív. Prostý `<img>` s alt dostane `tabindex`/`role=button` (Enter/mezera),
+  bez alt jen klik. Dialog má pás náhledů (`.prohlizec-pas`, `?v=nahled` u `/soubory/`), zoom 1–5× (tlačítka,
+  dvojklik, kolečko, dva prsty; `.prohlizec-ram.zoom` = scroll + tažení myší; šipky listují jen nezvětšené),
+  jednu fotku bez pásu a šipek (`.prohlizec-sam`).
+- `e2e/smoke.spec.ts`: testovací účet má jméno (brána „Jak se jmenujete?“ z 30. 10. jinak přihlášení zastaví);
+  prohlížeč: klik na fotku v textu, pás, zoom.
+
 ### Přidáno (ochrana kontaktního formuláře před roboty, 30. 10. 2026)
 
 - `src/web/kontakt-spam.ts`: bodování podezření bez CAPTCHA — podepsaný token (HMAC tajemství + id sezení + čas

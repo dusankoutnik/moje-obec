@@ -2,6 +2,10 @@
 
 Přehled změn platformy Obecní web od Voltu 2.0 pro pilotní obec, nejnovější nahoře. Technické podrobnosti jsou v CHANGELOG.md.
 
+## 31. 10. 2026
+
+- **Fotky v příspěvku se otevírají na celou obrazovku.** Klik na jakýkoli obrázek v aktualitě nebo na stránce (nejen ve fotogalerii) ho otevře přes celou obrazovku, dole je pás náhledů všech obrázků příspěvku, listuje se šipkami, klávesami nebo přejetím prstem. **Zoom:** tlačítka + a −, dvojklik, kolečko myši nebo dva prsty; zvětšená fotka se posouvá tažením. Esc nebo ✕ zavře a vrátí vás na místo v textu.
+
 ## 30. 10. 2026
 
 - **Kontaktní formulář bez spamu:** roboti, kteří formulář vyplňovali strojově (reklama na „lead generation“, nesmyslné zprávy v cizích jazycích), se rozpoznají podle toho, že neběží v prohlížeči, odesílají do pár sekund od zobrazení, píší anglicky bez češtiny a vkládají odkazy a reklamní slova. Jasný spam se tiše zahodí, hraniční zpráva dojde úřadu s předmětem „[možný spam]“ a vysvětlením. Bez CAPTCHA a bez cizích služeb; člověk píšící česky projde vždy, i bez JavaScriptu.
