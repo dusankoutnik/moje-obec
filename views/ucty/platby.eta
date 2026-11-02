@@ -19,6 +19,32 @@
   </table></div>
   <% } %>
 </section>
+<% if (d.minulyMesic) { const m = d.minulyMesic; %>
+<section class="karta" aria-labelledby="minuly-h">
+  <h2 id="minuly-h"><%= it.t('muj_ucet.platby_minuly', { obdobi: m.obdobi }) %></h2>
+  <% if (!m.polozky.length) { %><p><%= it.t('muj_ucet.platby_minuly_zadne') %></p><% } else { %>
+  <div class="tabulka-obal"><table class="tabulka">
+    <thead><tr><th scope="col"><%= it.t('muj_ucet.platby_datum') %></th><th scope="col"><%= it.t('muj_ucet.platby_co') %></th><th scope="col"><%= it.t('muj_ucet.platby_cena') %></th></tr></thead>
+    <tbody>
+    <% m.polozky.forEach(function (p) { %>
+      <tr><td><%= p.datum %> <%= p.cas %></td><td><%= p.co %><%= p.ucel ? ' — ' + p.ucel : '' %><%= p.ceka ? ' (' + it.t('muj_ucet.rez_ceka') + ')' : '' %></td><td><%= p.cena ? p.cena + ' Kč' : it.t('muj_ucet.platby_zdarma') %></td></tr>
+    <% }) %>
+    </tbody>
+    <tfoot><tr><th scope="row" colspan="2"><%= it.t('muj_ucet.platby_soucet') %></th><td><strong><%= m.soucet %> Kč</strong></td></tr></tfoot>
+  </table></div>
+  <% } %>
+  <% if (m.vyzva) { const v = m.vyzva; %>
+    <p><strong><%= it.t('muj_ucet.platby_minuly_vyzva', { cislo: v.cislo, castka: v.castka }) %></strong> —
+      <%= v.zaplaceno ? it.t('muj_ucet.platby_zaplaceno', { datum: v.zaplaceno }) : (v.poSplatnosti ? it.t('muj_ucet.platby_po_splatnosti') : it.t('muj_ucet.platby_k_uhrade') + ', ' + it.t('muj_ucet.platby_splatnost').toLowerCase() + ' ' + v.splatnost) %>.
+      <% if (!v.zaplaceno && v.platba) { %><a class="tlacitko" href="<%= v.platba %>"><%= it.t('muj_ucet.platby_qr') %></a><% } %>
+      <a href="<%= v.pdf %>"><%= it.t('muj_ucet.platby_pdf') %></a></p>
+  <% } else if (m.soucet > 0) { %>
+    <p><%= it.t('muj_ucet.platby_minuly_vyzva_ceka', { termin: m.vyzvaTermin }) %></p>
+  <% } else if (m.polozky.length) { %>
+    <p><%= it.t('muj_ucet.platby_minuly_vyzva_zadna') %></p>
+  <% } %>
+</section>
+<% } %>
 <section class="karta" aria-labelledby="vyuct-h">
   <h2 id="vyuct-h"><%= it.t('muj_ucet.platby_vyuctovani') %></h2>
   <% if (!d.vyuctovani.length) { %><p><%= it.t('muj_ucet.platby_vyuctovani_zadne') %></p><% } else { %>
@@ -32,6 +58,12 @@
           <% if (!v.zaplaceno && v.platba) { %><br><a href="<%= v.platba %>"><%= it.t('muj_ucet.platby_qr') %></a><% } %></td>
         <td><a href="<%= v.pdf %>"><%= it.t('muj_ucet.platby_pdf') %><span class="vh"> <%= v.cislo %></span></a><% if (v.potvrzeni) { %> · <a href="<%= v.potvrzeni %>"><%= it.t('muj_ucet.platby_potvrzeni') %></a><% } %></td>
       </tr>
+      <% if (v.polozky && v.polozky.length) { %>
+      <tr><td colspan="6"><details><summary><%= it.t('muj_ucet.platby_rozpis') %> (<%= v.polozky.length %>)</summary>
+        <ul class="seznam-prosty">
+        <% v.polozky.forEach(function (p) { %><li><%= p.datum %>, <%= p.rozsah %> — <%= p.popis %>: <%= p.cena %></li><% }) %>
+        </ul></details></td></tr>
+      <% } %>
     <% }) %>
     </tbody>
   </table></div>

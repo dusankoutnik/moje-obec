@@ -26,11 +26,21 @@ export interface PlatbyRezervaci {
       cena: number;
       ceka: boolean;
       probehla: boolean;
+      vyzva?: string | null;
     }[];
     soucet: number;
     cekajici: number;
   };
+  /** minulý měsíc: všechny rezervace a stav výzvy za něj (starší rezervace API nemusí posílat) */
+  minulyMesic?: {
+    obdobi: string;
+    polozky: PlatbyRezervaci['mesic']['polozky'];
+    soucet: number;
+    vyzvaTermin: string;
+    vyzva: PlatbyRezervaci['vyuctovani'][number] | null;
+  };
   vyuctovani: {
+    polozky?: { datum: string; popis: string; rozsah: string; cena: string }[];
     cislo: string;
     obdobi: string;
     castka: number;

@@ -56,6 +56,37 @@ beforeAll(async () => {
       if (req.url!.startsWith('/api/sso/platby/'))
         return res.end(
           JSON.stringify({
+            minulyMesic: {
+              obdobi: 'září 2026',
+              polozky: [
+                {
+                  datum: '3. 9.',
+                  cas: '18:00–19:00',
+                  co: 'Posilovna',
+                  ucel: '',
+                  cena: 30,
+                  ceka: false,
+                  probehla: true,
+                },
+              ],
+              soucet: 30,
+              vyzvaTermin: '1. října 2026',
+              vyzva: {
+                cislo: 'V2026-9',
+                obdobi: 'září 2026',
+                castka: 30,
+                vystaveno: '1. 10. 2026',
+                splatnost: '15. 10. 2026',
+                zaplaceno: null,
+                poSplatnosti: true,
+                pdf: 'http://x/rezervace/ucet/faktura/1.pdf',
+                potvrzeni: null,
+                platba: 'http://x/rezervace/platba/abc',
+                polozky: [
+                  { datum: 'Čt 3. 9. 2026', popis: 'Posilovna', rozsah: '18:00–19:00', cena: '30 Kč' },
+                ],
+              },
+            },
             mesic: {
               obdobi: 'říjen 2026',
               polozky: [
@@ -84,6 +115,9 @@ beforeAll(async () => {
                 pdf: 'http://x/rezervace/ucet/faktura/9.pdf',
                 potvrzeni: null,
                 platba: 'http://x/rezervace/platba/abc',
+                polozky: [
+                  { datum: 'Čt 3. 9. 2026', popis: 'Posilovna', rozsah: '18:00–19:00', cena: '30 Kč' },
+                ],
               },
             ],
             predprodej: [],
@@ -142,6 +176,10 @@ describe('Můj účet', () => {
     expect(r.text).toContain('V2026-9');
     expect(r.text).toContain('http://x/rezervace/platba/abc');
     expect(r.text).toContain('po splatnosti');
+    expect(r.text).toContain('Minulý měsíc (září 2026)');
+    expect(r.text).toContain('Výzva k úhradě č. V2026-9 na 30 Kč');
+    expect(r.text).toContain('Rozpis rezervací (1)');
+    expect(r.text).toContain('Čt 3. 9. 2026, 18:00–19:00 — Posilovna: 30 Kč');
   });
 
   it('eKlíč se pošle do rezervací a e-mail z TTLock se použije jen se souhlasem', async () => {
